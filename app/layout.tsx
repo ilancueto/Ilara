@@ -9,7 +9,12 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+const baseUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: "✨ Ilara Beauty",
   description: "Sistema de inventario, ventas y finanzas",
   manifest: "/manifest.json",
@@ -17,6 +22,16 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Ilara Beauty",
+  },
+  openGraph: {
+    title: "Ilara Beauty",
+    description: "Sistema de inventario, ventas y finanzas",
+    images: ["/logo_icon.png"],
+  },
+  twitter: {
+    card: "summary",
+    title: "Ilara Beauty",
+    images: ["/logo_icon.png"],
   },
 };
 
