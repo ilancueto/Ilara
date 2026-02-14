@@ -1,0 +1,102 @@
+'use client'
+
+import { useState } from 'react'
+import { Producto } from '@/lib/supabase'
+import { Search, AlertTriangle } from 'lucide-react'
+import Image from 'next/image'
+import { PastelCard } from '@/components/ui/PastelCard'
+
+interface CatalogoPOSProps {
+    productos: Producto[]
+    onAddToCart: (producto: Producto) => void
+}
+
+export default function CatalogoPOS({ productos, onAddToCart }: CatalogoPOSProps) {
+    const [terminoBusqueda, setTerminoBusqueda] = useState('')
+
+    const productosFiltrados = productos.filter(p =>
+        p.name.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+        p.brand?.toLowerCase().includes(terminoBusqueda.toLowerCase())
+    ).slice(0, 5) // Max 5 resultados para no saturar
+
+    return (
+        <PastelCard className="h-full flex flex-col min-h-[500px] p-6" noHover>
+            <div className="relative mb-6">
+                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400/80 pointer-events-none" />
+                <input
+                    type="text"
+                    placeholder="Buscar productos por nombre o marca..."
+                    value={terminoBusqueda}
+                    onChange={(e) => setTerminoBusqueda(e.target.value)}
+                    className="w-full pl-4 pr-12 py-3.5 bg-white border border-pink-100 rounded-2xl focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-gray-800 placeholder-gray-400 transition-all shadow-sm"
+                />
+            </div>
+
+            {/* Resultados de búsqueda */}
+            <div className="flex-1 overflow-y-auto min-h-[0] pr-2 custom-scrollbar">
+                {terminoBusqueda && productosFiltrados.length > 0 ? (
+                    <div className="space-y-4">
+                        {productosFiltrados.map(producto => (
+                            <button
+                                key={producto.id}
+                                onClick={() => {
+                                    onAddToCart(producto)
+                                    setTerminoBusqueda('') // Opcional: limpiar al agregar
+                                }}
+                                className="w-full text-left p-4 rounded-2xl bg-white border border-pink-100/80 hover:border-pink-300 hover:shadow-lg hover:shadow-pink-100/50 transition-all group flex items-center gap-4"
+                            >
+                                {/* Imagen Thumbnail */}
+                                <div className="w-12 h-12 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100 relative">
+                                    {producto.image_url ? (
+                                        <Image
+                                            src={producto.image_url}
+                                            alt={producto.name}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-xs opacity-30">✨</span>
+                                    )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-bold text-gray-800 text-sm mb-0.5 truncate group-hover:text-pink-600 transition-colors">{producto.name}</h4>
+                                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                {producto.brand && <span>{producto.brand}</span>}
+                                                <span className={producto.stock < producto.min_stock ? 'text-amber-500 font-bold flex items-center gap-1' : ''}>
+                                                    {producto.stock < producto.min_stock && <AlertTriangle className="w-3 h-3" />}
+                                                    Stock: {producto.stock}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right ml-3 flex-shrink-0">
+                                            <div className="font-bold text-pink-600 bg-pink-50 px-2 py-1 rounded-lg">${producto.sale_price.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                ) : terminoBusqueda ? (
+                    <div className="flex flex-col items-center justify-center h-40 rounded-2xl bg-pink-50/50 border border-pink-100/60">
+                        <Search className="w-10 h-10 text-pink-300 mb-3" strokeWidth={1.5} />
+                        <p className="text-sm font-medium text-gray-600">No se encontraron productos</p>
+                        <p className="text-xs text-gray-400 mt-1">Prueba con otro término</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full pb-10">
+                        <div className="w-20 h-20 bg-pink-100/80 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
+                            <Search className="w-9 h-9 text-pink-400" strokeWidth={1.5} />
+                        </div>
+                        <p className="text-lg font-bold text-gray-800">Explora tu inventario</p>
+                        <p className="text-sm text-center max-w-[220px] mt-2 text-gray-500">
+                            Escribe el nombre o la marca del producto para añadirlo a la venta
+                        </p>
+                    </div>
+                )}
+            </div>
+        </PastelCard>
+    )
+}

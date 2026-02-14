@@ -1,0 +1,308 @@
+// ============================================
+// SERVICIO DE GASTOS - SUPABASE
+// ============================================
+
+import { supabase } from '@/lib/supabase';
+import {
+    Expense,
+    ExpenseFormData,
+    ExpenseFilters,
+    ExpenseStats,
+    ExpenseCategory
+} from './types';
+import { calculatePercentageChange, getMonthName } from './expenseUtils';
+
+// Obtener gastos con filtros
+export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> {
+
+    let query = supabase
+        .from('expenses')
+        .select('*')
+        .order('date', { ascending: false });
+
+    // Aplicar filtros
+    if (filters?.dateFrom) {
+        query = query.gte('date', filters.dateFrom);
+    }
+
+    if (filters?.dateTo) {
+        query = query.lte('date', filters.dateTo);
+    }
+
+    if (filters?.category) {
+        query = query.eq('category', filters.category);
+    }
+
+    if (filters?.paymentMethod) {
+        query = query.eq('payment_method', filters.paymentMethod);
+    }
+
+    if (filters?.minAmount !== undefined) {
+        query = query.gte('amount', filters.minAmount);
+    }
+
+    if (filters?.maxAmount !== undefined) {
+        query = query.lte('amount', filters.maxAmount);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching expenses:', error);
+        throw error;
+    }
+
+    return data || [];
+}
+
+// Crear nuevo gasto
+export async function createExpense(formData: ExpenseFormData): Promise<Expense> {
+
+    // Subir comprobante si existe
+    let receiptUrl: string | undefined;
+    if (formData.receipt) {
+        receiptUrl = await uploadReceipt(formData.receipt);
+    }
+
+    // Obtener user_id
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const expenseData = {
+        date: formData.date,
+        category: formData.category,
+        description: formData.description,
+        amount: formData.amount,
+        payment_method: formData.payment_method,
+        receipt_url: receiptUrl,
+        notes: formData.notes,
+        user_id: user.id,
+    };
+
+    const { data, error } = await supabase
+        .from('expenses')
+        .insert(expenseData)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating expense:', error);
+        // Si falla, eliminar el comprobante subido
+        if (receiptUrl) {
+            await deleteReceipt(receiptUrl);
+        }
+        throw error;
+    }
+
+    return data;
+}
+
+// Actualizar gasto
+export async function updateExpense(id: string, formData: Partial<ExpenseFormData>): Promise<Expense> {
+
+    // Si hay un nuevo comprobante, subirlo
+    let receiptUrl: string | undefined;
+    if (formData.receipt) {
+        receiptUrl = await uploadReceipt(formData.receipt);
+    }
+
+    const updateData: any = {
+        ...(formData.date && { date: formData.date }),
+        ...(formData.category && { category: formData.category }),
+        ...(formData.description && { description: formData.description }),
+        ...(formData.amount !== undefined && { amount: formData.amount }),
+        ...(formData.payment_method && { payment_method: formData.payment_method }),
+        ...(formData.notes !== undefined && { notes: formData.notes }),
+        ...(receiptUrl && { receipt_url: receiptUrl }),
+    };
+
+    const { data, error } = await supabase
+        .from('expenses')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error updating expense:', error);
+        // Si falla, eliminar el nuevo comprobante subido
+        if (receiptUrl) {
+            await deleteReceipt(receiptUrl);
+        }
+        throw error;
+    }
+
+    return data;
+}
+
+// Eliminar gasto
+export async function deleteExpense(id: string): Promise<void> {
+
+    // Primero obtener el gasto para eliminar el comprobante
+    const { data: expense } = await supabase
+        .from('expenses')
+        .select('receipt_url')
+        .eq('id', id)
+        .single();
+
+    // Eliminar el gasto
+    const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        console.error('Error deleting expense:', error);
+        throw error;
+    }
+
+    // Eliminar el comprobante si existe
+    if (expense?.receipt_url) {
+        await deleteReceipt(expense.receipt_url);
+    }
+}
+
+// Subir comprobante
+export async function uploadReceipt(file: File): Promise<string> {
+    if (!file || file.size === 0) {
+        throw new Error('El archivo está vacío o no es válido.');
+    }
+
+    // Extensión segura (solo alfanuméricos, minúscula)
+    const rawExt = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const ext = rawExt || 'jpg';
+    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`;
+
+    // Content-Type explícito para evitar 400 por MIME
+    const contentType = file.type || (ext === 'png' ? 'image/png' : ext === 'pdf' ? 'application/pdf' : 'image/jpeg');
+
+    const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(fileName, file, {
+            contentType,
+            cacheControl: '3600',
+            upsert: false,
+        });
+
+    if (uploadError) {
+        console.error('Error uploading receipt:', uploadError);
+        throw uploadError;
+    }
+
+    const { data } = supabase.storage
+        .from('receipts')
+        .getPublicUrl(fileName);
+
+    return data.publicUrl;
+}
+
+// Eliminar comprobante
+export async function deleteReceipt(url: string): Promise<void> {
+
+    // Extraer el path del URL
+    const urlParts = url.split('/');
+    const filePath = urlParts[urlParts.length - 1];
+
+    const { error } = await supabase.storage
+        .from('receipts')
+        .remove([filePath]);
+
+    if (error) {
+        console.error('Error deleting receipt:', error);
+        // No lanzar error, solo loguear
+    }
+}
+
+// Obtener estadísticas de gastos
+export async function getExpenseStats(): Promise<ExpenseStats> {
+
+    // Obtener fecha actual
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Primer día del mes actual
+    const firstDayCurrentMonth = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+
+    // Primer día del mes anterior
+    const firstDayPrevMonth = new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0];
+    const lastDayPrevMonth = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0];
+
+    // Gastos del mes actual
+    const { data: currentMonthExpenses } = await supabase
+        .from('expenses')
+        .select('amount')
+        .gte('date', firstDayCurrentMonth);
+
+    const totalMonth = currentMonthExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+    // Gastos del mes anterior
+    const { data: prevMonthExpenses } = await supabase
+        .from('expenses')
+        .select('amount')
+        .gte('date', firstDayPrevMonth)
+        .lte('date', lastDayPrevMonth);
+
+    const totalPrevMonth = prevMonthExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+    // Calcular porcentaje de cambio
+    const percentageChange = calculatePercentageChange(totalMonth, totalPrevMonth);
+
+    // Gastos por categoría (últimos 30 días)
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const { data: recentExpenses } = await supabase
+        .from('expenses')
+        .select('category, amount')
+        .gte('date', thirtyDaysAgo);
+
+    const byCategory = recentExpenses?.reduce((acc, exp) => {
+        const existing = acc.find(item => item.category === exp.category);
+        if (existing) {
+            existing.total += Number(exp.amount);
+            existing.count += 1;
+        } else {
+            acc.push({
+                category: exp.category as ExpenseCategory,
+                total: Number(exp.amount),
+                count: 1,
+            });
+        }
+        return acc;
+    }, [] as { category: ExpenseCategory; total: number; count: number }[]) || [];
+
+    // Ordenar por total descendente
+    byCategory.sort((a, b) => b.total - a.total);
+
+    // Top 5 categorías
+    const topCategories = byCategory.slice(0, 5);
+
+    // Tendencia de los últimos 6 meses
+    const trend: { month: string; total: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+        const monthDate = new Date(currentYear, currentMonth - i, 1);
+        const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).toISOString().split('T')[0];
+        const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).toISOString().split('T')[0];
+
+        const { data: monthExpenses } = await supabase
+            .from('expenses')
+            .select('amount')
+            .gte('date', firstDay)
+            .lte('date', lastDay);
+
+        const total = monthExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+        trend.push({
+            month: getMonthName(monthDate),
+            total,
+        });
+    }
+
+    return {
+        totalMonth,
+        totalPrevMonth,
+        percentageChange,
+        byCategory,
+        trend,
+        topCategories,
+    };
+}

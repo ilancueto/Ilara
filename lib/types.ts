@@ -1,0 +1,88 @@
+// ============================================
+// TIPOS PARA GESTIÓN DE GASTOS
+// ============================================
+
+export type PaymentMethod =
+    | 'efectivo'
+    | 'transferencia'
+    | 'tarjeta_debito'
+    | 'tarjeta_credito'
+    | 'mercadopago'
+    | 'otro';
+
+export type ExpenseCategory =
+    | 'inventario'
+    | 'alquiler'
+    | 'servicios'
+    | 'marketing'
+    | 'envios'
+    | 'mantenimiento'
+    | 'administrativos'
+    | 'personal'
+    | 'capacitacion'
+    | 'otros';
+
+export interface Expense {
+    id: string;
+    created_at: string;
+    date: string;
+    category: ExpenseCategory;
+    description: string;
+    amount: number;
+    payment_method: PaymentMethod;
+    receipt_url?: string;
+    notes?: string;
+    user_id: string;
+}
+
+export interface ExpenseFormData {
+    date: string;
+    category: ExpenseCategory;
+    description: string;
+    amount: number;
+    payment_method: PaymentMethod;
+    receipt?: File;
+    notes?: string;
+}
+
+export interface ExpenseFilters {
+    dateFrom?: string;
+    dateTo?: string;
+    category?: ExpenseCategory;
+    paymentMethod?: PaymentMethod;
+    minAmount?: number;
+    maxAmount?: number;
+}
+
+export interface ExpenseStats {
+    totalMonth: number;
+    totalPrevMonth: number;
+    percentageChange: number;
+    byCategory: { category: ExpenseCategory; total: number; count: number }[];
+    trend: { month: string; total: number }[];
+    topCategories: { category: ExpenseCategory; total: number }[];
+}
+
+// Labels para las categorías
+export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+    inventario: 'Compras de Inventario',
+    alquiler: 'Alquiler/Local',
+    servicios: 'Servicios',
+    marketing: 'Marketing y Publicidad',
+    envios: 'Envíos y Logística',
+    mantenimiento: 'Mantenimiento',
+    administrativos: 'Administrativos',
+    personal: 'Personal/Salarios',
+    capacitacion: 'Capacitación',
+    otros: 'Otros',
+};
+
+// Labels para métodos de pago
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+    efectivo: 'Efectivo',
+    transferencia: 'Transferencia',
+    tarjeta_debito: 'Tarjeta de Débito',
+    tarjeta_credito: 'Tarjeta de Crédito',
+    mercadopago: 'MercadoPago',
+    otro: 'Otro',
+};
