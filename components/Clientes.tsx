@@ -24,6 +24,9 @@ export default function Clientes() {
     const [mostrarModal, setMostrarModal] = useState(false)
     const [editando, setEditando] = useState<Cliente | null>(null)
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
+    const [mostrarEliminarClientesModal, setMostrarEliminarClientesModal] = useState(false)
+    const [clientesSeleccionados, setClientesSeleccionados] = useState<Set<number>>(new Set())
+    const [eliminandoClientes, setEliminandoClientes] = useState(false)
 
     const [formData, setFormData] = useState({
         first_name: '',
@@ -144,6 +147,46 @@ export default function Clientes() {
         }
     }
 
+    const toggleSeleccionCliente = (id: number) => {
+        setClientesSeleccionados(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
+            return next
+        })
+    }
+
+    const seleccionarTodosClientes = () => {
+        if (clientesSeleccionados.size === clientes.length) {
+            setClientesSeleccionados(new Set())
+        } else {
+            setClientesSeleccionados(new Set(clientes.map(c => c.id)))
+        }
+    }
+
+    const handleEliminarClientesSeleccionados = async () => {
+        if (clientesSeleccionados.size === 0) {
+            showError('Seleccioná al menos un cliente.')
+            return
+        }
+        if (!confirm(`¿Eliminar ${clientesSeleccionados.size} cliente(s)? Las ventas asociadas quedarán sin cliente.`)) return
+        setEliminandoClientes(true)
+        try {
+            const ids = Array.from(clientesSeleccionados)
+            const { error } = await supabase.from('customers').delete().in('id', ids)
+            if (error) throw error
+            setClientes(clientes.filter(c => !clientesSeleccionados.has(c.id)))
+            setClientesSeleccionados(new Set())
+            setMostrarEliminarClientesModal(false)
+            showSuccess('Clientes eliminados correctamente.')
+        } catch (err) {
+            console.error('Error al eliminar clientes:', err)
+            showError('Error al eliminar algunos clientes.')
+        } finally {
+            setEliminandoClientes(false)
+        }
+    }
+
     const cerrarModal = () => {
         setMostrarModal(false)
         setEditando(null)
@@ -233,12 +276,24 @@ export default function Clientes() {
                 </PastelCard>
             </div>
 
-            {/* Count */}
-            <div className="flex items-center gap-3 mb-2 pl-1">
-                <span className="w-2 h-2 rounded-full bg-pink-400"></span>
-                <p className="text-sm text-gray-500 font-medium">
-                    Mostrando <span className="text-gray-900 font-bold">{clientesFiltrados.length}</span> resultados
-                </p>
+            {/* Count + Eliminar clientes */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2 pl-1">
+                <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-pink-400"></span>
+                    <p className="text-sm text-gray-500 font-medium">
+                        Mostrando <span className="text-gray-900 font-bold">{clientesFiltrados.length}</span> resultados
+                    </p>
+                </div>
+                {clientes.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={() => { setMostrarEliminarClientesModal(true); setClientesSeleccionados(new Set()); }}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 font-bold text-sm transition-colors"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        Eliminar clientes
+                    </button>
+                )}
             </div>
 
             {/* Lista de clientes */}
@@ -325,6 +380,73 @@ export default function Clientes() {
                         </button>
                     )}
                 </PastelCard>
+            )}
+
+            {/* Modal Eliminar clientes */}
+            {mostrarEliminarClientesModal && (
+                <>
+                    <div className="modal-backdrop" onClick={() => !eliminandoClientes && setMostrarEliminarClientesModal(false)} />
+                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl" noHover>
+                        <div className="p-6 border-b border-pink-100">
+                            <h3 className="text-xl font-bold text-gray-800">Eliminar clientes</h3>
+                            <p className="text-sm text-gray-500 mt-1">Seleccioná los clientes a eliminar. Las ventas asociadas quedarán sin cliente.</p>
+                        </div>
+                        <div className="p-4 overflow-y-auto flex-1 min-h-0">
+                            <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer mb-2">
+                                <input
+                                    type="checkbox"
+                                    checked={clientes.length > 0 && clientesSeleccionados.size === clientes.length}
+                                    onChange={seleccionarTodosClientes}
+                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                />
+                                <span className="font-bold text-sm text-gray-700">Seleccionar todos</span>
+                            </label>
+                            <div className="space-y-2">
+                                {clientes.length === 0 ? (
+                                    <p className="text-gray-400 text-sm py-4">No hay clientes.</p>
+                                ) : (
+                                    clientes.map(cliente => (
+                                        <label
+                                            key={cliente.id}
+                                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer border border-transparent hover:border-pink-100"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={clientesSeleccionados.has(cliente.id)}
+                                                onChange={() => toggleSeleccionCliente(cliente.id)}
+                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                            />
+                                            <span className="flex-1 text-sm text-gray-800 truncate">
+                                                {cliente.first_name} {cliente.last_name}
+                                            </span>
+                                            <span className="text-xs text-gray-400 flex-shrink-0">
+                                                {format(new Date(cliente.created_at), 'MMM yyyy', { locale: es })}
+                                            </span>
+                                        </label>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-pink-100 flex gap-3 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setMostrarEliminarClientesModal(false)}
+                                disabled={eliminandoClientes}
+                                className="btn-ghost"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleEliminarClientesSeleccionados}
+                                disabled={eliminandoClientes || clientesSeleccionados.size === 0}
+                                className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {eliminandoClientes ? 'Eliminando...' : `Eliminar ${clientesSeleccionados.size} cliente(s)`}
+                            </button>
+                        </div>
+                    </PastelCard>
+                </>
             )}
 
             {/* Modal de formulario */}

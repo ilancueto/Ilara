@@ -78,6 +78,14 @@ function HomeContent() {
     { id: 'customers' as const, label: 'Clientes', icon: Users },
   ]
 
+  const getSaludo = (email: string | null): string => {
+    if (!email) return 'Cuenta Activa'
+    const e = email.toLowerCase()
+    if (e === 'ilaancueto@gmail.com') return 'Hola Ilan'
+    if (e === 'marubaidal28@gmail.com') return 'Hola Mara'
+    return 'Cuenta Activa'
+  }
+
   return (
     <div className="min-h-screen relative text-gray-800">
       <div className="app-wrapper">
@@ -149,7 +157,7 @@ function HomeContent() {
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-800 truncate">Cuenta Activa</p>
+                  <p className="text-sm font-bold text-gray-800 truncate">{getSaludo(userEmail)}</p>
                   <p className="text-[10px] text-gray-500 truncate font-mono">{userEmail}</p>
                 </div>
               </div>
@@ -230,7 +238,7 @@ function HomeContent() {
                       {userEmail?.substring(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                      <p className="text-xs font-bold truncate">Cuenta Activa</p>
+                      <p className="text-xs font-bold truncate">{getSaludo(userEmail)}</p>
                       <p className="text-[10px] text-gray-400 truncate">{userEmail}</p>
                     </div>
                   </div>

@@ -30,7 +30,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         stock: '',
         min_stock: '1',
         notes: '',
-        image_url: ''
+        image_url: '',
+        discount_percentage: ''
     })
 
     // Reset form when opening/closing or changing product
@@ -46,13 +47,13 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     stock: productToEdit.stock.toString(),
                     min_stock: productToEdit.min_stock.toString(),
                     notes: productToEdit.notes || '',
-                    image_url: productToEdit.image_url || ''
+                    image_url: productToEdit.image_url || '',
+                    discount_percentage: productToEdit.discount_percentage != null ? String(productToEdit.discount_percentage) : ''
                 })
             } else {
-                // Reset for new product
                 setFormData({
                     name: '', category_id: '', brand: '',
-                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_url: ''
+                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_url: '', discount_percentage: ''
                 })
             }
             setErrores({})
@@ -129,7 +130,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             stock: parseInt(formData.stock),
             min_stock: formData.min_stock ? parseInt(formData.min_stock) : 5,
             notes: formData.notes.trim() || null,
-            image_url: formData.image_url || null
+            image_url: formData.image_url || null,
+            discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0
         }
 
         try {
@@ -320,6 +322,21 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                 />
                                 <p className="text-[11px] text-gray-400 mt-1">Aviso cuando el stock baje de este valor</p>
                             </div>
+                        </div>
+
+                        {/* Descuento en catálogo */}
+                        <div>
+                            <label className="form-label">Descuento en catálogo (%)</label>
+                            <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={formData.discount_percentage}
+                                onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+                                placeholder="0"
+                                className="form-input w-full max-w-[120px]"
+                            />
+                            <p className="text-[11px] text-gray-400 mt-1">Si es mayor a 0, en el catálogo público se muestra &quot;En descuento&quot; y el precio rebajado.</p>
                         </div>
 
                         {/* Notas */}

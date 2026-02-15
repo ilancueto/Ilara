@@ -24,6 +24,8 @@ export default function Catalogo() {
     const [imagenPrevia, setImagenPrevia] = useState<string | null>(null)
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
+    const [cuponInput, setCuponInput] = useState('')
+    const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
 
     useEffect(() => {
         const carritoGuardado = localStorage.getItem('ilara-carrito')
@@ -76,7 +78,14 @@ export default function Catalogo() {
         return dias <= 7
     }
 
+    const getPrecioConDescuento = (producto: Producto): number => {
+        const d = producto.discount_percentage ?? 0
+        if (d <= 0) return producto.sale_price
+        return Math.round(producto.sale_price * (1 - d / 100))
+    }
+
     const obtenerBadge = (producto: Producto) => {
+        if ((producto.discount_percentage ?? 0) > 0) return { texto: '🔥 En descuento', clase: 'bg-orange-500 text-white shadow-md shadow-orange-200/50' }
         if (esNuevo(producto.created_at)) return { texto: 'Nuevo', clase: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/50' }
         if (producto.stock < 5) return { texto: '¡Últimos!', clase: 'bg-amber-500 text-white shadow-md shadow-amber-200/50' }
         return null
@@ -89,13 +98,16 @@ export default function Catalogo() {
                 const termino = busqueda.toLowerCase()
                 if (!p.name.toLowerCase().includes(termino) && !p.brand?.toLowerCase().includes(termino)) return false
             }
-            if (p.sale_price < precioMin || p.sale_price > precioMax) return false
+            const precioProd = getPrecioConDescuento(p)
+            if (precioProd < precioMin || precioProd > precioMax) return false
             return true
         })
         .sort((a, b) => {
+            const precioA = getPrecioConDescuento(a)
+            const precioB = getPrecioConDescuento(b)
             switch (ordenamiento) {
-                case 'precio-asc': return a.sale_price - b.sale_price
-                case 'precio-desc': return b.sale_price - a.sale_price
+                case 'precio-asc': return precioA - precioB
+                case 'precio-desc': return precioB - precioA
                 case 'nombre-desc': return b.name.localeCompare(a.name)
                 default: return a.name.localeCompare(b.name)
             }
@@ -142,24 +154,56 @@ export default function Catalogo() {
 
     const vaciarCarrito = () => {
         setCarrito([])
+        setAppliedCoupon(null)
         setMostrarConfirmacion(false)
         setMostrarCarrito(false)
         showToast('info', 'Carrito vaciado')
     }
 
-    const total = carrito.reduce((sum, item) => sum + (item.producto.sale_price * item.cantidad), 0)
+    const subtotal = carrito.reduce((sum, item) => sum + (getPrecioConDescuento(item.producto) * item.cantidad), 0)
+    const descuentoCupon = appliedCoupon ? Math.round(subtotal * (appliedCoupon.discount_percentage / 100)) : 0
+    const total = subtotal - descuentoCupon
+
+    const aplicarCupon = async () => {
+        const code = cuponInput.trim().toUpperCase()
+        if (!code) {
+            showToast('warning', 'Escribí un código')
+            return
+        }
+        const { data, error } = await supabase
+            .from('coupons')
+            .select('discount_percentage')
+            .eq('code', code)
+            .eq('is_active', true)
+            .maybeSingle()
+        if (error || !data) {
+            showToast('error', 'Cupón inválido o inactivo')
+            return
+        }
+        setAppliedCoupon({ code, discount_percentage: data.discount_percentage })
+        setCuponInput('')
+        showToast('success', `Cupón ${code} aplicado: -${data.discount_percentage}%`)
+    }
+
+    const quitarCupon = () => {
+        setAppliedCoupon(null)
+    }
 
     const handleWhatsAppClick = () => {
         if (carrito.length === 0) return
-        const items = carrito.map(item =>
-            `• ${item.producto.name} x${item.cantidad} - $${(item.producto.sale_price * item.cantidad).toLocaleString()}`
-        ).join('%0A')
-        const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A*Total: $${total.toLocaleString()}*`
+        const items = carrito.map(item => {
+            const precioUnit = getPrecioConDescuento(item.producto)
+            return `• ${item.producto.name} x${item.cantidad} - $${(precioUnit * item.cantidad).toLocaleString()}`
+        }).join('%0A')
+        let totalLine = `*Total: $${total.toLocaleString()}*`
+        if (appliedCoupon) totalLine = `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)%0A${totalLine}`
+        const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A${totalLine}`
         window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
     }
 
     const compartirProducto = (producto: Producto) => {
-        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${producto.sale_price.toLocaleString()}%0A%0A¿Te interesa?`
+        const precio = getPrecioConDescuento(producto)
+        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${precio.toLocaleString()}%0A%0A¿Te interesa?`
         window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
     }
 
@@ -170,8 +214,8 @@ export default function Catalogo() {
                 <div className="w-full px-4 sm:px-6 lg:px-8 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-200/50">
-                                <Sparkles className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 bg-white border border-pink-100 shadow-lg shadow-pink-200/50 flex items-center justify-center">
+                                <Image src="/logo_icon.png" alt="Ilara Beauty" width={48} height={48} className="object-contain w-full h-full" />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Ilara Beauty</h1>
@@ -340,9 +384,16 @@ export default function Catalogo() {
                                         )}
 
                                         <div className="mt-auto pt-4 border-t border-pink-50 flex items-center justify-between gap-3">
-                                            <p className="text-xl font-extrabold text-gray-900">
-                                                ${producto.sale_price.toLocaleString()}
-                                            </p>
+                                            <div>
+                                                {(producto.discount_percentage ?? 0) > 0 ? (
+                                                    <>
+                                                        <p className="text-sm text-gray-400 line-through">${producto.sale_price.toLocaleString()}</p>
+                                                        <p className="text-xl font-extrabold text-gray-900">${getPrecioConDescuento(producto).toLocaleString()}</p>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-xl font-extrabold text-gray-900">${producto.sale_price.toLocaleString()}</p>
+                                                )}
+                                            </div>
                                             <button
                                                 onClick={() => agregarAlCarrito(producto)}
                                                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all"
@@ -430,7 +481,7 @@ export default function Catalogo() {
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mb-3">${item.producto.sale_price.toLocaleString()} c/u</p>
+                                                <p className="text-xs text-gray-500 mb-3">${getPrecioConDescuento(item.producto).toLocaleString()} c/u</p>
                                                 <div className="flex items-center justify-between gap-3">
                                                     <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 border border-pink-100">
                                                         <button onClick={() => actualizarCantidad(item.producto.id, -1)} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors">
@@ -441,7 +492,7 @@ export default function Catalogo() {
                                                             <Plus className="w-4 h-4" />
                                                         </button>
                                                     </div>
-                                                    <p className="font-extrabold text-gray-900">${(item.producto.sale_price * item.cantidad).toLocaleString()}</p>
+                                                    <p className="font-extrabold text-gray-900">${(getPrecioConDescuento(item.producto) * item.cantidad).toLocaleString()}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -449,9 +500,47 @@ export default function Catalogo() {
                                 </div>
 
                                 <div className="p-6 bg-gradient-to-br from-pink-50 to-white border-t border-pink-100">
-                                    <div className="flex justify-between items-center mb-5">
-                                        <span className="text-gray-600 font-semibold">Total</span>
-                                        <span className="text-2xl font-extrabold text-gray-900">${total.toLocaleString()}</span>
+                                    {/* Cupón */}
+                                    {!appliedCoupon ? (
+                                        <div className="flex gap-2 mb-4">
+                                            <input
+                                                type="text"
+                                                value={cuponInput}
+                                                onChange={(e) => setCuponInput(e.target.value)}
+                                                placeholder="Ingresar cupón"
+                                                className="form-input flex-1 text-sm py-2.5"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={aplicarCupon}
+                                                className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm hover:bg-gray-200 transition-colors"
+                                            >
+                                                Aplicar
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between gap-2 mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                                            <span className="text-sm font-bold text-emerald-700">Cupón {appliedCoupon.code} (-{appliedCoupon.discount_percentage}%)</span>
+                                            <button type="button" onClick={quitarCupon} className="text-xs font-bold text-emerald-600 hover:text-emerald-800">Quitar</button>
+                                        </div>
+                                    )}
+                                    <div className="space-y-2 mb-5">
+                                        {appliedCoupon && (
+                                            <>
+                                                <div className="flex justify-between text-sm text-gray-600">
+                                                    <span>Subtotal</span>
+                                                    <span>${subtotal.toLocaleString()}</span>
+                                                </div>
+                                                <div className="flex justify-between text-sm text-emerald-600 font-semibold">
+                                                    <span>Descuento cupón</span>
+                                                    <span>-${descuentoCupon.toLocaleString()}</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        <div className="flex justify-between items-center pt-2">
+                                            <span className="text-gray-600 font-semibold">Total</span>
+                                            <span className="text-2xl font-extrabold text-gray-900">${total.toLocaleString()}</span>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={handleWhatsAppClick}

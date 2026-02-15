@@ -22,9 +22,19 @@ export type Producto = {
   notes: string | null
   created_at: string
   updated_at: string
+  /** Porcentaje de descuento en catálogo (0-100). Muestra "En descuento" y precio rebajado. */
+  discount_percentage?: number | null
   categories?: {
     name: string
   }
+}
+
+export type Cupon = {
+  id: number
+  code: string
+  discount_percentage: number
+  is_active: boolean
+  created_at: string
 }
 
 export type Categoria = {
