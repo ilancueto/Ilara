@@ -7,7 +7,8 @@ import Inventory from '@/components/Inventario/Inventario'
 import Ventas from '@/components/Ventas'
 import Clientes from '@/components/Clientes'
 import Gastos from '@/components/Gastos'
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, Sparkles } from 'lucide-react'
+import Link from 'next/link'
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
 
 function HomeContent() {
@@ -143,6 +144,13 @@ function HomeContent() {
                 </button>
               )
             })}
+            <Link
+              href="/catalogo"
+              className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-50/80 transition-all duration-300 group"
+            >
+              <Store className="w-5 h-5 text-gray-300 group-hover:text-gray-500" strokeWidth={2} />
+              <span>Catálogo</span>
+            </Link>
           </nav>
 
           <div className="p-6 mt-auto">
@@ -198,19 +206,17 @@ function HomeContent() {
         {menuAbierto && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex justify-end" onClick={() => setMenuAbierto(false)}>
             <div
-              className="w-[80%] max-w-[300px] bg-white h-full shadow-2xl p-8"
+              className="w-[80%] max-w-[300px] bg-white h-full shadow-2xl flex flex-col p-6 sm:p-8"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-400">Menú</h2>
-                </div>
-                <button onClick={() => setMenuAbierto(false)} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+              <div className="flex justify-between items-center shrink-0 pb-4 border-b border-gray-100">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-400">Menú</h2>
+                <button onClick={() => setMenuAbierto(false)} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100" aria-label="Cerrar menú">
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
-              <nav className="space-y-3">
+              <nav className="flex-1 overflow-y-auto min-h-0 py-4 space-y-2">
                 {tabs.map(tab => {
                   const Icon = tab.icon
                   const isActive = activeTab === tab.id
@@ -218,37 +224,44 @@ function HomeContent() {
                     <button
                       key={tab.id}
                       onClick={() => { handleTabChange(tab.id); setMenuAbierto(false) }}
-                      className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl text-sm font-bold transition-all
+                      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold transition-all
                                     ${isActive
                           ? 'bg-pink-50 text-pink-600 shadow-sm border border-pink-100'
                           : 'text-gray-600 hover:bg-gray-50'
                         }`}
                     >
-                      <Icon className={`w-5 h-5 ${isActive ? 'text-pink-500' : 'text-gray-400'}`} strokeWidth={isActive ? 2.5 : 2} />
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-pink-500' : 'text-gray-400'}`} strokeWidth={isActive ? 2.5 : 2} />
                       {tab.label}
                     </button>
                   )
                 })}
+                <Link
+                  href="/catalogo"
+                  onClick={() => setMenuAbierto(false)}
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                >
+                  <Store className="w-5 h-5 shrink-0 text-gray-400" strokeWidth={2} />
+                  Catálogo
+                </Link>
               </nav>
 
-              <div className="absolute bottom-8 left-6 right-6">
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-gray-800 mb-4">
+              <div className="shrink-0 mt-auto pt-4 border-t border-gray-100 pb-6 sm:pb-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="bg-gray-50/80 border border-gray-100 rounded-xl p-3.5 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center font-bold text-xs text-pink-500">
+                    <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center font-bold text-sm text-pink-500 shrink-0">
                       {userEmail?.substring(0, 2).toUpperCase()}
                     </div>
-                    <div className="flex-1 overflow-hidden">
-                      <p className="text-xs font-bold truncate">{getSaludo(userEmail)}</p>
-                      <p className="text-[10px] text-gray-400 truncate">{userEmail}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-800 truncate">{getSaludo(userEmail)}</p>
+                      <p className="text-xs text-gray-500 truncate">{userEmail}</p>
                     </div>
                   </div>
                 </div>
-
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 justify-center py-3.5 text-red-500 font-bold bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[44px] text-red-600 font-bold bg-red-50 hover:bg-red-100 active:bg-red-200 rounded-xl transition-colors touch-manipulation"
                 >
-                  <LogOut className="w-4 h-4" /> Salir
+                  <LogOut className="w-4 h-4 shrink-0" /> Salir
                 </button>
               </div>
             </div>

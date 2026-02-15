@@ -383,8 +383,8 @@ export default function Catalogo() {
                                             <p className="text-xs text-gray-500 mb-3">{producto.brand}</p>
                                         )}
 
-                                        <div className="mt-auto pt-4 border-t border-pink-50 flex items-center justify-between gap-3">
-                                            <div>
+                                        <div className="mt-auto pt-4 border-t border-pink-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div className="min-w-0">
                                                 {(producto.discount_percentage ?? 0) > 0 ? (
                                                     <>
                                                         <p className="text-sm text-gray-400 line-through">${producto.sale_price.toLocaleString()}</p>
@@ -396,7 +396,7 @@ export default function Catalogo() {
                                             </div>
                                             <button
                                                 onClick={() => agregarAlCarrito(producto)}
-                                                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all"
+                                                className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all"
                                             >
                                                 Agregar
                                             </button>
