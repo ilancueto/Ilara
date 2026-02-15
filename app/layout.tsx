@@ -13,6 +13,10 @@ const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+// URL absoluta del logo para preview al compartir (WhatsApp, etc.) – Raw GitHub
+const ogImageUrl =
+  "https://raw.githubusercontent.com/ilancueto/Ilara/main/public/logo_icon.png";
+
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: "✨ Ilara Beauty",
@@ -26,12 +30,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Ilara Beauty",
     description: "Sistema de inventario, ventas y finanzas",
-    images: ["/logo_icon.png"],
+    images: [ogImageUrl],
   },
   twitter: {
     card: "summary",
     title: "Ilara Beauty",
-    images: ["/logo_icon.png"],
+    images: [ogImageUrl],
   },
 };
 
@@ -51,8 +55,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="icon" href="/logo_icon.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/logo_icon.png" />
+        <link rel="icon" href={ogImageUrl} type="image/png" />
+        <link rel="apple-touch-icon" href={ogImageUrl} />
         <link href="https://fonts.cdnfonts.com/css/mareline-script" rel="stylesheet" />
       </head>
       <body className={`${outfit.variable} antialiased`}>
