@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-const PUBLIC_ROUTES = ['/login', '/catalogo'];
+const PUBLIC_ROUTES = ['/login', '/catalogo', '/api/easter-claim'];
 
 export async function middleware(request: NextRequest) {
     let response = NextResponse.next({ request });
