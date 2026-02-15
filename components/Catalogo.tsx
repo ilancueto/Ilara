@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase, Producto, Categoria, ItemCarrito } from '@/lib/supabase'
 import { Search, ShoppingBag, Plus, Minus, Trash2, MessageCircle, X, Share2, SlidersHorizontal, Sparkles } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import { WHATSAPP_NUMBER } from '@/lib/config'
 import { useToast } from '@/context/ToastContext'
@@ -354,17 +355,25 @@ export default function Catalogo() {
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => setMostrarCarrito(true)}
-                            className="relative p-3 rounded-2xl bg-pink-50 hover:bg-pink-100 transition-all duration-300 group"
-                        >
-                            <ShoppingBag className="w-6 h-6 text-pink-600 group-hover:scale-110 transition-transform" />
-                            {carrito.length > 0 && (
-                                <span className={`absolute -top-0.5 -right-0.5 bg-pink-500 text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center ${badgeAnimado ? 'animate-bounce' : ''}`}>
-                                    {carrito.length}
-                                </span>
-                            )}
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href="/login"
+                                className="px-4 py-2.5 rounded-2xl border-2 border-pink-100 text-gray-600 font-semibold text-sm hover:border-pink-200 hover:text-pink-600 transition-all duration-300"
+                            >
+                                Login
+                            </Link>
+                            <button
+                                onClick={() => setMostrarCarrito(true)}
+                                className="relative p-3 rounded-2xl bg-pink-50 hover:bg-pink-100 transition-all duration-300 group"
+                            >
+                                <ShoppingBag className="w-6 h-6 text-pink-600 group-hover:scale-110 transition-transform" />
+                                {carrito.length > 0 && (
+                                    <span className={`absolute -top-0.5 -right-0.5 bg-pink-500 text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center ${badgeAnimado ? 'animate-bounce' : ''}`}>
+                                        {carrito.length}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

@@ -33,6 +33,10 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
+    // Raíz: visitantes sin login van al catálogo; el resto de rutas protegidas → login
+    if (!user && pathname === '/') {
+        return NextResponse.redirect(new URL('/catalogo', request.url));
+    }
     if (!user && !isPublicRoute) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
