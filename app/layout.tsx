@@ -55,8 +55,6 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="icon" href={ogImageUrl} type="image/png" />
-        <link rel="apple-touch-icon" href={ogImageUrl} />
         <link href="https://fonts.cdnfonts.com/css/mareline-script" rel="stylesheet" />
       </head>
       <body className={`${outfit.variable} antialiased`}>
