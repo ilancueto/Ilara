@@ -12,6 +12,55 @@ import { PastelCard } from '@/components/ui/PastelCard'
 const KONAMI = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65] // ↑↑↓↓←→←→BA
 const DEVICE_ID_KEY = 'ilara_easter_device_id'
 const TAPS_NEEDED = 7
+const BADGE_VISIBLE_MS = 3000
+const BADGE_FADE_MS = 900
+
+function BadgeRotator({ badges }: { badges: Array<{ texto: string; clase: string }> }) {
+    const [index, setIndex] = useState(0)
+    const [opacity, setOpacity] = useState(1)
+    const [visible, setVisible] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const el = containerRef.current?.closest('.group')
+        if (!el) return
+        const obs = new IntersectionObserver(
+            ([e]) => setVisible(e.isIntersecting),
+            { rootMargin: '100px', threshold: 0 }
+        )
+        obs.observe(el)
+        return () => obs.disconnect()
+    }, [])
+
+    useEffect(() => {
+        if (badges.length <= 1 || !visible) return
+        let timeoutId: ReturnType<typeof setTimeout>
+        const cycleMs = BADGE_VISIBLE_MS + BADGE_FADE_MS * 2
+        const id = setInterval(() => {
+            setOpacity(0)
+            timeoutId = setTimeout(() => {
+                setIndex(i => (i + 1) % badges.length)
+                setOpacity(1)
+            }, BADGE_FADE_MS)
+        }, cycleMs)
+        return () => {
+            clearInterval(id)
+            if (timeoutId) clearTimeout(timeoutId)
+        }
+    }, [badges.length, visible])
+    if (badges.length === 0) return null
+    const badge = badges[index]
+    return (
+        <div ref={containerRef} className="absolute top-4 left-4 min-w-0 max-w-[70%]">
+            <span
+                className={`inline-block px-3 py-1 rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-lg whitespace-nowrap ${badge.clase}`}
+                style={{ opacity, transition: `opacity ${BADGE_FADE_MS}ms ease` }}
+            >
+                {badge.texto}
+            </span>
+        </div>
+    )
+}
 
 export default function Catalogo() {
     const { showToast } = useToast()
@@ -126,7 +175,7 @@ export default function Catalogo() {
         const { data } = await supabase
             .from('products')
             .select('*, categories(name)')
-            .gt('stock', 0)
+            .gte('stock', 0)
             .order('name')
         if (data) setProductos(data)
         setCargando(false)
@@ -140,6 +189,7 @@ export default function Catalogo() {
         if (data) setCategorias(data)
     }
 
+    // Badge "Nuevo" durante 7 días desde created_at
     const esNuevo = (fecha: string) => {
         const ahora = new Date()
         const fechaProducto = new Date(fecha)
@@ -154,11 +204,17 @@ export default function Catalogo() {
         return Math.round(producto.sale_price * (1 - d / 100))
     }
 
-    const obtenerBadge = (producto: Producto) => {
-        if ((producto.discount_percentage ?? 0) > 0) return { texto: '🔥 En descuento', clase: 'bg-orange-500 text-white shadow-md shadow-orange-200/50' }
-        if (esNuevo(producto.created_at)) return { texto: 'Nuevo', clase: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/50' }
-        if (producto.stock < 5) return { texto: '¡Últimos!', clase: 'bg-amber-500 text-white shadow-md shadow-amber-200/50' }
-        return null
+    const obtenerBadges = (producto: Producto): Array<{ texto: string; clase: string }> => {
+        const badges: Array<{ texto: string; clase: string }> = []
+        if (producto.stock === 0) {
+            badges.push({ texto: 'Agotado', clase: 'bg-gray-500 text-white shadow-md shadow-gray-200/50' })
+            return badges
+        }
+        if ((producto.discount_percentage ?? 0) > 0) badges.push({ texto: '🔥 En descuento', clase: 'bg-orange-500 text-white shadow-md shadow-orange-200/50' })
+        if (esNuevo(producto.created_at)) badges.push({ texto: 'Nuevo', clase: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/50' })
+        if (producto.stock <= 2) badges.push({ texto: 'Últimas unidades', clase: 'bg-rose-600 text-white shadow-md shadow-rose-200/50' })
+        else if (producto.stock < 5) badges.push({ texto: '¡Últimos!', clase: 'bg-amber-500 text-white shadow-md shadow-amber-200/50' })
+        return badges
     }
 
     const productosFiltrados = productos
@@ -414,7 +470,7 @@ export default function Catalogo() {
                 ) : productosFiltrados.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 w-full">
                         {productosFiltrados.map(producto => {
-                            const badge = obtenerBadge(producto)
+                            const badges = obtenerBadges(producto)
                             return (
                                 <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full" noHover>
                                     <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50">
@@ -432,11 +488,7 @@ export default function Catalogo() {
                                                 <Sparkles className="w-16 h-16 text-pink-200" />
                                             </div>
                                         )}
-                                        {badge && (
-                                            <span className={`absolute top-4 left-4 px-3 py-1 rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-lg ${badge.clase}`}>
-                                                {badge.texto}
-                                            </span>
-                                        )}
+                                        {badges.length > 0 && <BadgeRotator badges={badges} />}
                                         <button
                                             onClick={() => compartirProducto(producto)}
                                             className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100"
@@ -470,10 +522,11 @@ export default function Catalogo() {
                                                 )}
                                             </div>
                                             <button
-                                                onClick={() => agregarAlCarrito(producto)}
-                                                className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all"
+                                                onClick={() => producto.stock > 0 && agregarAlCarrito(producto)}
+                                                disabled={producto.stock === 0}
+                                                className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                                             >
-                                                Agregar
+                                                {producto.stock === 0 ? 'Agotado' : 'Agregar'}
                                             </button>
                                         </div>
                                     </div>
