@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { signIn } from '@/lib/supabase'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -37,19 +38,24 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-[#0a0510] relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-rose-200 via-pink-200/90 to-rose-300/90 relative overflow-hidden">
             {/* Glow Orbs */}
             <div className="glow-orb-1" />
             <div className="glow-orb-2" />
             <div className="glow-orb-3" />
 
-            <div className="card-dark w-full max-w-[420px] p-10 relative z-10 login-card">
+            <div id="login-form-card" className="login-card-bg w-full max-w-[420px] p-10 relative z-10 login-card">
                 {/* Logo/Brand */}
-                <div className="text-center mb-8">
-                    <h1 className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-pink-300 via-rose-300 to-violet-400 bg-clip-text text-transparent">
-                        ilara
-                    </h1>
-                    <p className="text-xs text-pink-200/60 uppercase tracking-[0.15em] font-semibold">
+                <div className="flex flex-col items-center justify-center mb-8">
+                    <Image
+                        src="/logo_ilara.png"
+                        alt="Ilara Beauty"
+                        width={180}
+                        height={180}
+                        className="mb-2 object-contain"
+                        priority
+                    />
+                    <p className="login-card-paragraph text-xs uppercase tracking-[0.15em] font-semibold" style={{ color: '#ffffff' }}>
                         Beauty Management
                     </p>
                 </div>
@@ -57,7 +63,7 @@ export default function Login() {
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                     <div>
-                        <label className="form-label mb-2 text-pink-100/90">Email</label>
+                        <label className="form-label mb-2 text-white">Email</label>
                         <input
                             type="email"
                             value={email}
@@ -70,7 +76,7 @@ export default function Login() {
                     </div>
 
                     <div>
-                        <label className="form-label mb-2 text-pink-100/90">Contraseña</label>
+                        <label className="form-label mb-2 text-white">Contraseña</label>
                         <div className="relative">
                             <input
                                 type={mostrarPassword ? 'text' : 'password'}
@@ -85,7 +91,7 @@ export default function Login() {
                             <button
                                 type="button"
                                 onClick={() => setMostrarPassword(!mostrarPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-pink-200/50 hover:text-pink-200/80 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/60 hover:text-white/90 transition-colors"
                             >
                                 {mostrarPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
@@ -107,7 +113,7 @@ export default function Login() {
                     </button>
                 </form>
 
-                <p className="mt-6 text-center text-xs text-pink-200/50">
+                <p className="login-card-paragraph mt-[34px] text-center text-xs pb-1" style={{ color: '#ffffff' }}>
                     Sistema de gestión de inventario y ventas
                 </p>
             </div>
