@@ -1,12 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase, Producto, Categoria, ItemCarrito } from '@/lib/supabase'
 import { Search, ShoppingBag, Plus, Minus, Trash2, MessageCircle, X, Share2, SlidersHorizontal, Sparkles } from 'lucide-react'
 import Image from 'next/image'
+import confetti from 'canvas-confetti'
 import { WHATSAPP_NUMBER } from '@/lib/config'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
+
+const KONAMI = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65] // ↑↑↓↓←→←→BA
+const DEVICE_ID_KEY = 'ilara_easter_device_id'
+const TAPS_NEEDED = 7
 
 export default function Catalogo() {
     const { showToast } = useToast()
@@ -26,6 +31,44 @@ export default function Catalogo() {
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
     const [cuponInput, setCuponInput] = useState('')
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
+    const [easterModal, setEasterModal] = useState<{ open: boolean; code?: string; alreadyClaimed?: boolean }>({ open: false })
+    const konamiIndex = useRef(0)
+    const logoTapCount = useRef(0)
+    const logoTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    const getOrCreateDeviceId = useCallback(() => {
+        if (typeof window === 'undefined') return ''
+        let id = localStorage.getItem(DEVICE_ID_KEY)
+        if (!id) {
+            id = crypto.randomUUID?.() ?? `dev-${Date.now()}-${Math.random().toString(36).slice(2)}`
+            localStorage.setItem(DEVICE_ID_KEY, id)
+        }
+        return id
+    }, [])
+
+    const triggerEaster = useCallback(async () => {
+        const deviceId = getOrCreateDeviceId()
+        try {
+            const res = await fetch('/api/easter-claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deviceId }),
+            })
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+                showToast('error', data.error ?? 'No se pudo activar el cupón')
+                return
+            }
+            confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } })
+            setEasterModal({
+                open: true,
+                code: data.code,
+                alreadyClaimed: data.alreadyClaimed === true,
+            })
+        } catch {
+            showToast('error', 'Error de conexión')
+        }
+    }, [getOrCreateDeviceId, showToast])
 
     useEffect(() => {
         const carritoGuardado = localStorage.getItem('ilara-carrito')
@@ -50,6 +93,33 @@ export default function Catalogo() {
         obtenerProductos()
         obtenerCategorias()
     }, [])
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.keyCode === KONAMI[konamiIndex.current]) {
+                konamiIndex.current++
+                if (konamiIndex.current === KONAMI.length) {
+                    konamiIndex.current = 0
+                    triggerEaster()
+                }
+            } else {
+                konamiIndex.current = 0
+            }
+        }
+        window.addEventListener('keydown', onKeyDown)
+        return () => window.removeEventListener('keydown', onKeyDown)
+    }, [triggerEaster])
+
+    const handleLogoTap = useCallback(() => {
+        if (logoTapTimeout.current) clearTimeout(logoTapTimeout.current)
+        logoTapCount.current += 1
+        if (logoTapCount.current >= TAPS_NEEDED) {
+            logoTapCount.current = 0
+            triggerEaster()
+        } else {
+            logoTapTimeout.current = setTimeout(() => { logoTapCount.current = 0 }, 1500)
+        }
+    }, [triggerEaster])
 
     const obtenerProductos = async () => {
         setCargando(true)
@@ -214,9 +284,14 @@ export default function Catalogo() {
                 <div className="w-full px-4 sm:px-6 lg:px-8 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 bg-white border border-pink-100 shadow-lg shadow-pink-200/50 flex items-center justify-center">
+                            <button
+                                type="button"
+                                onClick={handleLogoTap}
+                                className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 bg-white border border-pink-100 shadow-lg shadow-pink-200/50 flex items-center justify-center cursor-pointer touch-manipulation"
+                                aria-label="Ilara Beauty"
+                            >
                                 <Image src="/logo_icon.png" alt="Ilara Beauty" width={48} height={48} className="object-contain w-full h-full" />
-                            </div>
+                            </button>
                             <div>
                                 <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Ilara Beauty</h1>
                                 <p className="text-xs text-gray-500 font-medium mt-0.5">Catálogo · Pedí por WhatsApp</p>
@@ -595,6 +670,41 @@ export default function Catalogo() {
                     <div className="relative w-full max-w-2xl aspect-square" onClick={e => e.stopPropagation()}>
                         <Image src={imagenPrevia} alt="Vista previa" fill className="object-contain rounded-2xl" />
                     </div>
+                </div>
+            )}
+
+            {/* Modal easter egg: cupón 10% por única vez */}
+            {easterModal.open && (
+                <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setEasterModal(m => ({ ...m, open: false }))} />
+                    <PastelCard className="w-full max-w-sm p-8 z-50 text-center relative" noHover>
+                        <button onClick={() => setEasterModal(m => ({ ...m, open: false }))} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center mx-auto mb-5">
+                            <Sparkles className="w-7 h-7 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                            {easterModal.alreadyClaimed ? '¡Ya lo habías encontrado!' : '¡Encontraste el easter egg!'}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-4">
+                            {easterModal.alreadyClaimed
+                                ? 'Tu cupón de 10% por única vez (este dispositivo) es:'
+                                : 'Tu cupón de 10% por única vez:'}
+                        </p>
+                        {easterModal.code && (
+                            <p className="font-mono text-lg font-bold text-pink-600 bg-pink-50 rounded-xl py-3 px-4 mb-5 select-all">
+                                {easterModal.code}
+                            </p>
+                        )}
+                        <p className="text-xs text-gray-500 mb-2">Usalo en el carrito al hacer tu pedido.</p>
+                        <button
+                            onClick={() => setEasterModal(m => ({ ...m, open: false }))}
+                            className="w-full py-3 rounded-xl bg-pink-500 text-white font-bold hover:bg-pink-600 transition-colors"
+                        >
+                            Cerrar
+                        </button>
+                    </PastelCard>
                 </div>
             )}
         </div>
