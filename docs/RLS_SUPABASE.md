@@ -23,6 +23,7 @@ Si antes usaste otro script de RLS (p. ej. el que venía en `supabase_stock_move
 | `expenses` | Users can manage own expenses | `USING (auth.uid() = user_id)` y `WITH CHECK (auth.uid() = user_id)` — cada usuario solo ve/edita sus gastos. |
 | `stock_movements` | Authenticated can manage stock_movements | `FOR ALL TO authenticated`. |
 | `coupons` | Authenticated can manage coupons | `FOR ALL TO authenticated`. |
+| `incomes` | Users can manage own incomes | Definida en **`supabase_incomes.sql`**. Ejecutá ese archivo en el SQL Editor para crear la tabla y sus políticas. |
 
 La app ya envía `user_id` en los INSERT de gastos (`lib/expenseService.ts`); el resto de tablas no usan `user_id`, por eso comparten datos entre todos los autenticados.
 

@@ -7,14 +7,15 @@ import Inventory from '@/components/Inventario/Inventario'
 import Ventas from '@/components/Ventas'
 import Clientes from '@/components/Clientes'
 import Gastos from '@/components/Gastos'
+import Ingresos from '@/components/Ingresos'
 import Link from 'next/link'
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, Sparkles, Store } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
 
 function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'sales' | 'customers' | 'expenses'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'sales' | 'customers' | 'expenses' | 'incomes'>('dashboard')
   const [cargando, setCargando] = useState(true)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -40,7 +41,7 @@ function HomeContent() {
   // Manejar cambio de tab por URL
   useEffect(() => {
     const tabParam = searchParams.get('tab')
-    if (tabParam === 'dashboard' || tabParam === 'inventory' || tabParam === 'sales' || tabParam === 'customers' || tabParam === 'expenses') {
+    if (tabParam === 'dashboard' || tabParam === 'inventory' || tabParam === 'sales' || tabParam === 'customers' || tabParam === 'expenses' || tabParam === 'incomes') {
       setActiveTab(tabParam)
     }
   }, [searchParams])
@@ -58,7 +59,7 @@ function HomeContent() {
     router.refresh()
   }
 
-  const handleTabChange = (tabId: 'dashboard' | 'inventory' | 'sales' | 'customers' | 'expenses') => {
+  const handleTabChange = (tabId: 'dashboard' | 'inventory' | 'sales' | 'customers' | 'expenses' | 'incomes') => {
     setActiveTab(tabId)
     window.history.pushState({}, '', `?tab=${tabId}`)
   }
@@ -76,6 +77,7 @@ function HomeContent() {
     { id: 'inventory' as const, label: 'Inventario', icon: Package },
     { id: 'sales' as const, label: 'Ventas', icon: ShoppingCart },
     { id: 'expenses' as const, label: 'Gastos', icon: Wallet },
+    { id: 'incomes' as const, label: 'Ingresos', icon: TrendingUp },
     { id: 'customers' as const, label: 'Clientes', icon: Users },
   ]
 
@@ -274,6 +276,7 @@ function HomeContent() {
           {activeTab === 'inventory' && <Inventory />}
           {activeTab === 'sales' && <Ventas />}
           {activeTab === 'expenses' && <Gastos />}
+          {activeTab === 'incomes' && <Ingresos />}
           {activeTab === 'customers' && <Clientes />}
         </main>
       </div>

@@ -79,6 +79,45 @@ export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
     otros: 'Otros',
 };
 
+// ============================================
+// TIPOS PARA INGRESOS (no ventas)
+// ============================================
+
+export type IncomeType = 'regalo' | 'donacion' | 'ventas_anteriores' | 'otro';
+
+export interface Income {
+    id: string;
+    created_at: string;
+    date: string;
+    amount: number;
+    type: IncomeType;
+    description: string;
+    notes?: string;
+    user_id: string;
+    updated_by?: string | null;
+}
+
+export interface IncomeFormData {
+    date: string;
+    amount: number;
+    type: IncomeType;
+    description: string;
+    notes?: string;
+}
+
+export interface IncomeFilters {
+    dateFrom?: string;
+    dateTo?: string;
+    type?: IncomeType;
+}
+
+export const INCOME_TYPE_LABELS: Record<IncomeType, string> = {
+    regalo: 'Regalo',
+    donacion: 'Donación',
+    ventas_anteriores: 'Ventas anteriores al sistema',
+    otro: 'Otro',
+};
+
 // Labels para métodos de pago
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
     efectivo: 'Efectivo',
