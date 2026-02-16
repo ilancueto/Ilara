@@ -35,6 +35,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# credenciales / datos sensibles (no subir al repo)
+passsupa.txt
+
 # vercel
 .vercel
 

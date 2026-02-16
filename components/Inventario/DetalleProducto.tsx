@@ -23,16 +23,19 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
     useEffect(() => {
         if (!isOpen || !producto?.id) return
         setCargandoMov(true)
-        supabase
-            .from('stock_movements')
-            .select('*')
-            .eq('product_id', producto.id)
-            .order('created_at', { ascending: false })
-            .limit(20)
-            .then(({ data }) => {
+        void (async () => {
+            try {
+                const { data } = await supabase
+                    .from('stock_movements')
+                    .select('*')
+                    .eq('product_id', producto.id)
+                    .order('created_at', { ascending: false })
+                    .limit(20)
                 setMovimientos((data as StockMovement[]) || [])
-            })
-            .finally(() => setCargandoMov(false))
+            } finally {
+                setCargandoMov(false)
+            }
+        })()
     }, [isOpen, producto?.id])
 
     if (!isOpen || !producto) return null

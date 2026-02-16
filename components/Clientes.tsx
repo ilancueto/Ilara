@@ -28,7 +28,7 @@ export default function Clientes() {
     const [clientesSeleccionados, setClientesSeleccionados] = useState<Set<number>>(new Set())
     const [eliminandoClientes, setEliminandoClientes] = useState(false)
     const [clientePerfil, setClientePerfil] = useState<Cliente | null>(null)
-    const [ventasCliente, setVentasCliente] = useState<Venta[]>([])
+    const [ventasCliente, setVentasCliente] = useState<Pick<Venta, 'id' | 'sale_date' | 'total' | 'payment_method' | 'status' | 'created_at'>[]>([])
     const [cargandoPerfil, setCargandoPerfil] = useState(false)
 
     const [formData, setFormData] = useState({

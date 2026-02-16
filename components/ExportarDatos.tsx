@@ -97,22 +97,22 @@ export default function ExportarDatos({ mostrar, cerrar }: Props) {
       } else {
         if (productos && dataProductos.length) {
           const cols = Object.keys(dataProductos[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataProductos.map((r) => cols.map((c) => escapeCsv((r as Record<string, unknown>)[c])).join(','))].join('\n')
+          const csv = [cols.map(escapeCsv).join(','), ...dataProductos.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
           descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_productos.csv`)
         }
         if (ventas && dataVentas.length) {
           const cols = Object.keys(dataVentas[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataVentas.map((r) => cols.map((c) => escapeCsv((r as Record<string, unknown>)[c])).join(','))].join('\n')
+          const csv = [cols.map(escapeCsv).join(','), ...dataVentas.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
           descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_ventas.csv`)
         }
         if (clientes && dataClientes.length) {
           const cols = Object.keys(dataClientes[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataClientes.map((r) => cols.map((c) => escapeCsv((r as Record<string, unknown>)[c])).join(','))].join('\n')
+          const csv = [cols.map(escapeCsv).join(','), ...dataClientes.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
           descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_clientes.csv`)
         }
         if (gastos && dataGastos.length) {
           const cols = Object.keys(dataGastos[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataGastos.map((r) => cols.map((c) => escapeCsv((r as Record<string, unknown>)[c])).join(','))].join('\n')
+          const csv = [cols.map(escapeCsv).join(','), ...dataGastos.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
           descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_gastos.csv`)
         }
         if ((productos && !dataProductos.length) || (ventas && !dataVentas.length) || (clientes && !dataClientes.length) || (gastos && !dataGastos.length)) {

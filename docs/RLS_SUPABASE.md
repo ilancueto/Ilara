@@ -9,7 +9,7 @@ En la raíz del repo está **`supabase_rls_all.sql`**. Ejecutalo en Supabase (SQ
 - Activar RLS en: `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`.
 - Crear las políticas por tabla (idempotente: hace `DROP POLICY IF EXISTS` antes de cada `CREATE POLICY`).
 
-Si antes usaste `supabase_customers_rls.sql` o `supabase_stock_movements.sql`, no hay conflicto: el script unificado reemplaza esas políticas.
+Si antes usaste otro script de RLS (p. ej. el que venía en `supabase_stock_movements.sql`), no hay conflicto: el script unificado reemplaza esas políticas.
 
 ## Políticas aplicadas por tabla
 
