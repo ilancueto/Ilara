@@ -162,7 +162,7 @@ export default function Inventario() {
                     <select
                         value={categoriaSeleccionada}
                         onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-                        className="w-full sm:w-auto bg-gray-50 border-transparent focus:bg-white border focus:border-pink-200 rounded-xl py-3 px-4 text-sm transition-all outline-none cursor-pointer hover:bg-gray-100"
+                        className="w-full sm:w-auto bg-white border border-pink-100 rounded-xl py-3 px-4 text-sm font-medium text-gray-700 shadow-sm transition-all outline-none cursor-pointer hover:border-pink-200 hover:bg-pink-50/30 focus:border-pink-300 focus:ring-2 focus:ring-pink-200/50 focus:bg-white"
                     >
                         <option value="all">Todas las categorías</option>
                         {categorias.map(cat => (

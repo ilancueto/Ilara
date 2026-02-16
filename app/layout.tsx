@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: "✨ Ilara Beauty",
   description: "Sistema de inventario, ventas y finanzas",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo_icon.png",
+    apple: "/logo_icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

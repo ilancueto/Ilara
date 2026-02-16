@@ -71,6 +71,7 @@ export default function Toast({ id, type, message, duration = 4000, onClose }: T
             <button
                 onClick={() => onClose(id)}
                 className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                aria-label="Cerrar"
             >
                 <X className="w-4 h-4" />
             </button>

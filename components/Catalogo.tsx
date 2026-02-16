@@ -2,77 +2,33 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase, Producto, Categoria, ItemCarrito } from '@/lib/supabase'
-import { Search, ShoppingBag, Plus, Minus, Trash2, MessageCircle, X, Share2, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import { WHATSAPP_NUMBER } from '@/lib/config'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
+import { ModalCarrito } from '@/components/Catalogo/ModalCarrito'
+import { ModalConfirmacionVaciar } from '@/components/Catalogo/ModalConfirmacionVaciar'
+import { ModalImagenPrevia } from '@/components/Catalogo/ModalImagenPrevia'
+import { ModalEasterEgg } from '@/components/Catalogo/ModalEasterEgg'
+import { useCarrito } from '@/hooks/useCarrito'
 
 const KONAMI = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65] // ↑↑↓↓←→←→BA
 const DEVICE_ID_KEY = 'ilara_easter_device_id'
 const TAPS_NEEDED = 7
-const BADGE_VISIBLE_MS = 3000
-const BADGE_FADE_MS = 900
-
-function BadgeRotator({ badges }: { badges: Array<{ texto: string; clase: string }> }) {
-    const [index, setIndex] = useState(0)
-    const [opacity, setOpacity] = useState(1)
-    const [visible, setVisible] = useState(false)
-    const containerRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const el = containerRef.current?.closest('.group')
-        if (!el) return
-        const obs = new IntersectionObserver(
-            ([e]) => setVisible(e.isIntersecting),
-            { rootMargin: '100px', threshold: 0 }
-        )
-        obs.observe(el)
-        return () => obs.disconnect()
-    }, [])
-
-    useEffect(() => {
-        if (badges.length <= 1 || !visible) return
-        let timeoutId: ReturnType<typeof setTimeout>
-        const cycleMs = BADGE_VISIBLE_MS + BADGE_FADE_MS * 2
-        const id = setInterval(() => {
-            setOpacity(0)
-            timeoutId = setTimeout(() => {
-                setIndex(i => (i + 1) % badges.length)
-                setOpacity(1)
-            }, BADGE_FADE_MS)
-        }, cycleMs)
-        return () => {
-            clearInterval(id)
-            if (timeoutId) clearTimeout(timeoutId)
-        }
-    }, [badges.length, visible])
-    if (badges.length === 0) return null
-    const badge = badges[index]
-    return (
-        <div ref={containerRef} className="absolute top-4 left-4 min-w-0 max-w-[70%]">
-            <span
-                className={`inline-block px-3 py-1 rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-lg whitespace-nowrap ${badge.clase}`}
-                style={{ opacity, transition: `opacity ${BADGE_FADE_MS}ms ease` }}
-            >
-                {badge.texto}
-            </span>
-        </div>
-    )
-}
 
 export default function Catalogo() {
     const { showToast } = useToast()
+    const { carrito, agregarAlCarrito, quitarDelCarrito, actualizarCantidad, clearCarrito, badgeAnimado } = useCarrito(showToast)
     const [productos, setProductos] = useState<Producto[]>([])
     const [categorias, setCategorias] = useState<Categoria[]>([])
-    const [carrito, setCarrito] = useState<ItemCarrito[]>([])
     const [categoriaFiltro, setCategoriaFiltro] = useState<string>('all')
     const [busqueda, setBusqueda] = useState('')
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
     const [cargando, setCargando] = useState(true)
-    const [badgeAnimado, setBadgeAnimado] = useState(false)
     const [precioMin, setPrecioMin] = useState<number>(0)
     const [precioMax, setPrecioMax] = useState<number>(999999)
     const [ordenamiento, setOrdenamiento] = useState<string>('nombre-asc')
@@ -119,25 +75,6 @@ export default function Catalogo() {
             showToast('error', 'Error de conexión')
         }
     }, [getOrCreateDeviceId, showToast])
-
-    useEffect(() => {
-        const carritoGuardado = localStorage.getItem('ilara-carrito')
-        if (carritoGuardado) {
-            try {
-                setCarrito(JSON.parse(carritoGuardado))
-            } catch (e) {
-                console.error('Error al cargar carrito:', e)
-            }
-        }
-    }, [])
-
-    useEffect(() => {
-        if (carrito.length > 0) {
-            localStorage.setItem('ilara-carrito', JSON.stringify(carrito))
-        } else {
-            localStorage.removeItem('ilara-carrito')
-        }
-    }, [carrito])
 
     useEffect(() => {
         obtenerProductos()
@@ -240,47 +177,8 @@ export default function Catalogo() {
             }
         })
 
-    const agregarAlCarrito = (producto: Producto) => {
-        const existente = carrito.find(item => item.producto.id === producto.id)
-        if (existente) {
-            if (existente.cantidad < producto.stock) {
-                setCarrito(carrito.map(item =>
-                    item.producto.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
-                ))
-                showToast('success', 'Cantidad actualizada')
-            } else {
-                showToast('warning', 'Stock máximo alcanzado')
-            }
-        } else {
-            setCarrito([...carrito, { producto, cantidad: 1 }])
-            showToast('success', `${producto.name} agregado`)
-        }
-        setBadgeAnimado(true)
-        setTimeout(() => setBadgeAnimado(false), 500)
-    }
-
-    const actualizarCantidad = (productoId: number, cambio: number) => {
-        setCarrito(carrito.map(item => {
-            if (item.producto.id === productoId) {
-                const nuevaCantidad = item.cantidad + cambio
-                if (nuevaCantidad <= 0) return item
-                if (nuevaCantidad > item.producto.stock) {
-                    showToast('warning', 'Stock máximo alcanzado')
-                    return item
-                }
-                return { ...item, cantidad: nuevaCantidad }
-            }
-            return item
-        }).filter(item => item.cantidad > 0))
-    }
-
-    const quitarDelCarrito = (productoId: number) => {
-        setCarrito(carrito.filter(item => item.producto.id !== productoId))
-        showToast('info', 'Producto eliminado')
-    }
-
     const vaciarCarrito = () => {
-        setCarrito([])
+        clearCarrito()
         setAppliedCoupon(null)
         setMostrarConfirmacion(false)
         setMostrarCarrito(false)
@@ -396,7 +294,8 @@ export default function Catalogo() {
                         </div>
                         <button
                             onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                            className={`flex-shrink-0 px-6 py-4 rounded-2xl border-2 transition-all flex items-center gap-2 font-semibold ${mostrarFiltros ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-pink-100 text-gray-500 hover:border-pink-200 hover:text-pink-600'}`}
+                            className={`flex-shrink-0 px-6 py-[10px] rounded-2xl border-2 transition-all flex items-center gap-2 font-semibold ${mostrarFiltros ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-pink-100 text-gray-500 hover:border-pink-200 hover:text-pink-600'}`}
+                            aria-label={mostrarFiltros ? 'Cerrar filtros' : 'Abrir filtros'}
                         >
                             <SlidersHorizontal className="w-5 h-5" />
                             Filtros
@@ -534,6 +433,7 @@ export default function Catalogo() {
                                                 onClick={() => producto.stock > 0 && agregarAlCarrito(producto)}
                                                 disabled={producto.stock === 0}
                                                 className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                                aria-label={producto.stock === 0 ? `${producto.name}: agotado` : `Agregar ${producto.name} al carrito`}
                                             >
                                                 {producto.stock === 0 ? 'Agotado' : 'Agregar'}
                                             </button>
@@ -576,199 +476,41 @@ export default function Catalogo() {
                 </button>
             )}
 
-            {/* Modal carrito */}
-            {mostrarCarrito && (
-                <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMostrarCarrito(false)} />
+            <ModalCarrito
+                open={mostrarCarrito}
+                onClose={() => setMostrarCarrito(false)}
+                carrito={carrito}
+                getPrecioConDescuento={getPrecioConDescuento}
+                quitarDelCarrito={quitarDelCarrito}
+                actualizarCantidad={actualizarCantidad}
+                cuponInput={cuponInput}
+                setCuponInput={setCuponInput}
+                appliedCoupon={appliedCoupon}
+                onAplicarCupon={aplicarCupon}
+                quitarCupon={quitarCupon}
+                subtotal={subtotal}
+                descuentoCupon={descuentoCupon}
+                total={total}
+                onWhatsApp={handleWhatsAppClick}
+                onSolicitarVaciar={() => setMostrarConfirmacion(true)}
+            />
 
-                    <PastelCard className="w-full max-w-md max-h-[90vh] flex flex-col z-50 animate-slide-up sm:animate-fade-in-scale shadow-2xl overflow-hidden" noHover>
-                        <div className="p-6 border-b border-pink-100 flex items-center justify-between bg-white">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900">Tu pedido</h3>
-                                <p className="text-sm text-gray-500 mt-0.5">{carrito.length} {carrito.length === 1 ? 'producto' : 'productos'}</p>
-                            </div>
-                            <div className="flex gap-2">
-                                {carrito.length > 0 && (
-                                    <button onClick={() => setMostrarConfirmacion(true)} className="p-2.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Vaciar carrito">
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                )}
-                                <button onClick={() => setMostrarCarrito(false)} className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
+            <ModalConfirmacionVaciar
+                open={mostrarConfirmacion}
+                onClose={() => setMostrarConfirmacion(false)}
+                onConfirm={vaciarCarrito}
+            />
 
-                        {carrito.length > 0 ? (
-                            <>
-                                <div className="flex-1 overflow-y-auto p-6 space-y-5">
-                                    {carrito.map(item => (
-                                        <div key={item.producto.id} className="flex gap-4 p-4 rounded-2xl bg-pink-50/50 border border-pink-100/50">
-                                            <div className="w-20 h-20 rounded-xl overflow-hidden relative flex-shrink-0 bg-white border border-pink-100">
-                                                {item.producto.image_url ? (
-                                                    <Image src={item.producto.image_url} alt={item.producto.name} fill className="object-cover" />
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-full w-full"><Sparkles className="w-8 h-8 text-pink-200" /></div>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-start gap-2 mb-2">
-                                                    <h4 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2">{item.producto.name}</h4>
-                                                    <button onClick={() => quitarDelCarrito(item.producto.id)} className="text-gray-300 hover:text-red-400 p-1 flex-shrink-0">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                                <p className="text-xs text-gray-500 mb-3">${getPrecioConDescuento(item.producto).toLocaleString()} c/u</p>
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 border border-pink-100">
-                                                        <button onClick={() => actualizarCantidad(item.producto.id, -1)} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors">
-                                                            <Minus className="w-4 h-4" />
-                                                        </button>
-                                                        <span className="text-sm font-bold w-6 text-center">{item.cantidad}</span>
-                                                        <button onClick={() => actualizarCantidad(item.producto.id, 1)} disabled={item.cantidad >= item.producto.stock} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                                            <Plus className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                    <p className="font-extrabold text-gray-900">${(getPrecioConDescuento(item.producto) * item.cantidad).toLocaleString()}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="p-6 bg-gradient-to-br from-pink-50 to-white border-t border-pink-100">
-                                    {/* Cupón */}
-                                    {!appliedCoupon ? (
-                                        <div className="flex gap-2 mb-4">
-                                            <input
-                                                type="text"
-                                                value={cuponInput}
-                                                onChange={(e) => setCuponInput(e.target.value)}
-                                                placeholder="Ingresar cupón"
-                                                className="form-input flex-1 text-sm py-2.5"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={aplicarCupon}
-                                                className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm hover:bg-gray-200 transition-colors"
-                                            >
-                                                Aplicar
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between gap-2 mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                                            <span className="text-sm font-bold text-emerald-700">Cupón {appliedCoupon.code} (-{appliedCoupon.discount_percentage}%)</span>
-                                            <button type="button" onClick={quitarCupon} className="text-xs font-bold text-emerald-600 hover:text-emerald-800">Quitar</button>
-                                        </div>
-                                    )}
-                                    <div className="space-y-2 mb-5">
-                                        {appliedCoupon && (
-                                            <>
-                                                <div className="flex justify-between text-sm text-gray-600">
-                                                    <span>Subtotal</span>
-                                                    <span>${subtotal.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between text-sm text-emerald-600 font-semibold">
-                                                    <span>Descuento cupón</span>
-                                                    <span>-${descuentoCupon.toLocaleString()}</span>
-                                                </div>
-                                            </>
-                                        )}
-                                        <div className="flex justify-between items-center pt-2">
-                                            <span className="text-gray-600 font-semibold">Total</span>
-                                            <span className="text-2xl font-extrabold text-gray-900">${total.toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={handleWhatsAppClick}
-                                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-lg shadow-emerald-200/50 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                                    >
-                                        <MessageCircle className="w-5 h-5" />
-                                        Pedir por WhatsApp
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-                                <div className="w-20 h-20 rounded-full bg-pink-50 flex items-center justify-center mb-6">
-                                    <ShoppingBag className="w-10 h-10 text-pink-300" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-800 mb-2">Tu carrito está vacío</h3>
-                                <p className="text-gray-500 text-sm mb-6">Explorá el catálogo para agregar productos.</p>
-                                <button onClick={() => setMostrarCarrito(false)} className="px-6 py-3 rounded-xl bg-pink-500 text-white font-bold hover:bg-pink-600 transition-colors">
-                                    Explorar catálogo
-                                </button>
-                            </div>
-                        )}
-                    </PastelCard>
-                </div>
-            )}
-
-            {/* Modal vaciar carrito */}
-            {mostrarConfirmacion && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setMostrarConfirmacion(false)} />
-                    <PastelCard className="w-full max-w-sm p-8 z-50 text-center" noHover>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">¿Vaciar carrito?</h3>
-                        <p className="text-gray-500 text-sm mb-6">Se eliminarán todos los productos. Esta acción no se puede deshacer.</p>
-                        <div className="flex gap-4">
-                            <button onClick={() => setMostrarConfirmacion(false)} className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-colors">
-                                Cancelar
-                            </button>
-                            <button onClick={vaciarCarrito} className="flex-1 py-3 rounded-xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-colors">
-                                Vaciar
-                            </button>
-                        </div>
-                    </PastelCard>
-                </div>
-            )}
-
-            {/* Modal imagen */}
             {imagenPrevia && (
-                <div className="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center p-4" onClick={() => setImagenPrevia(null)}>
-                    <button onClick={() => setImagenPrevia(null)} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10">
-                        <X className="w-6 h-6" />
-                    </button>
-                    <div className="relative w-full max-w-2xl aspect-square" onClick={e => e.stopPropagation()}>
-                        <Image src={imagenPrevia} alt="Vista previa" fill className="object-contain rounded-2xl" />
-                    </div>
-                </div>
+                <ModalImagenPrevia imageUrl={imagenPrevia} onClose={() => setImagenPrevia(null)} />
             )}
 
-            {/* Modal easter egg: cupón 10% por única vez */}
-            {easterModal.open && (
-                <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setEasterModal(m => ({ ...m, open: false }))} />
-                    <PastelCard className="w-full max-w-sm p-8 z-50 text-center relative" noHover>
-                        <button onClick={() => setEasterModal(m => ({ ...m, open: false }))} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-lg">
-                            <X className="w-5 h-5" />
-                        </button>
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center mx-auto mb-5">
-                            <Sparkles className="w-7 h-7 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            {easterModal.alreadyClaimed ? '¡Ya lo habías encontrado!' : '¡Encontraste el easter egg!'}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-4">
-                            {easterModal.alreadyClaimed
-                                ? 'Tu cupón de 10% por única vez (este dispositivo) es:'
-                                : 'Tu cupón de 10% por única vez:'}
-                        </p>
-                        {easterModal.code && (
-                            <p className="font-mono text-lg font-bold text-pink-600 bg-pink-50 rounded-xl py-3 px-4 mb-5 select-all">
-                                {easterModal.code}
-                            </p>
-                        )}
-                        <p className="text-xs text-gray-500 mb-2">Usalo en el carrito al hacer tu pedido.</p>
-                        <button
-                            onClick={() => setEasterModal(m => ({ ...m, open: false }))}
-                            className="w-full py-3 rounded-xl bg-pink-500 text-white font-bold hover:bg-pink-600 transition-colors"
-                        >
-                            Cerrar
-                        </button>
-                    </PastelCard>
-                </div>
-            )}
+            <ModalEasterEgg
+                open={easterModal.open}
+                code={easterModal.code}
+                alreadyClaimed={easterModal.alreadyClaimed}
+                onClose={() => setEasterModal(m => ({ ...m, open: false }))}
+            />
         </div>
     )
 }
