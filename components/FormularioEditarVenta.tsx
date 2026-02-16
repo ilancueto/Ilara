@@ -6,7 +6,7 @@ import { Cliente } from '@/lib/supabase'
 import { updateSale, SaleUpdateData } from '@/lib/saleService'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useToast } from '@/context/ToastContext'
-import { X, Upload, Trash2, User, Banknote, CreditCard, FileText, ExternalLink } from 'lucide-react'
+import { X, Upload, Trash2, User, Banknote, CreditCard, FileText, ExternalLink, Clock, Receipt } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface FormularioEditarVentaProps {
@@ -166,6 +166,8 @@ export default function FormularioEditarVenta({
                 { id: 'efectivo', icon: Banknote, label: 'Efectivo' },
                 { id: 'tarjeta', icon: CreditCard, label: 'Tarjeta' },
                 { id: 'transferencia', icon: FileText, label: 'Transf.' },
+                { id: 'credito', icon: Clock, label: 'A crédito' },
+                { id: 'mixto', icon: Receipt, label: 'Varios' },
               ].map((m) => {
                 const Icon = m.icon
                 const active = paymentMethod === m.id

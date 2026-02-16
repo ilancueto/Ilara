@@ -22,7 +22,7 @@ const TAPS_NEEDED = 7
 
 export default function Catalogo() {
     const { showToast } = useToast()
-    const { carrito, agregarAlCarrito, quitarDelCarrito, actualizarCantidad, clearCarrito, badgeAnimado } = useCarrito(showToast)
+    const { carrito, agregarAlCarrito, quitarDelCarrito, actualizarCantidad, clearCarrito, mantenerSoloProductosDisponibles, badgeAnimado } = useCarrito(showToast)
     const [productos, setProductos] = useState<Producto[]>([])
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [categoriaFiltro, setCategoriaFiltro] = useState<string>('all')
@@ -80,6 +80,18 @@ export default function Catalogo() {
         obtenerProductos()
         obtenerCategorias()
     }, [])
+
+    // Al salir del catálogo, vaciar el carrito para no arrastrar pedidos viejos
+    useEffect(() => {
+        return () => { clearCarrito() }
+    }, [clearCarrito])
+
+    // Al cargar productos (o cuando el carrito se hidrata desde localStorage), quitar ítems que ya no existan o superen stock
+    useEffect(() => {
+        if (productos.length > 0 && carrito.length > 0) {
+            mantenerSoloProductosDisponibles(productos)
+        }
+    }, [productos, carrito.length, mantenerSoloProductosDisponibles])
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -262,7 +274,8 @@ export default function Catalogo() {
                             </Link>
                             <button
                                 onClick={() => setMostrarCarrito(true)}
-                                className="relative p-3 rounded-2xl bg-pink-50 hover:bg-pink-100 transition-all duration-300 group"
+                                className="relative p-3 rounded-2xl bg-pink-50 hover:bg-pink-100 transition-all duration-300 group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
+                                aria-label={carrito.length > 0 ? `Ver carrito, ${carrito.length} producto${carrito.length !== 1 ? 's' : ''}` : 'Ver carrito'}
                             >
                                 <ShoppingBag className="w-6 h-6 text-pink-600 group-hover:scale-110 transition-transform" />
                                 {carrito.length > 0 && (
@@ -285,17 +298,19 @@ export default function Catalogo() {
                                 <Search className="w-5 h-5 text-gray-400" />
                             </span>
                             <input
-                                type="text"
+                                type="search"
                                 placeholder="Buscar productos..."
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full pl-5 pr-12 py-4 bg-white border border-pink-100 rounded-2xl shadow-sm focus:border-pink-300 focus:ring-4 focus:ring-pink-100/50 text-gray-800 placeholder-gray-400 transition-all outline-none"
+                                aria-label="Buscar productos por nombre o marca"
+                                className="w-full pl-5 pr-12 py-4 bg-white border border-pink-100 rounded-2xl shadow-sm focus:border-pink-300 focus:ring-4 focus:ring-pink-100/50 focus-visible:ring-4 focus-visible:ring-pink-100/50 text-gray-800 placeholder-gray-400 transition-all outline-none"
                             />
                         </div>
                         <button
                             onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                            className={`flex-shrink-0 px-6 py-[10px] rounded-2xl border-2 transition-all flex items-center gap-2 font-semibold ${mostrarFiltros ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-pink-100 text-gray-500 hover:border-pink-200 hover:text-pink-600'}`}
+                            className={`flex-shrink-0 px-6 py-[10px] rounded-2xl border-2 transition-all flex items-center gap-2 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 ${mostrarFiltros ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-pink-100 text-gray-500 hover:border-pink-200 hover:text-pink-600'}`}
                             aria-label={mostrarFiltros ? 'Cerrar filtros' : 'Abrir filtros'}
+                            aria-expanded={mostrarFiltros}
                         >
                             <SlidersHorizontal className="w-5 h-5" />
                             Filtros
@@ -344,27 +359,29 @@ export default function Catalogo() {
 
                 {/* Categorías */}
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 w-full">
-                    <button
-                        onClick={() => setCategoriaFiltro('all')}
-                        className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${categoriaFiltro === 'all'
+<button
+                                        onClick={() => setCategoriaFiltro('all')}
+                                        className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 ${categoriaFiltro === 'all'
                             ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-200/50'
                             : 'bg-white text-gray-600 border-2 border-pink-100 hover:border-pink-200 hover:text-pink-600'
                         }`}
-                    >
-                        Todos
-                    </button>
-                    {categorias.map(cat => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setCategoriaFiltro(cat.id.toString())}
-                            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${categoriaFiltro === cat.id.toString()
+                                        aria-pressed={categoriaFiltro === 'all'}
+                                    >
+                                        Todos
+                                    </button>
+{categorias.map(cat => (
+                                        <button
+                                            key={cat.id}
+                                            onClick={() => setCategoriaFiltro(cat.id.toString())}
+                                            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 ${categoriaFiltro === cat.id.toString()
                                 ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-200/50'
                                 : 'bg-white text-gray-600 border-2 border-pink-100 hover:border-pink-200 hover:text-pink-600'
                             }`}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
+                                            aria-pressed={categoriaFiltro === cat.id.toString()}
+                                        >
+                                            {cat.name}
+                                        </button>
+                                    ))}
                 </div>
             </div>
 
@@ -399,7 +416,8 @@ export default function Catalogo() {
                                         {badges.length > 0 && <BadgeRotator badges={badges} />}
                                         <button
                                             onClick={() => compartirProducto(producto)}
-                                            className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100"
+                                            className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                                            aria-label={`Compartir ${producto.name} por WhatsApp`}
                                         >
                                             <Share2 className="w-4 h-4" />
                                         </button>
@@ -432,7 +450,7 @@ export default function Catalogo() {
                                             <button
                                                 onClick={() => producto.stock > 0 && agregarAlCarrito(producto)}
                                                 disabled={producto.stock === 0}
-                                                className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                                className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-pink-100"
                                                 aria-label={producto.stock === 0 ? `${producto.name}: agotado` : `Agregar ${producto.name} al carrito`}
                                             >
                                                 {producto.stock === 0 ? 'Agotado' : 'Agregar'}

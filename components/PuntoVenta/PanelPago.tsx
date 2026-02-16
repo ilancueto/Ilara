@@ -1,20 +1,31 @@
 'use client'
 
-import { Cliente } from '@/lib/supabase'
-import { Banknote, CreditCard, Receipt, User, ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { Cliente, PagoDesglose } from '@/lib/supabase'
+import { Banknote, CreditCard, Receipt, User, ArrowRight, Clock, Plus, Trash2, SplitSquareVertical, Check } from 'lucide-react'
 import Loader from '../Loader'
 import { PastelCard } from '@/components/ui/PastelCard'
+
+const METODOS: { id: 'efectivo' | 'tarjeta' | 'transferencia'; label: string; icon: typeof Banknote }[] = [
+    { id: 'efectivo', label: 'Efectivo', icon: Banknote },
+    { id: 'tarjeta', label: 'Tarjeta', icon: CreditCard },
+    { id: 'transferencia', label: 'Transf.', icon: Receipt }
+]
 
 interface PanelPagoProps {
     total: number
     cantidadItems: number
     metodoPago: 'efectivo' | 'tarjeta' | 'transferencia'
     setMetodoPago: (m: 'efectivo' | 'tarjeta' | 'transferencia') => void
+    paymentBreakdown: PagoDesglose[] | null
+    setPaymentBreakdown: (p: PagoDesglose[] | null) => void
     clientes: Cliente[]
     clienteSeleccionado: number | null
     setClienteSeleccionado: (id: number | null) => void
     notas: string
     setNotas: (notas: string) => void
+    cobrarDespues: boolean
+    setCobrarDespues: (v: boolean) => void
     onProcesar: () => void
     cargando: boolean
     disabled: boolean
@@ -25,15 +36,43 @@ export default function PanelPago({
     cantidadItems,
     metodoPago,
     setMetodoPago,
+    paymentBreakdown,
+    setPaymentBreakdown,
     clientes,
     clienteSeleccionado,
     setClienteSeleccionado,
     notas,
     setNotas,
+    cobrarDespues,
+    setCobrarDespues,
     onProcesar,
     cargando,
     disabled
 }: PanelPagoProps) {
+    const [dividirPago, setDividirPago] = useState(false)
+    const sumaDesglose = (paymentBreakdown || []).reduce((s, p) => s + p.amount, 0)
+    const desgloseOk = dividirPago ? paymentBreakdown && paymentBreakdown.length > 0 && Math.abs(sumaDesglose - total) < 0.01 : true
+
+    const agregarPago = () => {
+        const actual = paymentBreakdown || []
+        setPaymentBreakdown([...actual, { method: 'efectivo', amount: 0 }])
+    }
+    const quitarPago = (index: number) => {
+        const actual = paymentBreakdown || []
+        if (actual.length <= 1) {
+            setPaymentBreakdown(null)
+            setDividirPago(false)
+        } else {
+            setPaymentBreakdown(actual.filter((_, i) => i !== index))
+        }
+    }
+    const actualizarPago = (index: number, field: 'method' | 'amount', value: string | number) => {
+        const actual = [...(paymentBreakdown || [])]
+        if (!actual[index]) return
+        if (field === 'amount') actual[index].amount = typeof value === 'number' ? value : parseFloat(String(value)) || 0
+        else actual[index].method = String(value)
+        setPaymentBreakdown(actual)
+    }
     return (
         <div className="sticky top-6">
             {/* Total Display */}
@@ -70,34 +109,138 @@ export default function PanelPago({
                     </select>
                 </div>
 
-                <div>
-                    <label className="form-label flex items-center gap-2 text-gray-700">
-                        <span className="text-pink-500">Método de pago</span>
-                    </label>
-                    <div className="grid grid-cols-3 gap-3 mt-2">
-                        {[
-                            { id: 'efectivo', icon: Banknote, label: 'Efectivo' },
-                            { id: 'tarjeta', icon: CreditCard, label: 'Tarjeta' },
-                            { id: 'transferencia', icon: Receipt, label: 'Transf.' }
-                        ].map(m => {
-                            const Icon = m.icon
-                            const isSelected = metodoPago === m.id
-                            return (
-                                <button
-                                    key={m.id}
-                                    onClick={() => setMetodoPago(m.id as any)}
-                                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 min-h-[72px] ${isSelected
-                                        ? 'bg-pink-50 border-pink-300 text-pink-600 shadow-sm ring-2 ring-pink-200/60'
-                                        : 'bg-gray-50/80 border-gray-200 text-gray-400 hover:border-pink-200 hover:bg-pink-50/50 hover:text-gray-600'
-                                        }`}
-                                >
-                                    <Icon className="w-5 h-5" strokeWidth={2} />
-                                    <p className="text-xs font-bold">{m.label}</p>
-                                </button>
-                            )
-                        })}
+                <div className="space-y-3">
+                    <p className="text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-2">Opciones de pago</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setCobrarDespues(!cobrarDespues)}
+                            className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
+                                cobrarDespues
+                                    ? 'bg-amber-50 border-amber-200 text-amber-800 shadow-sm ring-2 ring-amber-100'
+                                    : 'bg-white border-gray-100 text-gray-500 hover:border-amber-100 hover:bg-amber-50/30 hover:text-gray-700'
+                            }`}
+                        >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${cobrarDespues ? 'bg-amber-200/80 text-amber-700' : 'bg-gray-100 text-gray-400'}`}>
+                                <Clock className="w-5 h-5" strokeWidth={2} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <span className="block text-sm font-bold">Cobrar después</span>
+                                <span className="block text-[11px] text-gray-500 mt-0.5">Cuenta por cobrar</span>
+                            </div>
+                            {cobrarDespues && <Check className="w-5 h-5 text-amber-600 flex-shrink-0" strokeWidth={2.5} />}
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled={cobrarDespues}
+                            onClick={() => {
+                                if (cobrarDespues) return
+                                setDividirPago(!dividirPago)
+                                if (!dividirPago) setPaymentBreakdown([{ method: 'efectivo', amount: 0 }])
+                                else setPaymentBreakdown(null)
+                            }}
+                            className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
+                                cobrarDespues
+                                    ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-100 text-gray-400'
+                                    : dividirPago
+                                        ? 'bg-pink-50 border-pink-200 text-pink-800 shadow-sm ring-2 ring-pink-100'
+                                        : 'bg-white border-gray-100 text-gray-500 hover:border-pink-100 hover:bg-pink-50/30 hover:text-gray-700'
+                            }`}
+                        >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${dividirPago ? 'bg-pink-200/80 text-pink-700' : 'bg-gray-100 text-gray-400'}`}>
+                                <SplitSquareVertical className="w-5 h-5" strokeWidth={2} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <span className="block text-sm font-bold">Dividir pago</span>
+                                <span className="block text-[11px] text-gray-500 mt-0.5">Varios métodos</span>
+                            </div>
+                            {dividirPago && <Check className="w-5 h-5 text-pink-600 flex-shrink-0" strokeWidth={2.5} />}
+                        </button>
                     </div>
                 </div>
+
+                {!cobrarDespues && (
+                <>
+
+                    {!dividirPago ? (
+                        <div>
+                            <label className="form-label flex items-center gap-2 text-gray-700">
+                                <span className="text-pink-500">Método de pago</span>
+                            </label>
+                            <div className="grid grid-cols-3 gap-3 mt-2">
+                                {METODOS.map(m => {
+                                    const Icon = m.icon
+                                    const isSelected = metodoPago === m.id
+                                    return (
+                                        <button
+                                            key={m.id}
+                                            type="button"
+                                            onClick={() => setMetodoPago(m.id)}
+                                            className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 min-h-[72px] ${isSelected
+                                                ? 'bg-pink-50 border-pink-300 text-pink-600 shadow-sm ring-2 ring-pink-200/60'
+                                                : 'bg-gray-50/80 border-gray-200 text-gray-400 hover:border-pink-200 hover:bg-pink-50/50 hover:text-gray-600'
+                                                }`}
+                                        >
+                                            <Icon className="w-5 h-5" strokeWidth={2} />
+                                            <p className="text-xs font-bold">{m.label}</p>
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div>
+                            <label className="form-label text-gray-700">Desglose de pagos (suma = ${total.toLocaleString()})</label>
+                            <div className="space-y-2 mt-2">
+                                {(paymentBreakdown || []).map((pago, index) => (
+                                    <div key={index} className="flex gap-2 items-center">
+                                        <select
+                                            value={pago.method}
+                                            onChange={(e) => actualizarPago(index, 'method', e.target.value)}
+                                            className="w-[140px] min-w-[140px] rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 bg-white focus:border-pink-300 focus:ring-1 focus:ring-pink-200"
+                                        >
+                                            {METODOS.map(m => (
+                                                <option key={m.id} value={m.id}>{m.label}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step={1}
+                                            value={pago.amount || ''}
+                                            onChange={(e) => actualizarPago(index, 'amount', e.target.value)}
+                                            placeholder="0"
+                                            className="w-[140px] min-w-[140px] rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-800 text-right tabular-nums focus:border-pink-300 focus:ring-1 focus:ring-pink-200"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => quitarPago(index)}
+                                            className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex-shrink-0"
+                                            title="Quitar"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    onClick={agregarPago}
+                                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50/50 text-sm font-bold transition-colors"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Agregar pago
+                                </button>
+                            </div>
+                            {paymentBreakdown && paymentBreakdown.length > 0 && (
+                                <p className={`text-xs font-bold mt-2 ${Math.abs(sumaDesglose - total) < 0.01 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                    Suma: ${sumaDesglose.toLocaleString()} {Math.abs(sumaDesglose - total) >= 0.01 && '(debe coincidir con el total)'}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </>
+                )}
 
                 <div>
                     <label className="form-label text-gray-700">Notas (opcional)</label>
@@ -113,7 +256,7 @@ export default function PanelPago({
                 <div className="pt-2">
                     <button
                         onClick={onProcesar}
-                        disabled={disabled || cargando}
+                        disabled={disabled || cargando || !desgloseOk}
                         className="btn-primary w-full justify-center text-base py-4 font-bold tracking-wide shadow-lg shadow-pink-300/40 disabled:opacity-50 disabled:shadow-none hover:scale-[1.01] active:scale-[0.99] transition-transform"
                     >
                         {cargando ? (

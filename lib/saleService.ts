@@ -1,5 +1,5 @@
 // Servicio para actualizar ventas (historial) y subir comprobantes
-import { supabase } from '@/lib/supabase'
+import { supabase, getUser } from '@/lib/supabase'
 import { Venta } from '@/lib/supabase'
 
 export type SaleUpdateData = {
@@ -45,6 +45,9 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
   if (data.clearReceipt) updatePayload.receipt_url = null
   else if (receiptUrl !== undefined) updatePayload.receipt_url = receiptUrl
 
+  const user = await getUser()
+  if (user?.id) updatePayload.updated_by = user.id
+
   const { data: updated, error } = await supabase
     .from('sales')
     .update(updatePayload)
@@ -59,7 +62,7 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
         const path = receiptUrl.split('/').pop()
         if (path) await supabase.storage.from('receipts').remove([path])
       } catch (_) {}
-      const fallbackPayload = { ...updatePayload }
+      const fallbackPayload = { ...updatePayload } as Record<string, unknown>
       delete fallbackPayload.receipt_url
       const { data: fallbackUpdated, error: fallbackError } = await supabase
         .from('sales')

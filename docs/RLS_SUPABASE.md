@@ -2,23 +2,39 @@
 
 Para que solo los usuarios autenticados accedan a los datos que les corresponden, tenés que revisar y configurar **Row Level Security** en las tablas de tu proyecto Supabase.
 
-## Dónde configurarlo
+## Script unificado (recomendado)
+
+En la raíz del repo está **`supabase_rls_all.sql`**. Ejecutalo en Supabase (SQL Editor → New query → Pegar → Run) para:
+
+- Activar RLS en: `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`.
+- Crear las políticas por tabla (idempotente: hace `DROP POLICY IF EXISTS` antes de cada `CREATE POLICY`).
+
+Si antes usaste `supabase_customers_rls.sql` o `supabase_stock_movements.sql`, no hay conflicto: el script unificado reemplaza esas políticas.
+
+## Políticas aplicadas por tabla
+
+| Tabla | Política | Comportamiento |
+|-------|----------|----------------|
+| `customers` | Usuarios autenticados pueden gestionar clientes | `FOR ALL TO authenticated` — todos los logueados comparten la lista (sin `user_id`). |
+| `products` | Authenticated can manage products | `FOR ALL TO authenticated` — CRUD completo para cualquier usuario logueado. |
+| `categories` | Authenticated can manage categories | `FOR ALL TO authenticated`. |
+| `sales` | Authenticated can manage sales | `FOR ALL TO authenticated`. |
+| `sale_items` | Authenticated can manage sale_items | `FOR ALL TO authenticated`. |
+| `expenses` | Users can manage own expenses | `USING (auth.uid() = user_id)` y `WITH CHECK (auth.uid() = user_id)` — cada usuario solo ve/edita sus gastos. |
+| `stock_movements` | Authenticated can manage stock_movements | `FOR ALL TO authenticated`. |
+| `coupons` | Authenticated can manage coupons | `FOR ALL TO authenticated`. |
+
+La app ya envía `user_id` en los INSERT de gastos (`lib/expenseService.ts`); el resto de tablas no usan `user_id`, por eso comparten datos entre todos los autenticados.
+
+## Dónde configurarlo (manual)
 
 1. Entrá a [Supabase Dashboard](https://supabase.com/dashboard).
 2. Elegí tu proyecto (Ilara).
 3. En el menú izquierdo: **Authentication** → **Policies** o **Table Editor** → elegí la tabla → pestaña **Policies**.
 
-## Tablas a revisar
+## Tablas cubiertas por el script
 
-Según el código de la app, estas tablas deberían tener RLS y políticas que restrinjan por usuario cuando aplique:
-
-| Tabla | Uso en la app | Qué revisar |
-|-------|----------------|-------------|
-| `expenses` | Gastos (usa `user_id`) | Solo el usuario dueño puede ver/crear/editar/borrar sus filas. |
-| `easter_claims` | Easter egg (por `device_id`, no usuario) | Podés dejar acceso público de lectura/inserción controlada por API, o restringir si querés. |
-| `coupons` | Cupones | Inserción solo desde el backend (API con service role). Lectura para validar en el catálogo. |
-| `sales` | Ventas | Si hay `user_id` o equivalente, solo ese usuario. Si es multi-tenant, políticas por tenant. |
-| `products`, `categories` | Catálogo e inventario | Si solo usuarios logueados editan, políticas de escritura para `authenticated`; lectura puede ser pública para catálogo. |
+Las tablas listadas arriba en “Políticas aplicadas” están cubiertas por `supabase_rls_all.sql`. La tabla `easter_claims` (easter egg por `device_id`) no está en el script; si la usás desde una API con service role, podés dejarla sin RLS o agregar una política según necesidad.
 
 ## Pasos genéricos para una tabla con `user_id`
 

@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, Venta, ItemVenta, Cliente } from '@/lib/supabase'
-import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2 } from 'lucide-react'
+import { supabase, getUser, Venta, ItemVenta, Cliente } from '@/lib/supabase'
+import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, CheckCircle } from 'lucide-react'
 import { format, startOfDay, startOfWeek, startOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
 import ExportarReporte from './ExportarReporte'
@@ -19,6 +19,7 @@ export default function HistorialVentas() {
     const [cargando, setCargando] = useState(true)
     const [ventaExpandida, setVentaExpandida] = useState<number | null>(null)
     const [filtroFecha, setFiltroFecha] = useState<'hoy' | 'semana' | 'mes' | 'todo'>('todo')
+    const [filtroPorCobrar, setFiltroPorCobrar] = useState(false)
     const [mostrarExportar, setMostrarExportar] = useState(false)
     const [ventaEditando, setVentaEditando] = useState<Venta | null>(null)
     const [guardandoEditar, setGuardandoEditar] = useState(false)
@@ -28,7 +29,7 @@ export default function HistorialVentas() {
 
     useEffect(() => {
         obtenerVentas()
-    }, [filtroFecha])
+    }, [filtroFecha, filtroPorCobrar])
 
     useEffect(() => {
         const cargarClientes = async () => {
@@ -54,6 +55,10 @@ export default function HistorialVentas() {
             query = query.gte('created_at', startOfWeek(ahora).toISOString())
         } else if (filtroFecha === 'mes') {
             query = query.gte('created_at', startOfMonth(ahora).toISOString())
+        }
+
+        if (filtroPorCobrar) {
+            query = query.eq('status', 'pending_payment')
         }
 
         const { data } = await query
@@ -89,6 +94,8 @@ export default function HistorialVentas() {
             case 'efectivo': return <Banknote className="w-4 h-4 text-emerald-500" />
             case 'tarjeta': return <CreditCard className="w-4 h-4 text-blue-500" />
             case 'transferencia': return <FileText className="w-4 h-4 text-purple-500" />
+            case 'credito': return <Clock className="w-4 h-4 text-amber-500" />
+            case 'mixto': return <Receipt className="w-4 h-4 text-indigo-500" />
             default: return <Receipt className="w-4 h-4 text-gray-400" />
         }
     }
@@ -98,7 +105,85 @@ export default function HistorialVentas() {
             case 'efectivo': return 'Efectivo'
             case 'tarjeta': return 'Tarjeta'
             case 'transferencia': return 'Transferencia'
+            case 'credito': return 'A crédito'
+            case 'mixto': return 'Varios'
             default: return 'N/A'
+        }
+    }
+
+    const marcarComoCobrada = async (ventaId: number) => {
+        const user = await getUser()
+        const updatePayload: Record<string, unknown> = { status: 'completed' }
+        if (user?.id) updatePayload.updated_by = user.id
+        const { error } = await supabase
+            .from('sales')
+            .update(updatePayload)
+            .eq('id', ventaId)
+        if (error) {
+            showError('Error al marcar como cobrada')
+            return
+        }
+        showSuccess('Venta marcada como cobrada')
+        if (filtroPorCobrar) {
+            setVentas(ventas.filter(v => v.id !== ventaId))
+        } else {
+            setVentas(ventas.map(v => v.id === ventaId ? { ...v, status: 'completed' } : v))
+        }
+    }
+
+    const imprimirComprobante = (venta: Venta & { items?: ItemVenta[] }) => {
+        const fecha = format(new Date(venta.sale_date || venta.created_at), "d 'de' MMMM yyyy, HH:mm", { locale: es })
+        const tieneDesglose = venta.payment_breakdown && venta.payment_breakdown.length > 0
+        const metodoPago = tieneDesglose
+            ? (venta.payment_breakdown!.map(p => `${obtenerEtiquetaPago(p.method)}: $${p.amount.toLocaleString()}`).join(' | '))
+            : obtenerEtiquetaPago(venta.payment_method)
+        const itemsRows = (venta.items || [])
+            .map(item => `<tr><td>${item.product_name}</td><td style="text-align:center">${item.quantity}</td><td>$${item.unit_price.toLocaleString()}</td><td style="text-align:right">$${item.subtotal.toLocaleString()}</td></tr>`)
+            .join('')
+        const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Comprobante #${venta.id}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; font-size: 14px; max-width: 320px; margin: 24px auto; padding: 16px; }
+    h1 { font-size: 18px; margin: 0 0 8px; text-align: center; }
+    .meta { color: #666; font-size: 12px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th { text-align: left; border-bottom: 1px solid #ddd; padding: 6px 4px; font-size: 11px; color: #666; }
+    th:last-child { text-align: right; }
+    td { padding: 6px 4px; border-bottom: 1px solid #eee; }
+    td:last-child { text-align: right; }
+    .total { font-size: 16px; font-weight: bold; margin-top: 12px; text-align: right; }
+    .notes { margin-top: 12px; padding: 8px; background: #fef9c3; font-size: 12px; border-radius: 8px; }
+    @media print { body { margin: 0; padding: 12px; } }
+  </style>
+</head>
+<body>
+  <h1>Ilara Beauty</h1>
+  <p class="meta">Comprobante #${venta.id}<br>${fecha}</p>
+  <p><strong>Cliente:</strong> ${venta.customer_name || 'Consumidor final'}</p>
+  <p><strong>Pago:</strong> ${metodoPago}</p>
+  <table>
+    <thead><tr><th>Producto</th><th style="text-align:center">Cant</th><th>P.unit</th><th style="text-align:right">Subtotal</th></tr></thead>
+    <tbody>${itemsRows}</tbody>
+  </table>
+  <p class="total">Total: $${venta.total.toLocaleString()}</p>
+  ${venta.notes ? `<div class="notes"><strong>Notas:</strong> ${venta.notes}</div>` : ''}
+</body>
+</html>`
+        const w = window.open('', '_blank')
+        if (!w) {
+            showError('Permití ventanas emergentes para imprimir.')
+            return
+        }
+        w.document.write(html)
+        w.document.close()
+        w.focus()
+        w.onload = () => {
+            w.print()
+            w.onafterprint = () => w.close()
         }
     }
 
@@ -211,6 +296,16 @@ export default function HistorialVentas() {
                                 {filtro === 'todo' && 'Todo'}
                             </button>
                         ))}
+                        <button
+                            onClick={() => setFiltroPorCobrar(!filtroPorCobrar)}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${filtroPorCobrar
+                                ? 'bg-amber-500 text-white shadow-sm'
+                                : 'bg-white hover:bg-gray-50 text-gray-400 hover:text-gray-600 border border-gray-100'
+                                }`}
+                        >
+                            <Clock className="w-3.5 h-3.5" />
+                            Por cobrar
+                        </button>
                     </div>
 
                     <button
@@ -250,7 +345,13 @@ export default function HistorialVentas() {
                                     </div>
 
                                     <div className="flex-1 min-w-0 overflow-hidden">
-                                        <div className="flex items-center gap-2 mb-0.5">
+                                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                            {venta.status === 'pending_payment' && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider">
+                                                    <Clock className="w-3 h-3" />
+                                                    Por cobrar
+                                                </span>
+                                            )}
                                             {venta.customer_name ? (
                                                 <span className="font-bold text-gray-800 text-sm group-hover:text-pink-600 transition-colors truncate">{venta.customer_name}</span>
                                             ) : (
@@ -336,8 +437,26 @@ export default function HistorialVentas() {
                                         </div>
                                     )}
 
-                                    {venta.receipt_url && (
-                                        <div className="mt-4">
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        {venta.status === 'pending_payment' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => marcarComoCobrada(venta.id)}
+                                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-bold text-sm transition-colors"
+                                            >
+                                                <CheckCircle className="w-4 h-4" />
+                                                Marcar como cobrada
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => imprimirComprobante(venta)}
+                                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 font-bold text-sm transition-colors"
+                                        >
+                                            <Printer className="w-4 h-4" />
+                                            Imprimir comprobante
+                                        </button>
+                                        {venta.receipt_url && (
                                             <a
                                                 href={venta.receipt_url}
                                                 target="_blank"
@@ -347,8 +466,8 @@ export default function HistorialVentas() {
                                                 <Receipt className="w-4 h-4" />
                                                 Ver comprobante
                                             </a>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
 
                                     {venta.notes && (
                                         <div className="mt-5 p-4 rounded-xl bg-yellow-50 border border-yellow-100 flex gap-3">

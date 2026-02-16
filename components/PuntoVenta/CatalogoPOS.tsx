@@ -24,11 +24,12 @@ export default function CatalogoPOS({ productos, onAddToCart }: CatalogoPOSProps
             <div className="relative mb-6">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-pink-400/80 pointer-events-none" />
                 <input
-                    type="text"
+                    type="search"
                     placeholder="Buscar productos por nombre o marca..."
                     value={terminoBusqueda}
                     onChange={(e) => setTerminoBusqueda(e.target.value)}
-                    className="w-full pl-4 pr-12 py-3.5 bg-white border border-pink-100 rounded-2xl focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-gray-800 placeholder-gray-400 transition-all shadow-sm"
+                    aria-label="Buscar productos por nombre o marca"
+                    className="w-full pl-4 pr-12 py-3.5 bg-white border border-pink-100 rounded-2xl focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 focus-visible:ring-2 focus-visible:ring-pink-400/20 text-gray-800 placeholder-gray-400 transition-all shadow-sm"
                 />
             </div>
 
@@ -43,7 +44,8 @@ export default function CatalogoPOS({ productos, onAddToCart }: CatalogoPOSProps
                                     onAddToCart(producto)
                                     setTerminoBusqueda('') // Opcional: limpiar al agregar
                                 }}
-                                className="w-full text-left p-4 rounded-2xl bg-white border border-pink-100/80 hover:border-pink-300 hover:shadow-lg hover:shadow-pink-100/50 transition-all group flex items-center gap-4"
+                                className="w-full text-left p-4 rounded-2xl bg-white border border-pink-100/80 hover:border-pink-300 hover:shadow-lg hover:shadow-pink-100/50 transition-all group flex items-center gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
+                                aria-label={`Agregar ${producto.name} al carrito, $${producto.sale_price.toLocaleString()}`}
                             >
                                 {/* Imagen Thumbnail */}
                                 <div className="w-12 h-12 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100 relative">

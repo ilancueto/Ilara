@@ -157,8 +157,8 @@ export function ModalCarrito({
                             <ShoppingBag className="w-10 h-10 text-pink-300" />
                         </div>
                         <h3 className="text-lg font-bold text-gray-800 mb-2">Tu carrito está vacío</h3>
-                        <p className="text-gray-500 text-sm mb-6">Explorá el catálogo para agregar productos.</p>
-                        <button onClick={onClose} className="px-6 py-3 rounded-xl bg-pink-500 text-white font-bold hover:bg-pink-600 transition-colors">
+                        <p className="text-gray-500 text-sm mb-6 py-2.5">Explorá el catálogo para agregar productos.</p>
+                        <button onClick={onClose} className="px-6 py-3 rounded-xl bg-pink-500 text-white font-bold hover:bg-pink-600 transition-colors m-0">
                             Explorar catálogo
                         </button>
                     </div>

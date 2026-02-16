@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, Cliente } from '@/lib/supabase'
-import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp } from 'lucide-react'
+import { supabase, getUser, Cliente, Venta } from '@/lib/supabase'
+import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { format, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -27,10 +27,15 @@ export default function Clientes() {
     const [mostrarEliminarClientesModal, setMostrarEliminarClientesModal] = useState(false)
     const [clientesSeleccionados, setClientesSeleccionados] = useState<Set<number>>(new Set())
     const [eliminandoClientes, setEliminandoClientes] = useState(false)
+    const [clientePerfil, setClientePerfil] = useState<Cliente | null>(null)
+    const [ventasCliente, setVentasCliente] = useState<Venta[]>([])
+    const [cargandoPerfil, setCargandoPerfil] = useState(false)
 
     const [formData, setFormData] = useState({
         first_name: '',
-        last_name: ''
+        last_name: '',
+        email: '',
+        phone: ''
     })
 
     useEffect(() => {
@@ -86,12 +91,17 @@ export default function Clientes() {
 
         if (editando) {
             // Actualizar
+            const user = await getUser()
+            const updatePayload: Record<string, unknown> = {
+                first_name: formData.first_name.trim(),
+                last_name: formData.last_name.trim(),
+                email: formData.email.trim() || null,
+                phone: formData.phone.trim() || null
+            }
+            if (user?.id) updatePayload.updated_by = user.id
             const { error } = await supabase
                 .from('customers')
-                .update({
-                    first_name: formData.first_name.trim(),
-                    last_name: formData.last_name.trim()
-                })
+                .update(updatePayload)
                 .eq('id', editando.id)
 
             if (!error) {
@@ -103,12 +113,17 @@ export default function Clientes() {
             }
         } else {
             // Crear
+            const user = await getUser()
+            const insertPayload: Record<string, unknown> = {
+                first_name: formData.first_name.trim(),
+                last_name: formData.last_name.trim(),
+                email: formData.email.trim() || null,
+                phone: formData.phone.trim() || null
+            }
+            if (user?.id) insertPayload.created_by = user.id
             const { error } = await supabase
                 .from('customers')
-                .insert([{
-                    first_name: formData.first_name.trim(),
-                    last_name: formData.last_name.trim()
-                }])
+                .insert([insertPayload])
 
             if (!error) {
                 showSuccess('Cliente creado correctamente')
@@ -126,7 +141,9 @@ export default function Clientes() {
         setEditando(cliente)
         setFormData({
             first_name: cliente.first_name,
-            last_name: cliente.last_name
+            last_name: cliente.last_name,
+            email: cliente.email ?? '',
+            phone: cliente.phone ?? ''
         })
         setMostrarModal(true)
     }
@@ -190,7 +207,26 @@ export default function Clientes() {
     const cerrarModal = () => {
         setMostrarModal(false)
         setEditando(null)
-        setFormData({ first_name: '', last_name: '' })
+        setFormData({ first_name: '', last_name: '', email: '', phone: '' })
+    }
+
+    const abrirPerfil = async (cliente: Cliente) => {
+        setClientePerfil(cliente)
+        setCargandoPerfil(true)
+        setVentasCliente([])
+        const { data } = await supabase
+            .from('sales')
+            .select('id, sale_date, total, payment_method, status, created_at')
+            .eq('customer_id', cliente.id)
+            .order('created_at', { ascending: false })
+            .limit(15)
+        if (data) setVentasCliente(data)
+        setCargandoPerfil(false)
+    }
+
+    const cerrarPerfil = () => {
+        setClientePerfil(null)
+        setVentasCliente([])
     }
 
     // Filtrar clientes
@@ -235,7 +271,11 @@ export default function Clientes() {
                 </div>
 
                 <button
-                    onClick={() => setMostrarModal(true)}
+                    onClick={() => {
+                        setEditando(null)
+                        setFormData({ first_name: '', last_name: '', email: '', phone: '' })
+                        setMostrarModal(true)
+                    }}
                     className="btn-primary w-full md:w-auto shadow-lg shadow-pink-200"
                 >
                     <Plus className="w-5 h-5" />
@@ -305,7 +345,7 @@ export default function Clientes() {
                         <PastelCard key={cliente.id} className="group p-0 flex flex-col h-full hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border-pink-100/50">
                             <div className="p-7 flex justify-between items-start gap-4">
                                 <div className="flex items-start gap-5">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-100 to-white border border-pink-100 flex items-center justify-center text-pink-600 font-bold text-lg shadow-sm group-hover:scale-105 transition-transform">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-100 to-white border border-pink-100 flex items-center justify-center text-pink-600 font-bold text-lg shadow-sm group-hover:scale-105 transition-transform px-[10px]">
                                         {cliente.first_name.charAt(0)}{cliente.last_name.charAt(0)}
                                     </div>
                                     <div>
@@ -316,10 +356,33 @@ export default function Clientes() {
                                             <Calendar className="w-3.5 h-3.5" />
                                             {format(new Date(cliente.created_at), 'MMM yyyy', { locale: es })}
                                         </p>
+                                        {(cliente.email || cliente.phone) && (
+                                            <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+                                                {cliente.email && (
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Mail className="w-3.5 h-3.5" />
+                                                        {cliente.email}
+                                                    </span>
+                                                )}
+                                                {cliente.phone && (
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Phone className="w-3.5 h-3.5" />
+                                                        {cliente.phone}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                    <button
+                                        onClick={() => abrirPerfil(cliente)}
+                                        className="p-2 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
+                                        title="Ver perfil"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
                                     <button
                                         onClick={() => handleEditar(cliente)}
                                         className="p-2 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
@@ -372,7 +435,11 @@ export default function Clientes() {
                     </p>
                     {!terminoBusqueda && (
                         <button
-                            onClick={() => setMostrarModal(true)}
+                            onClick={() => {
+                                setEditando(null)
+                                setFormData({ first_name: '', last_name: '', email: '', phone: '' })
+                                setMostrarModal(true)
+                            }}
                             className="btn-primary"
                         >
                             <Plus className="w-4 h-4" />
@@ -453,7 +520,7 @@ export default function Clientes() {
             {mostrarModal && (
                 <>
                     <div className="modal-backdrop" onClick={cerrarModal} />
-                    <PastelCard className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-9 z-[100] !shadow-2xl">
+                    <PastelCard className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-9 z-[100] !shadow-2xl" noHover>
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-3">
                                 <div className="p-2 bg-pink-100 rounded-lg text-pink-600">
@@ -496,6 +563,28 @@ export default function Clientes() {
                                 </div>
                             </div>
 
+                            <div>
+                                <label className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="cliente@ejemplo.com"
+                                    className="transition-all"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="form-label">Teléfono / WhatsApp</label>
+                                <input
+                                    type="tel"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    placeholder="Ej: 299 123 4567"
+                                    className="transition-all"
+                                />
+                            </div>
+
                             <div className="flex gap-3 pt-4 border-t border-gray-100 mt-4">
                                 <button
                                     type="button"
@@ -513,6 +602,106 @@ export default function Clientes() {
                                 </button>
                             </div>
                         </form>
+                    </PastelCard>
+                </>
+            )}
+
+            {/* Modal Perfil de cliente */}
+            {clientePerfil && (
+                <>
+                    <div className="modal-backdrop" onClick={cerrarPerfil} />
+                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col z-[100] !shadow-2xl" noHover>
+                        <div className="p-6 border-b border-pink-100 flex items-center justify-between flex-shrink-0">
+                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-100 to-white border border-pink-100 flex items-center justify-center text-pink-600 font-bold text-lg px-[10px]">
+                                    {clientePerfil.first_name.charAt(0)}{clientePerfil.last_name.charAt(0)}
+                                </div>
+                                {clientePerfil.first_name} {clientePerfil.last_name}
+                            </h3>
+                            <button
+                                onClick={cerrarPerfil}
+                                className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Cerrar"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1 min-h-0 space-y-6">
+                            {/* Datos de contacto */}
+                            {(clientePerfil.email || clientePerfil.phone) && (
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-2">Contacto</p>
+                                    <div className="flex flex-wrap gap-4 text-sm">
+                                        {clientePerfil.email && (
+                                            <span className="flex items-center gap-2 text-gray-700">
+                                                <Mail className="w-4 h-4 text-pink-400" />
+                                                {clientePerfil.email}
+                                            </span>
+                                        )}
+                                        {clientePerfil.phone && (
+                                            <span className="flex items-center gap-2 text-gray-700">
+                                                <Phone className="w-4 h-4 text-pink-400" />
+                                                {clientePerfil.phone}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Stats */}
+                            {(() => {
+                                const stats = clientesStats.get(clientePerfil.id) || { totalVentas: 0, totalGastado: 0, ultimaCompra: null }
+                                return (
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="p-4 rounded-xl bg-pink-50/50 border border-pink-100 text-center">
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Compras</p>
+                                            <p className="text-lg font-bold text-gray-800">{stats.totalVentas}</p>
+                                        </div>
+                                        <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 text-center">
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Total gastado</p>
+                                            <p className="text-lg font-bold text-emerald-700">${stats.totalGastado.toLocaleString()}</p>
+                                        </div>
+                                        <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Última compra</p>
+                                            <p className="text-sm font-semibold text-gray-700">{stats.ultimaCompra || '-'}</p>
+                                        </div>
+                                    </div>
+                                )
+                            })()}
+
+                            {/* Historial de ventas */}
+                            <div>
+                                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3 flex items-center gap-2">
+                                    <Receipt className="w-4 h-4" />
+                                    Últimas ventas
+                                </p>
+                                {cargandoPerfil ? (
+                                    <p className="text-sm text-gray-400 py-4">Cargando...</p>
+                                ) : ventasCliente.length === 0 ? (
+                                    <p className="text-sm text-gray-400 py-4">Sin ventas registradas.</p>
+                                ) : (
+                                    <ul className="space-y-2">
+                                        {ventasCliente.map(v => (
+                                            <li
+                                                key={v.id}
+                                                className="flex items-center justify-between py-2 px-3 rounded-xl bg-gray-50 hover:bg-pink-50/50 border border-transparent hover:border-pink-100 text-sm"
+                                            >
+                                                <span className="text-gray-600">
+                                                    {format(new Date(v.sale_date || v.created_at), "d MMM yyyy, HH:mm", { locale: es })}
+                                                </span>
+                                                <span className="font-bold text-gray-800">${v.total.toLocaleString()}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+                        <div className="p-4 border-t border-pink-100 flex justify-end flex-shrink-0">
+                            <button type="button" onClick={() => { cerrarPerfil(); handleEditar(clientePerfil); }} className="btn-ghost flex items-center gap-2">
+                                <Edit2 className="w-4 h-4" />
+                                Editar cliente
+                            </button>
+                        </div>
                     </PastelCard>
                 </>
             )}

@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import { supabase, Producto, Venta } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight } from 'lucide-react'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
+import ExportarDatos from '@/components/ExportarDatos'
 
 type ProductoVendido = {
     product_name: string
@@ -20,6 +21,7 @@ export default function Tablero() {
     const [topProductos, setTopProductos] = useState<ProductoVendido[]>([])
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
+    const [mostrarExportar, setMostrarExportar] = useState(false)
 
     useEffect(() => {
         cargarDatos()
@@ -135,9 +137,19 @@ export default function Tablero() {
 
     return (
         <div className="flex flex-col gap-12 animate-fade-in pb-12">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-800 tracking-tight">¡Hola de nuevo! ✨</h2>
-                <p className="text-gray-500 text-sm mt-2">Aquí tienes el resumen de hoy.</p>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800 tracking-tight">¡Hola de nuevo! ✨</h2>
+                    <p className="text-gray-500 text-sm mt-2">Aquí tienes el resumen de hoy.</p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setMostrarExportar(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-pink-200 bg-pink-50/50 text-pink-600 hover:bg-pink-50 hover:border-pink-300 transition-all font-semibold text-sm"
+                >
+                    <Download className="w-4 h-4" />
+                    Exportar datos
+                </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 items-stretch overflow-visible">
@@ -326,6 +338,11 @@ export default function Tablero() {
 
                 </div>
             </div>
+
+            {/* Modal Exportar datos */}
+            {mostrarExportar && (
+                <ExportarDatos mostrar={true} cerrar={() => setMostrarExportar(false)} />
+            )}
 
             {/* Modal de Alertas */}
             {mostrarAlertas && (

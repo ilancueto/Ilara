@@ -27,6 +27,8 @@ export type Producto = {
   categories?: {
     name: string
   }
+  created_by?: string | null
+  updated_by?: string | null
 }
 
 export type Cupon = {
@@ -46,7 +48,19 @@ export type Cliente = {
   id: number
   first_name: string
   last_name: string
+  /** Email del cliente (opcional). Requiere migración supabase_customers_email_phone.sql */
+  email?: string | null
+  /** Teléfono o WhatsApp (opcional). Requiere migración supabase_customers_email_phone.sql */
+  phone?: string | null
   created_at: string
+  created_by?: string | null
+  updated_by?: string | null
+}
+
+/** Un pago en el desglose (múltiples métodos por venta) */
+export type PagoDesglose = {
+  method: string
+  amount: number
 }
 
 export type Venta = {
@@ -54,6 +68,8 @@ export type Venta = {
   sale_date: string
   total: number
   payment_method: string | null
+  /** Desglose cuando hay más de un método de pago. Requiere migración supabase_sales_payment_breakdown.sql */
+  payment_breakdown?: PagoDesglose[] | null
   customer_name: string | null
   customer_id: number | null
   notes: string | null
@@ -61,6 +77,10 @@ export type Venta = {
   status: string
   created_at: string
   customers?: Cliente | null
+  /** Usuario que registró la venta. Requiere supabase_audit_columns.sql */
+  created_by?: string | null
+  /** Usuario que actualizó por última vez */
+  updated_by?: string | null
 }
 
 export type ItemVenta = {
@@ -78,6 +98,19 @@ export type ItemVenta = {
 export type ItemCarrito = {
   producto: Producto
   cantidad: number
+}
+
+/** Movimiento de stock (historial). Requiere tabla stock_movements. */
+export type StockMovement = {
+  id: number
+  product_id: number
+  type: 'sale' | 'purchase' | 'adjustment'
+  quantity: number
+  reference_type: string | null
+  reference_id: number | null
+  notes: string | null
+  created_at: string
+  user_id: string | null
 }
 
 // ─── Funciones de Autenticación ───

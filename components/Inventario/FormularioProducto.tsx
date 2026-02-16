@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, Producto, Categoria } from '@/lib/supabase'
+import { supabase, getUser, Producto, Categoria } from '@/lib/supabase'
 import { Loader, X, Upload, Trash2 } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import Image from 'next/image'
@@ -132,6 +132,12 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             notes: formData.notes.trim() || null,
             image_url: formData.image_url || null,
             discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0
+        }
+        const user = await getUser()
+        if (productToEdit && user?.id) {
+            (datosProducto as Record<string, unknown>).updated_by = user.id
+        } else if (!productToEdit && user?.id) {
+            (datosProducto as Record<string, unknown>).created_by = user.id
         }
 
         try {

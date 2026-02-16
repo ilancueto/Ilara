@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, Producto, ItemCarrito, Cliente } from '@/lib/supabase'
+import { supabase, getUser, Producto, ItemCarrito, Cliente } from '@/lib/supabase'
 import { useToast } from '@/context/ToastContext'
 import CatalogoPOS from './CatalogoPOS'
 import CarritoVenta from './CarritoVenta'
@@ -18,6 +18,8 @@ export default function PuntoVenta() {
     // Sale State
     const [clienteSeleccionado, setClienteSeleccionado] = useState<number | null>(null)
     const [metodoPago, setMetodoPago] = useState<'efectivo' | 'tarjeta' | 'transferencia'>('efectivo')
+    const [paymentBreakdown, setPaymentBreakdown] = useState<{ method: string; amount: number }[] | null>(null)
+    const [cobrarDespues, setCobrarDespues] = useState(false)
     const [notas, setNotas] = useState('')
     const [cargando, setCargando] = useState(false)
 
@@ -88,18 +90,24 @@ export default function PuntoVenta() {
                 if (cliente) customerName = `${cliente.first_name} ${cliente.last_name}`
             }
 
-            // 1. Crear la venta
+            // Con "cobrar después" no se envía desglose de pago (es cuenta por cobrar)
+            const tieneDesglose = !cobrarDespues && paymentBreakdown && paymentBreakdown.length > 0
+            const user = await getUser()
+            const payload: Record<string, unknown> = {
+                sale_date: new Date().toISOString(),
+                total,
+                payment_method: cobrarDespues ? 'credito' : (tieneDesglose ? 'mixto' : metodoPago),
+                customer_name: customerName || null,
+                customer_id: clienteSeleccionado,
+                notes: notas || null,
+                status: cobrarDespues ? 'pending_payment' : 'completed'
+            }
+            if (user?.id) payload.created_by = user.id
+            if (tieneDesglose && paymentBreakdown) payload.payment_breakdown = paymentBreakdown
+
             const { data: venta, error: errorVenta } = await supabase
                 .from('sales')
-                .insert([{
-                    sale_date: new Date().toISOString(),
-                    total,
-                    payment_method: metodoPago,
-                    customer_name: customerName || null,
-                    customer_id: clienteSeleccionado,
-                    notes: notas || null,
-                    status: 'completed'
-                }])
+                .insert([payload])
                 .select()
                 .single()
 
@@ -133,9 +141,25 @@ export default function PuntoVenta() {
                 if (errorStock) throw errorStock
             }
 
-            showSuccess('¡Venta completada! Stock actualizado')
+            // 4. Registrar movimientos de stock (historial) — opcional si existe la tabla
+            const movimientos = carrito.map(item => ({
+                product_id: item.producto.id,
+                type: 'sale',
+                quantity: -item.cantidad,
+                reference_type: 'sale',
+                reference_id: venta.id,
+                notes: null
+            }))
+            const { error: errMov } = await supabase.from('stock_movements').insert(movimientos)
+            if (errMov) {
+                // Tabla stock_movements puede no existir aún; la venta ya se guardó
+            }
+
+            showSuccess(cobrarDespues ? 'Venta registrada como cuenta por cobrar' : '¡Venta completada! Stock actualizado')
             setCarrito([])
             setClienteSeleccionado(null)
+            setCobrarDespues(false)
+            setPaymentBreakdown(null)
             setNotas('')
             obtenerProductos() // Refrescar productos con nuevo stock
         } catch (error) {
@@ -180,6 +204,10 @@ export default function PuntoVenta() {
                     setClienteSeleccionado={setClienteSeleccionado}
                     notas={notas}
                     setNotas={setNotas}
+                    paymentBreakdown={paymentBreakdown}
+                    setPaymentBreakdown={setPaymentBreakdown}
+                    cobrarDespues={cobrarDespues}
+                    setCobrarDespues={setCobrarDespues}
                     onProcesar={manejarVenta}
                     cargando={cargando}
                     disabled={carrito.length === 0}

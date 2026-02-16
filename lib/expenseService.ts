@@ -106,7 +106,8 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
         receiptUrl = await uploadReceipt(formData.receipt);
     }
 
-    const updateData: any = {
+    const { data: { user } } = await supabase.auth.getUser();
+    const updateData: Record<string, unknown> = {
         ...(formData.date && { date: formData.date }),
         ...(formData.category && { category: formData.category }),
         ...(formData.description && { description: formData.description }),
@@ -115,10 +116,11 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
         ...(formData.notes !== undefined && { notes: formData.notes }),
         ...(receiptUrl && { receipt_url: receiptUrl }),
     };
+    if (user?.id) updateData.updated_by = user.id;
 
     const { data, error } = await supabase
         .from('expenses')
-        .update(updateData)
+        .update(updateData as Record<string, never>)
         .eq('id', id)
         .select()
         .single();

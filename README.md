@@ -51,6 +51,10 @@ Obtener valores en: Supabase Dashboard → Settings → API
 | `npm run build` | Build de producción |
 | `npm run start` | Servidor de producción |
 | `npm run lint` | Ejecutar ESLint |
+| `npm run test` | Tests unitarios (Vitest) |
+| `npm run test:watch` | Tests en modo watch |
+| `npm run test:e2e` | Tests E2E (Playwright; arranca el servidor si hace falta) |
+| `npm run pwa-icons` | Copiar `logo_icon.png` a iconos PWA |
 
 ## Estructura del proyecto
 
@@ -74,6 +78,15 @@ Obtener valores en: Supabase Dashboard → Settings → API
 | `/login` | Público | Inicio de sesión |
 | `/catalogo` | Público | Catálogo para compartir con clientes |
 | `/gastos` | Autenticado | Gestión de gastos (vista ampliada) |
+
+## Iconos PWA
+
+El `manifest.json` espera en `public/` los archivos `icon-192.png`, `icon-512.png` y `apple-touch-icon.png`. Si tenés `logo_icon.png`, ejecutá `npm run pwa-icons` para copiarlo con esos nombres (o generá tamaños exactos con [realfavicongenerator.net](https://realfavicongenerator.net/)). Sin esos archivos la PWA puede dar 404 al instalar.
+
+## Backup y exportación
+
+- **Desde la app:** En el dashboard (Inicio), el botón **Exportar datos** permite descargar productos, ventas, clientes y gastos en **CSV** o **JSON**. Podés elegir “todo” o filtrar ventas y gastos por período. Los gastos exportados son solo los del usuario logueado.
+- **Desde Supabase:** En el [Dashboard de Supabase](https://supabase.com/dashboard) → tu proyecto → **Database** → **Backups** podés usar los backups automáticos. Para un export manual de tablas: **Table Editor** → elegir tabla → **Export** (CSV), o usar el **SQL Editor** con `COPY ... TO STDOUT` / herramientas externas (pg_dump con la connection string del proyecto).
 
 ## Deploy
 

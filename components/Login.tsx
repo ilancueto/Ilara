@@ -72,6 +72,8 @@ export default function Login() {
                             required
                             disabled={cargando}
                             autoComplete="email"
+                            aria-label="Email"
+                            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         />
                     </div>
 
@@ -86,12 +88,14 @@ export default function Login() {
                                 required
                                 disabled={cargando}
                                 autoComplete="current-password"
-                                className="pr-12"
+                                className="pr-12 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                aria-label="Contraseña"
                             />
                             <button
                                 type="button"
                                 onClick={() => setMostrarPassword(!mostrarPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/60 hover:text-white/90 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/60 hover:text-white/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded"
+                                aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                             >
                                 {mostrarPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
@@ -107,7 +111,8 @@ export default function Login() {
                     <button
                         type="submit"
                         disabled={cargando}
-                        className="btn-primary w-full justify-center mt-2 h-[50px] text-base"
+                        className="btn-primary w-full justify-center mt-2 h-[50px] text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-pink-900/30"
+                        aria-label="Iniciar sesión"
                     >
                         {cargando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                     </button>
