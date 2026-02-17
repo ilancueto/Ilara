@@ -16,6 +16,7 @@ interface TablaInventarioProps {
 export default function TablaInventario({ productos, loading, onEdit, onView, onDelete }: TablaInventarioProps) {
 
     const obtenerEstadoStock = (producto: Producto) => {
+        if (producto.stock === 0) return 'agotado'
         if (producto.stock < producto.min_stock) return 'critico'
         if (producto.stock < producto.min_stock * 2) return 'bajo'
         return 'ok'
@@ -82,7 +83,11 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
 
                                 {/* Stock Badge - Top Right */}
                                 <div className="absolute top-4 right-4 z-10 flex gap-2">
-                                    {estadoStock === 'critico' ? (
+                                    {estadoStock === 'agotado' ? (
+                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-500 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-gray-200">
+                                            Agotado
+                                        </span>
+                                    ) : estadoStock === 'critico' ? (
                                         <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-red-200">
                                             Crítico
                                         </span>

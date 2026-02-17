@@ -45,8 +45,9 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
         : null
 
     const estadoStock =
-        producto.stock < producto.min_stock ? 'critico' :
-            producto.stock < producto.min_stock * 2 ? 'bajo' : 'ok'
+        producto.stock === 0 ? 'agotado' :
+            producto.stock < producto.min_stock ? 'critico' :
+                producto.stock < producto.min_stock * 2 ? 'bajo' : 'ok'
 
     return (
         <div className="fixed inset-0 bg-black/25 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -68,6 +69,11 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent md:from-transparent" />
                         <div className="absolute bottom-3 left-3">
+                            {estadoStock === 'agotado' && (
+                                <span className="px-2.5 py-1 rounded-full bg-gray-500/95 text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
+                                    Agotado
+                                </span>
+                            )}
                             {estadoStock === 'critico' && (
                                 <span className="px-2.5 py-1 rounded-full bg-red-500/95 text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
                                     Stock crítico

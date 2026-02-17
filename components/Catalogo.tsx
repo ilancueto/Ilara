@@ -223,6 +223,9 @@ export default function Catalogo() {
             return true
         })
         .sort((a, b) => {
+            // Productos agotados siempre al final
+            if (a.stock === 0 && b.stock !== 0) return 1
+            if (a.stock !== 0 && b.stock === 0) return -1
             const precioA = getPrecioConDescuento(a)
             const precioB = getPrecioConDescuento(b)
             switch (ordenamiento) {
