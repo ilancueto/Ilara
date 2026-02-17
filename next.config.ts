@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/favicon.ico',
-        destination: 'https://raw.githubusercontent.com/ilancueto/AppIlara/main/assets/logo_icon.png',
+        destination: '/favicon-32.png',
         permanent: false,
       },
     ];
