@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   description: "Sistema de inventario, ventas y finanzas",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon-32.png",
+    icon: "/favicon.svg",
     apple: "/apple-touch-icon.png",
   },
   appleWebApp: {
@@ -59,7 +59,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="icon" href="/favicon-32.png" type="image/png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link href="https://fonts.cdnfonts.com/css/mareline-script" rel="stylesheet" />
       </head>
