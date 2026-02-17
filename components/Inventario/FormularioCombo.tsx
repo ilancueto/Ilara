@@ -2,20 +2,37 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Combo, ComboItem, Producto } from '@/lib/supabase'
 import { Loader, X, Plus, Trash2, Package, Tag, DollarSign, Sparkles, ShoppingBag } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 
-type ComboConItems = Combo & { combo_items?: (ComboItem & { products?: Producto })[] }
+// Tipos locales para evitar import type desde @/lib/supabase (falla en build Vercel)
+interface ProductoForm {
+  id: number
+  name: string
+  brand?: string | null
+  sale_price: number
+  stock: number
+  image_url?: string | null
+  categories?: { name: string }
+}
 
-type ComboItemForm = { product_id: number; quantity: number; product?: Producto }
+interface ComboToEditForm {
+  id: number
+  name: string
+  description: string | null
+  sale_price: number
+  is_active: boolean
+  combo_items?: { product_id: number; quantity: number; products?: ProductoForm }[]
+}
+
+type ComboItemForm = { product_id: number; quantity: number; product?: ProductoForm }
 
 interface FormularioComboProps {
     isOpen: boolean
     onClose: () => void
-    comboToEdit: ComboConItems | null
+    comboToEdit: ComboToEditForm | null
     onSuccess: () => void
-    productos: Producto[]
+    productos: ProductoForm[]
 }
 
 export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSuccess, productos }: FormularioComboProps) {
