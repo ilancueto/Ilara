@@ -81,12 +81,12 @@ serve(async (req: Request) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-  const origin = getOrigin(req);
   const clientIP = getClientIP(req);
 
   try {
     const { endpoint, data }: RequestBody = await req.json();
-    const { rpId, rpName, email, challengeId, response: authResponse } = data as Record<string, unknown>;
+    const { rpId, rpName, email, challengeId, response: authResponse, clientOrigin } = data as Record<string, unknown>;
+    const origin = (typeof clientOrigin === 'string' && clientOrigin) ? clientOrigin : getOrigin(req);
 
     let result: ApiResponse;
 
@@ -431,7 +431,8 @@ serve(async (req: Request) => {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   } catch (e) {
-    return new Response(JSON.stringify(error('UNKNOWN_ERROR', 'Internal server error')), {
+    const msg = e instanceof Error ? e.message : 'Internal server error';
+    return new Response(JSON.stringify(error('UNKNOWN_ERROR', msg)), {
       status: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
