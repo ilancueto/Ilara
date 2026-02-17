@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, ComboConItems, Producto } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
+import type { ComboConItems, Producto } from '@/lib/supabase'
 import { Loader, X, Plus, Trash2, Package, Tag, DollarSign, Sparkles, ShoppingBag } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 
