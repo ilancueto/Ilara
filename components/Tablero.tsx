@@ -108,10 +108,11 @@ export default function Tablero() {
 
     const corte = periodoIngresos === '7d' ? subDays(new Date(), 7) : periodoIngresos === '30d' ? subDays(new Date(), 30) : null
     const ventasFiltradas = corte ? ventas.filter(v => new Date(v.created_at) >= corte) : ventas
+    const ventasCobradas = ventasFiltradas.filter(v => v.status !== 'pending_payment')
     const ingresosFiltrados = corte ? ingresosManuales.filter(i => new Date(i.created_at) >= corte) : ingresosManuales
 
-    const totalVentas = ventasFiltradas.reduce((sum, v) => sum + v.total, 0)
-    const cantidadVentas = ventasFiltradas.length
+    const totalVentas = ventasCobradas.reduce((sum, v) => sum + v.total, 0)
+    const cantidadVentas = ventasCobradas.length
     const totalIngresosManuales = ingresosFiltrados.reduce((sum, i) => sum + i.amount, 0)
     const totalIngresos = totalVentas + totalIngresosManuales
 
@@ -121,7 +122,7 @@ export default function Tablero() {
     const ventasPorDia = []
     for (let i = diasChart - 1; i >= 0; i--) {
         const fecha = subDays(new Date(), i)
-        const ventasDelDia = ventasFiltradas.filter(v => isSameDay(new Date(v.created_at), fecha))
+        const ventasDelDia = ventasCobradas.filter(v => isSameDay(new Date(v.created_at), fecha))
         const total = ventasDelDia.reduce((sum, v) => sum + v.total, 0)
         ventasPorDia.push({
             fecha: format(fecha, periodoIngresos === '30d' ? 'd MMM' : 'EEE d', { locale: es }),
@@ -130,7 +131,7 @@ export default function Tablero() {
         })
     }
 
-    const ultimasVentas = ventasFiltradas.slice(0, 5)
+    const ultimasVentas = ventasCobradas.slice(0, 5)
 
     const obtenerIconoPago = (metodo: string | null) => {
         switch (metodo) {

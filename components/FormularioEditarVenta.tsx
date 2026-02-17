@@ -37,6 +37,7 @@ export default function FormularioEditarVenta({
   const [receiptFile, setReceiptFile] = useState<File | undefined>()
   const [receiptPreview, setReceiptPreview] = useState<string | null>(venta.receipt_url || null)
   const [clearReceipt, setClearReceipt] = useState(false)
+  const [eligioOtro, setEligioOtro] = useState(false)
 
   useEffect(() => {
     setSaleDate(venta.sale_date ? format(new Date(venta.sale_date), 'yyyy-MM-dd') : '')
@@ -46,6 +47,7 @@ export default function FormularioEditarVenta({
     setNotes(venta.notes || '')
     setReceiptPreview(venta.receipt_url || null)
     setClearReceipt(false)
+    setEligioOtro(!!(venta.customer_id == null && (venta.customer_name ?? '').trim() !== ''))
   }, [venta])
 
   const OTRO_CLIENTE = '__otro__'
@@ -53,8 +55,10 @@ export default function FormularioEditarVenta({
   const handleClienteChange = (id: string) => {
     if (id === OTRO_CLIENTE) {
       setCustomerId(null)
+      setEligioOtro(true)
       return
     }
+    setEligioOtro(false)
     const num = id ? parseInt(id, 10) : null
     setCustomerId(num ?? null)
     if (num) {
@@ -66,8 +70,13 @@ export default function FormularioEditarVenta({
   }
 
   const esNombreLibre = !!(customerName && customerId === null)
-  const selectValue = customerId !== null ? String(customerId) : (esNombreLibre ? OTRO_CLIENTE : '')
+  const selectValue = customerId !== null ? String(customerId) : (eligioOtro || esNombreLibre ? OTRO_CLIENTE : '')
   const mostrarInputNombre = selectValue === OTRO_CLIENTE
+
+  const handleNombreOtroChange = (value: string) => {
+    setCustomerName(value)
+    if (value.trim() === '') setEligioOtro(false)
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -165,7 +174,7 @@ export default function FormularioEditarVenta({
               <input
                 type="text"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                onChange={(e) => handleNombreOtroChange(e.target.value)}
                 placeholder="Nombre del cliente"
                 className="w-full mt-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400"
               />
