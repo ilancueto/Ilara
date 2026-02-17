@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { signIn } from '@/lib/supabase'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Fingerprint } from 'lucide-react'
+import { passkeys, isPasskeySupported, formatPasskeyError } from '@/lib/passkeyAuth'
 
 export default function Login() {
     const router = useRouter()
@@ -12,7 +13,13 @@ export default function Login() {
     const [password, setPassword] = useState('')
     const [mostrarPassword, setMostrarPassword] = useState(false)
     const [cargando, setCargando] = useState(false)
+    const [cargandoPasskey, setCargandoPasskey] = useState(false)
+    const [passkeyDisponible, setPasskeyDisponible] = useState(false)
     const [error, setError] = useState('')
+
+    useEffect(() => {
+        setPasskeyDisponible(isPasskeySupported())
+    }, [])
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
@@ -35,6 +42,25 @@ export default function Login() {
         }
 
         setCargando(false)
+    }
+
+    const handlePasskeySignIn = async () => {
+        if (!email.trim()) {
+            setError('Ingresá tu email para usar huella o Face ID')
+            return
+        }
+        setError('')
+        setCargandoPasskey(true)
+        const { success, session, error: err } = await passkeys.signIn({ email: email.trim() })
+        setCargandoPasskey(false)
+        if (err) {
+            setError(formatPasskeyError(err))
+            return
+        }
+        if (success && session) {
+            router.push('/')
+            router.refresh()
+        }
     }
 
     return (
@@ -110,12 +136,32 @@ export default function Login() {
 
                     <button
                         type="submit"
-                        disabled={cargando}
+                        disabled={cargando || cargandoPasskey}
                         className="btn-primary w-full justify-center mt-2 h-[50px] text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-pink-900/30"
                         aria-label="Iniciar sesión"
                     >
                         {cargando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                     </button>
+
+                    {passkeyDisponible && (
+                        <>
+                            <div className="flex items-center gap-3 my-1">
+                                <div className="flex-1 h-px bg-white/30" />
+                                <span className="text-white/70 text-xs">o</span>
+                                <div className="flex-1 h-px bg-white/30" />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handlePasskeySignIn}
+                                disabled={cargando || cargandoPasskey}
+                                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-white/40 bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-50 text-sm font-medium"
+                                aria-label="Iniciar con huella o Face ID"
+                            >
+                                <Fingerprint size={20} />
+                                {cargandoPasskey ? 'Verificando...' : 'Iniciar con huella / Face ID'}
+                            </button>
+                        </>
+                    )}
                 </form>
 
                 <p className="login-card-paragraph mt-[34px] text-center text-xs pb-1" style={{ color: '#ffffff' }}>
