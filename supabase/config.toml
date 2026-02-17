@@ -1,0 +1,5 @@
+# Configuración para Edge Functions
+# passkey-auth: no verificar JWT (la función maneja auth internamente)
+# Necesario para /register y /login que no tienen sesión aún
+[functions.passkey-auth]
+verify_jwt = false
