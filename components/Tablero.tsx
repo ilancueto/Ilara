@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, Producto, Venta } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download } from 'lucide-react'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
@@ -15,13 +15,18 @@ type ProductoVendido = {
     ingresos_totales: number
 }
 
+type PeriodoIngresos = 'total' | '7d' | '30d'
+
 export default function Tablero() {
     const [productos, setProductos] = useState<Producto[]>([])
     const [ventas, setVentas] = useState<Venta[]>([])
+    const [ingresosManuales, setIngresosManuales] = useState<{ amount: number; created_at: string }[]>([])
+    const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
     const [topProductos, setTopProductos] = useState<ProductoVendido[]>([])
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
     const [mostrarExportar, setMostrarExportar] = useState(false)
+    const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
 
     useEffect(() => {
         cargarDatos()
@@ -29,8 +34,20 @@ export default function Tablero() {
 
     const cargarDatos = async () => {
         setCargando(true)
-        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerTopProductos()])
+        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerIngresosManuales(), obtenerTopProductos()])
         setCargando(false)
+    }
+
+    const obtenerIngresosManuales = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('incomes')
+                .select('amount, created_at')
+            if (!error && data) setIngresosManuales(data)
+            else setIngresosManuales([])
+        } catch {
+            setIngresosManuales([])
+        }
     }
 
     const obtenerProductos = async () => {
@@ -42,12 +59,9 @@ export default function Tablero() {
     }
 
     const obtenerVentas = async () => {
-        // Últimos 7 días
-        const hace7Dias = subDays(new Date(), 7)
         const { data, error } = await supabase
             .from('sales')
             .select('*')
-            .gte('created_at', hace7Dias.toISOString())
             .order('created_at', { ascending: false })
         if (!error && data) setVentas(data)
     }
@@ -92,26 +106,31 @@ export default function Tablero() {
     const inversionTotal = productos.reduce((sum, p) => sum + ((p.purchase_price || 0) * p.stock), 0)
     const gananciaPotencial = valorTotalInventario - inversionTotal
 
-    // Ventas totales últimos 7 días
-    const totalVentas7Dias = ventas.reduce((sum, v) => sum + v.total, 0)
-    const cantidadVentas7Dias = ventas.length
+    const corte = periodoIngresos === '7d' ? subDays(new Date(), 7) : periodoIngresos === '30d' ? subDays(new Date(), 30) : null
+    const ventasFiltradas = corte ? ventas.filter(v => new Date(v.created_at) >= corte) : ventas
+    const ingresosFiltrados = corte ? ingresosManuales.filter(i => new Date(i.created_at) >= corte) : ingresosManuales
 
-    // Agrupar ventas por día
+    const totalVentas = ventasFiltradas.reduce((sum, v) => sum + v.total, 0)
+    const cantidadVentas = ventasFiltradas.length
+    const totalIngresosManuales = ingresosFiltrados.reduce((sum, i) => sum + i.amount, 0)
+    const totalIngresos = totalVentas + totalIngresosManuales
+
+    const etiquetaPeriodo = periodoIngresos === 'total' ? 'Total' : periodoIngresos === '7d' ? '7 días' : '30 días'
+
+    const diasChart = periodoIngresos === '30d' ? 30 : 7
     const ventasPorDia = []
-    for (let i = 6; i >= 0; i--) {
+    for (let i = diasChart - 1; i >= 0; i--) {
         const fecha = subDays(new Date(), i)
-        const ventasDelDia = ventas.filter(v => isSameDay(new Date(v.created_at), fecha))
+        const ventasDelDia = ventasFiltradas.filter(v => isSameDay(new Date(v.created_at), fecha))
         const total = ventasDelDia.reduce((sum, v) => sum + v.total, 0)
-
         ventasPorDia.push({
-            fecha: format(fecha, 'EEE d', { locale: es }),
+            fecha: format(fecha, periodoIngresos === '30d' ? 'd MMM' : 'EEE d', { locale: es }),
             total: total,
             cantidad: ventasDelDia.length
         })
     }
 
-    // Últimas 5 ventas
-    const ultimasVentas = ventas.slice(0, 5)
+    const ultimasVentas = ventasFiltradas.slice(0, 5)
 
     const obtenerIconoPago = (metodo: string | null) => {
         switch (metodo) {
@@ -156,12 +175,22 @@ export default function Tablero() {
                 <div className="animate-slide-up stagger-1">
                     <TarjetaEstadistica
                         icono={<DollarSign className="w-6 h-6" />}
-                        etiqueta="Ventas (7 días)"
-                        valor={`$${totalVentas7Dias.toLocaleString()}`}
+                        etiqueta="Ingresos"
+                        valor={`$${totalIngresos.toLocaleString()}`}
                         color="text-pink-500"
                         bgIcon="bg-pink-50"
-                        subtitulo={`${cantidadVentas7Dias} operaciones`}
+                        subtitulo={`${cantidadVentas} ventas + ${ingresosFiltrados.length} ingresos manuales`}
                         trend={true}
+                        selectorPeriodo={
+                            <button
+                                type="button"
+                                onClick={() => setMostrarModalPeriodo(true)}
+                                className="p-2 rounded-lg bg-white/80 border border-pink-200 text-pink-600 hover:bg-white hover:border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-colors"
+                                aria-label="Cambiar período de ingresos"
+                            >
+                                <Settings className="w-4 h-4" />
+                            </button>
+                        }
                     />
                 </div>
                 <div className="animate-slide-up stagger-2">
@@ -202,14 +231,14 @@ export default function Tablero() {
 
                 {/* Column 1: Sales Chart (Span 2) */}
                 <div className="lg:col-span-2 flex flex-col gap-6">
-                    <PastelCard className="h-full min-h-[400px] flex flex-col p-9">
+                    <PastelCard noHover className="h-full min-h-[400px] flex flex-col p-9">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                 Actividad de Ventas
                             </h3>
                             <div className="flex gap-2">
                                 <span className="px-4 py-1.5 rounded-full bg-pink-50 text-[11px] text-pink-600 font-bold uppercase tracking-wider">
-                                    Últimos 7 días
+                                    {etiquetaPeriodo}
                                 </span>
                             </div>
                         </div>
@@ -259,7 +288,7 @@ export default function Tablero() {
                 <div className="flex flex-col gap-8">
 
                     {/* Top Products */}
-                    <PastelCard className="p-8">
+                    <PastelCard noHover className="p-8">
                         <h3 className="text-lg font-bold mb-6 text-gray-900 flex items-center gap-2">
                             🏆 Top Productos
                         </h3>
@@ -303,7 +332,7 @@ export default function Tablero() {
                     </PastelCard>
 
                     {/* Recent Sales */}
-                    <PastelCard className="p-8">
+                    <PastelCard noHover className="p-8">
                         <h3 className="text-lg font-bold mb-6 text-gray-900 flex items-center gap-2">
                             ⏱️ Recientes
                         </h3>
@@ -313,7 +342,7 @@ export default function Tablero() {
                                 {ultimasVentas.slice(0, 4).map(venta => (
                                     <div key={venta.id} className="flex items-center justify-between px-5 py-4 rounded-2xl hover:bg-pink-50/50 transition-all group border border-transparent hover:border-pink-100">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform flex-shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm flex-shrink-0">
                                                 {obtenerIconoPago(venta.payment_method)}
                                             </div>
                                             <div>
@@ -338,6 +367,44 @@ export default function Tablero() {
 
                 </div>
             </div>
+
+            {/* Modal Período ingresos */}
+            {mostrarModalPeriodo && (
+                <>
+                    <div className="modal-backdrop" onClick={() => setMostrarModalPeriodo(false)} />
+                    <PastelCard noHover className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[340px] z-[200] p-6 !shadow-2xl">
+                        <div className="flex justify-between items-center mb-5">
+                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                <Settings className="w-5 h-5 text-pink-500" />
+                                Período de ingresos
+                            </h3>
+                            <button
+                                onClick={() => setMostrarModalPeriodo(false)}
+                                className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Cerrar"
+                            >
+                                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            {(['total', '7d', '30d'] as const).map((p) => (
+                                <button
+                                    key={p}
+                                    type="button"
+                                    onClick={() => { setPeriodoIngresos(p); setMostrarModalPeriodo(false) }}
+                                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-colors ${
+                                        periodoIngresos === p
+                                            ? 'bg-pink-100 text-pink-700 border-2 border-pink-300'
+                                            : 'bg-gray-50 text-gray-700 hover:bg-pink-50 hover:text-pink-600 border-2 border-transparent'
+                                    }`}
+                                >
+                                    {p === 'total' ? 'Total' : p === '7d' ? 'Últimos 7 días' : 'Últimos 30 días'}
+                                </button>
+                            ))}
+                        </div>
+                    </PastelCard>
+                </>
+            )}
 
             {/* Modal Exportar datos */}
             {mostrarExportar && (
@@ -407,11 +474,13 @@ interface PropsTarjetaEstadistica {
     subtitulo?: string
     alerta?: boolean
     trend?: boolean
+    selectorPeriodo?: React.ReactNode
 }
 
-function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, alerta, trend }: PropsTarjetaEstadistica) {
+function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, alerta, trend, selectorPeriodo }: PropsTarjetaEstadistica) {
     return (
         <PastelCard
+            noHover
             className={`
                 px-9 py-9 h-full flex flex-col justify-between group cursor-default min-h-[165px] overflow-visible
                 ${alerta ? 'border-2 border-amber-400 shadow-lg shadow-amber-100' : ''}
@@ -419,7 +488,7 @@ function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, 
         >
             <div className="flex items-start justify-between gap-3 flex-shrink-0">
                 <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105 ${bgIcon} ${color}`}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${bgIcon} ${color}`}
                 >
                     {icono}
                 </div>
@@ -428,9 +497,14 @@ function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, 
                         Acción
                     </span>
                 )}
-                {trend && (
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 flex-shrink-0">
-                        <ArrowUpRight className="w-4 h-4" />
+                {(trend || selectorPeriodo) && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        {selectorPeriodo}
+                        {trend && !selectorPeriodo && (
+                            <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                                <ArrowUpRight className="w-4 h-4" />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

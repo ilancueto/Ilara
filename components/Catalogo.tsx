@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { supabase, Producto, Categoria, ItemCarrito } from '@/lib/supabase'
+import { supabase, Producto, Categoria, ComboConItems } from '@/lib/supabase'
 import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -13,6 +13,8 @@ import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
 import { ModalCarrito } from '@/components/Catalogo/ModalCarrito'
 import { ModalConfirmacionVaciar } from '@/components/Catalogo/ModalConfirmacionVaciar'
 import { ModalImagenPrevia } from '@/components/Catalogo/ModalImagenPrevia'
+import { ModalDetalleCombo } from '@/components/Catalogo/ModalDetalleCombo'
+import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
 import { ModalEasterEgg } from '@/components/Catalogo/ModalEasterEgg'
 import { useCarrito } from '@/hooks/useCarrito'
 
@@ -23,8 +25,9 @@ const PRODUCTOS_POR_PAGINA = 12
 
 export default function Catalogo() {
     const { showToast } = useToast()
-    const { carrito, agregarAlCarrito, quitarDelCarrito, actualizarCantidad, clearCarrito, mantenerSoloProductosDisponibles, badgeAnimado } = useCarrito(showToast)
+    const { carrito, agregarAlCarrito, agregarComboAlCarrito, quitarDelCarrito, quitarComboDelCarrito, actualizarCantidad, actualizarCantidadCombo, clearCarrito, mantenerSoloProductosDisponibles, badgeAnimado } = useCarrito(showToast)
     const [productos, setProductos] = useState<Producto[]>([])
+    const [combos, setCombos] = useState<ComboConItems[]>([])
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [categoriaFiltro, setCategoriaFiltro] = useState<string>('all')
     const [busqueda, setBusqueda] = useState('')
@@ -34,12 +37,14 @@ export default function Catalogo() {
     const [precioMax, setPrecioMax] = useState<number>(999999)
     const [ordenamiento, setOrdenamiento] = useState<string>('nombre-asc')
     const [imagenPrevia, setImagenPrevia] = useState<string | null>(null)
+    const [comboSeleccionado, setComboSeleccionado] = useState<ComboConItems | null>(null)
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
     const [cuponInput, setCuponInput] = useState('')
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
     const [easterModal, setEasterModal] = useState<{ open: boolean; code?: string; alreadyClaimed?: boolean }>({ open: false })
     const [paginaActual, setPaginaActual] = useState(1)
+    const [ventasPorProducto, setVentasPorProducto] = useState<Map<number, number>>(new Map())
     const konamiIndex = useRef(0)
     const logoTapCount = useRef(0)
     const logoTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -80,20 +85,47 @@ export default function Catalogo() {
 
     useEffect(() => {
         obtenerProductos()
+        obtenerCombos()
         obtenerCategorias()
     }, [])
+
+    useEffect(() => {
+        if (ordenamiento !== 'vendidos-desc') return
+        const fetchVentas = async () => {
+            const { data } = await supabase.from('sale_items').select('product_id, quantity').not('product_id', 'is', null)
+            const map = new Map<number, number>()
+            for (const row of data || []) {
+                const id = row.product_id as number
+                map.set(id, (map.get(id) ?? 0) + (row.quantity ?? 0))
+            }
+            setVentasPorProducto(map)
+        }
+        fetchVentas()
+    }, [ordenamiento])
+
+    const obtenerCombos = async () => {
+        const { data } = await supabase
+            .from('combos')
+            .select(`
+                *,
+                combo_items (id, product_id, quantity, products (*))
+            `)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+        if (data) setCombos(data as ComboConItems[])
+    }
 
     // Al salir del catálogo, vaciar el carrito para no arrastrar pedidos viejos
     useEffect(() => {
         return () => { clearCarrito() }
     }, [clearCarrito])
 
-    // Al cargar productos (o cuando el carrito se hidrata desde localStorage), quitar ítems que ya no existan o superen stock
     useEffect(() => {
         if (productos.length > 0 && carrito.length > 0) {
-            mantenerSoloProductosDisponibles(productos)
+            const combosIds = new Set(combos.map(c => c.id))
+            mantenerSoloProductosDisponibles(productos, combosIds)
         }
-    }, [productos, carrito.length, mantenerSoloProductosDisponibles])
+    }, [productos, combos, carrito.length, mantenerSoloProductosDisponibles])
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -174,6 +206,11 @@ export default function Catalogo() {
         setPaginaActual(1)
     }, [categoriaFiltro, busqueda, precioMin, precioMax, ordenamiento])
 
+    // Scroll al top al cambiar de página
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [paginaActual])
+
     const productosFiltrados = productos
         .filter(p => {
             if (categoriaFiltro !== 'all' && p.category_id?.toString() !== categoriaFiltro) return false
@@ -192,13 +229,12 @@ export default function Catalogo() {
                 case 'precio-asc': return precioA - precioB
                 case 'precio-desc': return precioB - precioA
                 case 'nombre-desc': return b.name.localeCompare(a.name)
+                case 'nuevo-desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                case 'nuevo-asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                case 'vendidos-desc': return (ventasPorProducto.get(b.id) ?? 0) - (ventasPorProducto.get(a.id) ?? 0)
                 default: return a.name.localeCompare(b.name)
             }
         })
-
-    const totalPaginas = Math.max(1, Math.ceil(productosFiltrados.length / PRODUCTOS_POR_PAGINA))
-    const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA
-    const productosPagina = productosFiltrados.slice(inicio, inicio + PRODUCTOS_POR_PAGINA)
 
     const vaciarCarrito = () => {
         clearCarrito()
@@ -208,7 +244,10 @@ export default function Catalogo() {
         showToast('info', 'Carrito vaciado')
     }
 
-    const subtotal = carrito.reduce((sum, item) => sum + (getPrecioConDescuento(item.producto) * item.cantidad), 0)
+    const subtotal = carrito.reduce((sum, item) => {
+        const precio = item.producto ? getPrecioConDescuento(item.producto) : (item.combo?.sale_price ?? 0)
+        return sum + precio * item.cantidad
+    }, 0)
     const descuentoCupon = appliedCoupon ? Math.round(subtotal * (appliedCoupon.discount_percentage / 100)) : 0
     const total = subtotal - descuentoCupon
 
@@ -240,13 +279,48 @@ export default function Catalogo() {
     const handleWhatsAppClick = () => {
         if (carrito.length === 0) return
         const items = carrito.map(item => {
-            const precioUnit = getPrecioConDescuento(item.producto)
-            return `• ${item.producto.name} x${item.cantidad} - $${(precioUnit * item.cantidad).toLocaleString()}`
+            const nombre = item.producto ? item.producto.name : item.combo!.name
+            const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
+            return `• ${nombre} x${item.cantidad} - $${(precioUnit * item.cantidad).toLocaleString()}`
         }).join('%0A')
         let totalLine = `*Total: $${total.toLocaleString()}*`
         if (appliedCoupon) totalLine = `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)%0A${totalLine}`
         const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A${totalLine}`
         window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
+    }
+
+    const combosFiltrados = combos.filter(c => {
+        if (categoriaFiltro !== 'all') return false
+        if (busqueda) {
+            const t = busqueda.toLowerCase()
+            if (!c.name.toLowerCase().includes(t) && !(c.description || '').toLowerCase().includes(t)) return false
+        }
+        if (c.sale_price < precioMin || c.sale_price > precioMax) return false
+        return true
+    })
+    const combosOrdenados = [...combosFiltrados].sort((a, b) => {
+        if (ordenamiento === 'precio-asc') return a.sale_price - b.sale_price
+        if (ordenamiento === 'precio-desc') return b.sale_price - a.sale_price
+        if (ordenamiento === 'nombre-desc') return b.name.localeCompare(a.name)
+        if (ordenamiento === 'nuevo-desc') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        if (ordenamiento === 'nuevo-asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        return a.name.localeCompare(b.name)
+    })
+    const itemsDestacados = [...combosOrdenados, ...productosFiltrados]
+    const totalItems = itemsDestacados.length
+    const totalPaginas = Math.max(1, Math.ceil(totalItems / PRODUCTOS_POR_PAGINA))
+    const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA
+    const itemsPagina = itemsDestacados.slice(inicio, inicio + PRODUCTOS_POR_PAGINA)
+
+    const comboDisponible = (combo: ComboConItems) => {
+        const items = combo.combo_items || []
+        if (items.length === 0) return false
+        const porId = new Map(productos.map(p => [p.id, p]))
+        for (const ci of items) {
+            const prod = porId.get(ci.product_id)
+            if (!prod || prod.stock < ci.quantity) return false
+        }
+        return true
     }
 
     const compartirProducto = (producto: Producto) => {
@@ -360,6 +434,9 @@ export default function Catalogo() {
                                 >
                                     <option value="nombre-asc">Nombre (A-Z)</option>
                                     <option value="nombre-desc">Nombre (Z-A)</option>
+                                    <option value="nuevo-desc">Más nuevo a más viejo</option>
+                                    <option value="nuevo-asc">Más viejo a más nuevo</option>
+                                    <option value="vendidos-desc">Más vendidos</option>
                                     <option value="precio-asc">Precio (menor a mayor)</option>
                                     <option value="precio-desc">Precio (mayor a menor)</option>
                                 </select>
@@ -403,68 +480,79 @@ export default function Catalogo() {
                         <div className="w-14 h-14 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin mb-6" />
                         <p className="text-gray-500 font-medium">Cargando productos...</p>
                     </div>
-                ) : productosFiltrados.length > 0 ? (
+                ) : totalItems > 0 ? (
                     <>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 w-full">
-                        {productosPagina.map(producto => {
+                        {itemsPagina.map(item => {
+                            const esCombo = 'sale_price' in item && 'combo_items' in item
+                            if (esCombo) {
+                                const combo = item as ComboConItems
+                                const disponible = comboDisponible(combo)
+                                return (
+                                    <PastelCard key={`combo-${combo.id}`} className="group overflow-hidden flex flex-col h-full" noHover>
+                                        <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 cursor-pointer" onClick={() => setComboSeleccionado(combo)}>
+                                            <ImagenComboRotativa
+                                                combo={combo}
+                                                fill
+                                                className="absolute inset-0 w-full h-full"
+                                                sizes="(max-width: 768px) 50vw, 25vw"
+                                            />
+                                            <BadgeRotator badges={[{ texto: 'Combo', clase: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200/50' }]} />
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=¡Mirá este combo!%0A%0A*${combo.name}*%0APrecio: $${combo.sale_price.toLocaleString()}%0A%0A¿Te interesa?` }}
+                                                className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                aria-label={`Compartir ${combo.name}`}
+                                            >
+                                                <Share2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div className="p-5 flex flex-col flex-1 cursor-pointer" onClick={() => setComboSeleccionado(combo)}>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-1.5">Combo</span>
+                                            <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">{combo.name}</h3>
+                                            {combo.description && <p className="text-xs text-gray-500 mb-3 line-clamp-2">{combo.description}</p>}
+                                            <div className="mt-auto pt-4 border-t border-pink-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <p className="text-xl font-extrabold text-gray-900">${combo.sale_price.toLocaleString()}</p>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); disponible && agregarComboAlCarrito(combo); }}
+                                                    disabled={!disponible}
+                                                    className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    aria-label={disponible ? `Agregar ${combo.name}` : `${combo.name}: agotado`}
+                                                >
+                                                    {disponible ? 'Agregar' : 'Agotado'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </PastelCard>
+                                )
+                            }
+                            const producto = item as Producto
                             const badges = obtenerBadges(producto)
                             return (
                                 <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full" noHover>
                                     <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50">
                                         {producto.image_url ? (
-                                            <Image
-                                                src={producto.image_url}
-                                                alt={producto.name}
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                                onClick={() => setImagenPrevia(producto.image_url)}
-                                            />
+                                            <Image src={producto.image_url} alt={producto.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" onClick={() => setImagenPrevia(producto.image_url)} />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Sparkles className="w-16 h-16 text-pink-200" />
-                                            </div>
+                                            <div className="w-full h-full flex items-center justify-center"><Sparkles className="w-16 h-16 text-pink-200" /></div>
                                         )}
                                         {badges.length > 0 && <BadgeRotator badges={badges} />}
-                                        <button
-                                            onClick={() => compartirProducto(producto)}
-                                            className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
-                                            aria-label={`Compartir ${producto.name} por WhatsApp`}
-                                        >
+                                        <button onClick={() => compartirProducto(producto)} className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label={`Compartir ${producto.name}`}>
                                             <Share2 className="w-4 h-4" />
                                         </button>
                                     </div>
-
                                     <div className="p-5 flex flex-col flex-1">
-                                        {producto.categories && (
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 mb-1.5">
-                                                {producto.categories.name}
-                                            </span>
-                                        )}
-                                        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">
-                                            {producto.name}
-                                        </h3>
-                                        {producto.brand && (
-                                            <p className="text-xs text-gray-500 mb-3">{producto.brand}</p>
-                                        )}
-
+                                        {producto.categories && <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 mb-1.5">{producto.categories.name}</span>}
+                                        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">{producto.name}</h3>
+                                        {producto.brand && <p className="text-xs text-gray-500 mb-3">{producto.brand}</p>}
                                         <div className="mt-auto pt-4 border-t border-pink-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                             <div className="min-w-0">
                                                 {(producto.discount_percentage ?? 0) > 0 ? (
-                                                    <>
-                                                        <p className="text-sm text-gray-400 line-through">${producto.sale_price.toLocaleString()}</p>
-                                                        <p className="text-xl font-extrabold text-gray-900">${getPrecioConDescuento(producto).toLocaleString()}</p>
-                                                    </>
+                                                    <><p className="text-sm text-gray-400 line-through">${producto.sale_price.toLocaleString()}</p><p className="text-xl font-extrabold text-gray-900">${getPrecioConDescuento(producto).toLocaleString()}</p></>
                                                 ) : (
                                                     <p className="text-xl font-extrabold text-gray-900">${producto.sale_price.toLocaleString()}</p>
                                                 )}
                                             </div>
-                                            <button
-                                                onClick={() => producto.stock > 0 && agregarAlCarrito(producto)}
-                                                disabled={producto.stock === 0}
-                                                className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md shadow-pink-200/50 hover:shadow-lg hover:shadow-pink-200/60 hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-pink-100"
-                                                aria-label={producto.stock === 0 ? `${producto.name}: agotado` : `Agregar ${producto.name} al carrito`}
-                                            >
+                                            <button onClick={() => producto.stock > 0 && agregarAlCarrito(producto)} disabled={producto.stock === 0} className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
                                                 {producto.stock === 0 ? 'Agotado' : 'Agregar'}
                                             </button>
                                         </div>
@@ -474,11 +562,10 @@ export default function Catalogo() {
                         })}
                     </div>
 
-                    {/* Paginación */}
                     {totalPaginas > 1 && (
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 mb-10">
                             <p className="text-sm text-gray-500">
-                                Mostrando {inicio + 1}–{Math.min(inicio + PRODUCTOS_POR_PAGINA, productosFiltrados.length)} de {productosFiltrados.length}
+                                Mostrando {inicio + 1}–{Math.min(inicio + PRODUCTOS_POR_PAGINA, totalItems)} de {totalItems}
                             </p>
                             <div className="flex items-center gap-1">
                                 <button
@@ -557,7 +644,9 @@ export default function Catalogo() {
                 carrito={carrito}
                 getPrecioConDescuento={getPrecioConDescuento}
                 quitarDelCarrito={quitarDelCarrito}
+                quitarComboDelCarrito={quitarComboDelCarrito}
                 actualizarCantidad={actualizarCantidad}
+                actualizarCantidadCombo={actualizarCantidadCombo}
                 cuponInput={cuponInput}
                 setCuponInput={setCuponInput}
                 appliedCoupon={appliedCoupon}
@@ -578,6 +667,15 @@ export default function Catalogo() {
 
             {imagenPrevia && (
                 <ModalImagenPrevia imageUrl={imagenPrevia} onClose={() => setImagenPrevia(null)} />
+            )}
+
+            {comboSeleccionado && (
+                <ModalDetalleCombo
+                    combo={comboSeleccionado}
+                    onClose={() => setComboSeleccionado(null)}
+                    onAgregar={() => agregarComboAlCarrito(comboSeleccionado)}
+                    disponible={comboDisponible(comboSeleccionado)}
+                />
             )}
 
             <ModalEasterEgg

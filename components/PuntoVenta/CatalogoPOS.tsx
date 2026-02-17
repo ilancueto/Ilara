@@ -1,23 +1,30 @@
 'use client'
 
 import { useState } from 'react'
-import { Producto } from '@/lib/supabase'
-import { Search, AlertTriangle } from 'lucide-react'
+import { Producto, ComboConItems } from '@/lib/supabase'
+import { Search, AlertTriangle, Package } from 'lucide-react'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
 
 interface CatalogoPOSProps {
     productos: Producto[]
+    combos?: ComboConItems[]
     onAddToCart: (producto: Producto) => void
+    onAddCombo?: (combo: ComboConItems) => void
+    comboDisponible?: (combo: ComboConItems) => boolean
 }
 
-export default function CatalogoPOS({ productos, onAddToCart }: CatalogoPOSProps) {
+export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAddCombo, comboDisponible }: CatalogoPOSProps) {
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
 
+    const t = terminoBusqueda.toLowerCase().trim()
     const productosFiltrados = productos.filter(p =>
-        p.name.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
-        p.brand?.toLowerCase().includes(terminoBusqueda.toLowerCase())
-    ).slice(0, 5) // Max 5 resultados para no saturar
+        p.name.toLowerCase().includes(t) || p.brand?.toLowerCase().includes(t)
+    ).slice(0, 8)
+    const combosFiltrados = (combos || []).filter(c =>
+        c.name.toLowerCase().includes(t) || (c.description || '').toLowerCase().includes(t)
+    ).slice(0, 4)
+    const hayResultados = productosFiltrados.length > 0 || combosFiltrados.length > 0
 
     return (
         <PastelCard className="h-full flex flex-col min-h-[500px] p-6" noHover>
@@ -33,10 +40,35 @@ export default function CatalogoPOS({ productos, onAddToCart }: CatalogoPOSProps
                 />
             </div>
 
-            {/* Resultados de búsqueda */}
             <div className="flex-1 overflow-y-auto min-h-[0] pr-2 custom-scrollbar">
-                {terminoBusqueda && productosFiltrados.length > 0 ? (
+                {terminoBusqueda && hayResultados ? (
                     <div className="space-y-4">
+                        {combosFiltrados.map(combo => {
+                            const disp = comboDisponible?.(combo) ?? true
+                            const img = combo.image_url || (combo.combo_items?.[0]?.products as Producto | undefined)?.image_url
+                            return (
+                                <button
+                                    key={`combo-${combo.id}`}
+                                    onClick={() => disp && onAddCombo?.(combo)}
+                                    disabled={!disp}
+                                    className="w-full text-left p-4 rounded-2xl bg-amber-50/80 border border-amber-100 hover:border-amber-200 hover:shadow-lg transition-all group flex items-center gap-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    aria-label={`Agregar combo ${combo.name}`}
+                                >
+                                    <div className="w-12 h-12 rounded-xl bg-white flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100 relative">
+                                        {img ? <Image src={img} alt={combo.name} fill className="object-cover" /> : <Package className="w-6 h-6 text-amber-400" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-amber-600 uppercase">Combo</span>
+                                                <h4 className="font-bold text-gray-800 text-sm truncate">{combo.name}</h4>
+                                            </div>
+                                            <div className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-lg">${combo.sale_price.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            )
+                        })}
                         {productosFiltrados.map(producto => (
                             <button
                                 key={producto.id}

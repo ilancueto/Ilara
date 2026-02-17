@@ -94,9 +94,34 @@ export type ItemVenta = {
   discount_percentage: number
 }
 
+/** Combo con sus items (productos y cantidades) */
+export type Combo = {
+  id: number
+  name: string
+  description: string | null
+  sale_price: number
+  image_url: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type ComboItem = {
+  id: number
+  combo_id: number
+  product_id: number
+  quantity: number
+  products?: Producto
+}
+
+export type ComboConItems = Combo & {
+  combo_items?: (ComboItem & { products?: Producto })[]
+}
+
 // Tipo para items del carrito (antes de guardar)
 export type ItemCarrito = {
-  producto: Producto
+  producto?: Producto
+  combo?: ComboConItems
   cantidad: number
 }
 

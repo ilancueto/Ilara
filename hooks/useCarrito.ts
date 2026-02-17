@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import type { Producto, ItemCarrito } from '@/lib/supabase'
+import type { Producto, ItemCarrito, ComboConItems } from '@/lib/supabase'
 
 const STORAGE_KEY = 'ilara-carrito'
 const STORAGE_UPDATED_AT = 'ilara-carrito-updated-at'
@@ -54,7 +54,7 @@ export function useCarrito(showToast: ShowToast) {
 
     const agregarAlCarrito = useCallback((producto: Producto) => {
         setCarrito(prev => {
-            const existente = prev.find(item => item.producto.id === producto.id)
+            const existente = prev.find(item => item.producto?.id === producto.id)
             if (existente) {
                 if (existente.cantidad >= producto.stock) {
                     pendingToastRef.current = { type: 'warning', message: 'Stock máximo alcanzado' }
@@ -62,7 +62,7 @@ export function useCarrito(showToast: ShowToast) {
                 }
                 pendingToastRef.current = { type: 'success', message: 'Cantidad actualizada' }
                 return prev.map(item =>
-                    item.producto.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
+                    item.producto?.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
                 )
             }
             pendingToastRef.current = { type: 'success', message: `${producto.name} agregado` }
@@ -72,15 +72,31 @@ export function useCarrito(showToast: ShowToast) {
         setTimeout(() => setBadgeAnimado(false), 500)
     }, [showToast])
 
+    const agregarComboAlCarrito = useCallback((combo: ComboConItems) => {
+        setCarrito(prev => {
+            const existente = prev.find(item => item.combo?.id === combo.id)
+            if (existente) {
+                pendingToastRef.current = { type: 'success', message: 'Cantidad actualizada' }
+                return prev.map(item =>
+                    item.combo?.id === combo.id ? { ...item, cantidad: item.cantidad + 1 } : item
+                )
+            }
+            pendingToastRef.current = { type: 'success', message: `${combo.name} agregado` }
+            return [...prev, { combo, cantidad: 1 }]
+        })
+        setBadgeAnimado(true)
+        setTimeout(() => setBadgeAnimado(false), 500)
+    }, [showToast])
+
     const actualizarCantidad = useCallback((productoId: number, cambio: number) => {
         setCarrito(prev => prev.map(item => {
-            if (item.producto.id !== productoId) return item
+            if (item.producto?.id !== productoId) return item
             const nuevaCantidad = item.cantidad + cambio
             if (nuevaCantidad <= 0) {
                 pendingToastRef.current = { type: 'info', message: 'Producto eliminado' }
                 return { ...item, cantidad: 0 }
             }
-            if (nuevaCantidad > item.producto.stock) {
+            if (nuevaCantidad > item.producto!.stock) {
                 pendingToastRef.current = { type: 'warning', message: 'Stock máximo alcanzado' }
                 return { ...item }
             }
@@ -88,30 +104,51 @@ export function useCarrito(showToast: ShowToast) {
         }).filter(item => item.cantidad > 0))
     }, [showToast])
 
+    const actualizarCantidadCombo = useCallback((comboId: number, cambio: number) => {
+        setCarrito(prev => prev.map(item => {
+            if (item.combo?.id !== comboId) return item
+            const nuevaCantidad = item.cantidad + cambio
+            if (nuevaCantidad <= 0) {
+                pendingToastRef.current = { type: 'info', message: 'Combo eliminado' }
+                return { ...item, cantidad: 0 }
+            }
+            return { ...item, cantidad: nuevaCantidad }
+        }).filter(item => item.cantidad > 0))
+    }, [showToast])
+
     const quitarDelCarrito = useCallback((productoId: number) => {
-        setCarrito(prev => prev.filter(item => item.producto.id !== productoId))
+        setCarrito(prev => prev.filter(item => item.producto?.id !== productoId))
         showToast('info', 'Producto eliminado')
+    }, [showToast])
+
+    const quitarComboDelCarrito = useCallback((comboId: number) => {
+        setCarrito(prev => prev.filter(item => item.combo?.id !== comboId))
+        showToast('info', 'Combo eliminado')
     }, [showToast])
 
     const clearCarrito = useCallback(() => {
         setCarrito([])
     }, [])
 
-    /** Quita del carrito productos que ya no existan o superen el stock actual. Devuelve true si se quitó algo. */
-    const mantenerSoloProductosDisponibles = useCallback((productos: Producto[]) => {
+    /** Quita del carrito productos que ya no existan o superen el stock actual. Mantiene combos. */
+    const mantenerSoloProductosDisponibles = useCallback((productos: Producto[], combosIds?: Set<number>) => {
         const idsValidos = new Set(productos.map(p => p.id))
         const porId = new Map(productos.map(p => [p.id, p]))
         setCarrito(prev => {
             const siguiente = prev
-                .filter(item => idsValidos.has(item.producto.id))
+                .filter(item => {
+                    if (item.combo) return combosIds ? combosIds.has(item.combo!.id) : true
+                    return idsValidos.has(item.producto!.id)
+                })
                 .map(item => {
-                    const actual = porId.get(item.producto.id)!
+                    if (item.combo) return item
+                    const actual = porId.get(item.producto!.id)!
                     const cantidad = Math.min(item.cantidad, actual.stock)
                     return { ...item, producto: actual, cantidad }
                 })
                 .filter(item => item.cantidad > 0)
             if (siguiente.length < prev.length) {
-                pendingToastRef.current = { type: 'info', message: 'Se quitaron productos que ya no están disponibles' }
+                pendingToastRef.current = { type: 'info', message: 'Se quitaron ítems que ya no están disponibles' }
             }
             return siguiente
         })
@@ -120,8 +157,11 @@ export function useCarrito(showToast: ShowToast) {
     return {
         carrito,
         agregarAlCarrito,
+        agregarComboAlCarrito,
         quitarDelCarrito,
+        quitarComboDelCarrito,
         actualizarCantidad,
+        actualizarCantidadCombo,
         clearCarrito,
         mantenerSoloProductosDisponibles,
         badgeAnimado,

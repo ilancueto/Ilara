@@ -109,6 +109,9 @@ export interface IncomeFilters {
     dateFrom?: string;
     dateTo?: string;
     type?: IncomeType;
+    /** Filtrar por fecha de creación (ISO). Ej: ingresos cargados en los últimos 7 días */
+    createdFrom?: string;
+    createdTo?: string;
 }
 
 export const INCOME_TYPE_LABELS: Record<IncomeType, string> = {

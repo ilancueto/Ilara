@@ -11,7 +11,9 @@ interface ModalCarritoProps {
     carrito: ItemCarrito[]
     getPrecioConDescuento: (producto: Producto) => number
     quitarDelCarrito: (productoId: number) => void
+    quitarComboDelCarrito?: (comboId: number) => void
     actualizarCantidad: (productoId: number, cambio: number) => void
+    actualizarCantidadCombo?: (comboId: number, cambio: number) => void
     cuponInput: string
     setCuponInput: (v: string) => void
     appliedCoupon: { code: string; discount_percentage: number } | null
@@ -30,7 +32,9 @@ export function ModalCarrito({
     carrito,
     getPrecioConDescuento,
     quitarDelCarrito,
+    quitarComboDelCarrito,
     actualizarCantidad,
+    actualizarCantidadCombo,
     cuponInput,
     setCuponInput,
     appliedCoupon,
@@ -69,38 +73,46 @@ export function ModalCarrito({
                 {carrito.length > 0 ? (
                     <>
                         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-                            {carrito.map(item => (
-                                <div key={item.producto.id} className="flex gap-4 p-4 rounded-2xl bg-pink-50/50 border border-pink-100/50">
-                                    <div className="w-20 h-20 rounded-xl overflow-hidden relative flex-shrink-0 bg-white border border-pink-100">
-                                        {item.producto.image_url ? (
-                                            <Image src={item.producto.image_url} alt={item.producto.name} fill className="object-cover" />
-                                        ) : (
-                                            <div className="flex items-center justify-center h-full w-full"><Sparkles className="w-8 h-8 text-pink-200" /></div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start gap-2 mb-2">
-                                            <h4 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2">{item.producto.name}</h4>
-                                            <button onClick={() => quitarDelCarrito(item.producto.id)} className="text-gray-300 hover:text-red-400 p-1 flex-shrink-0" aria-label={`Quitar ${item.producto.name} del carrito`}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                            {carrito.map(item => {
+                                const esProducto = !!item.producto
+                                const nombre = esProducto ? item.producto!.name : item.combo!.name
+                                const precioUnit = esProducto ? getPrecioConDescuento(item.producto!) : item.combo!.sale_price
+                                const imagen = esProducto ? item.producto!.image_url : item.combo!.image_url
+                                const key = esProducto ? `p-${item.producto!.id}` : `c-${item.combo!.id}`
+                                const maxStock = esProducto ? item.producto!.stock : undefined
+                                return (
+                                    <div key={key} className="flex gap-4 p-4 rounded-2xl bg-pink-50/50 border border-pink-100/50">
+                                        <div className="w-20 h-20 rounded-xl overflow-hidden relative flex-shrink-0 bg-white border border-pink-100">
+                                            {imagen ? (
+                                                <Image src={imagen} alt={nombre} fill className="object-cover" />
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full w-full"><Sparkles className="w-8 h-8 text-pink-200" /></div>
+                                            )}
                                         </div>
-                                        <p className="text-xs text-gray-500 mb-3">${getPrecioConDescuento(item.producto).toLocaleString()} c/u</p>
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 border border-pink-100">
-                                                <button onClick={() => actualizarCantidad(item.producto.id, -1)} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors" aria-label="Reducir cantidad">
-                                                    <Minus className="w-4 h-4" />
-                                                </button>
-                                                <span className="text-sm font-bold w-6 text-center">{item.cantidad}</span>
-                                                <button onClick={() => actualizarCantidad(item.producto.id, 1)} disabled={item.cantidad >= item.producto.stock} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Aumentar cantidad">
-                                                    <Plus className="w-4 h-4" />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start gap-2 mb-2">
+                                                <h4 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2">{nombre}{!esProducto && <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded ml-1">Combo</span>}</h4>
+                                                <button onClick={() => esProducto ? quitarDelCarrito(item.producto!.id) : quitarComboDelCarrito?.(item.combo!.id)} className="text-gray-300 hover:text-red-400 p-1 flex-shrink-0" aria-label={`Quitar ${nombre} del carrito`}>
+                                                    <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
-                                            <p className="font-extrabold text-gray-900">${(getPrecioConDescuento(item.producto) * item.cantidad).toLocaleString()}</p>
+                                            <p className="text-xs text-gray-500 mb-3">${precioUnit.toLocaleString()} c/u</p>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 border border-pink-100">
+                                                    <button onClick={() => esProducto ? actualizarCantidad(item.producto!.id, -1) : actualizarCantidadCombo?.(item.combo!.id, -1)} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors" aria-label="Reducir cantidad">
+                                                        <Minus className="w-4 h-4" />
+                                                    </button>
+                                                    <span className="text-sm font-bold w-6 text-center">{item.cantidad}</span>
+                                                    <button onClick={() => esProducto ? actualizarCantidad(item.producto!.id, 1) : actualizarCantidadCombo?.(item.combo!.id, 1)} disabled={maxStock !== undefined && item.cantidad >= maxStock} className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Aumentar cantidad">
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                                <p className="font-extrabold text-gray-900">${(precioUnit * item.cantidad).toLocaleString()}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
 
                         <div className="p-6 bg-gradient-to-br from-pink-50 to-white border-t border-pink-100">

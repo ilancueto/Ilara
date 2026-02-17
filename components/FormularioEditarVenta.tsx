@@ -48,9 +48,15 @@ export default function FormularioEditarVenta({
     setClearReceipt(false)
   }, [venta])
 
+  const OTRO_CLIENTE = '__otro__'
+
   const handleClienteChange = (id: string) => {
+    if (id === OTRO_CLIENTE) {
+      setCustomerId(null)
+      return
+    }
     const num = id ? parseInt(id, 10) : null
-    setCustomerId(num)
+    setCustomerId(num ?? null)
     if (num) {
       const c = clientes.find((x) => x.id === num)
       if (c) setCustomerName(`${c.first_name} ${c.last_name}`)
@@ -58,6 +64,10 @@ export default function FormularioEditarVenta({
       setCustomerName('')
     }
   }
+
+  const esNombreLibre = !!(customerName && customerId === null)
+  const selectValue = customerId !== null ? String(customerId) : (esNombreLibre ? OTRO_CLIENTE : '')
+  const mostrarInputNombre = selectValue === OTRO_CLIENTE
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -122,7 +132,7 @@ export default function FormularioEditarVenta({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="form-label">Fecha</label>
             <input
@@ -139,7 +149,7 @@ export default function FormularioEditarVenta({
               Cliente
             </label>
             <select
-              value={customerId ?? ''}
+              value={selectValue}
               onChange={(e) => handleClienteChange(e.target.value)}
               className="w-full mt-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800"
             >
@@ -149,19 +159,22 @@ export default function FormularioEditarVenta({
                   {c.first_name} {c.last_name}
                 </option>
               ))}
+              <option value={OTRO_CLIENTE}>Otro (escribir nombre)</option>
             </select>
-            <input
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="O escribir nombre"
-              className="w-full mt-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400"
-            />
+            {mostrarInputNombre && (
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Nombre del cliente"
+                className="w-full mt-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400"
+              />
+            )}
           </div>
 
           <div>
             <label className="form-label">Método de pago</label>
-            <div className="flex gap-2 mt-1">
+            <div className="flex flex-wrap gap-2 mt-1">
               {[
                 { id: 'efectivo', icon: Banknote, label: 'Efectivo' },
                 { id: 'tarjeta', icon: CreditCard, label: 'Tarjeta' },

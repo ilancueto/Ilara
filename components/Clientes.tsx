@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, getUser, Cliente, Venta } from '@/lib/supabase'
-import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt } from 'lucide-react'
+import { supabase, getUser, Cliente, Venta, ItemVenta } from '@/lib/supabase'
+import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt, ChevronDown, ChevronUp } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { format, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -30,6 +30,8 @@ export default function Clientes() {
     const [clientePerfil, setClientePerfil] = useState<Cliente | null>(null)
     const [ventasCliente, setVentasCliente] = useState<Pick<Venta, 'id' | 'sale_date' | 'total' | 'payment_method' | 'status' | 'created_at'>[]>([])
     const [cargandoPerfil, setCargandoPerfil] = useState(false)
+    const [ventaExpandida, setVentaExpandida] = useState<number | null>(null)
+    const [itemsPorVenta, setItemsPorVenta] = useState<Map<number, ItemVenta[]>>(new Map())
 
     const [formData, setFormData] = useState({
         first_name: '',
@@ -227,6 +229,27 @@ export default function Clientes() {
     const cerrarPerfil = () => {
         setClientePerfil(null)
         setVentasCliente([])
+        setVentaExpandida(null)
+        setItemsPorVenta(new Map())
+    }
+
+    const toggleDetalleVenta = async (saleId: number) => {
+        if (ventaExpandida === saleId) {
+            setVentaExpandida(null)
+            return
+        }
+        if (itemsPorVenta.has(saleId)) {
+            setVentaExpandida(saleId)
+            return
+        }
+        const { data } = await supabase
+            .from('sale_items')
+            .select('id, product_name, quantity, unit_price, subtotal')
+            .eq('sale_id', saleId)
+        if (data) {
+            setItemsPorVenta(prev => new Map(prev).set(saleId, data as ItemVenta[]))
+            setVentaExpandida(saleId)
+        }
     }
 
     // Filtrar clientes
@@ -674,6 +697,7 @@ export default function Clientes() {
                                 <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3 flex items-center gap-2">
                                     <Receipt className="w-4 h-4" />
                                     Últimas ventas
+                                    <span className="text-[10px] font-normal normal-case text-gray-400">(click para ver productos)</span>
                                 </p>
                                 {cargandoPerfil ? (
                                     <p className="text-sm text-gray-400 py-4">Cargando...</p>
@@ -681,17 +705,44 @@ export default function Clientes() {
                                     <p className="text-sm text-gray-400 py-4">Sin ventas registradas.</p>
                                 ) : (
                                     <ul className="space-y-2">
-                                        {ventasCliente.map(v => (
-                                            <li
-                                                key={v.id}
-                                                className="flex items-center justify-between py-2 px-3 rounded-xl bg-gray-50 hover:bg-pink-50/50 border border-transparent hover:border-pink-100 text-sm"
-                                            >
-                                                <span className="text-gray-600">
-                                                    {format(new Date(v.sale_date || v.created_at), "d MMM yyyy, HH:mm", { locale: es })}
-                                                </span>
-                                                <span className="font-bold text-gray-800">${v.total.toLocaleString()}</span>
-                                            </li>
-                                        ))}
+                                        {ventasCliente.map(v => {
+                                            const expandida = ventaExpandida === v.id
+                                            const items = itemsPorVenta.get(v.id) ?? []
+                                            return (
+                                                <li key={v.id} className="rounded-xl bg-gray-50 border border-transparent hover:border-pink-100 overflow-hidden">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleDetalleVenta(v.id)}
+                                                        className="w-full flex items-center justify-between gap-2 py-2 px-3 hover:bg-pink-50/50 text-sm text-left"
+                                                    >
+                                                        <span className="text-gray-600">
+                                                            {format(new Date(v.sale_date || v.created_at), "d MMM yyyy, HH:mm", { locale: es })}
+                                                        </span>
+                                                        <span className="flex items-center gap-1.5">
+                                                            <span className="font-bold text-gray-800">${v.total.toLocaleString()}</span>
+                                                            {expandida ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                                        </span>
+                                                    </button>
+                                                    {expandida && (
+                                                        <div className="px-3 pb-3 pt-1 border-t border-pink-100/50">
+                                                            <p className="text-xs text-gray-500 font-semibold mb-2">Productos:</p>
+                                                            <ul className="space-y-1.5">
+                                                                {items.length === 0 ? (
+                                                                    <li className="text-xs text-gray-400">Cargando...</li>
+                                                                ) : (
+                                                                    items.map(item => (
+                                                                        <li key={item.id} className="text-xs text-gray-700 flex justify-between gap-2">
+                                                                            <span>{item.product_name} × {item.quantity}</span>
+                                                                            <span className="font-medium">${item.subtotal.toLocaleString()}</span>
+                                                                        </li>
+                                                                    ))
+                                                                )}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            )
+                                        })}
                                     </ul>
                                 )}
                             </div>

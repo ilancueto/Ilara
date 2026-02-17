@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, getUser, Producto, ItemCarrito, Cliente } from '@/lib/supabase'
+import { supabase, getUser, Producto, ItemCarrito, Cliente, ComboConItems } from '@/lib/supabase'
 import { useToast } from '@/context/ToastContext'
 import CatalogoPOS from './CatalogoPOS'
 import CarritoVenta from './CarritoVenta'
@@ -10,6 +10,7 @@ import PanelPago from './PanelPago'
 export default function PuntoVenta() {
     const { showSuccess, showError } = useToast()
     const [productos, setProductos] = useState<Producto[]>([])
+    const [combos, setCombos] = useState<ComboConItems[]>([])
     const [clientes, setClientes] = useState<Cliente[]>([])
 
     // Carrito State
@@ -25,8 +26,17 @@ export default function PuntoVenta() {
 
     useEffect(() => {
         obtenerProductos()
+        obtenerCombos()
         obtenerClientes()
     }, [])
+
+    const obtenerCombos = async () => {
+        const { data } = await supabase
+            .from('combos')
+            .select('*, combo_items(id, product_id, quantity, products(*))')
+            .eq('is_active', true)
+        if (data) setCombos(data as ComboConItems[])
+    }
 
     const obtenerProductos = async () => {
         const { data } = await supabase
@@ -46,13 +56,11 @@ export default function PuntoVenta() {
     }
 
     const agregarAlCarrito = (producto: Producto) => {
-        const existente = carrito.find(item => item.producto.id === producto.id)
+        const existente = carrito.find(item => item.producto?.id === producto.id)
         if (existente) {
             if (existente.cantidad < producto.stock) {
                 setCarrito(carrito.map(item =>
-                    item.producto.id === producto.id
-                        ? { ...item, cantidad: item.cantidad + 1 }
-                        : item
+                    item.producto?.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
                 ))
             } else {
                 showError(`Solo hay ${producto.stock} unidades disponibles`)
@@ -62,21 +70,71 @@ export default function PuntoVenta() {
         }
     }
 
+    const comboDisponible = (combo: ComboConItems) => {
+        const items = combo.combo_items || []
+        const porId = new Map(productos.map(p => [p.id, p]))
+        for (const ci of items) {
+            const prod = porId.get(ci.product_id)
+            if (!prod || prod.stock < ci.quantity) return false
+        }
+        return true
+    }
+
+    const agregarComboAlCarrito = (combo: ComboConItems) => {
+        if (!comboDisponible(combo)) {
+            showError('No hay stock suficiente para este combo')
+            return
+        }
+        const existente = carrito.find(item => item.combo?.id === combo.id)
+        if (existente) {
+            const maxCombos = Math.min(...(combo.combo_items || []).map(ci => {
+                const p = productos.find(pr => pr.id === ci.product_id)
+                return p ? Math.floor(p.stock / ci.quantity) : 0
+            }))
+            if (existente.cantidad >= maxCombos) {
+                showError(`Solo hay stock para ${maxCombos} combo(s)`)
+                return
+            }
+            setCarrito(carrito.map(item => item.combo?.id === combo.id ? { ...item, cantidad: item.cantidad + 1 } : item))
+        } else {
+            setCarrito([...carrito, { combo, cantidad: 1 }])
+        }
+    }
+
+    const actualizarCantidadCombo = (comboId: number, delta: number) => {
+        const combo = combos.find(c => c.id === comboId)
+        if (!combo) return
+        const maxCombos = (combo.combo_items || []).length ? Math.min(...(combo.combo_items!.map(ci => {
+            const p = productos.find(pr => pr.id === ci.product_id)
+            return p ? Math.floor(p.stock / ci.quantity) : 0
+        }))) : 1
+        setCarrito(carrito.map(item => {
+            if (item.combo?.id !== comboId) return item
+            const nuevaCantidad = Math.max(1, Math.min(maxCombos, item.cantidad + delta))
+            return { ...item, cantidad: nuevaCantidad }
+        }))
+    }
+
+    const quitarComboDelCarrito = (comboId: number) => {
+        setCarrito(carrito.filter(item => item.combo?.id !== comboId))
+    }
+
     const actualizarCantidad = (productoId: number, delta: number) => {
         setCarrito(carrito.map(item => {
-            if (item.producto.id === productoId) {
-                const nuevaCantidad = Math.max(1, Math.min(item.producto.stock, item.cantidad + delta))
-                return { ...item, cantidad: nuevaCantidad }
-            }
-            return item
+            if (item.producto?.id !== productoId) return item
+            const nuevaCantidad = Math.max(1, Math.min(item.producto!.stock, item.cantidad + delta))
+            return { ...item, cantidad: nuevaCantidad }
         }))
     }
 
     const quitarDelCarrito = (productoId: number) => {
-        setCarrito(carrito.filter(item => item.producto.id !== productoId))
+        setCarrito(carrito.filter(item => item.producto?.id !== productoId))
     }
 
-    const total = carrito.reduce((sum, item) => sum + (item.producto.sale_price * item.cantidad), 0)
+    const total = carrito.reduce((sum, item) => {
+        const precio = item.producto ? item.producto.sale_price : (item.combo?.sale_price ?? 0)
+        return sum + precio * item.cantidad
+    }, 0)
 
     const manejarVenta = async () => {
         if (carrito.length === 0) return
@@ -113,43 +171,59 @@ export default function PuntoVenta() {
 
             if (errorVenta) throw errorVenta
 
-            // 2. Crear los items de venta
-            const itemsVenta = carrito.map(item => ({
-                sale_id: venta.id,
-                product_id: item.producto.id,
-                product_name: item.producto.name,
-                quantity: item.cantidad,
-                unit_price: item.producto.sale_price,
-                subtotal: item.producto.sale_price * item.cantidad,
-                discount_percentage: 0
-            }))
+            // 2. Crear items de venta
+            const itemsVenta: Array<{ sale_id: number; product_id: number | null; product_name: string; quantity: number; unit_price: number; subtotal: number; discount_percentage: number }> = []
+            const movimientos: Array<{ product_id: number; type: string; quantity: number; reference_type: string; reference_id: number; notes: null }> = []
 
-            const { error: errorItems } = await supabase
-                .from('sale_items')
-                .insert(itemsVenta)
-
-            if (errorItems) throw errorItems
-
-            // 3. Actualizar stock de productos
             for (const item of carrito) {
-                const nuevoStock = item.producto.stock - item.cantidad
-                const { error: errorStock } = await supabase
-                    .from('products')
-                    .update({ stock: nuevoStock })
-                    .eq('id', item.producto.id)
-
-                if (errorStock) throw errorStock
+                if (item.producto) {
+                    itemsVenta.push({
+                        sale_id: venta.id,
+                        product_id: item.producto.id,
+                        product_name: item.producto.name,
+                        quantity: item.cantidad,
+                        unit_price: item.producto.sale_price,
+                        subtotal: item.producto.sale_price * item.cantidad,
+                        discount_percentage: 0
+                    })
+                    movimientos.push({ product_id: item.producto.id, type: 'sale', quantity: -item.cantidad, reference_type: 'sale', reference_id: venta.id, notes: null })
+                } else if (item.combo) {
+                    itemsVenta.push({
+                        sale_id: venta.id,
+                        product_id: null,
+                        product_name: item.combo.name,
+                        quantity: item.cantidad,
+                        unit_price: item.combo.sale_price,
+                        subtotal: item.combo.sale_price * item.cantidad,
+                        discount_percentage: 0
+                    })
+                    for (const ci of item.combo.combo_items || []) {
+                        const qty = ci.quantity * item.cantidad
+                        movimientos.push({ product_id: ci.product_id, type: 'sale', quantity: -qty, reference_type: 'sale', reference_id: venta.id, notes: null })
+                    }
+                }
             }
 
-            // 4. Registrar movimientos de stock (historial) — opcional si existe la tabla
-            const movimientos = carrito.map(item => ({
-                product_id: item.producto.id,
-                type: 'sale',
-                quantity: -item.cantidad,
-                reference_type: 'sale',
-                reference_id: venta.id,
-                notes: null
-            }))
+            const { error: errorItems } = await supabase.from('sale_items').insert(itemsVenta)
+            if (errorItems) throw errorItems
+
+            // 3. Actualizar stock
+            for (const item of carrito) {
+                if (item.producto) {
+                    const nuevoStock = item.producto.stock - item.cantidad
+                    await supabase.from('products').update({ stock: nuevoStock }).eq('id', item.producto.id)
+                } else if (item.combo) {
+                    for (const ci of item.combo.combo_items || []) {
+                        const prod = productos.find(p => p.id === ci.product_id)
+                        if (prod) {
+                            const nuevoStock = prod.stock - ci.quantity * item.cantidad
+                            await supabase.from('products').update({ stock: nuevoStock }).eq('id', ci.product_id)
+                        }
+                    }
+                }
+            }
+
+            // 4. Movimientos de stock
             const { error: errMov } = await supabase.from('stock_movements').insert(movimientos)
             if (errMov) {
                 // Tabla stock_movements puede no existir aún; la venta ya se guardó
@@ -161,7 +235,8 @@ export default function PuntoVenta() {
             setCobrarDespues(false)
             setPaymentBreakdown(null)
             setNotas('')
-            obtenerProductos() // Refrescar productos con nuevo stock
+                    obtenerProductos()
+                    obtenerCombos()
         } catch (error) {
             console.error('Error al procesar venta:', error)
             showError('Error al procesar la venta')
@@ -178,7 +253,10 @@ export default function PuntoVenta() {
                 <div className="flex-1 min-h-0 flex flex-col">
                     <CatalogoPOS
                         productos={productos}
+                        combos={combos}
                         onAddToCart={agregarAlCarrito}
+                        onAddCombo={agregarComboAlCarrito}
+                        comboDisponible={comboDisponible}
                     />
                 </div>
 
@@ -187,7 +265,9 @@ export default function PuntoVenta() {
                     <CarritoVenta
                         carrito={carrito}
                         onUpdateQuantity={actualizarCantidad}
+                        onUpdateQuantityCombo={actualizarCantidadCombo}
                         onRemove={quitarDelCarrito}
+                        onRemoveCombo={quitarComboDelCarrito}
                     />
                 </div>
             </div>

@@ -18,6 +18,8 @@ export async function getIncomes(filters?: IncomeFilters): Promise<Income[]> {
     if (filters?.dateFrom) query = query.gte('date', filters.dateFrom);
     if (filters?.dateTo) query = query.lte('date', filters.dateTo);
     if (filters?.type) query = query.eq('type', filters.type);
+    if (filters?.createdFrom) query = query.gte('created_at', filters.createdFrom);
+    if (filters?.createdTo) query = query.lte('created_at', filters.createdTo);
 
     const { data, error } = await query;
     if (error) {
