@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { ComboConItems, Producto } from '@/lib/supabase'
+import type { Combo, ComboItem, Producto } from '@/lib/supabase'
 import { Loader, X, Plus, Trash2, Package, Tag, DollarSign, Sparkles, ShoppingBag } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
+
+type ComboConItems = Combo & { combo_items?: (ComboItem & { products?: Producto })[] }
 
 type ComboItemForm = { product_id: number; quantity: number; product?: Producto }
 
