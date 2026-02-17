@@ -25,6 +25,15 @@ const withPWA = require('next-pwa')({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: 'https://raw.githubusercontent.com/ilancueto/AppIlara/main/assets/logo_icon.png',
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
