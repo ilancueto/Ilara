@@ -9,22 +9,17 @@ import Clientes from '@/components/Clientes'
 import Gastos from '@/components/Gastos'
 import Ingresos from '@/components/Ingresos'
 import Link from 'next/link'
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store, Fingerprint } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
-import { passkeys, isPasskeySupported } from '@/lib/passkeyAuth'
-import { useToast } from '@/context/ToastContext'
 
 function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { showSuccess, showError } = useToast()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'sales' | 'customers' | 'expenses' | 'incomes'>('dashboard')
   const [cargando, setCargando] = useState(true)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [logoError, setLogoError] = useState(false)
-  const [passkeyDisponible, setPasskeyDisponible] = useState(false)
-  const [agregandoPasskey, setAgregandoPasskey] = useState(false)
 
   // Verificar autenticación al cargar
   useEffect(() => {
@@ -37,28 +32,11 @@ function HomeContent() {
       }
 
       setUserEmail(user.email || null)
-      setPasskeyDisponible(isPasskeySupported())
       setCargando(false)
     }
 
     checkAuth()
   }, [router])
-
-  const handleAgregarPasskey = async () => {
-    setAgregandoPasskey(true)
-    try {
-      const { success, error } = await passkeys.linkPasskey()
-      if (error) {
-        showError(error.message || 'No se pudo agregar la huella')
-        return
-      }
-      if (success) showSuccess('Huella / Face ID agregada. Podés usarla para iniciar sesión.')
-    } catch {
-      showError('Error al agregar huella')
-    } finally {
-      setAgregandoPasskey(false)
-    }
-  }
 
   // Manejar cambio de tab por URL
   useEffect(() => {
@@ -194,17 +172,6 @@ function HomeContent() {
                 </div>
               </div>
 
-              {passkeyDisponible && (
-                <button
-                  type="button"
-                  onClick={handleAgregarPasskey}
-                  disabled={agregandoPasskey}
-                  className="w-full btn-ghost p-2 text-xs font-bold text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg flex items-center justify-center gap-2 transition-all mb-2"
-                >
-                  <Fingerprint className="w-3.5 h-3.5" />
-                  {agregandoPasskey ? 'Agregando...' : 'Agregar huella / Face ID'}
-                </button>
-              )}
               <button
                 onClick={handleLogout}
                 className="w-full btn-ghost p-2 text-xs font-bold text-pink-500 hover:text-pink-700 hover:bg-pink-100 rounded-lg flex items-center justify-center gap-2 transition-all mt-btn-logout"
@@ -292,17 +259,6 @@ function HomeContent() {
                     </div>
                   </div>
                 </div>
-                {passkeyDisponible && (
-                  <button
-                    type="button"
-                    onClick={handleAgregarPasskey}
-                    disabled={agregandoPasskey}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[44px] text-gray-600 font-bold bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-xl transition-colors touch-manipulation mb-3"
-                  >
-                    <Fingerprint className="w-4 h-4 shrink-0" />
-                    {agregandoPasskey ? 'Agregando...' : 'Agregar huella / Face ID'}
-                  </button>
-                )}
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[44px] text-red-600 font-bold bg-red-50 hover:bg-red-100 active:bg-red-200 rounded-xl transition-colors touch-manipulation"
