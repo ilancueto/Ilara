@@ -545,7 +545,7 @@ export default function Clientes() {
                     <div className="modal-backdrop" onClick={cerrarModal} />
                     <PastelCard className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-9 z-[100] !shadow-2xl" noHover>
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-3">
+                            <h3 className="text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-3 mt-2.5 mb-2.5">
                                 <div className="p-2 bg-pink-100 rounded-lg text-pink-600">
                                     <User className="w-6 h-6" />
                                 </div>
@@ -562,53 +562,53 @@ export default function Clientes() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="form-label">Nombre <span className="text-pink-500">*</span></label>
+                                    <label className="form-label pt-2.5 pb-2.5">Nombre <span className="text-pink-500">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.first_name}
                                         onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                                         placeholder="Ej: María"
                                         required
-                                        className="transition-all"
+                                        className="transition-all py-5 px-5 h-[33px] text-left"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="form-label">Apellido <span className="text-pink-500">*</span></label>
+                                    <label className="form-label pt-2.5 pb-2.5">Apellido <span className="text-pink-500">*</span></label>
                                     <input
                                         type="text"
                                         value={formData.last_name}
                                         onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                                         placeholder="Ej: González"
                                         required
-                                        className="transition-all"
+                                        className="transition-all py-5 px-5 h-[33px] text-left"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="form-label">Email</label>
+                                <label className="form-label pt-2.5 pb-2.5 mt-2.5 mb-px">Email</label>
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="cliente@ejemplo.com"
-                                    className="transition-all"
+                                    className="transition-all py-5 px-5 h-[33px] text-left mt-2.5"
                                 />
                             </div>
 
                             <div>
-                                <label className="form-label">Teléfono / WhatsApp</label>
+                                <label className="form-label pt-2.5 pb-2.5">Teléfono / WhatsApp</label>
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     placeholder="Ej: 299 123 4567"
-                                    className="transition-all"
+                                    className="transition-all py-5 px-5 h-[33px] text-left"
                                 />
                             </div>
 
-                            <div className="flex gap-3 pt-4 border-t border-gray-100 mt-4">
+                            <div className="flex gap-3 pt-px border-t border-gray-100 mt-4">
                                 <button
                                     type="button"
                                     onClick={cerrarModal}
