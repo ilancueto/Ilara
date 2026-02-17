@@ -15,7 +15,7 @@ const baseUrl = process.env.VERCEL_URL
 
 // URL absoluta del logo para preview al compartir (WhatsApp, etc.) – Raw GitHub
 const ogImageUrl =
-  "https://raw.githubusercontent.com/ilancueto/Ilara/main/public/logo_icon.png";
+  "https://raw.githubusercontent.com/ilancueto/AppIlara/main/assets/logo_icon.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   description: "Sistema de inventario, ventas y finanzas",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo_icon.png",
-    apple: "/logo_icon.png",
+    icon: ogImageUrl,
+    apple: ogImageUrl,
   },
   appleWebApp: {
     capable: true,

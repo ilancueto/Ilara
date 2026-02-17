@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Catalogo from '@/components/Catalogo'
 
-const ogImageUrl = 'https://raw.githubusercontent.com/ilancueto/Ilara/main/public/logo_icon.png';
+const ogImageUrl = 'https://raw.githubusercontent.com/ilancueto/AppIlara/main/assets/logo_icon.png';
 
 export const metadata: Metadata = {
     title: 'Catálogo - Ilara Beauty',
