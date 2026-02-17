@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase, Producto, Categoria, ItemCarrito } from '@/lib/supabase'
-import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
@@ -19,6 +19,7 @@ import { useCarrito } from '@/hooks/useCarrito'
 const KONAMI = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65] // ↑↑↓↓←→←→BA
 const DEVICE_ID_KEY = 'ilara_easter_device_id'
 const TAPS_NEEDED = 7
+const PRODUCTOS_POR_PAGINA = 12
 
 export default function Catalogo() {
     const { showToast } = useToast()
@@ -38,6 +39,7 @@ export default function Catalogo() {
     const [cuponInput, setCuponInput] = useState('')
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
     const [easterModal, setEasterModal] = useState<{ open: boolean; code?: string; alreadyClaimed?: boolean }>({ open: false })
+    const [paginaActual, setPaginaActual] = useState(1)
     const konamiIndex = useRef(0)
     const logoTapCount = useRef(0)
     const logoTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -167,6 +169,11 @@ export default function Catalogo() {
         return badges
     }
 
+    // Reset página cuando cambian filtros o búsqueda
+    useEffect(() => {
+        setPaginaActual(1)
+    }, [categoriaFiltro, busqueda, precioMin, precioMax, ordenamiento])
+
     const productosFiltrados = productos
         .filter(p => {
             if (categoriaFiltro !== 'all' && p.category_id?.toString() !== categoriaFiltro) return false
@@ -188,6 +195,10 @@ export default function Catalogo() {
                 default: return a.name.localeCompare(b.name)
             }
         })
+
+    const totalPaginas = Math.max(1, Math.ceil(productosFiltrados.length / PRODUCTOS_POR_PAGINA))
+    const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA
+    const productosPagina = productosFiltrados.slice(inicio, inicio + PRODUCTOS_POR_PAGINA)
 
     const vaciarCarrito = () => {
         clearCarrito()
@@ -393,8 +404,9 @@ export default function Catalogo() {
                         <p className="text-gray-500 font-medium">Cargando productos...</p>
                     </div>
                 ) : productosFiltrados.length > 0 ? (
+                    <>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 w-full">
-                        {productosFiltrados.map(producto => {
+                        {productosPagina.map(producto => {
                             const badges = obtenerBadges(producto)
                             return (
                                 <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full" noHover>
@@ -461,6 +473,51 @@ export default function Catalogo() {
                             )
                         })}
                     </div>
+
+                    {/* Paginación */}
+                    {totalPaginas > 1 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 mb-10">
+                            <p className="text-sm text-gray-500">
+                                Mostrando {inicio + 1}–{Math.min(inicio + PRODUCTOS_POR_PAGINA, productosFiltrados.length)} de {productosFiltrados.length}
+                            </p>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+                                    disabled={paginaActual === 1}
+                                    className="p-2.5 rounded-xl border border-pink-200 text-pink-600 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                                    aria-label="Página anterior"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                                <div className="flex items-center gap-1 mx-1">
+                                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setPaginaActual(p)}
+                                            className={`min-w-[36px] h-9 px-2 rounded-xl font-semibold text-sm transition-colors ${
+                                                p === paginaActual
+                                                    ? 'bg-pink-500 text-white shadow-md shadow-pink-200/50'
+                                                    : 'border border-pink-200 text-gray-600 hover:bg-pink-50 hover:border-pink-300'
+                                            }`}
+                                            aria-label={`Página ${p}`}
+                                            aria-current={p === paginaActual ? 'page' : undefined}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
+                                    disabled={paginaActual === totalPaginas}
+                                    className="p-2.5 rounded-xl border border-pink-200 text-pink-600 hover:bg-pink-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                                    aria-label="Página siguiente"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    </>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-24 text-center">
                         <div className="w-24 h-24 rounded-full bg-pink-50 flex items-center justify-center mb-6">
