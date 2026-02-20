@@ -21,7 +21,7 @@ import { useCarrito } from '@/hooks/useCarrito'
 const KONAMI = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65] // ↑↑↓↓←→←→BA
 const DEVICE_ID_KEY = 'ilara_easter_device_id'
 const TAPS_NEEDED = 7
-const PRODUCTOS_POR_PAGINA = 12
+const PRODUCTOS_POR_PAGINA = 15
 
 export default function Catalogo() {
     const { showToast } = useToast()
