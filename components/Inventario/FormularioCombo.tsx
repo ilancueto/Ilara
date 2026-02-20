@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, getProductImages, type Producto } from '@/lib/supabase'
 import { Loader, X, Plus, Trash2, Package, Tag, DollarSign, Sparkles, ShoppingBag } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 
@@ -284,8 +284,8 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                                 >
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0 flex items-center justify-center">
-                                                            {prod?.image_url ? (
-                                                                <img src={prod.image_url} alt={nombre} className="w-full h-full object-cover" />
+                                                            {getProductImages(prod as Producto)[0] ? (
+                                                                <img src={getProductImages(prod as Producto)[0]} alt={nombre} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <ShoppingBag className="w-6 h-6 text-gray-400" />
                                                             )}

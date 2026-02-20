@@ -1,6 +1,6 @@
 'use client'
 
-import { Producto } from '@/lib/supabase'
+import { Producto, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { Edit2, Trash2 } from 'lucide-react'
@@ -68,9 +68,9 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
 
                             {/* Image Container with Actions */}
                             <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-50 group-hover:bg-white transition-colors">
-                                {producto.image_url ? (
+                                {getProductImages(producto)[0] ? (
                                     <Image
-                                        src={producto.image_url}
+                                        src={getProductImages(producto)[0]}
                                         alt={producto.name}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"

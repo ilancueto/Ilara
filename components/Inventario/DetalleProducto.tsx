@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Producto, StockMovement, supabase } from '@/lib/supabase'
+import { Producto, StockMovement, supabase, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
 import { X, Edit2, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus, DollarSign } from 'lucide-react'
 import { format } from 'date-fns'
@@ -55,9 +55,9 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                 <div className="flex flex-col md:flex-row flex-1 min-h-0">
                     {/* Imagen */}
                     <div className="relative w-full md:w-80 flex-shrink-0 h-56 md:h-auto md:min-h-[420px] bg-gradient-to-br from-pink-50 to-gray-50 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none overflow-hidden">
-                        {producto.image_url ? (
+                        {getProductImages(producto)[0] ? (
                             <Image
-                                src={producto.image_url}
+                                src={getProductImages(producto)[0]}
                                 alt={producto.name}
                                 fill
                                 className="object-cover"

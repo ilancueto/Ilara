@@ -1,6 +1,6 @@
 'use client'
 
-import { ComboConItems, Producto } from '@/lib/supabase'
+import { ComboConItems, Producto, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
 import { X, Package, Sparkles } from 'lucide-react'
 
@@ -43,7 +43,7 @@ export function ModalDetalleCombo({ combo, onClose, onAgregar, disponible }: Mod
             {items.map((ci, idx) => {
               const prod = ci.products as Producto | undefined
               const nombre = prod?.name ?? `Producto #${ci.product_id}`
-              const img = prod?.image_url
+              const img = prod ? getProductImages(prod)[0] : undefined
               return (
                 <div key={ci.id ?? idx} className="flex items-center gap-4 p-3 rounded-2xl bg-gray-50/80 border border-gray-100">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 flex items-center justify-center">

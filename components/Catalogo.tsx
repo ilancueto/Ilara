@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { supabase, Producto, Categoria, ComboConItems } from '@/lib/supabase'
+import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -36,7 +36,9 @@ export default function Catalogo() {
     const [precioMin, setPrecioMin] = useState<number>(0)
     const [precioMax, setPrecioMax] = useState<number>(999999)
     const [ordenamiento, setOrdenamiento] = useState<string>('nombre-asc')
-    const [imagenPrevia, setImagenPrevia] = useState<string | null>(null)
+    const [imagenPrevia, setImagenPrevia] = useState<{ images: string[]; index: number } | null>(null)
+    const [indiceImagenPorProducto, setIndiceImagenPorProducto] = useState<Record<number, number>>({})
+    const touchSwipeRef = useRef<{ productId: number; x: number; count: number } | null>(null)
     const [comboSeleccionado, setComboSeleccionado] = useState<ComboConItems | null>(null)
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
@@ -530,16 +532,59 @@ export default function Catalogo() {
                             }
                             const producto = item as Producto
                             const badges = obtenerBadges(producto)
+                            const images = getProductImages(producto)
+                            const idx = indiceImagenPorProducto[producto.id] ?? 0
+                            const currentImage = images[idx]
+                            const setIdx = (delta: number) => {
+                                const next = (idx + delta + images.length) % images.length
+                                setIndiceImagenPorProducto(prev => ({ ...prev, [producto.id]: next }))
+                            }
                             return (
                                 <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full" noHover>
-                                    <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50">
-                                        {producto.image_url ? (
-                                            <Image src={producto.image_url} alt={producto.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" onClick={() => setImagenPrevia(producto.image_url)} />
+                                    <div
+                                        className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 touch-pan-y"
+                                        onClick={() => images.length > 0 && setImagenPrevia({ images, index: idx })}
+                                        onTouchStart={e => {
+                                            if (images.length > 1) touchSwipeRef.current = { productId: producto.id, x: e.targetTouches[0].clientX, count: images.length }
+                                        }}
+                                        onTouchEnd={e => {
+                                            const ref = touchSwipeRef.current
+                                            if (!ref || ref.productId !== producto.id) return
+                                            const end = e.changedTouches[0].clientX
+                                            const delta = ref.x - end
+                                            if (Math.abs(delta) > 50) {
+                                                const dir = delta > 0 ? 1 : -1
+                                                setIndiceImagenPorProducto(prev => {
+                                                    const cur = prev[ref.productId] ?? 0
+                                                    const next = (cur + dir + ref.count) % ref.count
+                                                    return { ...prev, [ref.productId]: next }
+                                                })
+                                            }
+                                            touchSwipeRef.current = null
+                                        }}
+                                    >
+                                        {currentImage ? (
+                                            <Image src={currentImage} alt={producto.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none" sizes="(max-width: 768px) 50vw, 25vw" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center"><Sparkles className="w-16 h-16 text-pink-200" /></div>
                                         )}
+                                        {images.length > 1 && (
+                                            <>
+                                                <button type="button" onClick={e => { e.stopPropagation(); setIdx(-1) }} className="absolute left-1 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md hover:bg-white text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Anterior">
+                                                    <ChevronLeft className="w-5 h-5" />
+                                                </button>
+                                                <button type="button" onClick={e => { e.stopPropagation(); setIdx(1) }} className="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md hover:bg-white text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Siguiente">
+                                                    <ChevronRight className="w-5 h-5" />
+                                                </button>
+                                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                                                    {images.map((_, i) => (
+                                                        <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === idx ? 'bg-white shadow' : 'bg-white/50'}`} aria-hidden />
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
                                         {badges.length > 0 && <BadgeRotator badges={badges} />}
-                                        <button onClick={() => compartirProducto(producto)} className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label={`Compartir ${producto.name}`}>
+                                        <button onClick={e => { e.stopPropagation(); compartirProducto(producto) }} className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10" aria-label={`Compartir ${producto.name}`}>
                                             <Share2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -669,7 +714,7 @@ export default function Catalogo() {
             />
 
             {imagenPrevia && (
-                <ModalImagenPrevia imageUrl={imagenPrevia} onClose={() => setImagenPrevia(null)} />
+                <ModalImagenPrevia images={imagenPrevia.images} initialIndex={imagenPrevia.index} onClose={() => setImagenPrevia(null)} />
             )}
 
             {comboSeleccionado && (

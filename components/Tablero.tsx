@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, Producto, Venta } from '@/lib/supabase'
+import { supabase, Producto, Venta, getProductImages } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
@@ -435,8 +435,8 @@ export default function Tablero() {
                                 <div key={prod.id} className="flex items-center justify-between px-5 py-4 rounded-xl bg-amber-50 border border-amber-100">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-lg bg-white flex-shrink-0 overflow-hidden flex items-center justify-center relative border border-amber-100">
-                                            {prod.image_url ? (
-                                                <img src={prod.image_url} alt={prod.name} className="w-full h-full object-cover" />
+                                            {(getProductImages(prod)[0]) ? (
+                                                <img src={getProductImages(prod)[0]} alt={prod.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <AlertTriangle className="w-5 h-5 text-amber-300" />
                                             )}

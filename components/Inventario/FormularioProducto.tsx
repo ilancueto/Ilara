@@ -30,7 +30,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         stock: '',
         min_stock: '1',
         notes: '',
-        image_url: '',
+        image_urls: [] as string[],
         discount_percentage: ''
     })
 
@@ -38,6 +38,11 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
     useEffect(() => {
         if (isOpen) {
             if (productToEdit) {
+                const urls = productToEdit.image_urls?.length
+                    ? productToEdit.image_urls
+                    : productToEdit.image_url
+                        ? [productToEdit.image_url]
+                        : []
                 setFormData({
                     name: productToEdit.name,
                     category_id: productToEdit.category_id?.toString() || '',
@@ -47,13 +52,13 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     stock: productToEdit.stock.toString(),
                     min_stock: productToEdit.min_stock.toString(),
                     notes: productToEdit.notes || '',
-                    image_url: productToEdit.image_url || '',
+                    image_urls: urls,
                     discount_percentage: productToEdit.discount_percentage != null ? String(productToEdit.discount_percentage) : ''
                 })
             } else {
                 setFormData({
                     name: '', category_id: '', brand: '',
-                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_url: '', discount_percentage: ''
+                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_urls: [], discount_percentage: ''
                 })
             }
             setErrores({})
@@ -92,27 +97,38 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
 
         try {
             setUploading(true)
-            const file = e.target.files[0]
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${Math.random()}.${fileExt}`
-            const filePath = `${fileName}`
+            const newUrls: string[] = []
+            for (let i = 0; i < e.target.files.length; i++) {
+                const file = e.target.files[i]
+                const fileExt = file.name.split('.').pop()
+                const fileName = `${Math.random()}.${fileExt}`
+                const filePath = `${fileName}`
 
-            const { error: uploadError } = await supabase.storage
-                .from('productos')
-                .upload(filePath, file)
+                const { error: uploadError } = await supabase.storage
+                    .from('productos')
+                    .upload(filePath, file)
 
-            if (uploadError) throw uploadError
+                if (uploadError) throw uploadError
 
-            const { data } = supabase.storage.from('productos').getPublicUrl(filePath)
-
-            setFormData(prev => ({ ...prev, image_url: data.publicUrl }))
-            showSuccess('Imagen subida correctamente')
+                const { data } = supabase.storage.from('productos').getPublicUrl(filePath)
+                newUrls.push(data.publicUrl)
+            }
+            setFormData(prev => ({ ...prev, image_urls: [...prev.image_urls, ...newUrls] }))
+            showSuccess(newUrls.length > 1 ? `${newUrls.length} imágenes subidas` : 'Imagen subida correctamente')
         } catch (error) {
             showError('Error al subir la imagen')
             console.error(error)
         } finally {
             setUploading(false)
         }
+        e.target.value = ''
+    }
+
+    const quitarImagen = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            image_urls: prev.image_urls.filter((_, i) => i !== index)
+        }))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -121,6 +137,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         if (!validarFormulario()) return
 
         setGuardando(true)
+        const imageUrls = formData.image_urls.length ? formData.image_urls : null
         const datosProducto = {
             name: formData.name.trim(),
             category_id: formData.category_id ? parseInt(formData.category_id) : null,
@@ -130,7 +147,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             stock: parseInt(formData.stock),
             min_stock: formData.min_stock ? parseInt(formData.min_stock) : 5,
             notes: formData.notes.trim() || null,
-            image_url: formData.image_url || null,
+            image_url: imageUrls?.[0] ?? null,
+            image_urls: imageUrls,
             discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0
         }
         const user = await getUser()
@@ -189,46 +207,42 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
 
                 <form onSubmit={handleSubmit} className="p-8">
                     <div className="space-y-6">
-                        {/* Imagen */}
-                        <div className="flex flex-col sm:flex-row gap-4 sm:items-start">
-                            <div className="w-24 h-24 shrink-0 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group hover:border-pink-300 transition-colors">
-                                {uploading ? (
-                                    <Loader className="animate-spin text-pink-400 w-6 h-6" />
-                                ) : formData.image_url ? (
-                                    <Image
-                                        src={formData.image_url}
-                                        alt="Preview"
-                                        fill
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <Upload className="w-6 h-6 text-gray-300 group-hover:text-pink-400" />
-                                )}
-                            </div>
-                            <div className="min-w-0">
-                                <label className="btn-ghost inline-flex items-center gap-2 bg-pink-50 text-pink-600 hover:bg-pink-100 cursor-pointer px-4 py-2.5 rounded-xl text-sm font-semibold border-0 mb-1.5">
-                                    {uploading ? 'Subiendo...' : 'Subir Imagen'}
+                        {/* Imágenes (múltiples) */}
+                        <div className="space-y-3">
+                            <label className="form-label">Imágenes del producto</label>
+                            <div className="flex flex-wrap gap-3 items-start">
+                                {formData.image_urls.map((url, index) => (
+                                    <div key={url} className="relative w-20 h-20 rounded-xl bg-gray-50 border border-gray-200 overflow-hidden group shrink-0">
+                                        <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="80px" />
+                                        <button
+                                            type="button"
+                                            onClick={() => quitarImagen(index)}
+                                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                            aria-label="Quitar imagen"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <label className="w-20 h-20 shrink-0 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-pink-300 transition-colors">
+                                    {uploading ? (
+                                        <Loader className="animate-spin text-pink-400 w-6 h-6" />
+                                    ) : (
+                                        <Upload className="w-6 h-6 text-gray-300" />
+                                    )}
                                     <input
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         onChange={handleImageUpload}
                                         disabled={uploading}
                                         className="hidden"
                                     />
                                 </label>
-                                <p className="text-xs text-gray-500">
-                                    JPG, PNG o WEBP. Máx 2MB.
-                                </p>
-                                {formData.image_url && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, image_url: '' })}
-                                        className="mt-2 text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1"
-                                    >
-                                        <Trash2 size={12} /> Quitar imagen
-                                    </button>
-                                )}
                             </div>
+                            <p className="text-xs text-gray-500">
+                                Podés subir varias. JPG, PNG o WEBP. En el catálogo se podrán deslizar.
+                            </p>
                         </div>
 
                         {/* Nombre */}

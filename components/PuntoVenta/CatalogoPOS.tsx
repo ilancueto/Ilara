@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Producto, ComboConItems } from '@/lib/supabase'
+import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Search, AlertTriangle, Package } from 'lucide-react'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
@@ -81,9 +81,9 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                             >
                                 {/* Imagen Thumbnail */}
                                 <div className="w-12 h-12 rounded-xl bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100 relative">
-                                    {producto.image_url ? (
-                                        <Image
-                                            src={producto.image_url}
+{getProductImages(producto)[0] ? (
+                                            <Image
+                                                src={getProductImages(producto)[0]}
                                             alt={producto.name}
                                             fill
                                             className="object-cover"

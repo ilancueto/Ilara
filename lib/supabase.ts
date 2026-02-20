@@ -19,6 +19,8 @@ export type Producto = {
   stock: number
   min_stock: number
   image_url: string | null
+  /** Múltiples imágenes (catálogo). Si existe, preferir sobre image_url. */
+  image_urls?: string[] | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -29,6 +31,13 @@ export type Producto = {
   }
   created_by?: string | null
   updated_by?: string | null
+}
+
+/** Devuelve la lista de imágenes de un producto (image_urls o [image_url] o []) */
+export function getProductImages(p: Producto): string[] {
+  if (p.image_urls?.length) return p.image_urls
+  if (p.image_url) return [p.image_url]
+  return []
 }
 
 export type Cupon = {

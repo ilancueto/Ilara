@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Plus, Minus, Trash2, MessageCircle, X, ShoppingBag, Sparkles } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 import type { Producto, ItemCarrito } from '@/lib/supabase'
+import { getProductImages } from '@/lib/supabase'
 
 interface ModalCarritoProps {
     open: boolean
@@ -77,7 +78,7 @@ export function ModalCarrito({
                                 const esProducto = !!item.producto
                                 const nombre = esProducto ? item.producto!.name : item.combo!.name
                                 const precioUnit = esProducto ? getPrecioConDescuento(item.producto!) : item.combo!.sale_price
-                                const imagen = esProducto ? item.producto!.image_url : item.combo!.image_url
+                                const imagen = esProducto ? getProductImages(item.producto!)[0] : item.combo!.image_url
                                 const key = esProducto ? `p-${item.producto!.id}` : `c-${item.combo!.id}`
                                 const maxStock = esProducto ? item.producto!.stock : undefined
                                 return (
