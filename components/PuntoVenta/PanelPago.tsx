@@ -12,6 +12,8 @@ const METODOS: { id: 'efectivo' | 'tarjeta' | 'transferencia'; label: string; ic
     { id: 'transferencia', label: 'Transf.', icon: Receipt }
 ]
 
+const OTRO_CLIENTE = '__otro__'
+
 interface PanelPagoProps {
     total: number
     cantidadItems: number
@@ -22,6 +24,8 @@ interface PanelPagoProps {
     clientes: Cliente[]
     clienteSeleccionado: number | null
     setClienteSeleccionado: (id: number | null) => void
+    nombreClienteOtro: string
+    setNombreClienteOtro: (v: string) => void
     notas: string
     setNotas: (notas: string) => void
     cobrarDespues: boolean
@@ -41,6 +45,8 @@ export default function PanelPago({
     clientes,
     clienteSeleccionado,
     setClienteSeleccionado,
+    nombreClienteOtro,
+    setNombreClienteOtro,
     notas,
     setNotas,
     cobrarDespues,
@@ -50,6 +56,7 @@ export default function PanelPago({
     disabled
 }: PanelPagoProps) {
     const [dividirPago, setDividirPago] = useState(false)
+    const [eligioOtro, setEligioOtro] = useState(false)
     const sumaDesglose = (paymentBreakdown || []).reduce((s, p) => s + p.amount, 0)
     const desgloseOk = dividirPago ? paymentBreakdown && paymentBreakdown.length > 0 && Math.abs(sumaDesglose - total) < 0.01 : true
 
@@ -96,8 +103,18 @@ export default function PanelPago({
                         Cliente (opcional)
                     </label>
                     <select
-                        value={clienteSeleccionado || ''}
-                        onChange={(e) => setClienteSeleccionado(e.target.value ? parseInt(e.target.value) : null)}
+                        value={(eligioOtro || nombreClienteOtro.trim() !== '') ? OTRO_CLIENTE : (clienteSeleccionado ?? '')}
+                        onChange={(e) => {
+                            const v = e.target.value
+                            if (v === OTRO_CLIENTE) {
+                                setClienteSeleccionado(null)
+                                setEligioOtro(true)
+                            } else {
+                                setEligioOtro(false)
+                                setNombreClienteOtro('')
+                                setClienteSeleccionado(v ? parseInt(v, 10) : null)
+                            }
+                        }}
                         className="w-full mt-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all font-medium text-gray-800 cursor-pointer shadow-sm"
                     >
                         <option value="">Consumidor Final</option>
@@ -106,7 +123,20 @@ export default function PanelPago({
                                 {c.first_name} {c.last_name}
                             </option>
                         ))}
+                        <option value={OTRO_CLIENTE}>Otro (escribir nombre)</option>
                     </select>
+                    {(eligioOtro || nombreClienteOtro.trim() !== '') && (
+                        <input
+                            type="text"
+                            value={nombreClienteOtro}
+                            onChange={(e) => {
+                                setNombreClienteOtro(e.target.value)
+                                if (e.target.value.trim() === '') setEligioOtro(false)
+                            }}
+                            placeholder="Nombre del cliente"
+                            className="w-full mt-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all font-medium text-gray-800 placeholder-gray-400"
+                        />
+                    )}
                 </div>
 
                 <div className="space-y-3">

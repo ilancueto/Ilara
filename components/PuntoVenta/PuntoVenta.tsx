@@ -18,6 +18,7 @@ export default function PuntoVenta() {
 
     // Sale State
     const [clienteSeleccionado, setClienteSeleccionado] = useState<number | null>(null)
+    const [nombreClienteOtro, setNombreClienteOtro] = useState('')
     const [metodoPago, setMetodoPago] = useState<'efectivo' | 'tarjeta' | 'transferencia'>('efectivo')
     const [paymentBreakdown, setPaymentBreakdown] = useState<{ method: string; amount: number }[] | null>(null)
     const [cobrarDespues, setCobrarDespues] = useState(false)
@@ -141,9 +142,11 @@ export default function PuntoVenta() {
 
         setCargando(true)
         try {
-            // Get customer name if selected
+            // Get customer name: cliente de lista o "Otro (nombre)"
             let customerName = ''
-            if (clienteSeleccionado) {
+            if (nombreClienteOtro.trim() !== '') {
+                customerName = nombreClienteOtro.trim()
+            } else if (clienteSeleccionado) {
                 const cliente = clientes.find(c => c.id === clienteSeleccionado)
                 if (cliente) customerName = `${cliente.first_name} ${cliente.last_name}`
             }
@@ -156,7 +159,7 @@ export default function PuntoVenta() {
                 total,
                 payment_method: cobrarDespues ? 'credito' : (tieneDesglose ? 'mixto' : metodoPago),
                 customer_name: customerName || null,
-                customer_id: clienteSeleccionado,
+                customer_id: nombreClienteOtro.trim() !== '' ? null : clienteSeleccionado,
                 notes: notas || null,
                 status: cobrarDespues ? 'pending_payment' : 'completed'
             }
@@ -232,6 +235,7 @@ export default function PuntoVenta() {
             showSuccess(cobrarDespues ? 'Venta registrada como cuenta por cobrar' : '¡Venta completada! Stock actualizado')
             setCarrito([])
             setClienteSeleccionado(null)
+            setNombreClienteOtro('')
             setCobrarDespues(false)
             setPaymentBreakdown(null)
             setNotas('')
@@ -282,6 +286,8 @@ export default function PuntoVenta() {
                     clientes={clientes}
                     clienteSeleccionado={clienteSeleccionado}
                     setClienteSeleccionado={setClienteSeleccionado}
+                    nombreClienteOtro={nombreClienteOtro}
+                    setNombreClienteOtro={setNombreClienteOtro}
                     notas={notas}
                     setNotas={setNotas}
                     paymentBreakdown={paymentBreakdown}

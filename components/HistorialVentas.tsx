@@ -57,10 +57,6 @@ export default function HistorialVentas() {
             query = query.gte('created_at', startOfMonth(ahora).toISOString())
         }
 
-        if (filtroPorCobrar) {
-            query = query.eq('status', 'pending_payment')
-        }
-
         const { data } = await query
         if (data) setVentas(data)
         setCargando(false)
@@ -197,10 +193,10 @@ export default function HistorialVentas() {
     }
 
     const seleccionarTodas = () => {
-        if (ventasSeleccionadas.size === ventas.length) {
+        if (ventasSeleccionadas.size === ventasFiltradas.length) {
             setVentasSeleccionadas(new Set())
         } else {
-            setVentasSeleccionadas(new Set(ventas.map(v => v.id)))
+            setVentasSeleccionadas(new Set(ventasFiltradas.map(v => v.id)))
         }
     }
 
@@ -227,9 +223,19 @@ export default function HistorialVentas() {
         }
     }
 
-    // Estadísticas
-    const totalVentas = ventas.reduce((sum, v) => sum + v.total, 0)
-    const cantidadVentas = ventas.length
+    // Lista filtrada (por "por cobrar" en UI)
+    const ventasFiltradas = filtroPorCobrar
+        ? ventas.filter(v => v.status === 'pending_payment')
+        : ventas
+
+    // Estadísticas: recaudado = cobrado, por cobrar = pendiente
+    const totalRecaudado = ventas
+        .filter(v => v.status !== 'pending_payment')
+        .reduce((sum, v) => sum + v.total, 0)
+    const totalPorCobrar = ventas
+        .filter(v => v.status === 'pending_payment')
+        .reduce((sum, v) => sum + v.total, 0)
+    const cantidadVentas = ventasFiltradas.length
 
     if (cargando) {
         return (
@@ -242,7 +248,7 @@ export default function HistorialVentas() {
     return (
         <div className="tab-content w-full space-y-8 animate-fade-in max-w-5xl sm:max-w-6xl lg:max-w-7xl xl:max-w-[90rem] 2xl:max-w-[100rem] mx-auto px-2 sm:px-4">
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-historial-block">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-historial-block">
                 <PastelCard className="p-6 sm:p-7 flex items-center gap-5 group">
                     <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
                         <DollarSign className="w-7 h-7 text-emerald-500" />
@@ -252,7 +258,21 @@ export default function HistorialVentas() {
                             Total Recaudado
                         </p>
                         <p className="text-3xl font-black text-gray-800 tracking-tight group-hover:text-emerald-600 transition-all">
-                            ${totalVentas.toLocaleString()}
+                            ${totalRecaudado.toLocaleString()}
+                        </p>
+                    </div>
+                </PastelCard>
+
+                <PastelCard className="p-6 sm:p-7 flex items-center gap-5 group">
+                    <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                        <Clock className="w-7 h-7 text-amber-500" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">
+                            Total por Cobrar
+                        </p>
+                        <p className="text-3xl font-black text-gray-800 tracking-tight group-hover:text-amber-600 transition-all">
+                            ${totalPorCobrar.toLocaleString()}
                         </p>
                     </div>
                 </PastelCard>
@@ -321,7 +341,7 @@ export default function HistorialVentas() {
 
             {/* Lista de ventas */}
             <div className="pb-12 historial-list">
-                {ventas.length === 0 ? (
+                {ventasFiltradas.length === 0 ? (
                     <PastelCard className="text-center py-20 border-dashed border-gray-300 shadow-none bg-transparent mb-historial-block">
                         <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Receipt className="w-10 h-10 text-pink-200" />
@@ -329,7 +349,7 @@ export default function HistorialVentas() {
                         <p className="text-gray-400 font-medium">No hay ventas en este período</p>
                     </PastelCard>
                 ) : (
-                    ventas.map(venta => (
+                    ventasFiltradas.map(venta => (
                         <PastelCard key={venta.id} className="!p-0 group overflow-hidden border-pink-100/50 mb-historial-card" noHover>
                             {/* Header de la venta */}
                             <div
@@ -530,17 +550,17 @@ export default function HistorialVentas() {
                             <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer mb-2">
                                 <input
                                     type="checkbox"
-                                    checked={ventas.length > 0 && ventasSeleccionadas.size === ventas.length}
+                                    checked={ventasFiltradas.length > 0 && ventasSeleccionadas.size === ventasFiltradas.length}
                                     onChange={seleccionarTodas}
                                     className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
                                 />
                                 <span className="font-bold text-sm text-gray-700">Seleccionar todas</span>
                             </label>
                             <div className="space-y-2">
-                                {ventas.length === 0 ? (
+                                {ventasFiltradas.length === 0 ? (
                                     <p className="text-gray-400 text-sm py-4">No hay ventas en este período.</p>
                                 ) : (
-                                    ventas.map(venta => (
+                                    ventasFiltradas.map(venta => (
                                         <label
                                             key={venta.id}
                                             className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer border border-transparent hover:border-pink-100"
