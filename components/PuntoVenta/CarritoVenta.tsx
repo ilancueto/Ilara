@@ -29,8 +29,8 @@ export default function CarritoVenta({ carrito, onUpdateQuantity, onUpdateQuanti
             </div>
 
             {carrito.length === 0 ? (
-                <div className="text-center py-14 rounded-2xl bg-gradient-to-b from-pink-50/60 to-transparent border border-dashed border-pink-200/60">
-                    <div className="w-16 h-16 bg-pink-100/80 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <div className="flex flex-col items-center text-center py-14 rounded-2xl bg-gradient-to-b from-pink-50/60 to-transparent border border-dashed border-pink-200/60">
+                    <div className="w-16 h-16 bg-pink-100/80 rounded-2xl flex items-center justify-center mb-4 shadow-inner left-auto">
                         <ShoppingCart className="w-8 h-8 text-pink-400" strokeWidth={1.5} />
                     </div>
                     <p className="text-gray-700 font-semibold">El carrito está vacío</p>

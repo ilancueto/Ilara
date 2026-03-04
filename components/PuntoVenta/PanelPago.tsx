@@ -96,51 +96,53 @@ export default function PanelPago({
             {/* Formulario */}
             <PastelCard className="space-y-6 p-6 mt-20px" noHover>
                 <div>
-                    <label className="form-label flex items-center gap-2 text-gray-700">
-                        <div className="p-1.5 bg-pink-100 rounded-lg text-pink-600">
-                            <User className="w-3.5 h-3.5" />
+                    <label className="form-label !flex items-center gap-2 text-gray-700 w-fit">
+                        <div className="inline-flex items-center gap-2 px-3 py-2 bg-pink-100 rounded-xl text-pink-600">
+                            <User className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="text-gray-700 font-medium text-sm uppercase tracking-wide">Cliente (opcional)</span>
                         </div>
-                        Cliente (opcional)
                     </label>
-                    <select
-                        value={(eligioOtro || nombreClienteOtro.trim() !== '') ? OTRO_CLIENTE : (clienteSeleccionado ?? '')}
-                        onChange={(e) => {
-                            const v = e.target.value
-                            if (v === OTRO_CLIENTE) {
-                                setClienteSeleccionado(null)
-                                setEligioOtro(true)
-                            } else {
-                                setEligioOtro(false)
-                                setNombreClienteOtro('')
-                                setClienteSeleccionado(v ? parseInt(v, 10) : null)
-                            }
-                        }}
-                        className="w-full mt-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all font-medium text-gray-800 cursor-pointer shadow-sm"
-                    >
-                        <option value="">Consumidor Final</option>
-                        {clientes.map(c => (
-                            <option key={c.id} value={c.id}>
-                                {c.first_name} {c.last_name}
-                            </option>
-                        ))}
-                        <option value={OTRO_CLIENTE}>Otro (escribir nombre)</option>
-                    </select>
-                    {(eligioOtro || nombreClienteOtro.trim() !== '') && (
-                        <input
-                            type="text"
-                            value={nombreClienteOtro}
+                    <div className="mt-2 space-y-2.5">
+                        <select
+                            value={(eligioOtro || nombreClienteOtro.trim() !== '') ? OTRO_CLIENTE : (clienteSeleccionado ?? '')}
                             onChange={(e) => {
-                                setNombreClienteOtro(e.target.value)
-                                if (e.target.value.trim() === '') setEligioOtro(false)
+                                const v = e.target.value
+                                if (v === OTRO_CLIENTE) {
+                                    setClienteSeleccionado(null)
+                                    setEligioOtro(true)
+                                } else {
+                                    setEligioOtro(false)
+                                    setNombreClienteOtro('')
+                                    setClienteSeleccionado(v ? parseInt(v, 10) : null)
+                                }
                             }}
-                            placeholder="Nombre del cliente"
-                            className="w-full mt-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all font-medium text-gray-800 placeholder-gray-400"
-                        />
-                    )}
+                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all font-medium text-gray-800 cursor-pointer shadow-sm"
+                        >
+                            <option value="">Consumidor Final</option>
+                            {clientes.map(c => (
+                                <option key={c.id} value={c.id}>
+                                    {c.first_name} {c.last_name}
+                                </option>
+                            ))}
+                            <option value={OTRO_CLIENTE}>Otro (escribir nombre)</option>
+                        </select>
+                        {(eligioOtro || nombreClienteOtro.trim() !== '') && (
+                            <input
+                                type="text"
+                                value={nombreClienteOtro}
+                                onChange={(e) => {
+                                    setNombreClienteOtro(e.target.value)
+                                    if (e.target.value.trim() === '') setEligioOtro(false)
+                                }}
+                                placeholder="Nombre del cliente"
+                                className="w-full mt-2 mb-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all font-medium text-gray-800 placeholder-gray-400"
+                            />
+                        )}
+                    </div>
                 </div>
 
                 <div className="space-y-3">
-                    <p className="text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-2">Opciones de pago</p>
+                    <p className="text-[11px] uppercase tracking-wider font-bold text-gray-400 mt-[10px] mb-[10px]">Opciones de pago</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <button
                             type="button"
@@ -195,7 +197,7 @@ export default function PanelPago({
 
                     {!dividirPago ? (
                         <div>
-                            <label className="form-label flex items-center gap-2 text-gray-700">
+                            <label className="form-label flex items-center gap-2 text-gray-700 mt-[10px]">
                                 <span className="text-pink-500">Método de pago</span>
                             </label>
                             <div className="grid grid-cols-3 gap-3 mt-2">

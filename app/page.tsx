@@ -20,19 +20,34 @@ function HomeContent() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [logoError, setLogoError] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
-  // Verificar autenticación al cargar
+  // Verificar autenticación al cargar (con timeout para no colgar si Supabase no responde)
   useEffect(() => {
+    const AUTH_TIMEOUT_MS = 10_000
+
     const checkAuth = async () => {
-      const user = await getUser()
+      setAuthError(null)
+      try {
+        const user = await Promise.race([
+          getUser(),
+          new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), AUTH_TIMEOUT_MS)
+          ),
+        ])
 
-      if (!user) {
-        router.push('/login')
-        return
+        if (!user) {
+          router.push('/login')
+          return
+        }
+
+        setUserEmail(user.email || null)
+      } catch (e) {
+        console.error('Auth check failed:', e)
+        setAuthError('No se pudo verificar la sesión. Revisa tu conexión o intenta de nuevo.')
+      } finally {
+        setCargando(false)
       }
-
-      setUserEmail(user.email || null)
-      setCargando(false)
     }
 
     checkAuth()
@@ -68,6 +83,32 @@ function HomeContent() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fdf4ff' }}>
         <div className="text-pink-500 font-bold text-xl animate-pulse">Cargando Ilara...</div>
+      </div>
+    )
+  }
+
+  if (authError) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fdf4ff', padding: 24 }}>
+        <div className="text-center max-w-sm">
+          <p className="text-gray-600 font-medium mb-4">{authError}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => { setCargando(true); setAuthError(null); window.location.reload(); }}
+              className="px-5 py-2.5 rounded-xl bg-pink-500 text-white font-bold hover:bg-pink-600 transition-colors"
+            >
+              Reintentar
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/login')}
+              className="px-5 py-2.5 rounded-xl border-2 border-pink-200 text-pink-600 font-bold hover:bg-pink-50 transition-colors"
+            >
+              Ir a inicio de sesión
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
