@@ -156,7 +156,9 @@ export async function signIn(email: string, password: string) {
   })
 
   if (error) {
-    console.error('Error al iniciar sesión:', error.message)
+    if (error.message !== 'Invalid login credentials') {
+      console.error('Error al iniciar sesión:', error.message)
+    }
     return { user: null, error: error.message }
   }
 

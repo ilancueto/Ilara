@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase, Producto, Venta, getProductImages } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings } from 'lucide-react'
@@ -98,9 +99,17 @@ export default function Tablero() {
         }
     }
 
-    // Calcular estadísticas
+    // Calcular estadísticas (crítico = debajo de min_stock O stock ≤ umbral si está en Inventario)
+    const umbralStockCritico = typeof window !== 'undefined' ? (() => {
+        const s = localStorage.getItem('ilara-umbral-stock-critico')
+        if (s === null || s === '') return null
+        const n = parseInt(s, 10)
+        return Number.isFinite(n) && n >= 0 ? n : null
+    })() : null
     const totalProductos = productos.length
-    const productosCriticos = productos.filter(p => p.stock < p.min_stock)
+    const productosCriticos = productos.filter(
+        p => p.stock < p.min_stock || (umbralStockCritico != null && p.stock <= umbralStockCritico)
+    )
     const productosStockBajo = productosCriticos.length
     const valorTotalInventario = productos.reduce((sum, p) => sum + (p.sale_price * p.stock), 0)
     const inversionTotal = productos.reduce((sum, p) => sum + ((p.purchase_price || 0) * p.stock), 0)
@@ -156,7 +165,7 @@ export default function Tablero() {
     }
 
     return (
-        <div className="flex flex-col gap-12 animate-fade-in pb-12">
+        <div className="flex flex-col gap-12 pb-12">
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 tracking-tight">¡Hola de nuevo! ✨</h2>
@@ -173,7 +182,7 @@ export default function Tablero() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 items-stretch overflow-visible">
-                <div className="animate-slide-up stagger-1">
+                <div>
                     <TarjetaEstadistica
                         icono={<DollarSign className="w-6 h-6" />}
                         etiqueta="Ingresos"
@@ -194,7 +203,7 @@ export default function Tablero() {
                         }
                     />
                 </div>
-                <div className="animate-slide-up stagger-2">
+                <div>
                     <TarjetaEstadistica
                         icono={<Package className="w-6 h-6" />}
                         etiqueta="Total Productos"
@@ -203,7 +212,7 @@ export default function Tablero() {
                         bgIcon="bg-violet-50"
                     />
                 </div>
-                <div className="animate-slide-up stagger-3">
+                <div>
                     <TarjetaEstadistica
                         icono={<TrendingUp className="w-6 h-6" />}
                         etiqueta="Valor Inventario"
@@ -214,7 +223,7 @@ export default function Tablero() {
                     />
                 </div>
                 <div
-                    className={`animate-slide-up stagger-4 ${productosStockBajo > 0 ? 'cursor-pointer' : ''}`}
+                    className={productosStockBajo > 0 ? 'cursor-pointer' : ''}
                     onClick={() => productosStockBajo > 0 && setMostrarModalAlertas(true)}
                 >
                     <TarjetaEstadistica
@@ -369,8 +378,8 @@ export default function Tablero() {
                 </div>
             </div>
 
-            {/* Modal Período ingresos */}
-            {mostrarModalPeriodo && (
+            {/* Modal Período ingresos — renderizado en portal para que el backdrop cubra toda la pantalla */}
+            {mostrarModalPeriodo && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="modal-backdrop" onClick={() => setMostrarModalPeriodo(false)} />
                     <PastelCard noHover className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[340px] z-[200] p-6 !shadow-2xl">
@@ -404,7 +413,8 @@ export default function Tablero() {
                             ))}
                         </div>
                     </PastelCard>
-                </>
+                </>,
+                document.body
             )}
 
             {/* Modal Exportar datos */}
@@ -412,11 +422,13 @@ export default function Tablero() {
                 <ExportarDatos mostrar={true} cerrar={() => setMostrarExportar(false)} />
             )}
 
-            {/* Modal de Alertas */}
-            {mostrarAlertas && (
+            {/* Modal de Alertas — renderizado en portal para que el backdrop cubra toda la pantalla */}
+            {mostrarAlertas && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="modal-backdrop" onClick={() => setMostrarModalAlertas(false)} />
-                    <PastelCard className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[500px] z-[200] max-h-[80vh] flex flex-col p-8 !shadow-2xl">
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none">
+                        <div className="pointer-events-auto w-[90vw] max-w-[500px] max-h-[80vh] flex flex-col">
+                    <PastelCard noHover className="flex flex-col p-8 !shadow-2xl">
                         <div className="flex justify-between items-center mb-6 flex-shrink-0">
                             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                 <AlertTriangle className="w-6 h-6 text-amber-500" />
@@ -460,7 +472,10 @@ export default function Tablero() {
                             </p>
                         </div>
                     </PastelCard>
-                </>
+                        </div>
+                    </div>
+                </>,
+                document.body
             )}
         </div>
     )
@@ -494,7 +509,7 @@ function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, 
                     {icono}
                 </div>
                 {alerta && (
-                    <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-600 text-[10px] font-bold uppercase tracking-wider animate-pulse flex-shrink-0">
+                    <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-600 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
                         Acción
                     </span>
                 )}

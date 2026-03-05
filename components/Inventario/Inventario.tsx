@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, Producto, Categoria, ComboConItems } from '@/lib/supabase'
-import { Settings, Search, Plus, Trash2, Tag, Package } from 'lucide-react'
+import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
+import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle } from 'lucide-react'
 import GestionCategorias from '../GestionCategorias'
 import GestionCupones from '../GestionCupones'
 import { useToast } from '@/context/ToastContext'
@@ -19,7 +19,7 @@ export default function Inventario() {
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [combos, setCombos] = useState<ComboConItems[]>([])
     const [cargando, setCargando] = useState(true)
-    const [tabActiva, setTabActiva] = useState<'productos' | 'combos'>('productos')
+    const [tabActiva, setTabActiva] = useState<'productos' | 'combos' | 'reposicion'>('productos')
 
     // Modal states
     const [modalAbierto, setModalAbierto] = useState(false)
@@ -30,10 +30,26 @@ export default function Inventario() {
     const [productoVer, setProductoVer] = useState<Producto | null>(null)
     const [modalComboAbierto, setModalComboAbierto] = useState(false)
     const [comboEditar, setComboEditar] = useState<ComboConItems | null>(null)
+    const [mostrarAjusteUmbral, setMostrarAjusteUmbral] = useState(false)
 
     // Filter states
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('all')
+
+    // Umbral stock crítico (se usa en el tablero para incluir productos con stock ≤ este valor)
+    const [umbralStockCritico, setUmbralStockCritico] = useState<number | null>(() => {
+        if (typeof window === 'undefined') return null
+        const s = localStorage.getItem('ilara-umbral-stock-critico')
+        if (s === null || s === '') return null
+        const n = parseInt(s, 10)
+        return Number.isFinite(n) && n >= 0 ? n : null
+    })
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        if (umbralStockCritico === null) localStorage.removeItem('ilara-umbral-stock-critico')
+        else localStorage.setItem('ilara-umbral-stock-critico', String(umbralStockCritico))
+    }, [umbralStockCritico])
 
     // Eliminar productos (modal como historial de ventas)
     const [mostrarEliminarProductosModal, setMostrarEliminarProductosModal] = useState(false)
@@ -174,10 +190,15 @@ export default function Inventario() {
         return coincideBusqueda && coincideCategoria
     })
 
+    // Productos para reposición (mismo criterio que en el tablero)
+    const productosParaReposicion = productos.filter(
+        p => p.stock < p.min_stock || (umbralStockCritico != null && p.stock <= umbralStockCritico)
+    )
+
     return (
         <div className="max-w-7xl mx-auto flex flex-col gap-12">
-            {/* Tabs Productos | Combos */}
-            <div className="flex gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
+            {/* Tabs Productos | Combos | Lista para reposición */}
+            <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
                 <button
                     type="button"
                     onClick={() => setTabActiva('productos')}
@@ -195,6 +216,15 @@ export default function Inventario() {
                     }`}
                 >
                     <Package className="w-4 h-4" /> Combos
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setTabActiva('reposicion')}
+                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
+                        tabActiva === 'reposicion' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                    <AlertTriangle className="w-4 h-4" /> Lista para reposición
                 </button>
             </div>
 
@@ -318,6 +348,104 @@ export default function Inventario() {
                 onEdit={(combo) => { setComboEditar(combo); setModalComboAbierto(true) }}
                 onDelete={handleEliminarCombo}
             />
+            </>
+            )}
+
+            {tabActiva === 'reposicion' && (
+            <>
+            <PastelCard noHover className="p-6">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-amber-500" />
+                        Lista para reposición
+                    </h3>
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setMostrarAjusteUmbral(prev => !prev)}
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                            title="Ajustar umbral"
+                            aria-expanded={mostrarAjusteUmbral}
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                                {umbralStockCritico != null ? `Umbral: ${umbralStockCritico}` : 'Ajustar umbral'}
+                            </span>
+                        </button>
+                        {mostrarAjusteUmbral && (
+                            <>
+                                <div className="absolute right-0 top-full mt-2 z-10 w-72 p-4 rounded-xl border border-pink-100 bg-white shadow-lg">
+                                    <p className="text-sm font-medium text-gray-700 mb-2">Umbral de stock</p>
+                                    <p className="text-xs text-gray-500 mb-3">
+                                        Además de los que están bajo su mínimo, incluir productos con stock ≤
+                                    </p>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        value={umbralStockCritico ?? ''}
+                                        onChange={(e) => {
+                                            const v = e.target.value
+                                            if (v === '') {
+                                                setUmbralStockCritico(null)
+                                                return
+                                            }
+                                            const n = parseInt(v, 10)
+                                            if (Number.isFinite(n) && n >= 0) setUmbralStockCritico(n)
+                                        }}
+                                        placeholder="ej. 5 (opcional)"
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-800 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+                                    />
+                                    <p className="text-xs text-gray-400 mt-2">Dejá vacío para usar solo el mínimo de cada producto.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="fixed inset-0 z-[5]"
+                                    aria-label="Cerrar"
+                                    onClick={() => setMostrarAjusteUmbral(false)}
+                                />
+                            </>
+                        )}
+                    </div>
+                </div>
+                <p className="text-xs text-gray-400 mb-6">
+                    Los mismos productos se ven en “Stock Crítico” en el tablero.
+                </p>
+                {productosParaReposicion.length === 0 ? (
+                    <div className="text-center py-12 text-gray-400 border border-dashed border-gray-200 rounded-2xl">
+                        <AlertTriangle className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                        <p className="font-medium">No hay productos para reposición</p>
+                        <p className="text-sm mt-1">Subí el umbral o revisá los mínimos de cada producto.</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
+                        {productosParaReposicion.map(prod => (
+                            <div
+                                key={prod.id}
+                                className="flex items-center justify-between px-5 py-4 rounded-xl bg-amber-50 border border-amber-100"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-white flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100">
+                                        {getProductImages(prod)[0] ? (
+                                            <img src={getProductImages(prod)[0]} alt={prod.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <AlertTriangle className="w-5 h-5 text-amber-300" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-gray-800 text-sm">{prod.name}</p>
+                                        <p className="text-xs text-amber-600 font-medium">Mín: {prod.min_stock}</p>
+                                    </div>
+                                </div>
+                                <div className="text-center px-4 py-2 rounded-lg bg-white border border-amber-100 shadow-sm">
+                                    <p className="text-[10px] text-amber-500 uppercase font-bold tracking-wider mb-0.5">Stock</p>
+                                    <p className={`font-bold text-lg ${prod.stock === 0 ? 'text-red-500' : 'text-gray-800'}`}>{prod.stock}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </PastelCard>
             </>
             )}
 

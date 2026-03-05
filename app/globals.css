@@ -472,13 +472,13 @@ select:disabled {
 .animate-slide-up.stagger-4,
 .animate-fade-in.stagger-4 { animation-delay: 200ms; }
 
-/* 8. Modal */
+/* 8. Modal — z-index alto para que cubra toda la pantalla cuando se usa con portal en body */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(253, 242, 248, 0.85);
   backdrop-filter: blur(12px);
-  z-index: 50;
+  z-index: 100;
   animation: fadeIn 0.2s ease-out;
 }
 
