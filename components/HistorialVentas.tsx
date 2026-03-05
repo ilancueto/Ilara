@@ -127,6 +127,15 @@ export default function HistorialVentas() {
         }
     }
 
+    const escapeHtml = (s: string) => {
+        return s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+    }
+
     const imprimirComprobante = (venta: Venta & { items?: ItemVenta[] }) => {
         const fecha = format(new Date(venta.sale_date || venta.created_at), "d 'de' MMMM yyyy, HH:mm", { locale: es })
         const tieneDesglose = venta.payment_breakdown && venta.payment_breakdown.length > 0
@@ -134,7 +143,7 @@ export default function HistorialVentas() {
             ? (venta.payment_breakdown!.map(p => `${obtenerEtiquetaPago(p.method)}: $${p.amount.toLocaleString()}`).join(' | '))
             : obtenerEtiquetaPago(venta.payment_method)
         const itemsRows = (venta.items || [])
-            .map(item => `<tr><td>${item.product_name}</td><td style="text-align:center">${item.quantity}</td><td>$${item.unit_price.toLocaleString()}</td><td style="text-align:right">$${item.subtotal.toLocaleString()}</td></tr>`)
+            .map(item => `<tr><td>${escapeHtml(item.product_name ?? '')}</td><td style="text-align:center">${item.quantity}</td><td>$${item.unit_price.toLocaleString()}</td><td style="text-align:right">$${item.subtotal.toLocaleString()}</td></tr>`)
             .join('')
         const html = `
 <!DOCTYPE html>
@@ -159,14 +168,14 @@ export default function HistorialVentas() {
 <body>
   <h1>Ilara Beauty</h1>
   <p class="meta">Comprobante #${venta.id}<br>${fecha}</p>
-  <p><strong>Cliente:</strong> ${venta.customer_name || 'Consumidor final'}</p>
-  <p><strong>Pago:</strong> ${metodoPago}</p>
+  <p><strong>Cliente:</strong> ${escapeHtml(venta.customer_name || 'Consumidor final')}</p>
+  <p><strong>Pago:</strong> ${escapeHtml(metodoPago)}</p>
   <table>
     <thead><tr><th>Producto</th><th style="text-align:center">Cant</th><th>P.unit</th><th style="text-align:right">Subtotal</th></tr></thead>
     <tbody>${itemsRows}</tbody>
   </table>
   <p class="total">Total: $${venta.total.toLocaleString()}</p>
-  ${venta.notes ? `<div class="notes"><strong>Notas:</strong> ${venta.notes}</div>` : ''}
+  ${venta.notes ? `<div class="notes"><strong>Notas:</strong> ${escapeHtml(venta.notes)}</div>` : ''}
 </body>
 </html>`
         const w = window.open('', '_blank')
