@@ -611,7 +611,8 @@ export default function Catalogo() {
                     </div>
 
                     {totalPaginas > 1 && (
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 mb-10">
+                        <div className="paginacion-catalogo-wrapper">
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <p className="text-sm text-gray-500">
                                 Mostrando {inicio + 1}–{Math.min(inicio + PRODUCTOS_POR_PAGINA, totalItems)} de {totalItems}
                             </p>
@@ -649,6 +650,7 @@ export default function Catalogo() {
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
+                            </div>
                             </div>
                         </div>
                     )}

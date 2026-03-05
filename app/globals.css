@@ -314,6 +314,12 @@ select:disabled {
   margin-bottom: 10px !important;
 }
 
+/* Paginación catálogo: padding en el contenedor (no colapsa como el margin) */
+.paginacion-catalogo-wrapper {
+  padding-top: 30px !important;
+  padding-bottom: 30px !important;
+}
+
 .mt-20px {
   margin-top: 20px !important;
 }
