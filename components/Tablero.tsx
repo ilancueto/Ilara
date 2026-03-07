@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase, Producto, Venta, getProductImages } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings } from 'lucide-react'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
 import ExportarDatos from '@/components/ExportarDatos'
+import { getExpenses } from '@/lib/expenseService'
+import type { Expense } from '@/lib/types'
 
 type ProductoVendido = {
     product_name: string
@@ -22,6 +24,7 @@ export default function Tablero() {
     const [productos, setProductos] = useState<Producto[]>([])
     const [ventas, setVentas] = useState<Venta[]>([])
     const [ingresosManuales, setIngresosManuales] = useState<{ amount: number; created_at: string }[]>([])
+    const [gastos, setGastos] = useState<Expense[]>([])
     const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
     const [topProductos, setTopProductos] = useState<ProductoVendido[]>([])
     const [cargando, setCargando] = useState(true)
@@ -35,8 +38,17 @@ export default function Tablero() {
 
     const cargarDatos = async () => {
         setCargando(true)
-        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerIngresosManuales(), obtenerTopProductos()])
+        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerIngresosManuales(), obtenerGastos(), obtenerTopProductos()])
         setCargando(false)
+    }
+
+    const obtenerGastos = async () => {
+        try {
+            const data = await getExpenses()
+            setGastos(data || [])
+        } catch {
+            setGastos([])
+        }
     }
 
     const obtenerIngresosManuales = async () => {
@@ -119,11 +131,14 @@ export default function Tablero() {
     const ventasFiltradas = corte ? ventas.filter(v => new Date(v.created_at) >= corte) : ventas
     const ventasCobradas = ventasFiltradas.filter(v => v.status !== 'pending_payment')
     const ingresosFiltrados = corte ? ingresosManuales.filter(i => new Date(i.created_at) >= corte) : ingresosManuales
+    const gastosFiltrados = corte ? gastos.filter(g => new Date(g.date) >= corte) : gastos
 
     const totalVentas = ventasCobradas.reduce((sum, v) => sum + v.total, 0)
     const cantidadVentas = ventasCobradas.length
     const totalIngresosManuales = ingresosFiltrados.reduce((sum, i) => sum + i.amount, 0)
     const totalIngresos = totalVentas + totalIngresosManuales
+    const totalGastos = gastosFiltrados.reduce((sum, g) => sum + g.amount, 0)
+    const balance = totalIngresos - totalGastos
 
     const etiquetaPeriodo = periodoIngresos === 'total' ? 'Total' : periodoIngresos === '7d' ? '7 días' : '30 días'
 
@@ -154,8 +169,8 @@ export default function Tablero() {
     if (cargando) {
         return (
             <div className="space-y-6 animate-pulse">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map(i => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {[1, 2, 3, 4, 5].map(i => (
                         <div key={i} className="h-32 bg-white/50 rounded-3xl border border-pink-100"></div>
                     ))}
                 </div>
@@ -181,7 +196,7 @@ export default function Tablero() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 items-stretch overflow-visible">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10 items-stretch overflow-visible">
                 <div>
                     <TarjetaEstadistica
                         icono={<DollarSign className="w-6 h-6" />}
@@ -201,6 +216,15 @@ export default function Tablero() {
                                 <Settings className="w-4 h-4" />
                             </button>
                         }
+                    />
+                </div>
+                <div>
+                    <TarjetaEstadistica
+                        icono={<Wallet className="w-6 h-6" />}
+                        etiqueta="Balance"
+                        valor={`$${balance.toLocaleString()}`}
+                        color={balance >= 0 ? 'text-emerald-500' : 'text-red-500'}
+                        bgIcon={balance >= 0 ? 'bg-emerald-50' : 'bg-red-50'}
                     />
                 </div>
                 <div>

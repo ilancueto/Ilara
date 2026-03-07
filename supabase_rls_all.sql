@@ -38,13 +38,13 @@ CREATE POLICY "Authenticated can manage sale_items"
   ON sale_items FOR ALL TO authenticated
   USING (true) WITH CHECK (true);
 
--- ========== EXPENSES (restringido por user_id) ==========
+-- ========== EXPENSES (compartidos entre usuarios autenticados, user_id se guarda para auditoría) ==========
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage own expenses" ON expenses;
-CREATE POLICY "Users can manage own expenses"
+DROP POLICY IF EXISTS "Authenticated can manage expenses" ON expenses;
+CREATE POLICY "Authenticated can manage expenses"
   ON expenses FOR ALL TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (true) WITH CHECK (true);
 
 -- ========== STOCK_MOVEMENTS ==========
 ALTER TABLE stock_movements ENABLE ROW LEVEL SECURITY;

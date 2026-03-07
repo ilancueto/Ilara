@@ -20,7 +20,7 @@ COMMENT ON TABLE incomes IS 'Ingresos que no provienen de ventas del POS: regalo
 
 ALTER TABLE incomes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can manage own incomes"
+DROP POLICY IF EXISTS "Users can manage own incomes" ON incomes;
+CREATE POLICY "Authenticated can manage incomes"
   ON incomes FOR ALL TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (true) WITH CHECK (true);

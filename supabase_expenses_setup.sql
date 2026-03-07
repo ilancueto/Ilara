@@ -28,31 +28,17 @@ create index if not exists expenses_created_at_idx on expenses(created_at desc);
 -- ============================================
 alter table expenses enable row level security;
 
--- 4. Crear políticas RLS
+-- 4. Crear políticas RLS (todos los usuarios autenticados ven y gestionan todos los gastos; user_id se guarda para auditoría)
 -- ============================================
--- Política para SELECT
 drop policy if exists "Users can view their own expenses" on expenses;
-create policy "Users can view their own expenses"
-  on expenses for select
-  using (auth.uid() = user_id);
-
--- Política para INSERT
 drop policy if exists "Users can insert their own expenses" on expenses;
-create policy "Users can insert their own expenses"
-  on expenses for insert
-  with check (auth.uid() = user_id);
-
--- Política para UPDATE
 drop policy if exists "Users can update their own expenses" on expenses;
-create policy "Users can update their own expenses"
-  on expenses for update
-  using (auth.uid() = user_id);
-
--- Política para DELETE
 drop policy if exists "Users can delete their own expenses" on expenses;
-create policy "Users can delete their own expenses"
-  on expenses for delete
-  using (auth.uid() = user_id);
+drop policy if exists "Users can manage own expenses" on expenses;
+drop policy if exists "Authenticated can manage expenses" on expenses;
+create policy "Authenticated can manage expenses"
+  on expenses for all to authenticated
+  using (true) with check (true);
 
 -- 5. Crear bucket de storage para comprobantes
 -- ============================================
