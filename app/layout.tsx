@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -69,6 +70,7 @@ export default function RootLayout({
           {children}
         </ToastProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

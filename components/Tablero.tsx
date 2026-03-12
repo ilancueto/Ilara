@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { supabase, Producto, Venta, ItemVenta, getProductImages } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
@@ -15,6 +16,7 @@ import type { Expense } from '@/lib/types'
 type PeriodoIngresos = 'total' | '7d' | '30d'
 
 export default function Tablero() {
+    const router = useRouter()
     const [productos, setProductos] = useState<Producto[]>([])
     const [ventas, setVentas] = useState<Venta[]>([])
     const [ingresosManuales, setIngresosManuales] = useState<{ amount: number; created_at: string }[]>([])
@@ -168,14 +170,24 @@ export default function Tablero() {
                     <h2 className="text-2xl font-bold text-gray-800 tracking-tight">¡Hola de nuevo! ✨</h2>
                     <p className="text-gray-500 text-sm mt-2">Aquí tienes el resumen de hoy.</p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setMostrarExportar(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-pink-200 bg-pink-50/50 text-pink-600 hover:bg-pink-50 hover:border-pink-300 transition-all font-semibold text-sm"
-                >
-                    <Download className="w-4 h-4" />
-                    Exportar datos
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => router.push('/?tab=sales')}
+                        className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-base shadow-xl shadow-pink-300/50 hover:shadow-2xl hover:shadow-pink-400/50 hover:-translate-y-0.5 hover:scale-[1.02] transition-all ring-2 ring-pink-200/50"
+                    >
+                        <Receipt className="w-6 h-6" strokeWidth={2.5} />
+                        Nueva venta
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMostrarExportar(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-pink-200 bg-pink-50/50 text-pink-600 hover:bg-pink-50 hover:border-pink-300 transition-all font-semibold text-sm"
+                    >
+                        <Download className="w-4 h-4" />
+                        Exportar datos
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10 items-stretch overflow-visible">
@@ -465,8 +477,8 @@ export default function Tablero() {
                 <>
                     <div className="modal-backdrop" onClick={() => setMostrarModalAlertas(false)} />
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none">
-                        <div className="pointer-events-auto w-[90vw] max-w-[500px] max-h-[80vh] flex flex-col">
-                    <PastelCard noHover className="flex flex-col p-8 !shadow-2xl">
+                        <div className="pointer-events-auto w-[90vw] max-w-[500px] max-h-[80vh] flex flex-col min-h-0">
+                    <PastelCard noHover className="flex flex-col flex-1 min-h-0 overflow-hidden p-8 !shadow-2xl">
                         <div className="flex justify-between items-center mb-6 flex-shrink-0">
                             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                 <AlertTriangle className="w-6 h-6 text-amber-500" />
@@ -480,7 +492,7 @@ export default function Tablero() {
                             </button>
                         </div>
 
-                        <div className="flex flex-col gap-3 overflow-y-auto pr-2 scrollbar-hide">
+                        <div className="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0 pr-2 scrollbar-hide">
                             {productosCriticos.map(prod => (
                                 <div key={prod.id} className="flex items-center justify-between px-5 py-4 rounded-xl bg-amber-50 border border-amber-100">
                                     <div className="flex items-center gap-4">

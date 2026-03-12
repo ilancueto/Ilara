@@ -9,7 +9,7 @@ import Clientes from '@/components/Clientes'
 import Gastos from '@/components/Gastos'
 import Ingresos from '@/components/Ingresos'
 import Link from 'next/link'
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
+import { LayoutDashboard, Package, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
 
 function HomeContent() {
@@ -116,7 +116,7 @@ function HomeContent() {
   const tabs = [
     { id: 'dashboard' as const, label: 'Inicio', icon: LayoutDashboard },
     { id: 'inventory' as const, label: 'Inventario', icon: Package },
-    { id: 'sales' as const, label: 'Ventas', icon: ShoppingCart },
+    // Ventas no se muestra en el menú: se accede desde Inicio con "Nueva venta"
     { id: 'expenses' as const, label: 'Gastos', icon: Wallet },
     { id: 'incomes' as const, label: 'Ingresos', icon: TrendingUp },
     { id: 'customers' as const, label: 'Clientes', icon: Users },

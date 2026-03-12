@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Income, IncomeFormData, IncomeType, INCOME_TYPE_LABELS } from '@/lib/types'
 import { getIncomes, createIncome, updateIncome, deleteIncome } from '@/lib/incomeService'
-import { Plus, TrendingUp, Pencil, Trash2, X, Filter } from 'lucide-react'
+import { Plus, TrendingUp, Pencil, Trash2, X, Filter, History, Wallet } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useToast } from '@/context/ToastContext'
+import HistorialVentas from '@/components/HistorialVentas'
 
 const TYPE_ICONS: Record<IncomeType, string> = {
   regalo: '🎁',
@@ -31,6 +33,7 @@ function formatCurrency(amount: number) {
 
 export default function Ingresos() {
   const { showSuccess, showError } = useToast()
+  const [vistaActiva, setVistaActiva] = useState<'otros' | 'historial'>('historial')
   const [incomes, setIncomes] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -130,21 +133,59 @@ export default function Ingresos() {
 
   return (
     <div className="flex flex-col gap-10 animate-fade-in pb-12">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight mb-2 flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60">✦</span>
-            Ingresos
-          </h1>
-          <p className="text-gray-500 text-sm font-medium max-w-md">Regalos, donaciones, ventas anteriores al sistema y otros ingresos que no provienen del POS.</p>
+      {/* Header + sub-nav fijos al hacer scroll para que "Nuevo ingreso" siempre esté visible */}
+      <div className="sticky top-0 z-10 -mx-4 px-4 pt-2 pb-6 -mt-2 bg-[#faf9fb]">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight mb-2 flex items-center gap-3">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60">✦</span>
+              Ingresos
+            </h1>
+            <p className="text-gray-500 text-sm font-medium max-w-md">Ventas del negocio y otros ingresos (regalos, donaciones, etc.).</p>
+          </div>
+          <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200 shrink-0">
+            <Plus size={20} />
+            Nuevo ingreso
+          </button>
         </div>
-        <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200">
-          <Plus size={20} />
-          Nuevo ingreso
-        </button>
+
+        {/* Sub navegación: Ventas (principal) | Otros ingresos (secundaria) */}
+        <div className="flex justify-center mt-6">
+          <PastelCard className="!p-2 flex gap-1 rounded-[22px] mx-auto w-auto inline-flex shadow-md shadow-emerald-100/50" noHover>
+            <button
+              onClick={() => setVistaActiva('historial')}
+              className={`
+                flex items-center gap-2 px-6 py-3 rounded-[18px] text-sm font-bold transition-all duration-300
+                ${vistaActiva === 'historial'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-300/40'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-emerald-50/60'
+                }
+              `}
+            >
+              <History className="w-4 h-4" strokeWidth={2.5} />
+              Ventas
+            </button>
+            <button
+              onClick={() => setVistaActiva('otros')}
+              className={`
+                flex items-center gap-2 px-4 py-2.5 rounded-[14px] text-xs font-semibold transition-all duration-300
+                ${vistaActiva === 'otros'
+                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                }
+              `}
+            >
+              <Wallet className="w-3.5 h-3.5" strokeWidth={2.5} />
+              Otros ingresos
+            </button>
+          </PastelCard>
+        </div>
       </div>
 
+      {vistaActiva === 'historial' ? (
+        <HistorialVentas />
+      ) : (
+        <>
       {/* Filtros */}
       <PastelCard className="p-5 sm:p-6" noHover>
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
@@ -256,11 +297,14 @@ export default function Ingresos() {
         )}
       </div>
 
-      {/* Modal Nuevo/Editar */}
-      {modalOpen && (
+        </>
+      )}
+
+      {/* Modal Nuevo/Editar — renderizado en portal para quedar centrado en viewport */}
+      {modalOpen && typeof document !== 'undefined' && createPortal(
         <>
-          <div className="fixed inset-0 bg-black/25 backdrop-blur-sm z-40 animate-fade-in" onClick={() => setModalOpen(false)} aria-hidden />
-          <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-8 z-50 shadow-2xl max-h-[90vh] overflow-y-auto" noHover>
+          <div className="fixed inset-0 bg-black/25 backdrop-blur-sm z-[200] animate-fade-in" onClick={() => setModalOpen(false)} aria-hidden />
+          <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-lg p-8 z-[201] shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <span className="text-2xl">{editing ? '✏️' : '➕'}</span>
@@ -344,7 +388,8 @@ export default function Ingresos() {
               </div>
             </form>
           </PastelCard>
-        </>
+        </>,
+        document.body
       )}
     </div>
   )
