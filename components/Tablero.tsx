@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { supabase, Producto, Venta, getProductImages } from '@/lib/supabase'
+import { supabase, Producto, Venta, ItemVenta, getProductImages } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
@@ -12,12 +12,6 @@ import ExportarDatos from '@/components/ExportarDatos'
 import { getExpenses } from '@/lib/expenseService'
 import type { Expense } from '@/lib/types'
 
-type ProductoVendido = {
-    product_name: string
-    cantidad_vendida: number
-    ingresos_totales: number
-}
-
 type PeriodoIngresos = 'total' | '7d' | '30d'
 
 export default function Tablero() {
@@ -26,11 +20,13 @@ export default function Tablero() {
     const [ingresosManuales, setIngresosManuales] = useState<{ amount: number; created_at: string }[]>([])
     const [gastos, setGastos] = useState<Expense[]>([])
     const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
-    const [topProductos, setTopProductos] = useState<ProductoVendido[]>([])
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
     const [mostrarExportar, setMostrarExportar] = useState(false)
     const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
+    const [detalleVenta, setDetalleVenta] = useState<Venta | null>(null)
+    const [itemsDetalleVenta, setItemsDetalleVenta] = useState<ItemVenta[]>([])
+    const [cargandoDetalleVenta, setCargandoDetalleVenta] = useState(false)
 
     useEffect(() => {
         cargarDatos()
@@ -38,7 +34,7 @@ export default function Tablero() {
 
     const cargarDatos = async () => {
         setCargando(true)
-        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerIngresosManuales(), obtenerGastos(), obtenerTopProductos()])
+        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerIngresosManuales(), obtenerGastos()])
         setCargando(false)
     }
 
@@ -77,38 +73,6 @@ export default function Tablero() {
             .select('*')
             .order('created_at', { ascending: false })
         if (!error && data) setVentas(data)
-    }
-
-    const obtenerTopProductos = async () => {
-        // Últimos 30 días
-        const hace30Dias = subDays(new Date(), 30)
-        const { data, error } = await supabase
-            .from('sale_items')
-            .select('product_name, quantity, subtotal, created_at')
-            .gte('created_at', hace30Dias.toISOString())
-
-        if (!error && data) {
-            // Agrupar por producto
-            const agrupado = data.reduce((acc: any, item: any) => {
-                if (!acc[item.product_name]) {
-                    acc[item.product_name] = {
-                        product_name: item.product_name,
-                        cantidad_vendida: 0,
-                        ingresos_totales: 0
-                    }
-                }
-                acc[item.product_name].cantidad_vendida += item.quantity
-                acc[item.product_name].ingresos_totales += item.subtotal
-                return acc
-            }, {})
-
-            // Convertir a array y ordenar
-            const sorted = Object.values(agrupado)
-                .sort((a: any, b: any) => b.cantidad_vendida - a.cantidad_vendida)
-                .slice(0, 5)
-
-            setTopProductos(sorted as ProductoVendido[])
-        }
     }
 
     // Calcular estadísticas (crítico = debajo de min_stock O stock ≤ umbral si está en Inventario)
@@ -163,6 +127,24 @@ export default function Tablero() {
             case 'tarjeta': return <CreditCard className="w-4 h-4 text-blue-500" />
             case 'transferencia': return <FileText className="w-4 h-4 text-purple-500" />
             default: return <Receipt className="w-4 h-4 text-gray-400" />
+        }
+    }
+
+    const abrirDetalleVenta = async (venta: Venta) => {
+        setDetalleVenta(venta)
+        setCargandoDetalleVenta(true)
+        setItemsDetalleVenta([])
+        try {
+            const { data, error } = await supabase
+                .from('sale_items')
+                .select('product_name, quantity, unit_price, subtotal')
+                .eq('sale_id', venta.id)
+                .order('id')
+            if (!error && data) setItemsDetalleVenta(data as ItemVenta[])
+        } catch {
+            setItemsDetalleVenta([])
+        } finally {
+            setCargandoDetalleVenta(false)
         }
     }
 
@@ -321,50 +303,6 @@ export default function Tablero() {
                 {/* Column 2: Side Panel (Span 1) */}
                 <div className="flex flex-col gap-8">
 
-                    {/* Top Products */}
-                    <PastelCard noHover className="p-8">
-                        <h3 className="text-lg font-bold mb-6 text-gray-900 flex items-center gap-2">
-                            🏆 Top Productos
-                        </h3>
-
-                        {topProductos.length > 0 ? (
-                            <div className="flex flex-col gap-3">
-                                {topProductos.map((prod, idx) => (
-                                    <div key={idx} className="flex items-center gap-5 px-5 py-4 rounded-2xl hover:bg-pink-50/50 transition-all group border border-transparent hover:border-pink-100">
-                                        <div className={`
-                                            w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm
-                                            ${idx === 0 ? 'bg-amber-100 text-amber-600' :
-                                                idx === 1 ? 'bg-gray-100 text-gray-500' :
-                                                    idx === 2 ? 'bg-orange-100 text-orange-600' :
-                                                        'bg-white border border-gray-100 text-gray-400'}
-                                        `}>
-                                            #{idx + 1}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-gray-800 text-sm truncate group-hover:text-pink-600 transition-colors leading-snug">
-                                                {prod.product_name}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-1.5">
-                                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-medium">
-                                                    {prod.cantidad_vendida} un.
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right flex-shrink-0">
-                                            <p className="font-bold text-gray-900 text-sm border-b-2 border-pink-100/50 inline-block tabular-nums">
-                                                ${prod.ingresos_totales.toLocaleString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-10 text-gray-300 text-xs border border-dashed border-gray-200 rounded-2xl">
-                                <p>Sin datos suficientes</p>
-                            </div>
-                        )}
-                    </PastelCard>
-
                     {/* Recent Sales */}
                     <PastelCard noHover className="p-8">
                         <h3 className="text-lg font-bold mb-6 text-gray-900 flex items-center gap-2">
@@ -374,7 +312,12 @@ export default function Tablero() {
                         {ultimasVentas.length > 0 ? (
                             <div className="flex flex-col gap-3">
                                 {ultimasVentas.slice(0, 4).map(venta => (
-                                    <div key={venta.id} className="flex items-center justify-between px-5 py-4 rounded-2xl hover:bg-pink-50/50 transition-all group border border-transparent hover:border-pink-100">
+                                    <button
+                                        key={venta.id}
+                                        type="button"
+                                        onClick={() => abrirDetalleVenta(venta)}
+                                        className="w-full flex items-center justify-between px-5 py-4 rounded-2xl hover:bg-pink-50/50 transition-all group border border-transparent hover:border-pink-100 text-left cursor-pointer"
+                                    >
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm flex-shrink-0">
                                                 {obtenerIconoPago(venta.payment_method)}
@@ -389,7 +332,7 @@ export default function Tablero() {
                                                 ${venta.total.toLocaleString()}
                                             </p>
                                         </div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         ) : (
@@ -401,6 +344,77 @@ export default function Tablero() {
 
                 </div>
             </div>
+
+            {/* Modal detalle venta (Recientes) */}
+            {detalleVenta && typeof document !== 'undefined' && createPortal(
+                <>
+                    <div className="modal-backdrop" onClick={() => setDetalleVenta(null)} />
+                    <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md max-h-[85vh] overflow-hidden flex flex-col z-[200] !shadow-2xl">
+                        <div className="p-6 border-b border-pink-100 flex-shrink-0 flex justify-between items-start gap-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-800">Venta #{detalleVenta.id}</h3>
+                                <p className="text-sm text-gray-500 mt-0.5">
+                                    {format(new Date(detalleVenta.created_at), "EEEE d MMM yyyy, HH:mm", { locale: es })}
+                                </p>
+                                <div className="flex items-center gap-2 mt-2">
+                                    {obtenerIconoPago(detalleVenta.payment_method)}
+                                    <span className="text-xs font-medium text-gray-500 capitalize">
+                                        {detalleVenta.payment_method || '—'}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setDetalleVenta(null)}
+                                className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Cerrar"
+                            >
+                                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1 min-h-0">
+                            {(detalleVenta.customer_name?.trim() || detalleVenta.notes?.trim()) && (
+                                <div className="mb-4 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
+                                    {detalleVenta.customer_name?.trim() && (
+                                        <p className="text-sm">
+                                            <span className="font-semibold text-gray-600">Cliente:</span>{' '}
+                                            <span className="text-gray-800">{detalleVenta.customer_name}</span>
+                                        </p>
+                                    )}
+                                    {detalleVenta.notes?.trim() && (
+                                        <p className="text-sm">
+                                            <span className="font-semibold text-gray-600">Comentarios:</span>{' '}
+                                            <span className="text-gray-800">{detalleVenta.notes}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                            {cargandoDetalleVenta ? (
+                                <p className="text-sm text-gray-400 text-center py-6">Cargando detalle...</p>
+                            ) : itemsDetalleVenta.length > 0 ? (
+                                <div className="space-y-3">
+                                    {itemsDetalleVenta.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between items-baseline gap-3 py-2 border-b border-gray-100 last:border-0">
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-gray-800 text-sm truncate">{item.product_name}</p>
+                                                <p className="text-xs text-gray-500">{item.quantity} × ${item.unit_price.toLocaleString()} = ${item.subtotal.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-400 text-center py-6">Esta venta no tiene ítems registrados.</p>
+                            )}
+                        </div>
+                        <div className="p-6 border-t border-pink-100 flex-shrink-0 bg-pink-50/50 rounded-b-3xl">
+                            <div className="flex justify-between items-center">
+                                <span className="font-bold text-gray-800">Total</span>
+                                <span className="font-bold text-emerald-600 text-lg">${detalleVenta.total.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </PastelCard>
+                </>,
+                document.body
+            )}
 
             {/* Modal Período ingresos — renderizado en portal para que el backdrop cubra toda la pantalla */}
             {mostrarModalPeriodo && typeof document !== 'undefined' && createPortal(
