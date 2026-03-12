@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
 import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
@@ -363,7 +363,7 @@ export default function Catalogo() {
                                 Login
                             </Link>
                             <button
-                                onClick={() => setMostrarCarrito(true)}
+                                onClick={() => startTransition(() => setMostrarCarrito(true))}
                                 className="relative p-3 rounded-2xl bg-pink-50 hover:bg-pink-100 transition-all duration-300 group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
                                 aria-label={carrito.length > 0 ? `Ver carrito, ${carrito.length} producto${carrito.length !== 1 ? 's' : ''}` : 'Ver carrito'}
                             >
@@ -495,7 +495,7 @@ export default function Catalogo() {
                                 const disponible = comboDisponible(combo)
                                 return (
                                     <PastelCard key={`combo-${combo.id}`} className="group overflow-hidden flex flex-col h-full" noHover>
-                                        <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 cursor-pointer" onClick={() => setComboSeleccionado(combo)}>
+                                        <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
                                             <ImagenComboRotativa
                                                 combo={combo}
                                                 fill
@@ -511,14 +511,14 @@ export default function Catalogo() {
                                                 <Share2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <div className="p-5 flex flex-col flex-1 cursor-pointer" onClick={() => setComboSeleccionado(combo)}>
+                                        <div className="p-5 flex flex-col flex-1 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-1.5">Combo</span>
                                             <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">{combo.name}</h3>
                                             {combo.description && <p className="text-xs text-gray-500 mb-3 line-clamp-2">{combo.description}</p>}
                                             <div className="mt-auto pt-4 border-t border-pink-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                 <p className="text-xl font-extrabold text-gray-900">${combo.sale_price.toLocaleString()}</p>
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); disponible && agregarComboAlCarrito(combo); }}
+                                                    onClick={(e) => { e.stopPropagation(); disponible && startTransition(() => agregarComboAlCarrito(combo)); }}
                                                     disabled={!disponible}
                                                     className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                                                     aria-label={disponible ? `Agregar ${combo.name}` : `${combo.name}: agotado`}
@@ -543,7 +543,7 @@ export default function Catalogo() {
                                 <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full" noHover>
                                     <div
                                         className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 touch-pan-y"
-                                        onClick={() => images.length > 0 && setImagenPrevia({ images, index: idx })}
+                                        onClick={() => startTransition(() => images.length > 0 && setImagenPrevia({ images, index: idx }))}
                                         onTouchStart={e => {
                                             if (images.length > 1) touchSwipeRef.current = { productId: producto.id, x: e.targetTouches[0].clientX, count: images.length }
                                         }}
@@ -600,7 +600,7 @@ export default function Catalogo() {
                                                     <p className="text-xl font-extrabold text-gray-900">${producto.sale_price.toLocaleString()}</p>
                                                 )}
                                             </div>
-                                            <button onClick={() => producto.stock > 0 && agregarAlCarrito(producto)} disabled={producto.stock === 0} className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
+                                            <button onClick={() => producto.stock > 0 && startTransition(() => agregarAlCarrito(producto))} disabled={producto.stock === 0} className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
                                                 {producto.stock === 0 ? 'Agotado' : 'Agregar'}
                                             </button>
                                         </div>
@@ -675,7 +675,7 @@ export default function Catalogo() {
             {/* Botón flotante carrito */}
             {carrito.length > 0 && !mostrarCarrito && (
                 <button
-                    onClick={() => setMostrarCarrito(true)}
+                    onClick={() => startTransition(() => setMostrarCarrito(true))}
                     className="fixed bottom-8 right-8 z-50 flex items-center gap-4 px-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl shadow-xl shadow-pink-300/40 hover:shadow-2xl hover:shadow-pink-300/50 hover:scale-105 active:scale-95 transition-all animate-float"
                 >
                     <div className="relative">

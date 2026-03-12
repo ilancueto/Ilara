@@ -81,8 +81,26 @@ function HomeContent() {
 
   if (cargando) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fdf4ff' }}>
-        <div className="text-pink-500 font-bold text-xl animate-pulse">Cargando Ilara...</div>
+      <div className="min-h-screen relative text-gray-800">
+        <div className="app-wrapper">
+          {/* Skeleton sidebar (misma estructura que el real para evitar CLS) */}
+          <aside className="hidden md:flex flex-col w-72 bg-white border-r border-pink-100 h-screen sticky top-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div className="p-8 pb-4 flex flex-col items-center">
+              <div className="w-64 h-32 mb-2 rounded-2xl bg-pink-50 animate-pulse" />
+            </div>
+            <nav className="flex-1 px-5 flex flex-col gap-2 mt-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-14 rounded-2xl bg-gray-100 animate-pulse" />
+              ))}
+            </nav>
+            <div className="p-6 mt-auto">
+              <div className="h-24 rounded-2xl bg-pink-50 animate-pulse" />
+            </div>
+          </aside>
+          <main className="app-content flex-1 bg-[#faf9fb] flex items-center justify-center">
+            <div className="text-pink-500 font-bold text-xl animate-pulse">Cargando Ilara...</div>
+          </main>
+        </div>
       </div>
     )
   }
