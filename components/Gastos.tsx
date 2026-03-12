@@ -29,6 +29,7 @@ export default function Gastos() {
     const [mostrarEliminarGastosModal, setMostrarEliminarGastosModal] = useState(false);
     const [gastosSeleccionados, setGastosSeleccionados] = useState<Set<string>>(new Set());
     const [eliminandoGastos, setEliminandoGastos] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Cargar gastos
     const loadExpenses = async () => {
@@ -63,8 +64,10 @@ export default function Gastos() {
     }, []);
 
 
-    // Manejar creación/edición
+    // Manejar creación/edición (evita doble envío deshabilitando el botón mientras guarda)
     const handleSubmit = async (data: ExpenseFormData) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             if (editingExpense) {
                 await updateExpense(editingExpense.id, data);
@@ -86,6 +89,8 @@ export default function Gastos() {
             } else {
                 showError('Error al guardar gasto');
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -274,7 +279,7 @@ export default function Gastos() {
                         setIsFormOpen(false);
                         setEditingExpense(undefined);
                     }}
-                    isLoading={isLoading}
+                    isLoading={isSubmitting}
                 />
             )}
 
