@@ -543,7 +543,7 @@ export default function Catalogo() {
                                 <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full" noHover>
                                     <div
                                         className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 touch-pan-y"
-                                        onClick={() => startTransition(() => images.length > 0 && setImagenPrevia({ images, index: idx }))}
+                                        onClick={() => startTransition(() => { if (images.length > 0) setImagenPrevia({ images, index: idx }) })}
                                         onTouchStart={e => {
                                             if (images.length > 1) touchSwipeRef.current = { productId: producto.id, x: e.targetTouches[0].clientX, count: images.length }
                                         }}
