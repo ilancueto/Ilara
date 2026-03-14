@@ -11,6 +11,7 @@ import { format, subDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
 import ExportarDatos from '@/components/ExportarDatos'
+import { useTheme } from '@/context/ThemeContext'
 import { getExpenses } from '@/lib/expenseService'
 import type { Expense } from '@/lib/types'
 
@@ -18,6 +19,7 @@ type PeriodoIngresos = 'total' | '7d' | '30d'
 
 export default function Tablero() {
     const router = useRouter()
+    const { theme } = useTheme()
     const [productos, setProductos] = useState<Producto[]>([])
     const [ventas, setVentas] = useState<Venta[]>([])
     const [ingresosManuales, setIngresosManuales] = useState<{ amount: number; created_at: string }[]>([])
@@ -157,34 +159,34 @@ export default function Tablero() {
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-32 bg-gradient-to-br from-pink-50/80 to-white rounded-3xl border border-pink-100 animate-pulse" />
+                        <div key={i} className="h-32 bg-gradient-to-br from-pink-50/80 to-white dark:from-gray-800 dark:to-gray-800/80 rounded-3xl border border-pink-100 dark:border-gray-600 animate-pulse" />
                     ))}
                 </div>
-                <div className="h-80 bg-gradient-to-br from-pink-50/50 to-white rounded-3xl border border-pink-100 animate-pulse" />
+                <div className="h-80 bg-gradient-to-br from-pink-50/50 to-white dark:from-gray-800 dark:to-gray-800/80 rounded-3xl border border-pink-100 dark:border-gray-600 animate-pulse" />
             </div>
         )
     }
 
     return (
-        <div className="flex flex-col gap-12 pb-12">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800 tracking-tight">¡Hola de nuevo! ✨</h2>
-                    <p className="text-gray-500 text-sm mt-2">Aquí tienes el resumen de hoy.</p>
+        <div className="flex flex-col gap-10 pb-12 text-gray-800 dark:text-gray-100">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="min-w-0">
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">¡Hola de nuevo! ✨</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5">Aquí tienes el resumen de hoy.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         type="button"
                         onClick={() => router.push('/?tab=sales')}
-                        className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-base shadow-xl shadow-pink-300/50 hover:shadow-2xl hover:shadow-pink-400/50 hover:-translate-y-0.5 hover:scale-[1.02] transition-all ring-2 ring-pink-200/50"
+                        className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-sm shadow-xl shadow-pink-300/50 hover:shadow-2xl hover:shadow-pink-400/50 hover:-translate-y-0.5 transition-all ring-2 ring-pink-200/50"
                     >
-                        <Receipt className="w-6 h-6" strokeWidth={2.5} />
+                        <Receipt className="w-5 h-5" strokeWidth={2.5} />
                         Nueva venta
                     </button>
                     <button
                         type="button"
                         onClick={() => setMostrarExportar(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-pink-200 bg-pink-50/50 text-pink-600 hover:bg-pink-50 hover:border-pink-300 transition-all font-semibold text-sm"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-pink-200 dark:border-gray-600 bg-pink-50/50 dark:bg-gray-900 dark:text-white text-pink-600 hover:bg-pink-50 dark:hover:bg-gray-800 hover:border-pink-300 dark:hover:border-gray-500 transition-all font-semibold text-sm"
                     >
                         <Download className="w-4 h-4" />
                         Exportar datos
@@ -192,7 +194,7 @@ export default function Tablero() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10 items-stretch overflow-visible">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 items-stretch overflow-visible">
                 <div>
                     <TarjetaEstadistica
                         icono={<DollarSign className="w-6 h-6" />}
@@ -202,11 +204,11 @@ export default function Tablero() {
                         bgIcon="bg-pink-50"
                         subtitulo={`${cantidadVentas} ventas + ${ingresosFiltrados.length} ingresos manuales`}
                         trend={true}
-                        selectorPeriodo={
+                                selectorPeriodo={
                             <button
                                 type="button"
                                 onClick={() => setMostrarModalPeriodo(true)}
-                                className="p-2 rounded-lg bg-white/80 border border-pink-200 text-pink-600 hover:bg-white hover:border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-colors"
+                                className="p-2 rounded-lg bg-white/80 dark:bg-gray-700 border border-pink-200 dark:border-gray-600 text-pink-600 dark:text-pink-400 hover:bg-white dark:hover:bg-gray-600 hover:border-pink-300 dark:hover:border-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300 dark:focus:ring-pink-600 transition-colors"
                                 aria-label="Cambiar período de ingresos"
                             >
                                 <Settings className="w-4 h-4" />
@@ -257,23 +259,21 @@ export default function Tablero() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
 
                 {/* Column 1: Sales Chart (Span 2) */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
-                    <PastelCard noHover className="h-full min-h-[400px] flex flex-col p-9">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <div className="lg:col-span-2 flex flex-col">
+                    <PastelCard noHover className="h-full min-h-[380px] flex flex-col p-6 sm:p-7">
+                        <div className="flex items-center justify-between gap-4 mb-5 flex-shrink-0">
+                            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
                                 Actividad de Ventas
                             </h3>
-                            <div className="flex gap-2">
-                                <span className="px-4 py-1.5 rounded-full bg-pink-50 text-[11px] text-pink-600 font-bold uppercase tracking-wider">
-                                    {etiquetaPeriodo}
-                                </span>
-                            </div>
+                            <span className="px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[11px] text-pink-600 dark:text-pink-400 font-bold uppercase tracking-wider shrink-0">
+                                {etiquetaPeriodo}
+                            </span>
                         </div>
 
-                        <div className="flex-1 w-full">
+                        <div className="flex-1 min-h-[280px] w-full pt-2">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={ventasPorDia} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
@@ -282,28 +282,28 @@ export default function Tablero() {
                                             <stop offset="100%" stopColor="#db2777" />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(236,72,153,0.08)" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(236,72,153,0.08)'} />
                                     <XAxis
                                         dataKey="fecha"
-                                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
-                                        axisLine={{ stroke: '#fce7f3' }}
+                                        tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12, fontWeight: 500 }}
+                                        axisLine={{ stroke: theme === 'dark' ? '#3f3f46' : '#fce7f3' }}
                                         tickLine={false}
                                         dy={10}
                                     />
                                     <YAxis
-                                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                                        tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12, fontWeight: 500 }}
                                         tickFormatter={(value) => value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`}
                                         axisLine={false}
                                         tickLine={false}
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            background: '#fff',
-                                            border: '1px solid #fbcfe8',
+                                            background: theme === 'dark' ? '#27272a' : '#fff',
+                                            border: theme === 'dark' ? '1px solid #3f3f46' : '1px solid #fbcfe8',
                                             borderRadius: '16px',
-                                            boxShadow: '0 10px 30px -5px rgba(236,72,153,0.15)',
+                                            boxShadow: theme === 'dark' ? '0 10px 30px -5px rgba(0,0,0,0.4)' : '0 10px 30px -5px rgba(236,72,153,0.15)',
                                             padding: '12px 16px',
-                                            color: '#1f2937'
+                                            color: theme === 'dark' ? '#f3f4f6' : '#1f2937'
                                         }}
                                         cursor={{ fill: 'rgba(236, 72, 153, 0.06)' }}
                                         formatter={(value: unknown) => {
@@ -324,42 +324,40 @@ export default function Tablero() {
                 </div>
 
                 {/* Column 2: Side Panel (Span 1) */}
-                <div className="flex flex-col gap-8">
+                <div className="flex flex-col">
 
                     {/* Recent Sales */}
-                    <PastelCard noHover className="p-8">
-                        <h3 className="text-lg font-bold mb-6 text-gray-900 flex items-center gap-2">
+                    <PastelCard noHover className="p-6 sm:p-7 h-full">
+                        <h3 className="text-lg font-bold mb-5 text-gray-900 dark:text-gray-100">
                             ⏱️ Recientes
                         </h3>
 
                         {ultimasVentas.length > 0 ? (
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-2">
                                 {ultimasVentas.slice(0, 4).map(venta => (
                                     <button
                                         key={venta.id}
                                         type="button"
                                         onClick={() => abrirDetalleVenta(venta)}
-                                        className="w-full flex items-center justify-between px-5 py-4 rounded-2xl hover:bg-pink-50/50 transition-all group border border-transparent hover:border-pink-100 text-left cursor-pointer"
+                                        className="dashboard-recent-item w-full flex items-center justify-between gap-4 px-4 py-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 transition-all group border border-transparent hover:border-pink-100 dark:hover:border-gray-600 text-left cursor-pointer"
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm flex-shrink-0">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-9 h-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 flex items-center justify-center shadow-sm flex-shrink-0">
                                                 {obtenerIconoPago(venta.payment_method)}
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-gray-800 text-sm group-hover:text-pink-600 transition-colors leading-snug">#{venta.id}</p>
-                                                <p className="text-xs text-gray-400 font-medium mt-0.5">{format(new Date(venta.created_at), "HH:mm", { locale: es })}</p>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">#{venta.id}</p>
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5">{format(new Date(venta.created_at), "HH:mm", { locale: es })}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-emerald-600 text-sm bg-emerald-50 px-2 py-1 rounded-lg">
-                                                ${venta.total.toLocaleString()}
-                                            </p>
-                                        </div>
+                                        <p className="font-semibold text-emerald-600 dark:text-emerald-400 text-sm bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg shrink-0">
+                                            ${venta.total.toLocaleString()}
+                                        </p>
                                     </button>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-10 text-gray-300 text-xs border border-dashed border-gray-200 rounded-2xl">
+                            <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-xs border border-dashed border-gray-200 dark:border-gray-600 rounded-xl">
                                 <p>Sin ventas recientes</p>
                             </div>
                         )}
@@ -372,66 +370,72 @@ export default function Tablero() {
             {detalleVenta && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="modal-backdrop" onClick={() => setDetalleVenta(null)} />
-                    <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md max-h-[85vh] overflow-hidden flex flex-col z-[200] !shadow-2xl">
-                        <div className="p-6 border-b border-pink-100 flex-shrink-0 flex justify-between items-start gap-4">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-800">Venta #{detalleVenta.id}</h3>
-                                <p className="text-sm text-gray-500 mt-0.5">
-                                    {format(new Date(detalleVenta.created_at), "EEEE d MMM yyyy, HH:mm", { locale: es })}
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                    {obtenerIconoPago(detalleVenta.payment_method)}
-                                    <span className="text-xs font-medium text-gray-500 capitalize">
-                                        {detalleVenta.payment_method || '—'}
+                    <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md max-h-[85vh] overflow-hidden flex flex-col z-[200] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
+                        {/* Header: sale ID primary, date + payment as metadata */}
+                        <div className="p-6 pb-5 border-b border-pink-100 dark:border-gray-700 flex-shrink-0 flex justify-between items-start gap-4">
+                            <div className="flex flex-col gap-1.5 min-w-0">
+                                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">Venta #{detalleVenta.id}</h3>
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-gray-500 dark:text-gray-400">
+                                    <span>{format(new Date(detalleVenta.created_at), "EEEE d MMM yyyy, HH:mm", { locale: es })}</span>
+                                    <span className="flex items-center gap-1.5">
+                                        {obtenerIconoPago(detalleVenta.payment_method)}
+                                        <span className="font-medium capitalize">{detalleVenta.payment_method || '—'}</span>
                                     </span>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setDetalleVenta(null)}
-                                className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 transition-colors flex-shrink-0"
                                 aria-label="Cerrar"
                             >
                                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        <div className="p-6 overflow-y-auto flex-1 min-h-0">
+
+                        <div className="p-6 overflow-y-auto flex-1 min-h-0 flex flex-col gap-6">
+                            {/* Client + notes: info block */}
                             {(detalleVenta.customer_name?.trim() || detalleVenta.notes?.trim()) && (
-                                <div className="mb-4 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
+                                <div className="flex flex-col gap-3 p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
                                     {detalleVenta.customer_name?.trim() && (
-                                        <p className="text-sm">
-                                            <span className="font-semibold text-gray-600">Cliente:</span>{' '}
-                                            <span className="text-gray-800">{detalleVenta.customer_name}</span>
-                                        </p>
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cliente</span>
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{detalleVenta.customer_name}</p>
+                                        </div>
                                     )}
                                     {detalleVenta.notes?.trim() && (
-                                        <p className="text-sm">
-                                            <span className="font-semibold text-gray-600">Comentarios:</span>{' '}
-                                            <span className="text-gray-800">{detalleVenta.notes}</span>
-                                        </p>
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comentarios</span>
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{detalleVenta.notes}</p>
+                                        </div>
                                     )}
                                 </div>
                             )}
+
+                            {/* Product rows */}
                             {cargandoDetalleVenta ? (
-                                <p className="text-sm text-gray-400 text-center py-6">Cargando detalle...</p>
+                                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">Cargando detalle...</p>
                             ) : itemsDetalleVenta.length > 0 ? (
-                                <div className="space-y-3">
+                                <div className="flex flex-col gap-0">
                                     {itemsDetalleVenta.map((item, idx) => (
-                                        <div key={idx} className="flex justify-between items-baseline gap-3 py-2 border-b border-gray-100 last:border-0">
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-gray-800 text-sm truncate">{item.product_name}</p>
-                                                <p className="text-xs text-gray-500">{item.quantity} × ${item.unit_price.toLocaleString()} = ${item.subtotal.toLocaleString()}</p>
+                                        <div key={idx} className="venta-detalle-row flex justify-between items-center gap-4 min-h-[52px] py-3 border-b border-gray-100 dark:border-gray-700/80 last:border-0">
+                                            <div className="min-w-0 flex flex-col gap-0.5 justify-center">
+                                                <p className="font-medium text-gray-800 dark:text-gray-100 text-sm leading-tight truncate">{item.product_name}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{item.quantity} × ${item.unit_price.toLocaleString()}</p>
                                             </div>
+                                            <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm tabular-nums shrink-0">${item.subtotal.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-400 text-center py-6">Esta venta no tiene ítems registrados.</p>
+                                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">Esta venta no tiene ítems registrados.</p>
                             )}
                         </div>
-                        <div className="p-6 border-t border-pink-100 flex-shrink-0 bg-pink-50/50 rounded-b-3xl">
-                            <div className="flex justify-between items-center">
-                                <span className="font-bold text-gray-800">Total</span>
-                                <span className="font-bold text-emerald-600 text-lg">${detalleVenta.total.toLocaleString()}</span>
+
+                        {/* Total: clear separation and prominence */}
+                        <div className="flex-shrink-0 pt-6 pb-6 px-6 border-t-2 border-gray-200 dark:border-gray-700 bg-pink-50/50 dark:bg-gray-800/50 rounded-b-3xl">
+                            <div className="flex justify-between items-center gap-4">
+                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Total</span>
+                                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-2xl tabular-nums">${detalleVenta.total.toLocaleString()}</span>
                             </div>
                         </div>
                     </PastelCard>
@@ -443,15 +447,15 @@ export default function Tablero() {
             {mostrarModalPeriodo && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="modal-backdrop" onClick={() => setMostrarModalPeriodo(false)} />
-                    <PastelCard noHover className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[340px] z-[200] p-6 !shadow-2xl">
+                    <PastelCard noHover className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[340px] z-[200] p-6 !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
                         <div className="flex justify-between items-center mb-5">
-                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <Settings className="w-5 h-5 text-pink-500" />
+                            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                <Settings className="w-5 h-5 text-pink-500 dark:text-pink-400" />
                                 Período de ingresos
                             </h3>
                             <button
                                 onClick={() => setMostrarModalPeriodo(false)}
-                                className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                                 aria-label="Cerrar"
                             >
                                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
@@ -465,8 +469,8 @@ export default function Tablero() {
                                     onClick={() => { setPeriodoIngresos(p); setMostrarModalPeriodo(false) }}
                                     className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-colors ${
                                         periodoIngresos === p
-                                            ? 'bg-pink-100 text-pink-700 border-2 border-pink-300'
-                                            : 'bg-gray-50 text-gray-700 hover:bg-pink-50 hover:text-pink-600 border-2 border-transparent'
+                                            ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 border-2 border-pink-300 dark:border-pink-700'
+                                            : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/20 hover:text-pink-600 dark:hover:text-pink-400 border-2 border-transparent'
                                     }`}
                                 >
                                     {p === 'total' ? 'Total' : p === '7d' ? 'Últimos 7 días' : 'Últimos 30 días'}
@@ -489,46 +493,44 @@ export default function Tablero() {
                     <div className="modal-backdrop" onClick={() => setMostrarModalAlertas(false)} />
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none">
                         <div className="pointer-events-auto w-[90vw] max-w-[500px] max-h-[80vh] flex flex-col min-h-0">
-                    <PastelCard noHover className="flex flex-col flex-1 min-h-0 overflow-hidden p-8 !shadow-2xl">
-                        <div className="flex justify-between items-center mb-6 flex-shrink-0">
-                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <AlertTriangle className="w-6 h-6 text-amber-500" />
+                    <PastelCard noHover className="flex flex-col flex-1 min-h-0 overflow-hidden p-6 sm:p-8 !shadow-2xl">
+                        <div className="flex justify-between items-center mb-5 flex-shrink-0">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                <AlertTriangle className="w-6 h-6 text-amber-500 dark:text-amber-400" />
                                 Stock Crítico
                             </h3>
                             <button
                                 onClick={() => setMostrarModalAlertas(false)}
-                                className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
                                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
                             </button>
                         </div>
 
-                        <div className="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0 pr-2 scrollbar-hide">
+                        <div className="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 pr-2 scrollbar-hide">
                             {productosCriticos.map(prod => (
-                                <div key={prod.id} className="flex items-center justify-between px-5 py-4 rounded-xl bg-amber-50 border border-amber-100">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-white flex-shrink-0 overflow-hidden flex items-center justify-center relative border border-amber-100">
-                                            {(getProductImages(prod)[0]) ? (
-                                                <Image src={getProductImages(prod)[0]} alt={prod.name} width={40} height={40} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <AlertTriangle className="w-5 h-5 text-amber-300" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-800 text-sm">{prod.name}</p>
-                                            <p className="text-xs text-amber-600 font-medium">Mín: {prod.min_stock}</p>
-                                        </div>
+                                <div key={prod.id} className="stock-critical-row flex items-center gap-4 min-h-[64px] px-4 py-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-900/20 border border-amber-100/50 dark:border-amber-800/30">
+                                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-700 flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100/60 dark:border-amber-800/30">
+                                        {(getProductImages(prod)[0]) ? (
+                                            <Image src={getProductImages(prod)[0]} alt={prod.name} width={40} height={40} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <AlertTriangle className="w-5 h-5 text-amber-300 dark:text-amber-500" />
+                                        )}
                                     </div>
-                                    <div className="text-center px-4 py-2 rounded-lg bg-white border border-amber-100 shadow-sm">
-                                        <p className="text-[10px] text-amber-500 uppercase font-bold tracking-wider mb-0.5">Stock</p>
-                                        <p className={`font-bold text-lg ${prod.stock === 0 ? 'text-red-500' : 'text-gray-800'}`}>{prod.stock}</p>
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                                        <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm leading-tight truncate">{prod.name}</p>
+                                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Mín: {prod.min_stock}</p>
+                                    </div>
+                                    <div className="stock-critical-widget flex-shrink-0 flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2.5 rounded-lg bg-white/90 dark:bg-gray-700/90 border border-amber-100/60 dark:border-gray-600 self-center">
+                                        <span className="text-[10px] text-amber-600 dark:text-amber-400 uppercase font-semibold tracking-wider leading-none">Stock</span>
+                                        <span className={`font-bold text-sm tabular-nums mt-0.5 leading-none ${prod.stock === 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-800 dark:text-gray-100'}`}>{prod.stock}</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-gray-100 text-center flex-shrink-0">
-                            <p className="text-xs text-gray-400 font-medium">
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex-shrink-0 px-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium text-center">
                                 Se recomienda reponer stock lo antes posible
                             </p>
                         </div>
@@ -559,44 +561,44 @@ function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, 
         <PastelCard
             noHover
             className={`
-                px-9 py-9 h-full flex flex-col justify-between group cursor-default min-h-[165px] overflow-visible
-                ${alerta ? 'border-2 border-amber-400 shadow-lg shadow-amber-100' : ''}
+                dashboard-metric-card h-full flex flex-col justify-between group cursor-default min-h-[140px] overflow-visible
+                ${alerta ? 'border-2 border-amber-400 dark:border-amber-500 shadow-lg shadow-amber-100 dark:shadow-amber-900/30' : ''}
             `}
         >
             <div className="flex items-start justify-between gap-3 flex-shrink-0">
                 <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${bgIcon} ${color}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${bgIcon} dark:bg-gray-700 ${color}`}
                 >
                     {icono}
                 </div>
                 {alerta && (
-                    <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-600 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
+                    <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
                         Acción
                     </span>
                 )}
                 {(trend || selectorPeriodo) && (
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                         {selectorPeriodo}
                         {trend && !selectorPeriodo && (
-                            <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
-                                <ArrowUpRight className="w-4 h-4" />
+                            <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
+                                <ArrowUpRight className="w-3.5 h-3.5" />
                             </div>
                         )}
                     </div>
                 )}
             </div>
 
-            <div className="mt-5 flex-1 min-h-0">
-                <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2.5">
+            <div className="flex flex-col gap-1 mt-4 flex-1 min-h-0">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
                     {etiqueta}
                 </p>
-                <p className="text-3xl font-extrabold text-gray-900 tracking-tight group-hover:text-pink-600 transition-colors leading-tight pt-0.5 pb-1">
+                <p className="text-2xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors leading-tight">
                     {valor}
                 </p>
                 {subtitulo && (
-                    <div className="mt-4 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-pink-400 flex-shrink-0"></div>
-                        <span className="text-xs font-medium text-gray-500">{subtitulo}</span>
+                    <div className="flex items-center gap-2 mt-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 flex-shrink-0" />
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{subtitulo}</span>
                     </div>
                 )}
             </div>

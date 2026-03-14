@@ -188,36 +188,37 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
-            <PastelCard className="w-full max-w-2xl max-h-[90vh] overflow-y-auto !p-0 z-50 shadow-2xl animate-fade-in-scale" noHover>
-                <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-8 py-5 border-b border-gray-100 flex justify-between items-center">
+            <PastelCard className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto !p-0 z-50 shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 animate-fade-in-scale" noHover>
+                <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md px-6 sm:px-8 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-                            <span className="text-pink-500">✦</span>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-2">
+                            <span className="text-pink-500 dark:text-pink-400">✦</span>
                             {productToEdit ? 'Editar Producto' : 'Nuevo Producto'}
                         </h3>
-                        <p className="text-sm text-gray-500 mt-0.5">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                             {productToEdit ? 'Modifica los detalles del producto' : 'Agrega un nuevo ítem a tu inventario'}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-9 h-9 rounded-full bg-gray-100 text-gray-500 hover:text-gray-700 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                        className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                        aria-label="Cerrar"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-8">
-                    <div className="space-y-6">
-                        {/* Imágenes (múltiples) */}
-                        <div className="space-y-3">
-                            <label className="form-label">Imágenes del producto</label>
-                            <div className="flex flex-wrap gap-3 items-start">
+                <form onSubmit={handleSubmit} className="form-body p-6 sm:p-8">
+                    {/* Imágenes: bloque destacado */}
+                    <div className="form-section">
+                        <label className="form-label">Imágenes del producto</label>
+                        <div className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 p-5 sm:p-6 min-h-[140px] flex flex-col justify-center">
+                            <div className="flex flex-wrap gap-4 items-center">
                                 {formData.image_urls.map((url, index) => (
-                                    <div key={url} className="relative w-20 h-20 rounded-xl bg-gray-50 border border-gray-200 overflow-hidden group shrink-0">
-                                        <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="80px" />
+                                    <div key={url} className="relative w-24 h-24 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 overflow-hidden group shrink-0">
+                                        <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="96px" />
                                         <button
                                             type="button"
                                             onClick={() => quitarImagen(index)}
@@ -228,11 +229,11 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                         </button>
                                     </div>
                                 ))}
-                                <label className="w-20 h-20 shrink-0 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-pink-300 transition-colors">
+                                <label className="w-24 h-24 shrink-0 rounded-xl bg-white dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-500 flex items-center justify-center cursor-pointer hover:border-pink-400 dark:hover:border-pink-500 transition-colors">
                                     {uploading ? (
-                                        <Loader className="animate-spin text-pink-400 w-6 h-6" />
+                                        <Loader className="animate-spin text-pink-400 w-7 h-7" />
                                     ) : (
-                                        <Upload className="w-6 h-6 text-gray-300" />
+                                        <Upload className="w-7 h-7 text-gray-400 dark:text-gray-500" />
                                     )}
                                     <input
                                         type="file"
@@ -244,52 +245,56 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     />
                                 </label>
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
                                 Podés subir varias. JPG, PNG o WEBP. En el catálogo se podrán deslizar.
                             </p>
                         </div>
+                    </div>
 
-                        {/* Nombre */}
-                        <div>
-                            <label className="form-label">Nombre del producto <span className="text-pink-500">*</span></label>
-                            <input
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Ej: Labial Mate Ruby Woo"
-                                className={`form-input w-full ${errores.name ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
-                            />
-                            {errores.name && <p className="text-xs text-red-500 mt-1">{errores.name}</p>}
-                        </div>
+                    {/* Nombre */}
+                    <div className="form-section">
+                        <label className="form-label">Nombre del producto <span className="text-pink-500">*</span></label>
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Ej: Labial Mate Ruby Woo"
+                            className={`form-input form-control-h w-full ${errores.name ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
+                        />
+                        {errores.name && <p className="text-xs text-red-500 mt-1">{errores.name}</p>}
+                    </div>
 
-                        {/* Categoría y Marca */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
+                    {/* Categoría y Marca */}
+                    <div className="form-section">
+                        <div className="form-section-fields grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="min-w-0">
                                 <label className="form-label">Categoría</label>
                                 <select
                                     value={formData.category_id}
                                     onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                                    className="form-select w-full"
+                                    className="form-select form-control-h w-full"
                                 >
                                     <option value="">Sin categoría</option>
                                     {categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
                                 </select>
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <label className="form-label">Marca</label>
                                 <input
                                     type="text"
                                     value={formData.brand}
                                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                                     placeholder="Ej: MAC"
-                                    className="form-input w-full"
+                                    className="form-input form-control-h w-full"
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Precio compra y venta — misma fila, sin recuadro */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
+                    {/* Precio compra y venta */}
+                    <div className="form-section">
+                        <div className="form-section-fields grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="min-w-0">
                                 <label className="form-label">Precio compra</label>
                                 <div className="relative">
                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
@@ -299,11 +304,11 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                         value={formData.purchase_price}
                                         onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
                                         placeholder="0.00"
-                                        className="form-input w-full pr-8"
+                                        className="form-input form-control-h w-full pr-8"
                                     />
                                 </div>
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <label className="form-label">Precio venta <span className="text-pink-500">*</span></label>
                                 <div className="relative">
                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
@@ -313,16 +318,18 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                         value={formData.sale_price}
                                         onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
                                         placeholder="0.00"
-                                        className={`form-input w-full pr-8 ${errores.sale_price ? 'border-red-300' : ''}`}
+                                        className={`form-input form-control-h w-full pr-8 ${errores.sale_price ? 'border-red-300' : ''}`}
                                     />
                                 </div>
                                 {errores.sale_price && <p className="text-xs text-red-500 mt-1">{errores.sale_price}</p>}
                             </div>
                         </div>
+                    </div>
 
-                        {/* Stock y alerta — etiquetas en una línea */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <div>
+                    {/* Stock actual y alerta */}
+                    <div className="form-section">
+                        <div className="form-section-fields grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="min-w-0">
                                 <label className="form-label">Stock actual <span className="text-pink-500">*</span></label>
                                 <input
                                     type="number"
@@ -330,11 +337,11 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     value={formData.stock}
                                     onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                                     placeholder="0"
-                                    className={`form-input w-full ${errores.stock ? 'border-red-300' : ''}`}
+                                    className={`form-input form-control-h w-full ${errores.stock ? 'border-red-300' : ''}`}
                                 />
                                 {errores.stock && <p className="text-xs text-red-500 mt-1">{errores.stock}</p>}
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <label className="form-label">Alerta stock bajo</label>
                                 <input
                                     type="number"
@@ -342,14 +349,16 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     value={formData.min_stock}
                                     onChange={(e) => setFormData({ ...formData, min_stock: e.target.value })}
                                     placeholder="5"
-                                    className="form-input w-full"
+                                    className="form-input form-control-h w-full"
                                 />
-                                <p className="text-[11px] text-gray-400 mt-1">Aviso cuando el stock baje de este valor</p>
+                                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Aviso cuando el stock baje de este valor</p>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Visible en catálogo público */}
-                        <div className="pt-1 pb-2">
+                    {/* Visible en catálogo: bloque de configuración */}
+                    <div className="form-section">
+                        <div className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50/60 dark:bg-gray-800/40 p-5 sm:p-6">
                             <label className="flex items-center gap-4 cursor-pointer has-[:checked]:[&_.track]:bg-pink-400 has-[:checked]:[&_.thumb]:translate-x-6">
                                 <input
                                     type="checkbox"
@@ -361,54 +370,54 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     <span className="track block h-8 w-14 rounded-full bg-gray-200 transition-colors duration-200" />
                                     <span className="thumb absolute left-1 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-out" />
                                 </span>
-                                <span className="text-sm font-medium text-gray-700">Visible en el catálogo público</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Visible en el catálogo público</span>
                             </label>
-                            <p className="text-xs text-gray-500 mt-3 ml-[4.5rem] leading-relaxed">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 ml-[4.5rem] leading-relaxed">
                                 Desactivá para ocultar este producto del catálogo (ideal cuando cargás algo sin precio o fotos).
                             </p>
                         </div>
-
-                        {/* Descuento en catálogo */}
-                        <div>
-                            <label className="form-label">Descuento en catálogo (%)</label>
-                            <input
-                                type="number"
-                                min={0}
-                                max={100}
-                                value={formData.discount_percentage}
-                                onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
-                                placeholder="0"
-                                className="form-input w-full max-w-[120px]"
-                            />
-                            <p className="text-[11px] text-gray-400 mt-1">Si es mayor a 0, en el catálogo público se muestra &quot;En descuento&quot; y el precio rebajado.</p>
-                        </div>
-
-                        {/* Notas */}
-                        <div>
-                            <label className="form-label">Notas adicionales</label>
-                            <textarea
-                                rows={2}
-                                value={formData.notes}
-                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                placeholder="Detalles, ubicación, etc."
-                                className="form-input w-full resize-none"
-                            />
-                        </div>
                     </div>
 
-                    <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
+                    {/* Descuento en catálogo */}
+                    <div className="form-section">
+                        <label className="form-label">Descuento en catálogo (%)</label>
+                        <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={formData.discount_percentage}
+                            onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+                            placeholder="0"
+                            className="form-input form-control-h w-full max-w-[120px]"
+                        />
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Si es mayor a 0, en el catálogo público se muestra &quot;En descuento&quot; y el precio rebajado.</p>
+                    </div>
+
+                    {/* Notas */}
+                    <div className="form-section">
+                        <label className="form-label">Notas adicionales</label>
+                        <textarea
+                            rows={3}
+                            value={formData.notes}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            placeholder="Detalles, ubicación, etc."
+                            className="form-input w-full resize-none form-textarea-min"
+                        />
+                    </div>
+
+                    <div className="form-footer-bar flex gap-4 border-gray-200 dark:border-gray-700">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={guardando}
-                            className="btn-ghost flex-1 py-3 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                            className="btn-ghost flex-1 form-control-h text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={uploading || guardando}
-                            className="btn-primary flex-[2] justify-center py-3 text-base shadow-lg shadow-pink-200"
+                            className="btn-primary flex-[2] justify-center form-control-h text-base shadow-lg shadow-pink-200 dark:shadow-pink-900/30"
                         >
                             {guardando ? (
                                 <span className="flex items-center gap-2">

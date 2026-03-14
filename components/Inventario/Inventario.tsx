@@ -231,12 +231,12 @@ export default function Inventario() {
     return (
         <div className="max-w-7xl mx-auto flex flex-col gap-12">
             {/* Tabs Productos | Combos | Lista para reposición */}
-            <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
+            <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-2xl w-fit">
                 <button
                     type="button"
                     onClick={() => setTabActiva('productos')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors ${
-                        tabActiva === 'productos' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                        tabActiva === 'productos' ? 'bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                 >
                     Productos
@@ -245,7 +245,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('combos')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
-                        tabActiva === 'combos' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                        tabActiva === 'combos' ? 'bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                 >
                     <Package className="w-4 h-4" /> Combos
@@ -254,7 +254,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('reposicion')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
-                        tabActiva === 'reposicion' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                        tabActiva === 'reposicion' ? 'bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                 >
                     <AlertTriangle className="w-4 h-4" /> Lista para reposición
@@ -263,60 +263,62 @@ export default function Inventario() {
 
             {tabActiva === 'productos' && (
             <>
-            {/* Header Toolbar - Updated for Pastel UI */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-7 rounded-[24px] border border-pink-100 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                    <div className="relative w-full sm:flex-1 sm:min-w-[250px]">
-                        <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            {/* Toolbar: main container → left group (filters) + right group (actions) */}
+            <div className="inventory-toolbar flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between bg-white dark:bg-gray-800/80 p-5 sm:p-6 rounded-2xl border border-pink-100 dark:border-gray-600 shadow-sm">
+                {/* Left group: search input + category select */}
+                <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
+                    <div className="relative w-full lg:w-[300px]">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Buscar por nombre o marca..."
                             value={terminoBusqueda}
                             onChange={(e) => setTerminoBusqueda(e.target.value)}
-                            className="w-full bg-gray-50 border-transparent focus:bg-white border focus:border-pink-200 rounded-xl py-3 pl-5 pr-11 text-sm transition-all outline-none"
+                            className="w-full h-12 min-h-[3rem] bg-gray-50 dark:bg-gray-700 border border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-pink-200 dark:focus:border-pink-500 rounded-xl pl-4 pr-10 py-3 text-sm leading-[1.5] text-gray-800 dark:text-gray-100 transition-all outline-none placeholder-gray-400 dark:placeholder-gray-500"
                         />
                     </div>
-
-                    <select
-                        value={categoriaSeleccionada}
-                        onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-                        className="w-full sm:w-auto bg-white border border-pink-100 rounded-xl py-3 px-4 text-sm font-medium text-gray-700 shadow-sm transition-all outline-none cursor-pointer hover:border-pink-200 hover:bg-pink-50/30 focus:border-pink-300 focus:ring-2 focus:ring-pink-200/50 focus:bg-white"
-                    >
-                        <option value="all">Todas las categorías</option>
-                        {categorias.map(cat => (
-                            <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
-                        ))}
-                    </select>
+                    <div className="w-full lg:w-[340px] min-h-[3rem] flex items-stretch">
+                        <select
+                            value={categoriaSeleccionada}
+                            onChange={(e) => setCategoriaSeleccionada(e.target.value)}
+                            className="h-12 min-h-[3rem] w-full bg-white dark:bg-gray-700 border border-pink-100 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-medium leading-[1.5] text-gray-700 dark:text-gray-200 transition-all outline-none cursor-pointer hover:border-pink-200 dark:hover:border-pink-600 focus:border-pink-300 focus:ring-2 focus:ring-pink-200/50"
+                        >
+                            <option value="all">Todas las categorías</option>
+                            {categorias.map(cat => (
+                                <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                {/* Right group: Categorías + Cupones + Nuevo Producto */}
+                <div className="flex shrink-0 flex-wrap items-center gap-3">
                     <button
                         onClick={() => setGestionCatsAbierto(true)}
-                        className="btn-ghost flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-50 text-gray-600 hover:bg-gray-100 border-0"
+                        className="btn-ghost flex items-center justify-center gap-2 h-12 min-h-[3rem] px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl border-0"
                         title="Administrar categorías"
                     >
                         <Settings className="w-4 h-4" />
-                        <span className="hidden sm:inline">Categorías</span>
+                        <span className="hidden sm:inline text-sm font-medium">Categorías</span>
                     </button>
                     <button
                         onClick={() => setGestionCuponesAbierto(true)}
-                        className="btn-ghost flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-50 text-gray-600 hover:bg-gray-100 border-0"
+                        className="btn-ghost flex items-center justify-center gap-2 h-12 min-h-[3rem] px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl border-0"
                         title="Cupones del catálogo"
                     >
                         <Tag className="w-4 h-4" />
-                        <span className="hidden sm:inline">Cupones</span>
+                        <span className="hidden sm:inline text-sm font-medium">Cupones</span>
                     </button>
-
                     <button
                         onClick={() => {
                             setProductoEditar(null)
                             setModalAbierto(true)
                         }}
-                        className="btn-primary flex items-center justify-center gap-2 px-6 py-2.5 shadow-lg shadow-pink-200"
+                        className="btn-primary flex items-center justify-center gap-2 h-12 min-h-[3rem] px-5 py-3 shadow-lg shadow-pink-200 rounded-xl"
                         title="Agregar nuevo producto"
                     >
-                        <Plus className="w-5 h-5" />
-                        <span className="font-bold">Nuevo Producto</span>
+                        <Plus className="w-4 h-4" />
+                        <span className="font-bold text-sm">Nuevo Producto</span>
                     </button>
                 </div>
             </div>
@@ -324,9 +326,9 @@ export default function Inventario() {
             {/* Count + Eliminar productos */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pl-1">
                 <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-pink-400"></span>
-                    <p className="text-sm text-gray-500 font-medium">
-                        Mostrando <span className="font-bold text-gray-900">{productosFiltrados.length}</span> producto{productosFiltrados.length !== 1 ? 's' : ''}
+                    <span className="w-2 h-2 rounded-full bg-pink-400 dark:bg-pink-500"></span>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        Mostrando <span className="font-bold text-gray-900 dark:text-gray-100">{productosFiltrados.length}</span> producto{productosFiltrados.length !== 1 ? 's' : ''}
                     </p>
                 </div>
                 {productosFiltrados.length > 0 && (
@@ -334,7 +336,7 @@ export default function Inventario() {
                         <button
                             type="button"
                             onClick={() => { setMostrarVisibilidadModal(true); setProductosSeleccionados(new Set()); }}
-                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-800 hover:bg-gray-50 border border-pink-200 hover:border-pink-300 font-bold text-sm transition-colors"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-pink-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-700 font-bold text-sm transition-colors"
                         >
                             <Eye className="w-4 h-4" />
                             Ocultar / Mostrar en catálogo
@@ -370,19 +372,19 @@ export default function Inventario() {
 
             {tabActiva === 'combos' && (
             <>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-7 rounded-[24px] border border-pink-100 shadow-sm">
-                <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-pink-400"></span>
-                    <p className="text-sm text-gray-500 font-medium">
-                        <span className="font-bold text-gray-900">{combos.length}</span> combo{combos.length !== 1 ? 's' : ''}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800/80 p-5 sm:p-6 rounded-2xl border border-pink-100 dark:border-gray-600 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        <span className="font-bold text-gray-900 dark:text-gray-100">{combos.length}</span> combo{combos.length !== 1 ? 's' : ''}
                     </p>
                 </div>
                 <button
                     onClick={() => { setComboEditar(null); setModalComboAbierto(true) }}
-                    className="btn-primary flex items-center justify-center gap-2 px-6 py-2.5 shadow-lg shadow-pink-200"
+                    className="btn-primary flex items-center justify-center gap-2 px-5 py-2.5 shadow-lg shadow-pink-200 rounded-xl text-sm font-bold"
                 >
-                    <Plus className="w-5 h-5" />
-                    <span className="font-bold">Nuevo Combo</span>
+                    <Plus className="w-4 h-4" />
+                    <span>Nuevo Combo</span>
                 </button>
             </div>
             <TablaCombos
@@ -396,93 +398,93 @@ export default function Inventario() {
 
             {tabActiva === 'reposicion' && (
             <>
-            <PastelCard noHover className="p-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-amber-500" />
-                        Lista para reposición
-                    </h3>
-                    <div className="relative">
-                        <button
-                            type="button"
-                            onClick={() => setMostrarAjusteUmbral(prev => !prev)}
-                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
-                            title="Ajustar umbral"
-                            aria-expanded={mostrarAjusteUmbral}
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                                {umbralStockCritico != null ? `Umbral: ${umbralStockCritico}` : 'Ajustar umbral'}
-                            </span>
-                        </button>
-                        {mostrarAjusteUmbral && (
-                            <>
-                                <div className="absolute right-0 top-full mt-2 z-10 w-72 p-4 rounded-xl border border-pink-100 bg-white shadow-lg">
-                                    <p className="text-sm font-medium text-gray-700 mb-2">Umbral de stock</p>
-                                    <p className="text-xs text-gray-500 mb-3">
-                                        Además de los que están bajo su mínimo, incluir productos con stock ≤
-                                    </p>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        step={1}
-                                        value={umbralStockCritico ?? ''}
-                                        onChange={(e) => {
-                                            const v = e.target.value
-                                            if (v === '') {
-                                                setUmbralStockCritico(null)
-                                                return
-                                            }
-                                            const n = parseInt(v, 10)
-                                            if (Number.isFinite(n) && n >= 0) setUmbralStockCritico(n)
-                                        }}
-                                        placeholder="ej. 5 (opcional)"
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-800 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+            <PastelCard noHover className="p-5 sm:p-6">
+                <div className="flex flex-col gap-1 mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                            Lista para reposición
+                        </h3>
+                        <div className="relative flex items-center">
+                            <button
+                                type="button"
+                                onClick={() => setMostrarAjusteUmbral(prev => !prev)}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/80 hover:bg-gray-100 dark:hover:bg-gray-600 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 transition-colors"
+                                title="Ajustar umbral"
+                                aria-expanded={mostrarAjusteUmbral}
+                            >
+                                <Settings className="w-3.5 h-3.5" />
+                                {umbralStockCritico != null ? `Umbral: ${umbralStockCritico}` : 'Umbral'}
+                            </button>
+                            {mostrarAjusteUmbral && (
+                                <>
+                                    <div className="absolute right-0 top-full mt-2 z-10 w-72 p-4 rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Umbral de stock</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                            Además de los que están bajo su mínimo, incluir productos con stock ≤
+                                        </p>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step={1}
+                                            value={umbralStockCritico ?? ''}
+                                            onChange={(e) => {
+                                                const v = e.target.value
+                                                if (v === '') {
+                                                    setUmbralStockCritico(null)
+                                                    return
+                                                }
+                                                const n = parseInt(v, 10)
+                                                if (Number.isFinite(n) && n >= 0) setUmbralStockCritico(n)
+                                            }}
+                                            placeholder="ej. 5 (opcional)"
+                                            className="w-full rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100 dark:bg-gray-700 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+                                        />
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Dejá vacío para usar solo el mínimo de cada producto.</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="fixed inset-0 z-[5]"
+                                        aria-label="Cerrar"
+                                        onClick={() => setMostrarAjusteUmbral(false)}
                                     />
-                                    <p className="text-xs text-gray-400 mt-2">Dejá vacío para usar solo el mínimo de cada producto.</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    className="fixed inset-0 z-[5]"
-                                    aria-label="Cerrar"
-                                    onClick={() => setMostrarAjusteUmbral(false)}
-                                />
-                            </>
-                        )}
+                                </>
+                            )}
+                        </div>
                     </div>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                        Los mismos productos se ven en “Stock Crítico” en el tablero.
+                    </p>
                 </div>
-                <p className="text-xs text-gray-400 mb-6">
-                    Los mismos productos se ven en “Stock Crítico” en el tablero.
-                </p>
                 {productosParaReposicion.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400 border border-dashed border-gray-200 rounded-2xl">
-                        <AlertTriangle className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                        <p className="font-medium">No hay productos para reposición</p>
-                        <p className="text-sm mt-1">Subí el umbral o revisá los mínimos de cada producto.</p>
+                    <div className="text-center py-10 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-600 rounded-xl">
+                        <AlertTriangle className="w-9 h-9 mx-auto mb-2 opacity-50" />
+                        <p className="font-medium text-sm">No hay productos para reposición</p>
+                        <p className="text-xs mt-1">Subí el umbral o revisá los mínimos de cada producto.</p>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
+                    <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
                         {productosParaReposicion.map(prod => (
                             <div
                                 key={prod.id}
-                                className="flex items-center justify-between px-5 py-4 rounded-xl bg-amber-50 border border-amber-100"
+                                className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100/80 dark:border-amber-800/40"
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-white flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100">
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <div className="w-9 h-9 rounded-lg bg-white dark:bg-gray-700 flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100/80 dark:border-amber-800/40">
                                         {getProductImages(prod)[0] ? (
-                                            <Image src={getProductImages(prod)[0]} alt={prod.name} width={40} height={40} className="w-full h-full object-cover" />
+                                            <Image src={getProductImages(prod)[0]} alt={prod.name} width={36} height={36} className="w-full h-full object-cover" />
                                         ) : (
-                                            <AlertTriangle className="w-5 h-5 text-amber-300" />
+                                            <AlertTriangle className="w-4 h-4 text-amber-300 dark:text-amber-500" />
                                         )}
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-gray-800 text-sm">{prod.name}</p>
-                                        <p className="text-xs text-amber-600 font-medium">Mín: {prod.min_stock}</p>
+                                    <div className="min-w-0">
+                                        <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm leading-tight truncate">{prod.name}</p>
+                                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">Mín: {prod.min_stock}</p>
                                     </div>
                                 </div>
-                                <div className="text-center px-4 py-2 rounded-lg bg-white border border-amber-100 shadow-sm">
-                                    <p className="text-[10px] text-amber-500 uppercase font-bold tracking-wider mb-0.5">Stock</p>
-                                    <p className={`font-bold text-lg ${prod.stock === 0 ? 'text-red-500' : 'text-gray-800'}`}>{prod.stock}</p>
+                                <div className="flex flex-col items-center justify-center min-w-[56px] py-1.5 px-3 rounded-lg bg-white dark:bg-gray-700 border border-amber-100/80 dark:border-gray-600 flex-shrink-0">
+                                    <span className="text-[9px] uppercase font-semibold tracking-wider text-amber-500 dark:text-amber-400">Stock</span>
+                                    <span className={`font-extrabold text-base tabular-nums leading-none mt-0.5 ${prod.stock === 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-800 dark:text-gray-100'}`}>{prod.stock}</span>
                                 </div>
                             </div>
                         ))}
@@ -538,38 +540,38 @@ export default function Inventario() {
             {mostrarEliminarProductosModal && (
                 <>
                     <div className="modal-backdrop" onClick={() => !eliminandoProductos && setMostrarEliminarProductosModal(false)} />
-                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl" noHover>
-                        <div className="p-6 border-b border-pink-100">
-                            <h3 className="text-xl font-bold text-gray-800">Eliminar productos</h3>
-                            <p className="text-sm text-gray-500 mt-1">Seleccioná los productos a eliminar. Esta acción no se puede deshacer.</p>
+                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
+                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar productos</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los productos a eliminar. Esta acción no se puede deshacer.</p>
                         </div>
-                        <div className="p-4 overflow-y-auto flex-1 min-h-0">
-                            <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer mb-2">
+                        <div className="px-4 py-3 overflow-y-auto flex-1 min-h-0">
+                            <label className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
                                 <input
                                     type="checkbox"
                                     checked={productosFiltrados.length > 0 && productosSeleccionados.size === productosFiltrados.length}
                                     onChange={seleccionarTodosProductos}
-                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
                                 />
-                                <span className="font-bold text-sm text-gray-700">Seleccionar todos</span>
+                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todos</span>
                             </label>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 {productosFiltrados.length === 0 ? (
-                                    <p className="text-gray-400 text-sm py-4">No hay productos con los filtros actuales.</p>
+                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay productos con los filtros actuales.</p>
                                 ) : (
                                     productosFiltrados.map(producto => (
                                         <label
                                             key={producto.id}
-                                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer border border-transparent hover:border-pink-100"
+                                            className={`flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl cursor-pointer border transition-colors ${productosSeleccionados.has(producto.id) ? 'bg-pink-50/70 dark:bg-pink-900/25 border-pink-100/80 dark:border-pink-800/40' : 'bg-transparent border-transparent hover:bg-pink-50/50 dark:hover:bg-gray-700/50 hover:border-pink-100 dark:hover:border-gray-600'}`}
                                         >
                                             <input
                                                 type="checkbox"
                                                 checked={productosSeleccionados.has(producto.id)}
                                                 onChange={() => toggleSeleccionProducto(producto.id)}
-                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
                                             />
-                                            <span className="flex-1 text-sm text-gray-800 truncate">{producto.name}</span>
-                                            <span className="text-xs text-gray-400 flex-shrink-0">
+                                            <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">{producto.name}</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 tabular-nums">
                                                 {producto.categories?.name ?? 'Sin categoría'} · ${producto.sale_price.toLocaleString()}
                                             </span>
                                         </label>
@@ -577,7 +579,7 @@ export default function Inventario() {
                                 )}
                             </div>
                         </div>
-                        <div className="p-6 border-t border-pink-100 flex gap-3 justify-end">
+                        <div className="p-5 sm:p-6 border-t border-pink-100 dark:border-gray-700 flex gap-3 justify-end">
                             <button
                                 type="button"
                                 onClick={() => setMostrarEliminarProductosModal(false)}
@@ -590,7 +592,7 @@ export default function Inventario() {
                                 type="button"
                                 onClick={handleEliminarProductosSeleccionados}
                                 disabled={eliminandoProductos || productosSeleccionados.size === 0}
-                                className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {eliminandoProductos ? 'Eliminando...' : `Eliminar ${productosSeleccionados.size} producto(s)`}
                             </button>
@@ -603,41 +605,41 @@ export default function Inventario() {
             {mostrarVisibilidadModal && (
                 <>
                     <div className="modal-backdrop" onClick={() => !actualizandoVisibilidad && setMostrarVisibilidadModal(false)} />
-                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl" noHover>
-                        <div className="p-6 border-b border-pink-100">
-                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <Eye className="w-5 h-5 text-pink-500" />
+                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
+                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                <Eye className="w-5 h-5 text-pink-500 dark:text-pink-400" />
                                 Visibilidad en catálogo
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1">Seleccioná los productos y elegí si ocultarlos o mostrarlos en el catálogo público.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los productos y elegí si ocultarlos o mostrarlos en el catálogo público.</p>
                         </div>
-                        <div className="p-4 overflow-y-auto flex-1 min-h-0">
-                            <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer mb-2">
+                        <div className="px-4 py-3 overflow-y-auto flex-1 min-h-0">
+                            <label className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
                                 <input
                                     type="checkbox"
                                     checked={productosFiltrados.length > 0 && productosSeleccionados.size === productosFiltrados.length}
                                     onChange={seleccionarTodosProductos}
-                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
                                 />
-                                <span className="font-bold text-sm text-gray-700">Seleccionar todos</span>
+                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todos</span>
                             </label>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 {productosFiltrados.length === 0 ? (
-                                    <p className="text-gray-400 text-sm py-4">No hay productos con los filtros actuales.</p>
+                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay productos con los filtros actuales.</p>
                                 ) : (
                                     productosFiltrados.map(producto => (
                                         <label
                                             key={producto.id}
-                                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer border border-transparent hover:border-pink-100"
+                                            className={`flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl cursor-pointer border transition-colors ${productosSeleccionados.has(producto.id) ? 'bg-pink-50/70 dark:bg-pink-900/25 border-pink-100/80 dark:border-pink-800/40' : 'bg-transparent border-transparent hover:bg-pink-50/50 dark:hover:bg-gray-700/50 hover:border-pink-100 dark:hover:border-gray-600'}`}
                                         >
                                             <input
                                                 type="checkbox"
                                                 checked={productosSeleccionados.has(producto.id)}
                                                 onChange={() => toggleSeleccionProducto(producto.id)}
-                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
                                             />
-                                            <span className="flex-1 text-sm text-gray-800 truncate">{producto.name}</span>
-                                            <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full ${producto.visible_in_catalog === false ? 'bg-gray-200 text-gray-600' : 'bg-pink-100 text-pink-600'}`}>
+                                            <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">{producto.name}</span>
+                                            <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full font-medium ${producto.visible_in_catalog === false ? 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-200' : 'bg-pink-100 text-pink-600 dark:bg-pink-900/50 dark:text-pink-300'}`}>
                                                 {producto.visible_in_catalog === false ? 'Oculto' : 'Visible'}
                                             </span>
                                         </label>
@@ -645,7 +647,7 @@ export default function Inventario() {
                                 )}
                             </div>
                         </div>
-                        <div className="p-6 border-t border-pink-100 flex flex-wrap gap-3 justify-end">
+                        <div className="p-5 sm:p-6 border-t border-pink-100 dark:border-gray-700 flex flex-wrap gap-3 justify-end">
                             <button
                                 type="button"
                                 onClick={() => setMostrarVisibilidadModal(false)}
@@ -658,7 +660,7 @@ export default function Inventario() {
                                 type="button"
                                 onClick={() => actualizarVisibilidadSeleccionados(false)}
                                 disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <EyeOff className="w-4 h-4" />
                                 Ocultar ({productosSeleccionados.size})
@@ -667,7 +669,7 @@ export default function Inventario() {
                                 type="button"
                                 onClick={() => actualizarVisibilidadSeleccionados(true)}
                                 disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-pink-50 text-pink-600 hover:bg-pink-100 border border-pink-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-pink-50 text-pink-600 hover:bg-pink-100 dark:bg-pink-600 dark:text-white dark:hover:bg-pink-500 border border-pink-200 dark:border-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <Eye className="w-4 h-4" />
                                 Mostrar ({productosSeleccionados.size})

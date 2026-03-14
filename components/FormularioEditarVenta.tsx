@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { Venta } from '@/lib/supabase'
 import { Cliente } from '@/lib/supabase'
@@ -129,62 +130,83 @@ export default function FormularioEditarVenta({
     }
   }
 
-  return (
+  const modalContent = (
     <>
       <div className="modal-backdrop" onClick={onCancelar} />
-      <PastelCard className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] overflow-y-auto p-8 z-[100] !shadow-2xl" noHover>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            Editar venta #{venta.id}
-          </h3>
-          <button type="button" onClick={onCancelar} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100">
-            <X size={20} />
-          </button>
+      <PastelCard className="fixed left-1/2 -translate-x-1/2 top-8 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 !p-0 overflow-hidden bg-white dark:bg-gray-900" noHover>
+        {/* Header con gradiente */}
+        <div className="bg-gradient-to-br from-pink-500/10 via-rose-50 to-transparent dark:from-pink-900/20 dark:via-gray-800/80 dark:to-transparent border-b border-pink-100 dark:border-gray-700 px-6 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-2xl bg-pink-500/20 dark:bg-pink-500/30 flex items-center justify-center text-pink-600 dark:text-pink-400 flex-shrink-0">
+                <Receipt className="w-5 h-5" strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">
+                  Editar venta #{venta.id}
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1.5">Modificá los datos de la venta</p>
+              </div>
+            </div>
+            <button type="button" onClick={onCancelar} className="p-2.5 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="Cerrar">
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="form-label">Fecha</label>
-            <input
-              type="date"
-              value={saleDate}
-              onChange={(e) => setSaleDate(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="form-body p-6 sm:p-8 border-gray-200 dark:border-gray-700">
+          {/* Main information: date + client */}
+          <section className="form-section">
+            <h4 className="form-label text-gray-700 dark:text-gray-300">Información principal</h4>
+            <div className="form-section-fields">
+              <div className="form-section">
+                <label htmlFor="editar-venta-fecha" className="form-label text-gray-700 dark:text-gray-300">Fecha</label>
+                <input
+                  id="editar-venta-fecha"
+                  type="date"
+                  value={saleDate}
+                  onChange={(e) => setSaleDate(e.target.value)}
+                  className="form-control-h w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+                />
+              </div>
+              <div className="form-section">
+                <label htmlFor="editar-venta-cliente" className="form-label text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <User className="w-4 h-4 text-pink-500 dark:text-pink-400" />
+                  Cliente
+                </label>
+                <div className="form-section-fields">
+                  <select
+                    id="editar-venta-cliente"
+                    value={selectValue}
+                    onChange={(e) => handleClienteChange(e.target.value)}
+                    className="form-control-h w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+                  >
+                    <option value="">Consumidor final</option>
+                    {clientes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.first_name} {c.last_name}
+                      </option>
+                    ))}
+                    <option value={OTRO_CLIENTE}>Otro (escribir nombre)</option>
+                  </select>
+                  {mostrarInputNombre && (
+                    <input
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => handleNombreOtroChange(e.target.value)}
+                      placeholder="Nombre del cliente"
+                      className="form-control-h w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
 
-          <div>
-            <label className="form-label flex items-center gap-2">
-              <User className="w-3.5 h-3.5 text-pink-500" />
-              Cliente
-            </label>
-            <select
-              value={selectValue}
-              onChange={(e) => handleClienteChange(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800"
-            >
-              <option value="">Consumidor final</option>
-              {clientes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.first_name} {c.last_name}
-                </option>
-              ))}
-              <option value={OTRO_CLIENTE}>Otro (escribir nombre)</option>
-            </select>
-            {mostrarInputNombre && (
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => handleNombreOtroChange(e.target.value)}
-                placeholder="Nombre del cliente"
-                className="w-full mt-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400"
-              />
-            )}
-          </div>
-
-          <div>
-            <label className="form-label">Método de pago</label>
-            <div className="flex flex-wrap gap-2 mt-1">
+          {/* Payment method */}
+          <section className="form-section">
+            <label className="form-label text-gray-700 dark:text-gray-300">Método de pago</label>
+            <div className="form-payment-grid">
               {[
                 { id: 'efectivo', icon: Banknote, label: 'Efectivo' },
                 { id: 'tarjeta', icon: CreditCard, label: 'Tarjeta' },
@@ -199,10 +221,10 @@ export default function FormularioEditarVenta({
                     key={m.id}
                     type="button"
                     onClick={() => setPaymentMethod(m.id)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-bold transition-all ${
+                    className={`form-payment-btn gap-2 px-4 rounded-xl border-2 text-sm font-bold transition-all ${
                       active
-                        ? 'bg-pink-50 border-pink-300 text-pink-600'
-                        : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-pink-200'
+                        ? 'bg-pink-50 dark:bg-pink-900/40 border-pink-300 dark:border-pink-600 text-pink-600 dark:text-pink-400 shadow-sm'
+                        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-pink-200 dark:hover:border-pink-700 hover:bg-pink-50/50 dark:hover:bg-pink-900/20'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -211,11 +233,12 @@ export default function FormularioEditarVenta({
                 )
               })}
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label className="form-label">Comprobante (opcional)</label>
-            <div className="mt-1">
+          {/* Attachment / receipt upload */}
+          <section className="form-section">
+            <label className="form-label text-gray-700 dark:text-gray-300">Comprobante (opcional)</label>
+            <div>
               <input
                 type="file"
                 id="receipt-venta"
@@ -224,26 +247,26 @@ export default function FormularioEditarVenta({
                 className="hidden"
               />
               {receiptPreview ? (
-                <div className="flex flex-wrap items-center gap-3 p-3 border border-pink-200 rounded-xl bg-pink-50">
+                <div className="flex flex-wrap items-center gap-4 p-5 border border-pink-200 dark:border-pink-800 rounded-2xl bg-pink-50 dark:bg-pink-900/30">
                   {receiptPreview.startsWith('data:') || receiptPreview.startsWith('http') ? (
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-pink-100 flex-shrink-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-gray-700 border border-pink-100 dark:border-transparent flex-shrink-0">
                       {receiptPreview.startsWith('data:') && receiptPreview.includes('image') ? (
-                        <Image src={receiptPreview} alt="Preview" width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                        <Image src={receiptPreview} alt="Preview" width={56} height={56} className="w-full h-full object-cover" unoptimized />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-pink-500">
+                        <div className="w-full h-full flex items-center justify-center text-pink-500 dark:text-pink-400">
                           <FileText className="w-6 h-6" />
                         </div>
                       )}
                     </div>
                   ) : null}
-                  <span className="text-sm text-pink-700 flex-1 truncate min-w-0">
+                  <span className="text-sm text-pink-700 dark:text-pink-300 flex-1 truncate min-w-0 font-medium">
                     {receiptFile ? receiptFile.name : 'Comprobante adjunto'}
                   </span>
                   <a
                     href={receiptPreview}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-100 text-pink-700 hover:bg-pink-200 text-xs font-bold transition-colors"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300 hover:bg-pink-200 dark:hover:bg-pink-800 text-xs font-bold transition-colors"
                   >
                     <ExternalLink size={14} />
                     Ver comprobante
@@ -251,7 +274,7 @@ export default function FormularioEditarVenta({
                   <button
                     type="button"
                     onClick={handleQuitarComprobante}
-                    className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors"
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded-xl transition-colors"
                     title="Quitar comprobante"
                   >
                     <Trash2 size={16} />
@@ -260,31 +283,34 @@ export default function FormularioEditarVenta({
               ) : (
                 <label
                   htmlFor="receipt-venta"
-                  className="flex items-center justify-center gap-2 p-4 border border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-pink-300 hover:bg-pink-50/50 text-gray-400 hover:text-pink-500 text-sm"
+                  className="flex items-center justify-center gap-3 min-h-[88px] py-6 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl cursor-pointer hover:border-pink-400 dark:hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 text-gray-500 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 text-sm font-medium transition-colors"
                 >
-                  <Upload size={18} />
+                  <Upload size={20} />
                   Subir comprobante (imagen o PDF)
                 </label>
               )}
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label className="form-label">Notas</label>
+          {/* Notes */}
+          <section className="form-section">
+            <label htmlFor="editar-venta-notas" className="form-label text-gray-700 dark:text-gray-300">Notas</label>
             <textarea
+              id="editar-venta-notas"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Notas adicionales..."
-              rows={2}
-              className="w-full mt-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 resize-none"
+              rows={3}
+              className="form-textarea-min w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
             />
-          </div>
+          </section>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
-            <button type="button" onClick={onCancelar} className="btn-ghost flex-1">
+          {/* Footer actions */}
+          <div className="form-footer-bar flex gap-4 border-gray-200 dark:border-gray-700">
+            <button type="button" onClick={onCancelar} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={guardando} className="btn-primary flex-1">
+            <button type="submit" disabled={guardando} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-white bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-500 shadow-lg shadow-pink-500/30 dark:shadow-pink-900/30 disabled:opacity-50 transition-all">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>
@@ -292,4 +318,7 @@ export default function FormularioEditarVenta({
       </PastelCard>
     </>
   )
+
+  if (typeof document === 'undefined') return null
+  return createPortal(modalContent, document.body)
 }

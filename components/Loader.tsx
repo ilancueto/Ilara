@@ -35,7 +35,7 @@ export default function Loader({
                     <div className="w-2.5 h-2.5 rounded-full bg-pink-300 animate-bounce" style={{ animationDelay: '300ms' }}></div>
                 </div>
                 {text && !inline && (
-                    <p className="text-sm font-medium text-gray-400 animate-pulse tracking-wide">
+                    <p className="text-sm font-medium text-gray-400 dark:text-gray-500 animate-pulse tracking-wide">
                         {text}
                     </p>
                 )}
@@ -48,7 +48,7 @@ export default function Loader({
             <div className={containerClasses}>
                 <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-tr from-pink-400 to-purple-400 animate-pulse shadow-sm`}></div>
                 {text && !inline && (
-                    <p className="text-sm font-medium text-gray-400 animate-pulse tracking-wide">
+                    <p className="text-sm font-medium text-gray-400 dark:text-gray-500 animate-pulse tracking-wide">
                         {text}
                     </p>
                 )}
@@ -68,7 +68,7 @@ export default function Loader({
             </div>
 
             {text && !inline && (
-                <p className="text-sm font-medium text-gray-400 animate-pulse tracking-wide">
+                <p className="text-sm font-medium text-gray-400 dark:text-gray-500 animate-pulse tracking-wide">
                     {text}
                 </p>
             )}

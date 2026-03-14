@@ -1,11 +1,11 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useCallback } from 'react'
-import Toast, { ToastData, ToastType } from '@/components/Toast'
+import Toast, { ToastData, ToastType, ToastAction } from '@/components/Toast'
 
 interface ToastContextType {
-    showToast: (type: ToastType, message: string, duration?: number) => void
-    showSuccess: (message: string, duration?: number) => void
+    showToast: (type: ToastType, message: string, duration?: number, action?: ToastAction) => void
+    showSuccess: (message: string, duration?: number, action?: ToastAction) => void
     showError: (message: string, duration?: number) => void
     showWarning: (message: string, duration?: number) => void
     showInfo: (message: string, duration?: number) => void
@@ -20,15 +20,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         setToasts(prev => prev.filter(toast => toast.id !== id))
     }, [])
 
-    const showToast = useCallback((type: ToastType, message: string, duration = 4000) => {
+    const showToast = useCallback((type: ToastType, message: string, duration = 4000, action?: ToastAction) => {
         const id = Math.random().toString(36).substring(2, 9)
-        const newToast: ToastData = { id, type, message, duration }
+        const newToast: ToastData = { id, type, message, duration, action }
 
         setToasts(prev => [...prev, newToast])
     }, [])
 
-    const showSuccess = useCallback((message: string, duration?: number) => {
-        showToast('success', message, duration)
+    const showSuccess = useCallback((message: string, duration?: number, action?: ToastAction) => {
+        showToast('success', message, duration, action)
     }, [showToast])
 
     const showError = useCallback((message: string, duration?: number) => {

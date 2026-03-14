@@ -132,257 +132,274 @@ export default function Ingresos() {
   const total = incomes.reduce((sum, i) => sum + i.amount, 0)
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in pb-12">
-      {/* Header + sub-nav fijos al hacer scroll para que "Nuevo ingreso" siempre esté visible */}
-      <div className="sticky top-0 z-10 -mx-4 px-4 pt-2 pb-6 -mt-2 bg-[#faf9fb]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight mb-2 flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60">✦</span>
-              Ingresos
-            </h1>
-            <p className="text-gray-500 text-sm font-medium max-w-md">Ventas del negocio y otros ingresos (regalos, donaciones, etc.).</p>
+    <div className="flex flex-col gap-10 sm:gap-12 animate-fade-in pb-14 px-4 sm:px-6 lg:px-8">
+      {/* Header + sub-nav fijos al hacer scroll */}
+      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-8 -mt-2 bg-[#faf9fb] dark:bg-gray-900/95 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-3">
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60 dark:shadow-emerald-900/40">✦</span>
+                Ingresos
+              </h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium max-w-md mt-2">Ventas del negocio y otros ingresos (regalos, donaciones, etc.).</p>
+            </div>
+            <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200 shrink-0">
+              <Plus size={20} />
+              Nuevo ingreso
+            </button>
           </div>
-          <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200 shrink-0">
-            <Plus size={20} />
-            Nuevo ingreso
-          </button>
-        </div>
 
-        {/* Sub navegación: Ventas (principal) | Otros ingresos (secundaria) */}
-        <div className="flex justify-center mt-6">
-          <PastelCard className="!p-2 flex gap-1 rounded-[22px] mx-auto w-auto inline-flex shadow-md shadow-emerald-100/50" noHover>
-            <button
-              onClick={() => setVistaActiva('historial')}
-              className={`
-                flex items-center gap-2 px-6 py-3 rounded-[18px] text-sm font-bold transition-all duration-300
-                ${vistaActiva === 'historial'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-300/40'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-emerald-50/60'
-                }
-              `}
-            >
-              <History className="w-4 h-4" strokeWidth={2.5} />
-              Ventas
-            </button>
-            <button
-              onClick={() => setVistaActiva('otros')}
-              className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-[14px] text-xs font-semibold transition-all duration-300
-                ${vistaActiva === 'otros'
-                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }
-              `}
-            >
-              <Wallet className="w-3.5 h-3.5" strokeWidth={2.5} />
-              Otros ingresos
-            </button>
-          </PastelCard>
+          {/* Sub navegación: Ventas | Otros ingresos */}
+          <div className="flex justify-center">
+            <PastelCard className="!p-2 flex gap-1 rounded-2xl w-auto inline-flex shadow-md shadow-emerald-100/50 dark:shadow-none border border-gray-200 dark:border-gray-700" noHover>
+              <button
+                onClick={() => setVistaActiva('historial')}
+                className={`
+                  flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300
+                  ${vistaActiva === 'historial'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-300/40 dark:shadow-emerald-900/40'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30'
+                  }
+                `}
+              >
+                <History className="w-4 h-4" strokeWidth={2.5} />
+                Ventas
+              </button>
+              <button
+                onClick={() => setVistaActiva('otros')}
+                className={`
+                  flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
+                  ${vistaActiva === 'otros'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700'
+                    : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }
+                `}
+              >
+                <Wallet className="w-4 h-4" strokeWidth={2.5} />
+                Otros ingresos
+              </button>
+            </PastelCard>
+          </div>
         </div>
       </div>
 
       {vistaActiva === 'historial' ? (
         <HistorialVentas />
       ) : (
-        <>
-      {/* Filtros */}
-      <PastelCard className="p-5 sm:p-6" noHover>
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-          <span className="flex items-center gap-2 text-sm font-bold text-gray-600 uppercase tracking-wider">
-            <Filter size={16} className="text-emerald-500" />
-            Filtros
-          </span>
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 flex-1">
-            <label className="flex items-center gap-2 text-sm text-gray-500">
-              <span className="hidden sm:inline">Desde</span>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="form-input w-auto min-w-[140px]"
-                aria-label="Fecha desde"
-              />
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-500">
-              <span className="hidden sm:inline">Hasta</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="form-input w-auto min-w-[140px]"
-                aria-label="Fecha hasta"
-              />
-            </label>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as IncomeType | '')}
-              className="form-input w-auto min-w-[180px] bg-white"
-            >
-              <option value="">Todos los tipos</option>
-              {(Object.keys(INCOME_TYPE_LABELS) as IncomeType[]).map((t) => (
-                <option key={t} value={t}>{INCOME_TYPE_LABELS[t]}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </PastelCard>
-
-      {/* Resumen total */}
-      {incomes.length > 0 && (
-        <div className="flex items-center gap-5 p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/80 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center">
-            <TrendingUp className="w-7 h-7 text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-emerald-700 uppercase tracking-wider">Total en el período</p>
-            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-800 tabular-nums mt-0.5">{formatCurrency(total)}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Lista */}
-      <div className="flex flex-col gap-4">
-        <h2 className="text-lg font-bold text-gray-700 flex items-center gap-2">
-          <span>Movimientos</span>
-          <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full">{incomes.length}</span>
-        </h2>
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 bg-gradient-to-r from-white/80 to-emerald-50/30 rounded-2xl border border-emerald-100/60 animate-pulse" />
-            ))}
-          </div>
-        ) : incomes.length === 0 ? (
-          <PastelCard className="p-14 sm:p-16 text-center" noHover>
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-100 flex items-center justify-center text-3xl mb-4">💰</div>
-            <p className="font-semibold text-gray-700 text-lg">No hay ingresos registrados</p>
-            <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">Agregá regalos, donaciones, ventas anteriores al sistema o cualquier otro ingreso extra.</p>
-            <button type="button" onClick={openNew} className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-emerald-600 font-semibold rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors">
-              <Plus size={18} />
-              Nuevo ingreso
-            </button>
+        <div className="flex flex-col gap-8">
+          {/* Filtros: barra compacta en una fila (desktop) */}
+          <PastelCard className="p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-gray-600" noHover>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+                  <Filter size={14} />
+                </span>
+                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Filtros</span>
+              </div>
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 flex-1 min-w-0">
+                <label className="flex flex-col gap-1 shrink-0 sm:w-[160px]">
+                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Desde</span>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="form-input w-full rounded-lg h-10 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 min-w-0"
+                    aria-label="Fecha desde"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 shrink-0 sm:w-[160px]">
+                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Hasta</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="form-input w-full rounded-lg h-10 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 min-w-0"
+                    aria-label="Fecha hasta"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 shrink-0 sm:w-[180px] min-w-0">
+                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Tipo</span>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value as IncomeType | '')}
+                    className="otros-ingresos-filtros-select form-input w-full rounded-lg h-10 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-8 appearance-none cursor-pointer min-w-0"
+                  >
+                    <option value="">Todos los tipos</option>
+                    {(Object.keys(INCOME_TYPE_LABELS) as IncomeType[]).map((t) => (
+                      <option key={t} value={t}>{INCOME_TYPE_LABELS[t]}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
           </PastelCard>
-        ) : (
-          <ul className="space-y-3">
-            {incomes.map((income) => (
-              <li key={income.id}>
-                <PastelCard className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group transition-all duration-200 hover:border-emerald-200/80 overflow-hidden">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 flex items-center justify-center text-2xl shadow-sm flex-shrink-0">
-                      {TYPE_ICONS[income.type]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-gray-900 break-words line-clamp-2">{income.description || INCOME_TYPE_LABELS[income.type]}</p>
-                      <p className="text-sm text-gray-500 mt-0.5 truncate">
-                        {INCOME_TYPE_LABELS[income.type]} · {formatDate(income.date)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 pl-16 sm:pl-0">
-                    <span className="text-xl font-extrabold text-emerald-700 tabular-nums">{formatCurrency(income.amount)}</span>
-                    <div className="flex gap-1">
-                      <button type="button" onClick={() => openEdit(income)} className="p-2.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors" aria-label="Editar">
-                        <Pencil size={18} />
-                      </button>
-                      <button type="button" onClick={() => handleDelete(income.id)} className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors" aria-label="Eliminar">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </PastelCard>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
-        </>
+          {/* Total en el período: más compacto y elegante */}
+          {incomes.length > 0 && (
+            <div className="flex items-center gap-5 p-5 sm:p-6 rounded-2xl bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100/80 dark:border-emerald-800/40">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100/80 dark:bg-emerald-800/40 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Total en el período</p>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-800 dark:text-emerald-100 tabular-nums mt-0.5">{formatCurrency(total)}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Movimientos: más jerarquía */}
+          <div className="flex flex-col gap-6">
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Movimientos</h2>
+              <span className="text-sm font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/80 px-2.5 py-0.5 rounded-lg tabular-nums">{incomes.length}</span>
+            </div>
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800/60 rounded-2xl animate-pulse" />
+                ))}
+              </div>
+            ) : incomes.length === 0 ? (
+              <PastelCard className="p-12 sm:p-14 text-center rounded-2xl" noHover>
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-2xl mb-4">💰</div>
+                <p className="font-semibold text-gray-800 dark:text-gray-100 text-base">No hay ingresos registrados</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-sm mx-auto">Agregá regalos, donaciones, ventas anteriores al sistema o cualquier otro ingreso extra.</p>
+                <button type="button" onClick={openNew} className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-emerald-600 dark:text-emerald-400 font-semibold rounded-xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-800/50 transition-colors">
+                  <Plus size={18} />
+                  Nuevo ingreso
+                </button>
+              </PastelCard>
+            ) : (
+              <ul className="space-y-4">
+                {incomes.map((income) => (
+                  <li key={income.id}>
+                    <PastelCard className="p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-600 flex flex-col sm:flex-row sm:items-center justify-between gap-5 group hover:border-emerald-200/80 dark:hover:border-emerald-700/50 transition-colors overflow-hidden">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100/80 dark:border-emerald-800/40 flex items-center justify-center text-xl flex-shrink-0">
+                          {TYPE_ICONS[income.type]}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base line-clamp-2">{income.description || INCOME_TYPE_LABELS[income.type]}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {INCOME_TYPE_LABELS[income.type]} · {formatDate(income.date)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-4 pl-14 sm:pl-0">
+                        <span className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{formatCurrency(income.amount)}</span>
+                        <div className="flex items-center gap-1">
+                          <button type="button" onClick={() => openEdit(income)} className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors" aria-label="Editar">
+                            <Pencil size={16} />
+                          </button>
+                          <button type="button" onClick={() => handleDelete(income.id)} className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors" aria-label="Eliminar">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </PastelCard>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+        </div>
       )}
 
-      {/* Modal Nuevo/Editar — renderizado en portal para quedar centrado en viewport */}
+      {/* Modal Nuevo/Editar ingreso */}
       {modalOpen && typeof document !== 'undefined' && createPortal(
         <>
-          <div className="fixed inset-0 bg-black/25 backdrop-blur-sm z-[200] animate-fade-in" onClick={() => setModalOpen(false)} aria-hidden />
-          <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-lg p-8 z-[201] shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm z-[200] animate-fade-in" onClick={() => setModalOpen(false)} aria-hidden />
+          <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col z-[201] shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between flex-shrink-0 p-6 sm:p-8 pb-4">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2.5">
                 <span className="text-2xl">{editing ? '✏️' : '➕'}</span>
                 {editing ? 'Editar ingreso' : 'Nuevo ingreso'}
               </h3>
-              <button type="button" onClick={() => setModalOpen(false)} className="p-2.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" aria-label="Cerrar">
+              <button type="button" onClick={() => setModalOpen(false)} className="p-2.5 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="Cerrar">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Fecha y monto */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="form-label">Fecha <span className="text-emerald-500">*</span></label>
-                  <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required className="form-input w-full" />
-                </div>
-                <div>
-                  <label className="form-label">Monto <span className="text-emerald-500">*</span></label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      value={form.amount || ''}
-                      onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
-                      required
-                      className="form-input w-full pr-10"
-                      placeholder="0"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold pointer-events-none">$</span>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+              <div className="flex-1 overflow-y-auto px-6 sm:px-8 pb-6 flex flex-col gap-7">
+                {/* Fecha y monto */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="form-label text-sm">Fecha <span className="text-emerald-500">*</span></label>
+                    <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required className="form-input w-full rounded-xl" />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="form-label text-sm">Monto <span className="text-emerald-500">*</span></label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={form.amount || ''}
+                        onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
+                        required
+                        className="form-input w-full pr-10 rounded-xl"
+                        placeholder="0"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold pointer-events-none">$</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Tipo: tarjetas visuales */}
-              <div>
-                <label className="form-label">Tipo de ingreso</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
-                  {(Object.keys(INCOME_TYPE_LABELS) as IncomeType[]).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setForm({ ...form, type: t })}
-                      className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all h-20
-                        ${form.type === t
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm ring-1 ring-emerald-200'
-                          : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50 hover:border-emerald-100 hover:text-gray-700'
-                        }`}
-                    >
-                      <span className={`text-2xl ${form.type === t ? 'scale-110' : ''}`}>{TYPE_ICONS[t]}</span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight">{TYPE_SHORT_LABELS[t]}</span>
-                    </button>
-                  ))}
+                {/* Tipo de ingreso */}
+                <div className="flex flex-col gap-3">
+                  <label className="form-label text-sm">Tipo de ingreso</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {(Object.keys(INCOME_TYPE_LABELS) as IncomeType[]).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setForm({ ...form, type: t })}
+                        className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all min-h-[88px]
+                          ${form.type === t
+                            ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-700'
+                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-emerald-100 dark:hover:border-emerald-800 hover:text-gray-700 dark:hover:text-gray-200'
+                          }`}
+                      >
+                        <span className={`text-2xl ${form.type === t ? 'scale-105' : ''}`}>{TYPE_ICONS[t]}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight">{TYPE_SHORT_LABELS[t]}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Descripción */}
+                <div className="flex flex-col gap-2">
+                  <label className="form-label text-sm">Descripción</label>
+                  <input
+                    type="text"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="form-input w-full rounded-xl"
+                    placeholder="Ej. Regalo de proveedor, donación de cliente..."
+                  />
+                </div>
+
+                {/* Notas */}
+                <div className="flex flex-col gap-2">
+                  <label className="form-label text-sm">Notas (opcional)</label>
+                  <textarea
+                    value={form.notes || ''}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    className="form-input w-full rounded-xl resize-none"
+                    rows={3}
+                    placeholder="Información adicional..."
+                  />
                 </div>
               </div>
 
-              {/* Descripción y notas */}
-              <div>
-                <label className="form-label">Descripción</label>
-                <input
-                  type="text"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="form-input w-full"
-                  placeholder="Ej. Regalo de proveedor, donación de cliente..."
-                />
-              </div>
-              <div>
-                <label className="form-label">Notas (opcional)</label>
-                <textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="form-input w-full" rows={2} placeholder="Información adicional..." />
-              </div>
-
-              {/* Botones */}
-              <div className="flex gap-4 pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost flex-1 border-gray-200 text-gray-600">
+              {/* Footer */}
+              <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex gap-4">
+                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost flex-1 py-3 rounded-xl text-gray-600 dark:text-gray-300">
                   Cancelar
                 </button>
-                <button type="submit" disabled={saving} className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200/50 hover:shadow-emerald-300/50 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0">
+                <button type="submit" disabled={saving} className="flex-[2] inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200/50 hover:shadow-emerald-300/50 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0">
                   {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>

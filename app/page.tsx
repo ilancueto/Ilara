@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { LayoutDashboard, Package, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
+import ThemeSwitch from '@/components/ThemeSwitch'
 
 const Tablero = dynamic(() => import('@/components/Tablero'), {
   loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando...</span></div>,
@@ -95,24 +96,23 @@ function HomeContent() {
 
   if (cargando) {
     return (
-      <div className="min-h-screen relative text-gray-800">
+      <div className="min-h-screen relative text-gray-800 dark:text-gray-100">
         <div className="app-wrapper">
-          {/* Skeleton sidebar (misma estructura que el real para evitar CLS) */}
-          <aside className="hidden md:flex flex-col w-72 bg-white border-r border-pink-100 h-screen sticky top-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+          <aside className="hidden md:flex flex-col w-72 bg-white dark:bg-gray-900 border-r border-pink-100 dark:border-gray-800/80 h-screen sticky top-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none">
             <div className="p-8 pb-4 flex flex-col items-center">
-              <div className="w-64 h-32 mb-2 rounded-2xl bg-pink-50 animate-pulse" />
+              <div className="w-64 h-32 mb-2 rounded-2xl bg-pink-50 dark:bg-gray-800 animate-pulse" />
             </div>
             <nav className="flex-1 px-5 flex flex-col gap-2 mt-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-14 rounded-2xl bg-gray-100 animate-pulse" />
+                <div key={i} className="h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
               ))}
             </nav>
             <div className="p-6 mt-auto">
-              <div className="h-24 rounded-2xl bg-pink-50 animate-pulse" />
+              <div className="h-24 rounded-2xl bg-pink-50 dark:bg-gray-800 animate-pulse" />
             </div>
           </aside>
-          <main className="app-content flex-1 bg-[#faf9fb] flex items-center justify-center">
-            <div className="text-pink-500 font-bold text-xl animate-pulse">Cargando Ilara...</div>
+          <main className="app-content flex-1 bg-[#faf9fb] dark:bg-gray-950 flex items-center justify-center">
+            <div className="text-pink-500 dark:text-pink-400 font-bold text-xl animate-pulse">Cargando Ilara...</div>
           </main>
         </div>
       </div>
@@ -121,9 +121,9 @@ function HomeContent() {
 
   if (authError) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fdf4ff', padding: 24 }}>
+      <div className="min-h-screen flex items-center justify-center bg-[#fdf4ff] dark:bg-gray-900 p-6">
         <div className="text-center max-w-sm">
-          <p className="text-gray-600 font-medium mb-4">{authError}</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium mb-4">{authError}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               type="button"
@@ -135,7 +135,7 @@ function HomeContent() {
             <button
               type="button"
               onClick={() => router.push('/login')}
-              className="px-5 py-2.5 rounded-xl border-2 border-pink-200 text-pink-600 font-bold hover:bg-pink-50 transition-colors"
+              className="px-5 py-2.5 rounded-xl border-2 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400 font-bold hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors"
             >
               Ir a inicio de sesión
             </button>
@@ -163,19 +163,19 @@ function HomeContent() {
   }
 
   return (
-    <div className="min-h-screen relative text-gray-800">
+    <div className="min-h-screen relative text-gray-800 dark:text-gray-100">
       <div className="app-wrapper">
 
         {/* Header Desktop */}
         <header className="mb-0 pt-2 hidden md:hidden">
-          {/* Kept exclusively for structure, but visual header is now integrated differently */}
+          {/* Kept exclusively for structure */}
         </header>
 
         {/* Sidebar Desktop */}
-        <aside className="hidden md:flex flex-col w-72 bg-white border-r border-pink-100 h-screen sticky top-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-          <div className="p-8 pb-4 flex flex-col items-center">
-            <div className={`relative transition-transform hover:scale-105 duration-300 flex items-center justify-center ${logoError ? 'flex-col gap-2' : 'w-64 h-32 mb-2'}`}>
-              {/* Logo Image or Fallback */}
+        <aside className="hidden md:flex flex-col w-72 bg-white dark:bg-gray-900 border-r border-pink-100 dark:border-gray-800/80 h-screen sticky top-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none">
+          {/* Logo — tighter top spacing, balanced with nav */}
+          <div className="shrink-0 pt-6 pb-3 px-6 flex flex-col items-center">
+            <div className={`relative transition-transform hover:scale-105 duration-300 flex items-center justify-center ${logoError ? 'flex-col gap-2' : 'w-56 h-28'}`}>
               {!logoError ? (
                 <Image
                   src="/logo_icon.png"
@@ -187,16 +187,17 @@ function HomeContent() {
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="p-3 bg-pink-100 rounded-full text-pink-500 shadow-sm">
+                  <div className="p-3 bg-pink-100 dark:bg-pink-900/40 rounded-full text-pink-500 dark:text-pink-400 shadow-sm">
                     <Sparkles className="w-8 h-8" />
                   </div>
-                  <p className="text-[10px] text-pink-400 uppercase tracking-[0.2em] font-bold">Beauty POS</p>
+                  <p className="text-[10px] text-pink-400 dark:text-pink-500 uppercase tracking-[0.2em] font-bold">Beauty POS</p>
                 </div>
               )}
             </div>
           </div>
 
-          <nav className="flex-1 px-5 flex flex-col gap-2 mt-6">
+          {/* Nav — consistent rhythm, compact items */}
+          <nav className="flex-1 min-h-0 px-4 pt-4 flex flex-col gap-0.5 overflow-y-auto">
             {tabs.map(tab => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -204,62 +205,65 @@ function HomeContent() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 group relative overflow-hidden
-                                ${isActive
-                      ? 'text-pink-600 bg-gradient-to-r from-pink-50 to-white shadow-sm ring-1 ring-pink-100'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50/80'
+                  className={`sidebar-nav-item w-full flex items-center gap-3 min-h-[40px] py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 group relative
+                    ${isActive
+                      ? 'text-pink-600 dark:text-pink-400 bg-pink-50/80 dark:bg-pink-900/20'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                     }`}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-pink-500 rounded-r-full shadow-[0_0_12px_rgba(236,72,153,0.4)]" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 bg-pink-500 dark:bg-pink-400 rounded-full" />
                   )}
                   <Icon
-                    className={`w-5 h-5 transition-all duration-300 ${isActive ? 'text-pink-500 scale-110 drop-shadow-sm' : 'text-gray-300 group-hover:text-gray-500'}`}
+                    className={`w-5 h-5 shrink-0 transition-all duration-200 ${isActive ? 'text-pink-500 dark:text-pink-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  <span className={isActive ? 'tracking-wide' : 'tracking-normal'}>{tab.label}</span>
+                  <span className="truncate text-left">{tab.label}</span>
                 </button>
               )
             })}
             <Link
               href="/catalogo"
-              className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-50/80 transition-all duration-300 group"
+              className="sidebar-nav-item w-full flex items-center gap-3 min-h-[40px] py-2.5 px-4 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 transition-all duration-200 group"
             >
-              <Store className="w-5 h-5 text-gray-300 group-hover:text-gray-500" strokeWidth={2} />
-              <span>Catálogo</span>
+              <Store className="w-5 h-5 shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300" strokeWidth={2} />
+              <span className="truncate text-left">Catálogo</span>
             </Link>
           </nav>
 
-          <div className="p-6 mt-auto">
-            <div className="bg-gradient-to-br from-pink-50 to-white border border-pink-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
-              {/* Decorative Circle */}
-              <div className="absolute top-[-20%] right-[-10%] w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
-
-              <div className="flex items-center gap-3 mb-3 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 shadow-sm">
-                  <span className="font-bold text-sm tracking-wider">
-                    {userEmail?.substring(0, 2).toUpperCase()}
-                  </span>
+          {/* Footer — theme + user card, integrated spacing */}
+          <div className="shrink-0 p-4 pt-5 flex flex-col gap-3 border-t border-gray-100/80 dark:border-gray-800/80">
+            <div className="flex items-center justify-end">
+              <ThemeSwitch />
+            </div>
+            <div className="bg-gradient-to-br from-pink-50/80 to-white dark:from-gray-800 dark:to-gray-800/80 border border-pink-100 dark:border-gray-700 rounded-xl p-4 relative overflow-hidden group">
+              <div className="absolute top-[-20%] right-[-10%] w-24 h-24 bg-white/10 dark:bg-pink-500/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
+              <div className="flex flex-col gap-3 relative z-10">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 shrink-0 rounded-lg bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-pink-600 dark:text-pink-400">
+                    <span className="font-bold text-xs tracking-wider">
+                      {userEmail?.substring(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{getSaludo(userEmail)}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate font-mono mt-0.5">{userEmail}</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-800 truncate">{getSaludo(userEmail)}</p>
-                  <p className="text-[10px] text-gray-500 truncate font-mono">{userEmail}</p>
-                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 min-h-[36px] py-2 px-3 rounded-lg text-xs font-semibold text-pink-500 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 hover:bg-pink-100/80 dark:hover:bg-gray-700/80 transition-all"
+                >
+                  <LogOut className="w-3.5 h-3.5 shrink-0" />
+                  <span>Cerrar Sesión</span>
+                </button>
               </div>
-
-              <button
-                onClick={handleLogout}
-                className="w-full btn-ghost p-2 text-xs font-bold text-pink-500 hover:text-pink-700 hover:bg-pink-100 rounded-lg flex items-center justify-center gap-2 transition-all mt-btn-logout"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Cerrar Sesión</span>
-              </button>
             </div>
           </div>
         </aside>
 
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between px-5 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-pink-100">
+        <div className="md:hidden flex items-center justify-between px-5 py-4 bg-white/80 dark:bg-gray-900/90 backdrop-blur-md sticky top-0 z-30 border-b border-pink-100 dark:border-gray-700">
           <div className="flex items-center gap-2 min-h-[32px]">
             {!logoError ? (
               <Image
@@ -271,28 +275,34 @@ function HomeContent() {
                 onError={() => setLogoError(true)}
               />
             ) : (
-              <div className="p-2 bg-pink-100 rounded-full text-pink-500">
+              <div className="p-2 bg-pink-100 dark:bg-pink-900/40 rounded-full text-pink-500 dark:text-pink-400">
                 <Sparkles className="w-5 h-5" />
               </div>
             )}
           </div>
-          <button onClick={() => setMenuAbierto(true)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-            <Menu className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeSwitch />
+            <button onClick={() => setMenuAbierto(true)} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu Overlay */}
         {menuAbierto && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex justify-end" onClick={() => setMenuAbierto(false)}>
+          <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex justify-end" onClick={() => setMenuAbierto(false)}>
             <div
-              className="w-[80%] max-w-[300px] bg-white h-full shadow-2xl flex flex-col p-6 sm:p-8"
+              className="w-[80%] max-w-[300px] bg-white dark:bg-gray-900 h-full shadow-2xl flex flex-col p-6 sm:p-8"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center shrink-0 pb-4 border-b border-gray-100">
+              <div className="flex justify-between items-center shrink-0 pb-4 border-b border-gray-100 dark:border-gray-700">
                 <h2 className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-400">Menú</h2>
-                <button onClick={() => setMenuAbierto(false)} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100" aria-label="Cerrar menú">
-                  <X className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <ThemeSwitch />
+                  <button onClick={() => setMenuAbierto(false)} className="p-2 -mr-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Cerrar menú">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
 
               <nav className="flex-1 overflow-y-auto min-h-0 py-4 space-y-2">
@@ -305,11 +315,11 @@ function HomeContent() {
                       onClick={() => { handleTabChange(tab.id); setMenuAbierto(false) }}
                       className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold transition-all
                                     ${isActive
-                          ? 'bg-pink-50 text-pink-600 shadow-sm border border-pink-100'
-                          : 'text-gray-600 hover:bg-gray-50'
+                          ? 'bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 shadow-sm border border-pink-100 dark:border-pink-800/50'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                     >
-                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-pink-500' : 'text-gray-400'}`} strokeWidth={isActive ? 2.5 : 2} />
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-pink-500 dark:text-pink-400' : 'text-gray-400 dark:text-gray-500'}`} strokeWidth={isActive ? 2.5 : 2} />
                       {tab.label}
                     </button>
                   )
@@ -317,28 +327,28 @@ function HomeContent() {
                 <Link
                   href="/catalogo"
                   onClick={() => setMenuAbierto(false)}
-                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                 >
-                  <Store className="w-5 h-5 shrink-0 text-gray-400" strokeWidth={2} />
+                  <Store className="w-5 h-5 shrink-0 text-gray-400 dark:text-gray-500" strokeWidth={2} />
                   Catálogo
                 </Link>
               </nav>
 
-              <div className="shrink-0 mt-auto pt-4 border-t border-gray-100 pb-6 sm:pb-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
-                <div className="bg-gray-50/80 border border-gray-100 rounded-xl p-3.5 mb-3">
+              <div className="shrink-0 mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 pb-6 sm:pb-8" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="bg-gray-50/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 rounded-xl p-3.5 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center font-bold text-sm text-pink-500 shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center font-bold text-sm text-pink-500 dark:text-pink-400 shrink-0">
                       {userEmail?.substring(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-800 truncate">{getSaludo(userEmail)}</p>
-                      <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate">{getSaludo(userEmail)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userEmail}</p>
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[44px] text-red-600 font-bold bg-red-50 hover:bg-red-100 active:bg-red-200 rounded-xl transition-colors touch-manipulation"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[44px] text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 active:bg-red-200 dark:active:bg-red-900/50 rounded-xl transition-colors touch-manipulation"
                 >
                   <LogOut className="w-4 h-4 shrink-0" /> Salir
                 </button>
@@ -348,7 +358,7 @@ function HomeContent() {
         )}
 
         {/* Content Area */}
-        <main className="app-content flex-1 bg-[#faf9fb]">
+        <main className="app-content flex-1 bg-[#faf9fb] dark:bg-gray-950 min-w-0">
           {activeTab === 'dashboard' && <Tablero />}
           {activeTab === 'inventory' && <Inventory />}
           {activeTab === 'sales' && <Ventas />}
@@ -363,7 +373,7 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-pink-50 text-pink-400">Cargando...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-pink-50 dark:bg-gray-900 text-pink-400 dark:text-pink-500">Cargando...</div>}>
       <HomeContent />
     </Suspense>
   )

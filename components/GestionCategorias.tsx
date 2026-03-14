@@ -118,31 +118,32 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onClick={cerrar} />
+            <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={cerrar} aria-hidden />
 
-            <PastelCard className="w-full max-w-md !p-0 z-50 shadow-2xl animate-fade-in-scale overflow-hidden" noHover>
-                <div className="bg-white px-8 py-5 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <FolderOpen className="w-6 h-6 text-pink-500" />
+            <PastelCard className="relative w-full max-w-md !p-0 z-50 shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 animate-fade-in-scale overflow-hidden" noHover>
+                <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                        <FolderOpen className="w-6 h-6 text-pink-500 dark:text-pink-400" />
                         Categorías
                     </h3>
                     <button
                         onClick={cerrar}
-                        className="w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors"
+                        className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                        aria-label="Cerrar"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
-                <div className="p-8 space-y-5">
-                    {/* Selector */}
-                    <div>
-                        <label className="form-label mb-2 text-gray-700">Seleccionar Categoría</label>
-                        <div className="flex gap-2">
+                <div className="p-5 sm:p-6 flex flex-col gap-4">
+                    {/* Selector + Nueva */}
+                    <div className="flex flex-col gap-2">
+                        <label className="form-label text-gray-700 dark:text-gray-200">Seleccionar categoría</label>
+                        <div className="flex items-stretch gap-2">
                             <select
                                 value={categoriaSeleccionada?.toString() || ''}
                                 onChange={(e) => handleSeleccion(e.target.value)}
-                                className="form-select w-full"
+                                className="form-select form-control-h flex-1 min-w-0"
                             >
                                 <option value="">-- Nueva Categoría --</option>
                                 {categorias.map(cat => (
@@ -151,7 +152,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                             </select>
                             <button
                                 onClick={handleNueva}
-                                className="btn-ghost bg-pink-50 text-pink-600 hover:bg-pink-100 p-2.5 rounded-xl border-0"
+                                className="btn-ghost bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/60 min-w-[44px] form-control-h rounded-xl border-0 flex items-center justify-center shrink-0"
                                 title="Nueva Categoría"
                             >
                                 <Plus className="w-5 h-5" />
@@ -160,9 +161,9 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                     </div>
 
                     {/* Input nombre */}
-                    <div>
-                        <label className="form-label mb-2 text-gray-700">
-                            {categoriaSeleccionada ? 'Editar Nombre' : 'Nombre de Nueva Categoría'}
+                    <div className="flex flex-col gap-2">
+                        <label className="form-label text-gray-700 dark:text-gray-200">
+                            {categoriaSeleccionada ? 'Editar nombre' : 'Nombre de nueva categoría'}
                         </label>
                         <input
                             type="text"
@@ -175,12 +176,12 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                                     else handleCrear()
                                 }
                             }}
-                            className="form-input w-full"
+                            className="form-input form-control-h w-full"
                         />
                     </div>
 
                     {/* Botones de acción */}
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex gap-3 pt-1">
                         {categoriaSeleccionada ? (
                             <>
                                 <button
@@ -213,7 +214,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                     </div>
 
                     {/* Info */}
-                    <p className="text-center text-xs text-gray-400 font-medium">
+                    <p className="text-center text-xs text-gray-400 dark:text-gray-500 font-medium pt-1">
                         {categorias.length} categoría{categorias.length !== 1 ? 's' : ''} en total
                     </p>
                 </div>
