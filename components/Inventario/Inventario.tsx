@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
-import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle } from 'lucide-react'
+import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle, Eye, EyeOff } from 'lucide-react'
 import GestionCategorias from '../GestionCategorias'
 import GestionCupones from '../GestionCupones'
 import { useToast } from '@/context/ToastContext'
@@ -56,6 +56,10 @@ export default function Inventario() {
     const [mostrarEliminarProductosModal, setMostrarEliminarProductosModal] = useState(false)
     const [productosSeleccionados, setProductosSeleccionados] = useState<Set<number>>(new Set())
     const [eliminandoProductos, setEliminandoProductos] = useState(false)
+
+    // Ocultar / mostrar en catálogo (modal múltiple)
+    const [mostrarVisibilidadModal, setMostrarVisibilidadModal] = useState(false)
+    const [actualizandoVisibilidad, setActualizandoVisibilidad] = useState(false)
 
     useEffect(() => {
         obtenerData()
@@ -181,6 +185,33 @@ export default function Inventario() {
         }
     }
 
+    const actualizarVisibilidadSeleccionados = async (visible: boolean) => {
+        if (productosSeleccionados.size === 0) {
+            showError('Seleccioná al menos un producto.')
+            return
+        }
+        setActualizandoVisibilidad(true)
+        try {
+            const ids = Array.from(productosSeleccionados)
+            for (const id of ids) {
+                const { error } = await supabase
+                    .from('products')
+                    .update({ visible_in_catalog: visible })
+                    .eq('id', id)
+                if (error) throw error
+            }
+            setProductos(prev => prev.map(p => ids.includes(p.id) ? { ...p, visible_in_catalog: visible } : p))
+            setProductosSeleccionados(new Set())
+            setMostrarVisibilidadModal(false)
+            showSuccess(visible ? 'Productos visibles en el catálogo.' : 'Productos ocultos del catálogo.')
+        } catch (err: unknown) {
+            const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Error al actualizar'
+            showError(msg)
+        } finally {
+            setActualizandoVisibilidad(false)
+        }
+    }
+
     // Filtrado
     const productosFiltrados = productos.filter(producto => {
         const coincideBusqueda =
@@ -299,14 +330,24 @@ export default function Inventario() {
                     </p>
                 </div>
                 {productosFiltrados.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={() => { setMostrarEliminarProductosModal(true); setProductosSeleccionados(new Set()); }}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 font-bold text-sm transition-colors"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                        Eliminar productos
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => { setMostrarVisibilidadModal(true); setProductosSeleccionados(new Set()); }}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-800 hover:bg-gray-50 border border-pink-200 hover:border-pink-300 font-bold text-sm transition-colors"
+                        >
+                            <Eye className="w-4 h-4" />
+                            Ocultar / Mostrar en catálogo
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setMostrarEliminarProductosModal(true); setProductosSeleccionados(new Set()); }}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 font-bold text-sm transition-colors"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Eliminar productos
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -552,6 +593,84 @@ export default function Inventario() {
                                 className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {eliminandoProductos ? 'Eliminando...' : `Eliminar ${productosSeleccionados.size} producto(s)`}
+                            </button>
+                        </div>
+                    </PastelCard>
+                </>
+            )}
+
+            {/* Modal Ocultar / Mostrar en catálogo */}
+            {mostrarVisibilidadModal && (
+                <>
+                    <div className="modal-backdrop" onClick={() => !actualizandoVisibilidad && setMostrarVisibilidadModal(false)} />
+                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl" noHover>
+                        <div className="p-6 border-b border-pink-100">
+                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <Eye className="w-5 h-5 text-pink-500" />
+                                Visibilidad en catálogo
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">Seleccioná los productos y elegí si ocultarlos o mostrarlos en el catálogo público.</p>
+                        </div>
+                        <div className="p-4 overflow-y-auto flex-1 min-h-0">
+                            <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer mb-2">
+                                <input
+                                    type="checkbox"
+                                    checked={productosFiltrados.length > 0 && productosSeleccionados.size === productosFiltrados.length}
+                                    onChange={seleccionarTodosProductos}
+                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                />
+                                <span className="font-bold text-sm text-gray-700">Seleccionar todos</span>
+                            </label>
+                            <div className="space-y-2">
+                                {productosFiltrados.length === 0 ? (
+                                    <p className="text-gray-400 text-sm py-4">No hay productos con los filtros actuales.</p>
+                                ) : (
+                                    productosFiltrados.map(producto => (
+                                        <label
+                                            key={producto.id}
+                                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 cursor-pointer border border-transparent hover:border-pink-100"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={productosSeleccionados.has(producto.id)}
+                                                onChange={() => toggleSeleccionProducto(producto.id)}
+                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                                            />
+                                            <span className="flex-1 text-sm text-gray-800 truncate">{producto.name}</span>
+                                            <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full ${producto.visible_in_catalog === false ? 'bg-gray-200 text-gray-600' : 'bg-pink-100 text-pink-600'}`}>
+                                                {producto.visible_in_catalog === false ? 'Oculto' : 'Visible'}
+                                            </span>
+                                        </label>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-pink-100 flex flex-wrap gap-3 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setMostrarVisibilidadModal(false)}
+                                disabled={actualizandoVisibilidad}
+                                className="btn-ghost"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => actualizarVisibilidadSeleccionados(false)}
+                                disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <EyeOff className="w-4 h-4" />
+                                Ocultar ({productosSeleccionados.size})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => actualizarVisibilidadSeleccionados(true)}
+                                disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-pink-50 text-pink-600 hover:bg-pink-100 border border-pink-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Eye className="w-4 h-4" />
+                                Mostrar ({productosSeleccionados.size})
                             </button>
                         </div>
                     </PastelCard>
