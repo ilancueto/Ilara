@@ -3,6 +3,7 @@
 // ============================================
 
 import { ExpenseCategory, PaymentMethod, Expense, EXPENSE_CATEGORY_LABELS, PAYMENT_METHOD_LABELS } from './types';
+import { createCsvBlob, CSV_DELIMITER, escapeCsvValue, formatNumberCsv } from './csvUtils';
 
 // Iconos por categoría
 export const getCategoryIcon = (category: ExpenseCategory): string => {
@@ -67,29 +68,24 @@ export const formatDate = (date: string): string => {
     });
 };
 
-// Exportar a CSV
+// Exportar a CSV (UTF-8 con BOM, formato lindo para Excel/Libre)
 export const exportToCSV = (expenses: Expense[], filename: string = 'gastos.csv'): void => {
-    // Headers
     const headers = ['Fecha', 'Categoría', 'Descripción', 'Monto', 'Método de Pago', 'Notas'];
-
-    // Rows
     const rows = expenses.map(expense => [
         formatDate(expense.date),
         getCategoryLabel(expense.category),
-        expense.description,
-        expense.amount.toString(),
+        escapeCsvValue(expense.description),
+        escapeCsvValue(formatNumberCsv(expense.amount)),
         getPaymentMethodLabel(expense.payment_method),
-        expense.notes || '',
+        escapeCsvValue(expense.notes || ''),
     ]);
 
-    // Combinar headers y rows
     const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
+        headers.join(CSV_DELIMITER),
+        ...rows.map(row => row.join(CSV_DELIMITER)),
     ].join('\n');
 
-    // Crear blob y descargar
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = createCsvBlob(csvContent);
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
 

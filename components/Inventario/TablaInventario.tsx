@@ -3,7 +3,8 @@
 import { Producto, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
-import { Edit2, Trash2 } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Edit2, Trash2, Package } from 'lucide-react'
 
 interface TablaInventarioProps {
     productos: Producto[]
@@ -41,13 +42,11 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
 
     if (productos.length === 0) {
         return (
-            <PastelCard className="text-center py-24 px-5 max-w-lg mx-auto border-dashed border-gray-300 bg-transparent shadow-none" noHover>
-                <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-4xl">✨</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">No hay productos</h3>
-                <p className="text-gray-500">Comienza creando tu primer producto para llenar el inventario.</p>
-            </PastelCard>
+            <EmptyState
+                icon={<Package className="w-12 h-12 text-pink-400" />}
+                title="No hay productos"
+                description="Creá tu primer producto para armar el inventario."
+            />
         )
     }
 

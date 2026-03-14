@@ -9,7 +9,9 @@ import ExportarReporte from './ExportarReporte'
 import Loader from './Loader'
 import FormularioEditarVenta from './FormularioEditarVenta'
 import { deleteSale } from '@/lib/saleService'
+import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/context/ToastContext'
 
 export default function HistorialVentas() {
@@ -127,69 +129,32 @@ export default function HistorialVentas() {
         }
     }
 
-    const escapeHtml = (s: string) => {
-        return s
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-    }
-
-    const imprimirComprobante = (venta: Venta & { items?: ItemVenta[] }) => {
-        const fecha = format(new Date(venta.sale_date || venta.created_at), "d 'de' MMMM yyyy, HH:mm", { locale: es })
-        const tieneDesglose = venta.payment_breakdown && venta.payment_breakdown.length > 0
-        const metodoPago = tieneDesglose
-            ? (venta.payment_breakdown!.map(p => `${obtenerEtiquetaPago(p.method)}: $${p.amount.toLocaleString()}`).join(' | '))
-            : obtenerEtiquetaPago(venta.payment_method)
-        const itemsRows = (venta.items || [])
-            .map(item => `<tr><td>${escapeHtml(item.product_name ?? '')}</td><td style="text-align:center">${item.quantity}</td><td>$${item.unit_price.toLocaleString()}</td><td style="text-align:right">$${item.subtotal.toLocaleString()}</td></tr>`)
-            .join('')
-        const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Comprobante #${venta.id}</title>
-  <style>
-    body { font-family: system-ui, sans-serif; font-size: 14px; max-width: 320px; margin: 24px auto; padding: 16px; }
-    h1 { font-size: 18px; margin: 0 0 8px; text-align: center; }
-    .meta { color: #666; font-size: 12px; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    th { text-align: left; border-bottom: 1px solid #ddd; padding: 6px 4px; font-size: 11px; color: #666; }
-    th:last-child { text-align: right; }
-    td { padding: 6px 4px; border-bottom: 1px solid #eee; }
-    td:last-child { text-align: right; }
-    .total { font-size: 16px; font-weight: bold; margin-top: 12px; text-align: right; }
-    .notes { margin-top: 12px; padding: 8px; background: #fef9c3; font-size: 12px; border-radius: 8px; }
-    @media print { body { margin: 0; padding: 12px; } }
-  </style>
-</head>
-<body>
-  <h1>Ilara Beauty</h1>
-  <p class="meta">Comprobante #${venta.id}<br>${fecha}</p>
-  <p><strong>Cliente:</strong> ${escapeHtml(venta.customer_name || 'Consumidor final')}</p>
-  <p><strong>Pago:</strong> ${escapeHtml(metodoPago)}</p>
-  <table>
-    <thead><tr><th>Producto</th><th style="text-align:center">Cant</th><th>P.unit</th><th style="text-align:right">Subtotal</th></tr></thead>
-    <tbody>${itemsRows}</tbody>
-  </table>
-  <p class="total">Total: $${venta.total.toLocaleString()}</p>
-  ${venta.notes ? `<div class="notes"><strong>Notas:</strong> ${escapeHtml(venta.notes)}</div>` : ''}
-</body>
-</html>`
-        const w = window.open('', '_blank')
-        if (!w) {
-            showError('Permití ventanas emergentes para imprimir.')
-            return
+    const abrirComprobante = async (venta: Venta & { items?: ItemVenta[] }) => {
+        let itemsList = venta.items
+        if (!itemsList || itemsList.length === 0) {
+            const { data } = await supabase.from('sale_items').select('*').eq('sale_id', venta.id)
+            itemsList = (data as ItemVenta[]) ?? []
         }
-        w.document.write(html)
-        w.document.close()
-        w.focus()
-        w.onload = () => {
-            w.print()
-            w.onafterprint = () => w.close()
-        }
+        const items = itemsList.map(({ product_name, quantity, unit_price, subtotal }) => ({
+            product_name: product_name ?? '',
+            quantity,
+            unit_price,
+            subtotal,
+        }))
+        const abrio = imprimirComprobante(
+            {
+                id: venta.id,
+                total: venta.total,
+                customer_name: venta.customer_name ?? null,
+                payment_method: venta.payment_method ?? null,
+                payment_breakdown: venta.payment_breakdown ?? null,
+                notes: venta.notes ?? null,
+                sale_date: venta.sale_date,
+                created_at: venta.created_at,
+            },
+            items
+        )
+        if (!abrio) showError('Permití ventanas emergentes para imprimir.')
     }
 
     const toggleSeleccionVenta = (id: number) => {
@@ -351,12 +316,13 @@ export default function HistorialVentas() {
             {/* Lista de ventas */}
             <div className="pb-12 historial-list">
                 {ventasFiltradas.length === 0 ? (
-                    <PastelCard className="text-center py-20 border-dashed border-gray-300 shadow-none bg-transparent mb-historial-block">
-                        <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Receipt className="w-10 h-10 text-pink-200" />
-                        </div>
-                        <p className="text-gray-400 font-medium">No hay ventas en este período</p>
-                    </PastelCard>
+                    <div className="mb-historial-block">
+                        <EmptyState
+                            icon={<Receipt className="w-10 h-10 text-pink-400" />}
+                            title="No hay ventas en este período"
+                            description="Cuando registres ventas desde el punto de venta, aparecerán aquí."
+                        />
+                    </div>
                 ) : (
                     ventasFiltradas.map(venta => (
                         <PastelCard key={venta.id} className="!p-0 group overflow-hidden border-pink-100/50 mb-historial-card" noHover>
@@ -479,7 +445,7 @@ export default function HistorialVentas() {
                                         )}
                                         <button
                                             type="button"
-                                            onClick={() => imprimirComprobante(venta)}
+                                            onClick={() => abrirComprobante(venta)}
                                             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 font-bold text-sm transition-colors"
                                         >
                                             <Printer className="w-4 h-4" />

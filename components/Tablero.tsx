@@ -154,13 +154,13 @@ export default function Tablero() {
 
     if (cargando) {
         return (
-            <div className="space-y-6 animate-pulse">
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-32 bg-white/50 rounded-3xl border border-pink-100"></div>
+                        <div key={i} className="h-32 bg-gradient-to-br from-pink-50/80 to-white rounded-3xl border border-pink-100 animate-pulse" />
                     ))}
                 </div>
-                <div className="h-80 bg-white/50 rounded-3xl border border-pink-100"></div>
+                <div className="h-80 bg-gradient-to-br from-pink-50/50 to-white rounded-3xl border border-pink-100 animate-pulse" />
             </div>
         )
     }
@@ -276,16 +276,22 @@ export default function Tablero() {
                         <div className="flex-1 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={ventasPorDia} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                                    <defs>
+                                        <linearGradient id="barGradientPink" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#f472b6" />
+                                            <stop offset="100%" stopColor="#db2777" />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(236,72,153,0.08)" />
                                     <XAxis
                                         dataKey="fecha"
-                                        tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }}
-                                        axisLine={{ stroke: '#f3f4f6' }}
+                                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                                        axisLine={{ stroke: '#fce7f3' }}
                                         tickLine={false}
                                         dy={10}
                                     />
                                     <YAxis
-                                        tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }}
+                                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
                                         tickFormatter={(value) => value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`}
                                         axisLine={false}
                                         tickLine={false}
@@ -295,18 +301,18 @@ export default function Tablero() {
                                             background: '#fff',
                                             border: '1px solid #fbcfe8',
                                             borderRadius: '16px',
-                                            boxShadow: '0 10px 30px -5px rgba(0,0,0,0.1)',
+                                            boxShadow: '0 10px 30px -5px rgba(236,72,153,0.15)',
                                             padding: '12px 16px',
                                             color: '#1f2937'
                                         }}
-                                        cursor={{ fill: 'rgba(236, 72, 153, 0.05)' }}
+                                        cursor={{ fill: 'rgba(236, 72, 153, 0.06)' }}
+                                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ventas']}
                                     />
                                     <Bar
                                         dataKey="total"
                                         radius={[8, 8, 8, 8]}
-                                        fill="#ec4899"
+                                        fill="url(#barGradientPink)"
                                         barSize={32}
-                                        className="hover:opacity-80 transition-opacity"
                                     />
                                 </BarChart>
                             </ResponsiveContainer>

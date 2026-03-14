@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext'
 import { format, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type ClienteStats = {
     totalVentas: number
@@ -445,30 +446,26 @@ export default function Clientes() {
 
             {/* Empty state */}
             {clientesFiltrados.length === 0 && (
-                <PastelCard className="flex flex-col items-center justify-center py-24 text-center border-dashed border-gray-300 bg-transparent shadow-none">
-                    <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mb-6">
-                        <Users className="w-10 h-10 text-pink-300" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                        {terminoBusqueda ? 'No se encontraron clientes' : 'No hay clientes registrados'}
-                    </h3>
-                    <p className="text-gray-500 mb-8 max-w-sm mx-auto">
-                        {terminoBusqueda ? 'Intenta con otro término de búsqueda' : 'Comienza agregando tu primer cliente.'}
-                    </p>
-                    {!terminoBusqueda && (
-                        <button
-                            onClick={() => {
-                                setEditando(null)
-                                setFormData({ first_name: '', last_name: '', email: '', phone: '' })
-                                setMostrarModal(true)
-                            }}
-                            className="btn-primary"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Nuevo Cliente
-                        </button>
-                    )}
-                </PastelCard>
+                <EmptyState
+                    icon={<Users className="w-10 h-10 text-pink-400" />}
+                    title={terminoBusqueda ? 'No se encontraron clientes' : 'No hay clientes registrados'}
+                    description={terminoBusqueda ? 'Probá con otro término de búsqueda.' : 'Agregá tu primer cliente para empezar.'}
+                    action={
+                        !terminoBusqueda ? (
+                            <button
+                                onClick={() => {
+                                    setEditando(null)
+                                    setFormData({ first_name: '', last_name: '', email: '', phone: '' })
+                                    setMostrarModal(true)
+                                }}
+                                className="btn-primary"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Nuevo cliente
+                            </button>
+                        ) : undefined
+                    }
+                />
             )}
 
             {/* Modal Eliminar clientes */}

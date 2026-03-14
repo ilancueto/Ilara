@@ -386,8 +386,17 @@ export default function Catalogo() {
                 </div>
             </header>
 
+            {/* Hero / bienvenida */}
+            <section className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-2">
+                <div className="max-w-3xl mx-auto text-center">
+                    <p className="text-pink-600/90 font-semibold text-sm uppercase tracking-widest mb-1">Catálogo</p>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Bienvenidos a Ilara Beauty</h2>
+                    <p className="text-gray-500 text-sm sm:text-base mt-2">Elegí lo que te guste y pedilo por WhatsApp</p>
+                </div>
+            </section>
+
             {/* Búsqueda y filtros */}
-            <div className="w-full px-4 sm:px-6 lg:px-8 py-6 mt-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex justify-center w-full mb-10px">
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:max-w-2xl">
                         <div className="relative flex-1 min-w-0">

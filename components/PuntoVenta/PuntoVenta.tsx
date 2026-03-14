@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase, getUser, Producto, ItemCarrito, Cliente, ComboConItems } from '@/lib/supabase'
+import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { useToast } from '@/context/ToastContext'
 import CatalogoPOS from './CatalogoPOS'
 import CarritoVenta from './CarritoVenta'
@@ -233,14 +234,37 @@ export default function PuntoVenta() {
             }
 
             showSuccess(cobrarDespues ? 'Venta registrada como cuenta por cobrar' : '¡Venta completada! Stock actualizado')
+            // Abrir comprobante para imprimir o guardar PDF y dar al cliente
+            const itemsComprobante = itemsVenta.map(({ product_name, quantity, unit_price, subtotal }) => ({
+              product_name,
+              quantity,
+              unit_price,
+              subtotal,
+            }))
+            const abrio = imprimirComprobante(
+              {
+                id: venta.id,
+                total: venta.total,
+                customer_name: venta.customer_name ?? null,
+                payment_method: venta.payment_method ?? null,
+                payment_breakdown: venta.payment_breakdown ?? null,
+                notes: venta.notes ?? null,
+                sale_date: venta.sale_date,
+                created_at: venta.created_at,
+              },
+              itemsComprobante
+            )
+            if (!abrio) {
+              showError('Permití ventanas emergentes para imprimir el comprobante para el cliente.')
+            }
             setCarrito([])
             setClienteSeleccionado(null)
             setNombreClienteOtro('')
             setCobrarDespues(false)
             setPaymentBreakdown(null)
             setNotas('')
-                    obtenerProductos()
-                    obtenerCombos()
+            obtenerProductos()
+            obtenerCombos()
         } catch (error) {
             console.error('Error al procesar venta:', error)
             showError('Error al procesar la venta')

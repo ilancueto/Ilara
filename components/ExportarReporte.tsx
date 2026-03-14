@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { createCsvBlob, CSV_DELIMITER, escapeCsvValue, formatDateCsv, formatNumberCsv } from '@/lib/csvUtils'
 import { Download, X, FileSpreadsheet } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 
@@ -49,28 +50,22 @@ export default function ExportarReporte({ mostrar, cerrar }: Props) {
                 return
             }
 
-            // 2. CSV Generation
-            let csvContent = "ID Venta,Fecha,Cliente,Metodo Pago,Total,Notas,Estado\n"
+            // 2. CSV con formato lindo (UTF-8 BOM, ; para Excel en español, fechas/números Argentina)
+            const headers = ['ID Venta', 'Fecha', 'Cliente', 'Método de pago', 'Total', 'Notas', 'Estado']
+            const headerRow = headers.join(CSV_DELIMITER)
 
-            ventas.forEach(venta => {
-                const fecha = new Date(venta.sale_date || venta.created_at).toLocaleDateString()
-                const cliente = (venta.customer_name || 'Anónimo').replace(/,/g, '') // Evitar comas
-                const notas = (venta.notes || '').replace(/[\n\r,]/g, ' ') // Limpiar saltos y comas
-
-                const row = [
-                    venta.id,
-                    fecha,
-                    cliente,
-                    venta.payment_method,
-                    venta.total,
-                    notas,
-                    venta.status
-                ].join(',')
-                csvContent += row + "\n"
+            const dataRows = ventas.map(venta => {
+                const fecha = formatDateCsv(venta.sale_date || venta.created_at)
+                const cliente = escapeCsvValue(venta.customer_name || 'Anónimo')
+                const metodo = venta.payment_method || ''
+                const total = formatNumberCsv(Number(venta.total))
+                const notas = escapeCsvValue(venta.notes || '')
+                const estado = venta.status || ''
+                return [venta.id, fecha, cliente, metodo, total, notas, estado].map(escapeCsvValue).join(CSV_DELIMITER)
             })
 
-            // 3. Crear Blob y descargar
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+            const csvContent = [headerRow, ...dataRows].join('\n')
+            const blob = createCsvBlob(csvContent)
             const url = URL.createObjectURL(blob)
             const link = document.createElement('a')
             link.href = url

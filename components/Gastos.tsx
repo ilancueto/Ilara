@@ -12,6 +12,7 @@ import ExpenseCard from './ExpenseCard';
 import ExpenseForm from './ExpenseForm';
 import ExpenseFiltersComponent from './ExpenseFilters';
 import ExpenseStatsComponent from './ExpenseStats';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Plus, Download, Wallet, BarChart3, Trash2 } from 'lucide-react';
 import { ExpenseStats as ExpenseStatsType } from '@/lib/types';
 import { PastelCard } from '@/components/ui/PastelCard';
@@ -240,22 +241,17 @@ export default function Gastos() {
                         ))}
                     </div>
                 ) : expenses.length === 0 ? (
-                    <PastelCard className="flex flex-col items-center justify-center py-24 px-10 text-center border-dashed border-gray-300 bg-transparent shadow-none">
-                        <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mb-6">
-                            <Wallet className="w-12 h-12 text-pink-300" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">Sin movimientos registrados</h3>
-                        <p className="text-gray-500 mb-8 max-w-sm mx-auto">
-                            Comienza a registrar tus gastos para visualizar el análisis financiero.
-                        </p>
-                        <button
-                            onClick={() => setIsFormOpen(true)}
-                            className="btn-primary"
-                        >
-                            <Plus size={18} />
-                            Crear Primer Gasto
-                        </button>
-                    </PastelCard>
+                    <EmptyState
+                        icon={<Wallet className="w-12 h-12 text-pink-400" />}
+                        title="Sin movimientos registrados"
+                        description="Comenzá a cargar gastos para ver el análisis y llevar el control."
+                        action={
+                            <button onClick={() => setIsFormOpen(true)} className="btn-primary">
+                                <Plus size={18} />
+                                Crear primer gasto
+                            </button>
+                        }
+                    />
                 ) : (
                     <div className="grid grid-cols-1 gap-8">
                         {expenses.map((expense) => (

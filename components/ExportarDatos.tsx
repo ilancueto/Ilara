@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getExpenses } from '@/lib/expenseService'
+import { createCsvBlob, CSV_DELIMITER, escapeCsvValue } from '@/lib/csvUtils'
 import { X, Database, FileJson, FileSpreadsheet } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 
@@ -13,13 +14,6 @@ interface Props {
 
 const hoy = () => new Date().toISOString().split('T')[0]
 const primerDiaMes = () => new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
-
-function escapeCsv(val: unknown): string {
-  if (val == null) return ''
-  const s = String(val)
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-  return s
-}
 
 function descargarArchivo(blob: Blob, nombre: string) {
   const url = URL.createObjectURL(blob)
@@ -97,23 +91,23 @@ export default function ExportarDatos({ mostrar, cerrar }: Props) {
       } else {
         if (productos && dataProductos.length) {
           const cols = Object.keys(dataProductos[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataProductos.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
-          descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_productos.csv`)
+          const csv = [cols.join(CSV_DELIMITER), ...dataProductos.map((r) => cols.map((c) => escapeCsvValue((r as unknown as Record<string, unknown>)[c])).join(CSV_DELIMITER))].join('\n')
+          descargarArchivo(createCsvBlob(csv), `${prefijo}_productos.csv`)
         }
         if (ventas && dataVentas.length) {
           const cols = Object.keys(dataVentas[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataVentas.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
-          descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_ventas.csv`)
+          const csv = [cols.join(CSV_DELIMITER), ...dataVentas.map((r) => cols.map((c) => escapeCsvValue((r as unknown as Record<string, unknown>)[c])).join(CSV_DELIMITER))].join('\n')
+          descargarArchivo(createCsvBlob(csv), `${prefijo}_ventas.csv`)
         }
         if (clientes && dataClientes.length) {
           const cols = Object.keys(dataClientes[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataClientes.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
-          descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_clientes.csv`)
+          const csv = [cols.join(CSV_DELIMITER), ...dataClientes.map((r) => cols.map((c) => escapeCsvValue((r as unknown as Record<string, unknown>)[c])).join(CSV_DELIMITER))].join('\n')
+          descargarArchivo(createCsvBlob(csv), `${prefijo}_clientes.csv`)
         }
         if (gastos && dataGastos.length) {
           const cols = Object.keys(dataGastos[0] as object)
-          const csv = [cols.map(escapeCsv).join(','), ...dataGastos.map((r) => cols.map((c) => escapeCsv((r as unknown as Record<string, unknown>)[c])).join(','))].join('\n')
-          descargarArchivo(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${prefijo}_gastos.csv`)
+          const csv = [cols.join(CSV_DELIMITER), ...dataGastos.map((r) => cols.map((c) => escapeCsvValue((r as unknown as Record<string, unknown>)[c])).join(CSV_DELIMITER))].join('\n')
+          descargarArchivo(createCsvBlob(csv), `${prefijo}_gastos.csv`)
         }
         if ((productos && !dataProductos.length) || (ventas && !dataVentas.length) || (clientes && !dataClientes.length) || (gastos && !dataGastos.length)) {
           alert('Algunos datos seleccionados están vacíos; se descargaron solo los que tienen filas.')

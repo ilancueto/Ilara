@@ -119,17 +119,19 @@ export default function Login() {
             <div className="glow-orb-2" />
             <div className="glow-orb-3" />
 
-            <div id="login-form-card" className="login-card-bg w-full max-w-[420px] p-10 relative z-10 login-card">
+            <div id="login-form-card" className="login-card-bg w-full max-w-[420px] p-10 relative z-10 login-card animate-fade-in-scale">
                 {/* Logo/Brand */}
                 <div className="flex flex-col items-center justify-center mb-8">
-                    <Image
-                        src="/logo_ilara.png"
-                        alt="Ilara Beauty"
-                        width={180}
-                        height={180}
-                        className="mb-2 object-contain"
-                        priority
-                    />
+                    <div className="relative mb-2 drop-shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+                        <Image
+                            src="/logo_ilara.png"
+                            alt="Ilara Beauty"
+                            width={180}
+                            height={180}
+                            className="object-contain animate-fade-in"
+                            priority
+                        />
+                    </div>
                     <p className="login-card-paragraph text-xs uppercase tracking-[0.15em] font-semibold" style={{ color: '#ffffff' }}>
                         Beauty Management
                     </p>
