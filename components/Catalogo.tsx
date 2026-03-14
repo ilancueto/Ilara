@@ -5,7 +5,6 @@ import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '
 import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import confetti from 'canvas-confetti'
 import { WHATSAPP_NUMBER } from '@/lib/config'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
@@ -15,12 +14,8 @@ import { ModalConfirmacionVaciar } from '@/components/Catalogo/ModalConfirmacion
 import { ModalImagenPrevia } from '@/components/Catalogo/ModalImagenPrevia'
 import { ModalDetalleCombo } from '@/components/Catalogo/ModalDetalleCombo'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
-import { ModalEasterEgg } from '@/components/Catalogo/ModalEasterEgg'
 import { useCarrito } from '@/hooks/useCarrito'
 
-const KONAMI = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65] // ↑↑↓↓←→←→BA
-const DEVICE_ID_KEY = 'ilara_easter_device_id'
-const TAPS_NEEDED = 7
 const PRODUCTOS_POR_PAGINA = 15
 
 export default function Catalogo() {
@@ -44,46 +39,8 @@ export default function Catalogo() {
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
     const [cuponInput, setCuponInput] = useState('')
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
-    const [easterModal, setEasterModal] = useState<{ open: boolean; code?: string; alreadyClaimed?: boolean }>({ open: false })
     const [paginaActual, setPaginaActual] = useState(1)
     const [ventasPorProducto, setVentasPorProducto] = useState<Map<number, number>>(new Map())
-    const konamiIndex = useRef(0)
-    const logoTapCount = useRef(0)
-    const logoTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-    const getOrCreateDeviceId = useCallback(() => {
-        if (typeof window === 'undefined') return ''
-        let id = localStorage.getItem(DEVICE_ID_KEY)
-        if (!id) {
-            id = crypto.randomUUID?.() ?? `dev-${Date.now()}-${Math.random().toString(36).slice(2)}`
-            localStorage.setItem(DEVICE_ID_KEY, id)
-        }
-        return id
-    }, [])
-
-    const triggerEaster = useCallback(async () => {
-        const deviceId = getOrCreateDeviceId()
-        try {
-            const res = await fetch('/api/easter-claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ deviceId }),
-            })
-            const data = await res.json().catch(() => ({}))
-            if (!res.ok) {
-                showToast('error', data.error ?? 'No se pudo activar el cupón')
-                return
-            }
-            confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } })
-            setEasterModal({
-                open: true,
-                code: data.code,
-                alreadyClaimed: data.alreadyClaimed === true,
-            })
-        } catch {
-            showToast('error', 'Error de conexión')
-        }
-    }, [getOrCreateDeviceId, showToast, setEasterModal])
 
     const obtenerProductos = useCallback(async () => {
         setCargando(true)
@@ -151,33 +108,6 @@ export default function Catalogo() {
             mantenerSoloProductosDisponibles(productos, combosIds)
         }
     }, [productos, combos, carrito.length, mantenerSoloProductosDisponibles])
-
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.keyCode === KONAMI[konamiIndex.current]) {
-                konamiIndex.current++
-                if (konamiIndex.current === KONAMI.length) {
-                    konamiIndex.current = 0
-                    triggerEaster()
-                }
-            } else {
-                konamiIndex.current = 0
-            }
-        }
-        window.addEventListener('keydown', onKeyDown)
-        return () => window.removeEventListener('keydown', onKeyDown)
-    }, [triggerEaster])
-
-    const handleLogoTap = useCallback(() => {
-        if (logoTapTimeout.current) clearTimeout(logoTapTimeout.current)
-        logoTapCount.current += 1
-        if (logoTapCount.current >= TAPS_NEEDED) {
-            logoTapCount.current = 0
-            triggerEaster()
-        } else {
-            logoTapTimeout.current = setTimeout(() => { logoTapCount.current = 0 }, 1500)
-        }
-    }, [triggerEaster])
 
     // Badge "Nuevo" durante 7 días desde created_at
     const esNuevo = (fecha: string) => {
@@ -348,14 +278,9 @@ export default function Catalogo() {
                 <div className="w-full px-4 sm:px-6 lg:px-8 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <button
-                                type="button"
-                                onClick={handleLogoTap}
-                                className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 bg-white border border-pink-100 shadow-lg shadow-pink-200/50 flex items-center justify-center cursor-pointer touch-manipulation"
-                                aria-label="Ilara Beauty"
-                            >
-                                <Image src="/logo_icon.png" alt="Ilara Beauty" width={48} height={48} className="object-contain w-full h-full" />
-                            </button>
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 bg-white border border-pink-100 shadow-lg shadow-pink-200/50 flex items-center justify-center" aria-hidden>
+                                <Image src="/logo_icon.png" alt="" width={48} height={48} className="object-contain w-full h-full" />
+                            </div>
                             <div>
                                 <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Ilara Beauty</h1>
                                 <p className="text-xs text-gray-500 font-medium mt-0.5">Catálogo · Pedí por WhatsApp</p>
@@ -743,12 +668,6 @@ export default function Catalogo() {
                 />
             )}
 
-            <ModalEasterEgg
-                open={easterModal.open}
-                code={easterModal.code}
-                alreadyClaimed={easterModal.alreadyClaimed}
-                onClose={() => setEasterModal(m => ({ ...m, open: false }))}
-            />
         </div>
     )
 }

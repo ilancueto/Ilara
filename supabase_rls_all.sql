@@ -59,9 +59,3 @@ DROP POLICY IF EXISTS "Authenticated can manage coupons" ON coupons;
 CREATE POLICY "Authenticated can manage coupons"
   ON coupons FOR ALL TO authenticated
   USING (true) WITH CHECK (true);
-
--- ========== EASTER_CLAIMS (opcional; usado por API) ==========
--- Si la tabla existe y querés que solo backend/authenticated la use:
--- ALTER TABLE easter_claims ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Authenticated or service role" ON easter_claims FOR ALL TO authenticated USING (true) WITH CHECK (true);
--- Por ahora no la incluimos; la ruta API puede usar service role key si hace falta.

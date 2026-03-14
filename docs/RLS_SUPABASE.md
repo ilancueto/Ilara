@@ -35,7 +35,7 @@ La app ya envía `user_id` en los INSERT de gastos (`lib/expenseService.ts`); el
 
 ## Tablas cubiertas por el script
 
-Las tablas listadas arriba en “Políticas aplicadas” están cubiertas por `supabase_rls_all.sql`. La tabla `easter_claims` (easter egg por `device_id`) no está en el script; si la usás desde una API con service role, podés dejarla sin RLS o agregar una política según necesidad.
+Las tablas listadas arriba en “Políticas aplicadas” están cubiertas por `supabase_rls_all.sql`.
 
 ## Pasos genéricos para una tabla con `user_id`
 

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { getEnv } from '@/lib/env';
 
-const PUBLIC_ROUTES = ['/login', '/catalogo', '/api/easter-claim'];
+const PUBLIC_ROUTES = ['/login', '/catalogo'];
 
 export async function middleware(request: NextRequest) {
     let response = NextResponse.next({ request });

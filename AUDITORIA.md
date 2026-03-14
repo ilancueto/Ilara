@@ -7,7 +7,7 @@
 - **Auth:** Middleware con Supabase SSR protege rutas; raíz sin usuario va a catálogo; `/login` y `/catalogo` públicas.
 - **Tipado:** Tipos en `lib/supabase.ts` y `lib/types.ts`; `strict: true` en `tsconfig`.
 - **Estilo:** Variables en `globals.css`, diseño consistente (rosa/outfit), componentes reutilizables (`PastelCard`, `Toast`).
-- **Servicios:** `expenseService`, `saleService` y API `easter-claim` con validación de body y códigos de error coherentes.
+- **Servicios:** `expenseService`, `saleService` con validación y códigos de error coherentes.
 - **Documentación:** README y `DEPLOY_VERCEL_PASO_A_PASO.md` útiles para setup y deploy.
 
 ---
@@ -17,16 +17,15 @@
 | Punto | Estado | Recomendación |
 |-------|--------|----------------|
 | Variables de entorno | OK | `.env` en `.gitignore`; no subir nunca `SUPABASE_SERVICE_ROLE_KEY`. |
-| Easter-claim público | OK | Solo crea cupón por `deviceId`; no expone datos sensibles. |
 | RLS en Supabase | No revisado en código | Asegurar en Supabase que `expenses`, `sales`, etc. tengan RLS por `auth.uid()`. |
 | `SUPABASE_SERVICE_ROLE_KEY` en API | Correcto | Solo en servidor; no exponer al cliente. |
-| `.env.example` | Incompleto | Falta `SUPABASE_SERVICE_ROLE_KEY` (necesaria para easter-claim en producción). Documentar en README y en `.env.example`. |
+| `.env.example` | Revisar | Documentar en README y en `.env.example` las variables necesarias para producción. |
 
 ---
 
 ## 3. Rutas y auth
 
-- **Middleware:** Define bien públicas vs protegidas; `/api/easter-claim` está como pública.
+- **Middleware:** Define bien públicas vs protegidas.
 - **Doble chequeo de auth:** En `app/gastos/page.tsx` y `app/page.tsx` se hace `getUser()` en cliente además del middleware. No es un error, pero:
   - Si confiás 100% en el middleware, el `getUser()` en cliente sirve sobre todo para no mostrar contenido sensible antes del redirect.
   - Si en algún momento hubiera una ruta que el middleware no cubra, ese chequeo extra ayuda. Opción: dejar como está o documentar que el middleware es la fuente de verdad.
@@ -45,7 +44,7 @@
 ## 5. Código y mantenibilidad
 
 - **Catalogo.tsx (~775 líneas):** Componente muy grande (estado, efectos, handlers, listas, modales).  
-  **Sugerencia:** Extraer por ejemplo: `BadgeRotator`, lógica del carrito (custom hook `useCarrito`), modales (carrito, confirmación, easter egg, imagen previa) en componentes o hooks. Mejora tests y lectura.
+  **Sugerencia:** Extraer por ejemplo: `BadgeRotator`, lógica del carrito (custom hook `useCarrito`), modales (carrito, confirmación, imagen previa) en componentes o hooks. Mejora tests y lectura.
 - **Toast:** `removeToast` no se pasa en el `Provider` al `Toast`; en el código actual se usa `onClose={removeToast}` y el toast se cierra por timer o por el botón. Revisar que ningún toast quede colgado (por ejemplo si `duration` es 0 o no se limpia el timer). Por lo que vi, está bien usado.
 - **Consistencia:** Mezcla de español e inglés en nombres (ej. `getSaludo` vs `getUser`). No es bloqueante; si querés homogeneizar, definir "idioma" de la API interna (por ejemplo todo en inglés) y mantener español en UI/strings.
 

@@ -166,12 +166,7 @@ Sin estas variables la app no puede hablar con Supabase. Tenés que cargarlas en
    - **Value:** pegá la clave anon completa de Supabase (la que está en `.env.local`).
    - **Environment:** Production (y Preview si querés).
 
-   **Variable 3 (opcional – easter egg en catálogo)**
-   - **Name:** `SUPABASE_SERVICE_ROLE_KEY`
-   - **Value:** en Supabase → Settings → API → **service_role** (secret). Solo la usamos en el servidor para dar un cupón 10% por dispositivo cuando alguien encuentra el easter egg en el catálogo.
-   - **Environment:** Production (y Preview si querés).
-
-4. Clic en **Add** por cada una. Deberías ver las dos (o tres) en la lista.
+4. Clic en **Add** por cada una. Deberías ver las dos en la lista.
 
 ### 2.5 Hacer el deploy
 
