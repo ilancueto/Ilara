@@ -82,7 +82,12 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                 )}
 
                                 {/* Stock Badge - Top Right */}
-                                <div className="absolute top-4 right-4 z-10 flex gap-2">
+                                <div className="absolute top-4 right-4 z-10 flex flex-wrap gap-2 justify-end">
+                                    {producto.visible_in_catalog === false && (
+                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg" title="No se muestra en el catálogo público">
+                                            Oculto
+                                        </span>
+                                    )}
                                     {estadoStock === 'agotado' ? (
                                         <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-500 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-gray-200">
                                             Agotado

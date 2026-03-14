@@ -31,7 +31,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         min_stock: '1',
         notes: '',
         image_urls: [] as string[],
-        discount_percentage: ''
+        discount_percentage: '',
+        visible_in_catalog: true
     })
 
     // Reset form when opening/closing or changing product
@@ -53,12 +54,14 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     min_stock: productToEdit.min_stock.toString(),
                     notes: productToEdit.notes || '',
                     image_urls: urls,
-                    discount_percentage: productToEdit.discount_percentage != null ? String(productToEdit.discount_percentage) : ''
+                    discount_percentage: productToEdit.discount_percentage != null ? String(productToEdit.discount_percentage) : '',
+                    visible_in_catalog: productToEdit.visible_in_catalog !== false
                 })
             } else {
                 setFormData({
                     name: '', category_id: '', brand: '',
-                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_urls: [], discount_percentage: ''
+                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_urls: [], discount_percentage: '',
+                    visible_in_catalog: true
                 })
             }
             setErrores({})
@@ -149,7 +152,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             notes: formData.notes.trim() || null,
             image_url: imageUrls?.[0] ?? null,
             image_urls: imageUrls,
-            discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0
+            discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0,
+            visible_in_catalog: formData.visible_in_catalog
         }
         const user = await getUser()
         if (productToEdit && user?.id) {
@@ -342,6 +346,26 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                 />
                                 <p className="text-[11px] text-gray-400 mt-1">Aviso cuando el stock baje de este valor</p>
                             </div>
+                        </div>
+
+                        {/* Visible en catálogo público */}
+                        <div className="pt-1 pb-2">
+                            <label className="flex items-center gap-4 cursor-pointer has-[:checked]:[&_.track]:bg-pink-400 has-[:checked]:[&_.thumb]:translate-x-6">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.visible_in_catalog}
+                                    onChange={(e) => setFormData({ ...formData, visible_in_catalog: e.target.checked })}
+                                    className="sr-only"
+                                />
+                                <span className="relative flex h-8 w-14 flex-shrink-0">
+                                    <span className="track block h-8 w-14 rounded-full bg-gray-200 transition-colors duration-200" />
+                                    <span className="thumb absolute left-1 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-out" />
+                                </span>
+                                <span className="text-sm font-medium text-gray-700">Visible en el catálogo público</span>
+                            </label>
+                            <p className="text-xs text-gray-500 mt-3 ml-[4.5rem] leading-relaxed">
+                                Desactivá para ocultar este producto del catálogo (ideal cuando cargás algo sin precio o fotos).
+                            </p>
                         </div>
 
                         {/* Descuento en catálogo */}

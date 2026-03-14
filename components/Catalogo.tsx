@@ -162,6 +162,7 @@ export default function Catalogo() {
             .from('products')
             .select('*, categories(name)')
             .gte('stock', 0)
+            .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
             .order('name')
         if (data) setProductos(data)
         setCargando(false)

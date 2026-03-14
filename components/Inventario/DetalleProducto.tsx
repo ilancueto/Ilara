@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Producto, StockMovement, supabase, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
-import { X, Edit2, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus, DollarSign } from 'lucide-react'
+import { X, Edit2, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus, DollarSign, Eye, EyeOff } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
@@ -162,6 +162,15 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                     <Package className="w-4 h-4 text-gray-400" /> Mínimo
                                 </span>
                                 <span className="font-semibold text-gray-800">{producto.min_stock} un.</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-500 flex items-center gap-2">
+                                    {producto.visible_in_catalog !== false ? <Eye className="w-4 h-4 text-gray-400" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                                    Visible en catálogo
+                                </span>
+                                <span className={`font-semibold ${producto.visible_in_catalog !== false ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                    {producto.visible_in_catalog !== false ? 'Sí' : 'No'}
+                                </span>
                             </div>
                         </PastelCard>
 

@@ -26,6 +26,8 @@ export type Producto = {
   updated_at: string
   /** Porcentaje de descuento en catálogo (0-100). Muestra "En descuento" y precio rebajado. */
   discount_percentage?: number | null
+  /** Si false, no se muestra en el catálogo público (útil para ítems sin precio o fotos). */
+  visible_in_catalog?: boolean | null
   categories?: {
     name: string
   }
