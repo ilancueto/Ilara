@@ -76,7 +76,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link href="https://fonts.cdnfonts.com/css/mareline-script" rel="stylesheet" />
       </head>
-      <body className={`${outfit.variable} antialiased`}>
+      <body className={`${outfit.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           <ToastProvider>
             {children}

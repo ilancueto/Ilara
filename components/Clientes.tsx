@@ -388,14 +388,14 @@ export default function Clientes() {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                    <button type="button" onClick={() => abrirPerfil(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Ver perfil">
+                                <div className="flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                    <button type="button" onClick={() => abrirPerfil(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Ver perfil" aria-label="Ver perfil">
                                         <Eye className="w-4 h-4" />
                                     </button>
-                                    <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Editar">
+                                    <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Editar" aria-label="Editar cliente">
                                         <Edit2 className="w-4 h-4" />
                                     </button>
-                                    <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar">
+                                    <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>

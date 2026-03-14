@@ -303,7 +303,7 @@ export default function Catalogo() {
     }
 
     return (
-        <div className="min-h-screen w-full min-w-0 bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-[#08080b] dark:via-[#060609] dark:to-[#08080b]">
+        <div className="min-h-screen w-full min-w-0 bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-[#08080b] dark:via-[#060609] dark:to-[#08080b]" suppressHydrationWarning>
             {/* Header */}
             <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#08080b]/80 dark:backdrop-blur-md border-b border-pink-100/40 dark:border-gray-800/30 shadow-sm shadow-pink-500/5 dark:shadow-none">
                 <div className="w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5">
@@ -367,6 +367,7 @@ export default function Catalogo() {
                                 onChange={(e) => setBusqueda(e.target.value)}
                                 aria-label="Buscar productos por nombre o marca"
                                 className="w-full h-full pl-8 pr-3 py-1.5 bg-white dark:bg-gray-800/80 dark:border-gray-700/80 border border-pink-100 rounded-lg shadow-sm focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 text-sm transition-all outline-none"
+                                suppressHydrationWarning
                             />
                         </div>
                         <div ref={ordenSelectRef} className="relative w-full sm:min-w-[200px] sm:max-w-[240px] shrink-0">
@@ -379,6 +380,7 @@ export default function Catalogo() {
                                 aria-label={`Ordenar por: ${ORDEN_OPTIONS.find(o => o.value === (ordenamiento || 'nombre-asc'))?.label ?? ORDEN_OPTIONS[0].label}`}
                                 onClick={() => setOrdenSelectOpen(prev => !prev)}
                                 className="relative w-full h-9 flex items-center gap-2 pl-3 pr-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 border border-pink-100 text-left text-gray-900 dark:text-gray-100 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/40 outline-none transition-all min-w-0"
+                                suppressHydrationWarning
                             >
                                 <span className="flex-1 min-w-0 truncate">
                                     {ORDEN_OPTIONS.find(o => o.value === (ordenamiento || 'nombre-asc'))?.label ?? ORDEN_OPTIONS[0].label}
@@ -407,9 +409,9 @@ export default function Catalogo() {
                         </div>
                     </div>
 
-                    {/* Fila 2: chips de categorías + Más filtros */}
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-6">
-                        <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-1 min-w-0 -mx-1 px-1">
+                    {/* Fila 2: chips de categorías + Más filtros (mobile: chips arriba, botón abajo para no cortarse) */}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center pt-6">
+                        <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full min-w-0 -mx-1 px-1 sm:flex-1">
                             <button
                                 onClick={() => setCategoriaFiltro('all')}
                                 className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 shrink-0 ${categoriaFiltro === 'all'
@@ -430,14 +432,14 @@ export default function Catalogo() {
                                     }`}
                                     aria-pressed={categoriaFiltro === cat.id.toString()}
                                 >
-                                    {cat.name}
-                                </button>
-                            ))}
+{cat.name}
+                                        </button>
+                                    ))}
                         </div>
                         <button
                             type="button"
                             onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                            className={`shrink-0 h-9 px-3.5 rounded-lg font-medium text-sm flex items-center gap-1.5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${mostrarFiltros ? 'bg-pink-500 text-white' : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'}`}
+                            className={`w-full sm:w-auto shrink-0 h-9 px-3.5 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${mostrarFiltros ? 'bg-pink-500 text-white' : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'}`}
                             aria-expanded={mostrarFiltros}
                         >
                             {mostrarFiltros ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -514,11 +516,13 @@ export default function Catalogo() {
                                                 <Share2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <div className="p-4 flex flex-col flex-1 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-1">Combo</span>
-                                            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 mb-1.5">{combo.name}</h3>
-                                            {combo.description && <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">{combo.description}</p>}
-                                            <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                                        <div className="p-4 flex flex-col flex-1 min-h-0 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
+                                            <div className="flex-1 min-h-[4.5rem] flex flex-col">
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-1">Combo</span>
+                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 mb-1.5">{combo.name}</h3>
+                                                {combo.description ? <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{combo.description}</p> : <span className="min-h-[1.25rem]" aria-hidden />}
+                                            </div>
+                                            <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
                                                 <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${combo.sale_price.toLocaleString()}</p>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); if (disponible) startTransition(() => agregarComboAlCarrito(combo)); }}
@@ -591,11 +595,13 @@ export default function Catalogo() {
                                             <Share2 className="w-4 h-4" />
                                         </button>
                                     </div>
-                                    <div className="p-4 flex flex-col flex-1">
-                                        {producto.categories && <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 dark:text-pink-400 mb-1">{producto.categories.name}</span>}
-                                        <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 mb-1.5">{producto.name}</h3>
-                                        {producto.brand && <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{producto.brand}</p>}
-                                        <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                                    <div className="p-4 flex flex-col flex-1 min-h-0">
+                                        <div className="flex-1 min-h-[4.5rem] flex flex-col">
+                                            {producto.categories ? <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 dark:text-pink-400 mb-1">{producto.categories.name}</span> : <span className="min-h-[0.875rem]" aria-hidden />}
+                                            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 mb-1.5">{producto.name}</h3>
+                                            {producto.brand ? <p className="text-xs text-gray-500 dark:text-gray-400">{producto.brand}</p> : <span className="min-h-[1rem]" aria-hidden />}
+                                        </div>
+                                        <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
                                             <div className="min-w-0">
                                                 {(producto.discount_percentage ?? 0) > 0 ? (
                                                     <><p className="text-xs text-gray-400 dark:text-gray-500 line-through">${producto.sale_price.toLocaleString()}</p><p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${getPrecioConDescuento(producto).toLocaleString()}</p></>

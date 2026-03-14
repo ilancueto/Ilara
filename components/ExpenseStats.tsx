@@ -78,14 +78,14 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <PastelCard className="flex flex-col p-5 sm:p-6 min-h-[320px]">
-                    <div className="flex items-center gap-2.5 mb-5">
+                    <div className="flex items-center gap-2.5 mb-4 sm:mb-5 pt-1">
                         <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500/20 to-rose-500/20 dark:from-pink-500/30 dark:to-rose-500/30 text-pink-500 dark:text-pink-400">
                             <span className="text-base leading-none">📊</span>
                         </span>
                         <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Top Categorías</h3>
                     </div>
                     {stats.topCategories.length > 0 ? (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 mt-2 sm:mt-0">
                             {stats.topCategories.slice(0, 5).map((item, index) => {
                                 const percentage = stats.totalMonth > 0 ? (item.total / stats.totalMonth) * 100 : 0;
                                 return (
