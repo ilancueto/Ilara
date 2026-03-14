@@ -386,19 +386,18 @@ export default function Catalogo() {
                 </div>
             </header>
 
-            {/* Hero / bienvenida */}
-            <section className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-2">
-                <div className="max-w-3xl mx-auto text-center">
+            {/* Contenedor principal: ancho completo para aprovechar todo el espacio */}
+            <div className="w-full px-4 sm:px-6 lg:px-8">
+                {/* Hero / bienvenida */}
+                <section className="pt-8 pb-2 text-center">
                     <p className="text-pink-600/90 font-semibold text-sm uppercase tracking-widest mb-1">Catálogo</p>
                     <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Bienvenidos a Ilara Beauty</h2>
                     <p className="text-gray-500 text-sm sm:text-base mt-2">Elegí lo que te guste y pedilo por WhatsApp</p>
-                </div>
-            </section>
+                </section>
 
-            {/* Búsqueda y filtros */}
-            <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-                <div className="flex justify-center w-full mb-10px">
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:max-w-2xl">
+                {/* Búsqueda y filtros */}
+                <div className="py-6">
+                    <div className="flex flex-col sm:flex-row gap-4 w-full mb-10px">
                         <div className="relative flex-1 min-w-0">
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 pointer-events-none">
                                 <Search className="w-5 h-5 text-gray-400" />
@@ -422,7 +421,6 @@ export default function Catalogo() {
                             Filtros
                         </button>
                     </div>
-                </div>
 
                 {mostrarFiltros && (
                     <PastelCard className="mb-6 p-6 animate-fade-in-scale" noHover>
@@ -492,10 +490,10 @@ export default function Catalogo() {
                                         </button>
                                     ))}
                 </div>
-            </div>
+                </div>
 
-            {/* Grid de productos */}
-            <div className="w-full px-4 sm:px-6 lg:px-8 pb-32">
+                {/* Grid de productos */}
+                <div className="w-full pb-32">
                 {cargando ? (
                     <div className="flex flex-col items-center justify-center py-24">
                         <div className="w-14 h-14 border-4 border-pink-200 border-t-pink-500 rounded-full animate-spin mb-6" />
@@ -686,6 +684,7 @@ export default function Catalogo() {
                         </button>
                     </div>
                 )}
+                </div>
             </div>
 
             {/* Botón flotante carrito */}
