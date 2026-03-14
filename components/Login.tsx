@@ -26,9 +26,11 @@ export default function Login() {
     const [showPasskeyModal, setShowPasskeyModal] = useState(false)
     const [showNoMostrarConfirm, setShowNoMostrarConfirm] = useState(false)
 
+    /* eslint-disable react-hooks/set-state-in-effect -- detect passkey support on mount */
     useEffect(() => {
         setPasskeyDisponible(isPasskeySupported())
     }, [])
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()

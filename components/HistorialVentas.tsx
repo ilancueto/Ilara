@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase, getUser, Venta, ItemVenta, Cliente } from '@/lib/supabase'
 import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, CheckCircle } from 'lucide-react'
 import { format, startOfDay, startOfWeek, startOfMonth } from 'date-fns'
@@ -27,19 +27,7 @@ export default function HistorialVentas() {
     const [ventasSeleccionadas, setVentasSeleccionadas] = useState<Set<number>>(new Set())
     const [eliminando, setEliminando] = useState(false)
 
-    useEffect(() => {
-        obtenerVentas()
-    }, [filtroFecha, filtroPorCobrar])
-
-    useEffect(() => {
-        const cargarClientes = async () => {
-            const { data } = await supabase.from('customers').select('*').order('first_name')
-            if (data) setClientes(data)
-        }
-        cargarClientes()
-    }, [])
-
-    const obtenerVentas = async () => {
+    const obtenerVentas = useCallback(async () => {
         setCargando(true)
 
         let query = supabase
@@ -60,7 +48,19 @@ export default function HistorialVentas() {
         const { data } = await query
         if (data) setVentas(data)
         setCargando(false)
-    }
+    }, [filtroFecha])
+
+    useEffect(() => {
+        obtenerVentas()
+    }, [obtenerVentas])
+
+    useEffect(() => {
+        const cargarClientes = async () => {
+            const { data } = await supabase.from('customers').select('*').order('first_name')
+            if (data) setClientes(data)
+        }
+        cargarClientes()
+    }, [])
 
     const obtenerItemsVenta = async (ventaId: number) => {
         const { data } = await supabase

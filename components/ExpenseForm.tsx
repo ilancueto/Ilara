@@ -1,6 +1,7 @@
 'use client';
 
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import { ExpenseFormData, ExpenseCategory, PaymentMethod, EXPENSE_CATEGORY_LABELS, PAYMENT_METHOD_LABELS, Expense } from '@/lib/types';
 import { getCategoryIcon } from '@/lib/expenseUtils';
 import { X, Upload, Trash2 } from 'lucide-react';
@@ -44,6 +45,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: 
     };
 
     const [mounted, setMounted] = useState(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard for modal
     useEffect(() => setMounted(true), []);
 
     const modalContent = (
@@ -168,7 +170,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: 
                                 {receiptPreview ? (
                                     <div className="flex items-center gap-3 p-2 border border-pink-200 rounded-xl bg-pink-50">
                                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border border-pink-100 flex-shrink-0">
-                                            <img src={receiptPreview} alt="Preview" className="w-full h-full object-cover" />
+                                            <Image src={receiptPreview} alt="Preview" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                                         </div>
                                         <span className="text-xs text-pink-700 truncate flex-1">Comprobante cargado</span>
                                         <button

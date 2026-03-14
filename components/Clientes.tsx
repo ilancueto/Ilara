@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase, getUser, Cliente, Venta, ItemVenta } from '@/lib/supabase'
 import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt, ChevronDown, ChevronUp } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { format, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
-import Tooltip from './Tooltip'
 import { PastelCard } from '@/components/ui/PastelCard'
 
 type ClienteStats = {
@@ -40,11 +39,7 @@ export default function Clientes() {
         phone: ''
     })
 
-    useEffect(() => {
-        obtenerClientes()
-    }, [])
-
-    const obtenerClientes = async () => {
+    const obtenerClientes = useCallback(async () => {
         setCargando(true)
         const { data, error } = await supabase
             .from('customers')
@@ -56,7 +51,11 @@ export default function Clientes() {
             await obtenerStatsClientes(data)
         }
         setCargando(false)
-    }
+    }, [])
+
+    useEffect(() => {
+        obtenerClientes()
+    }, [obtenerClientes])
 
     const obtenerStatsClientes = async (clientes: Cliente[]) => {
         const statsMap = new Map<number, ClienteStats>()

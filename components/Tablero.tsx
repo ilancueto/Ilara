@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { supabase, Producto, Venta, ItemVenta, getProductImages } from '@/lib/supabase'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ShoppingBag, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
@@ -32,6 +33,7 @@ export default function Tablero() {
 
     useEffect(() => {
         cargarDatos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
     }, [])
 
     const cargarDatos = async () => {
@@ -498,7 +500,7 @@ export default function Tablero() {
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-lg bg-white flex-shrink-0 overflow-hidden flex items-center justify-center relative border border-amber-100">
                                             {(getProductImages(prod)[0]) ? (
-                                                <img src={getProductImages(prod)[0]} alt={prod.name} className="w-full h-full object-cover" />
+                                                <Image src={getProductImages(prod)[0]} alt={prod.name} width={40} height={40} className="w-full h-full object-cover" />
                                             ) : (
                                                 <AlertTriangle className="w-5 h-5 text-amber-300" />
                                             )}

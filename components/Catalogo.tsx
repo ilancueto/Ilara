@@ -83,13 +83,48 @@ export default function Catalogo() {
         } catch {
             showToast('error', 'Error de conexión')
         }
-    }, [getOrCreateDeviceId, showToast])
+    }, [getOrCreateDeviceId, showToast, setEasterModal])
 
+    const obtenerProductos = useCallback(async () => {
+        setCargando(true)
+        const { data } = await supabase
+            .from('products')
+            .select('*, categories(name)')
+            .gte('stock', 0)
+            .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
+            .order('name')
+        if (data) setProductos(data)
+        setCargando(false)
+    }, [])
+
+    const obtenerCombos = useCallback(async () => {
+        const { data } = await supabase
+            .from('combos')
+            .select(`
+                *,
+                combo_items (id, product_id, quantity, products (*))
+            `)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+        if (data) setCombos(data as ComboConItems[])
+    }, [])
+
+    const obtenerCategorias = useCallback(async () => {
+        const { data } = await supabase
+            .from('categories')
+            .select('*')
+            .order('name')
+        if (data) setCategorias(data)
+    }, [])
+
+    // Carga inicial de productos, combos y categorías
+    /* eslint-disable react-hooks/set-state-in-effect -- initial data load on mount */
     useEffect(() => {
         obtenerProductos()
         obtenerCombos()
         obtenerCategorias()
-    }, [])
+    }, [obtenerProductos, obtenerCombos, obtenerCategorias])
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     useEffect(() => {
         if (ordenamiento !== 'vendidos-desc') return
@@ -104,18 +139,6 @@ export default function Catalogo() {
         }
         fetchVentas()
     }, [ordenamiento])
-
-    const obtenerCombos = async () => {
-        const { data } = await supabase
-            .from('combos')
-            .select(`
-                *,
-                combo_items (id, product_id, quantity, products (*))
-            `)
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-        if (data) setCombos(data as ComboConItems[])
-    }
 
     // Al salir del catálogo, vaciar el carrito para no arrastrar pedidos viejos
     useEffect(() => {
@@ -156,26 +179,6 @@ export default function Catalogo() {
         }
     }, [triggerEaster])
 
-    const obtenerProductos = async () => {
-        setCargando(true)
-        const { data } = await supabase
-            .from('products')
-            .select('*, categories(name)')
-            .gte('stock', 0)
-            .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
-            .order('name')
-        if (data) setProductos(data)
-        setCargando(false)
-    }
-
-    const obtenerCategorias = async () => {
-        const { data } = await supabase
-            .from('categories')
-            .select('*')
-            .order('name')
-        if (data) setCategorias(data)
-    }
-
     // Badge "Nuevo" durante 7 días desde created_at
     const esNuevo = (fecha: string) => {
         const ahora = new Date()
@@ -205,9 +208,11 @@ export default function Catalogo() {
     }
 
     // Reset página cuando cambian filtros o búsqueda
+    /* eslint-disable react-hooks/set-state-in-effect -- reset page index when filters change */
     useEffect(() => {
         setPaginaActual(1)
     }, [categoriaFiltro, busqueda, precioMin, precioMax, ordenamiento])
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     // Scroll al top al cambiar de página
     useEffect(() => {
@@ -332,7 +337,8 @@ export default function Catalogo() {
     const compartirProducto = (producto: Producto) => {
         const precio = getPrecioConDescuento(producto)
         const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${precio.toLocaleString()}%0A%0A¿Te interesa?`
-        window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
+        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
+        window.open(url, '_blank', 'noopener,noreferrer')
     }
 
     return (
@@ -519,7 +525,7 @@ export default function Catalogo() {
                                             <div className="mt-auto pt-4 border-t border-pink-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                 <p className="text-xl font-extrabold text-gray-900">${combo.sale_price.toLocaleString()}</p>
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); disponible && startTransition(() => agregarComboAlCarrito(combo)); }}
+                                                    onClick={(e) => { e.stopPropagation(); if (disponible) startTransition(() => agregarComboAlCarrito(combo)); }}
                                                     disabled={!disponible}
                                                     className="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                                                     aria-label={disponible ? `Agregar ${combo.name}` : `${combo.name}: agotado`}

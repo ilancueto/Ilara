@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getExpenses } from '@/lib/expenseService'
-import { Download, X, Database, FileJson, FileSpreadsheet } from 'lucide-react'
+import { X, Database, FileJson, FileSpreadsheet } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 
 interface Props {

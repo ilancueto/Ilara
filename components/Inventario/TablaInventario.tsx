@@ -22,11 +22,6 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
         return 'ok'
     }
 
-    const obtenerMargen = (producto: Producto) => {
-        if (!producto.purchase_price) return null
-        return Math.round(((producto.sale_price - producto.purchase_price) / producto.sale_price) * 100)
-    }
-
     if (loading) {
         return (
 
@@ -60,7 +55,6 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 sm:gap-10 animate-fade-in pb-20">
             {productos.map(producto => {
                 const estadoStock = obtenerEstadoStock(producto)
-                const margen = obtenerMargen(producto)
 
                 return (
                     <div key={producto.id} className="group h-full relative cursor-pointer" onClick={() => onView(producto)}>

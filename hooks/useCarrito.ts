@@ -23,6 +23,7 @@ export function useCarrito(showToast: ShowToast) {
             const updatedAt = localStorage.getItem(STORAGE_UPDATED_AT)
             const isExpired = updatedAt ? Date.now() - parseInt(updatedAt, 10) > CART_TTL_MS : false
             if (raw && !isExpired) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate cart from localStorage
                 setCarrito(JSON.parse(raw))
             } else if (isExpired && raw) {
                 localStorage.removeItem(STORAGE_KEY)
@@ -70,7 +71,7 @@ export function useCarrito(showToast: ShowToast) {
         })
         setBadgeAnimado(true)
         setTimeout(() => setBadgeAnimado(false), 500)
-    }, [showToast])
+    }, [])
 
     const agregarComboAlCarrito = useCallback((combo: ComboConItems) => {
         setCarrito(prev => {
@@ -86,7 +87,7 @@ export function useCarrito(showToast: ShowToast) {
         })
         setBadgeAnimado(true)
         setTimeout(() => setBadgeAnimado(false), 500)
-    }, [showToast])
+    }, [])
 
     const actualizarCantidad = useCallback((productoId: number, cambio: number) => {
         setCarrito(prev => prev.map(item => {
@@ -102,7 +103,7 @@ export function useCarrito(showToast: ShowToast) {
             }
             return { ...item, cantidad: nuevaCantidad }
         }).filter(item => item.cantidad > 0))
-    }, [showToast])
+    }, [])
 
     const actualizarCantidadCombo = useCallback((comboId: number, cambio: number) => {
         setCarrito(prev => prev.map(item => {
@@ -114,7 +115,7 @@ export function useCarrito(showToast: ShowToast) {
             }
             return { ...item, cantidad: nuevaCantidad }
         }).filter(item => item.cantidad > 0))
-    }, [showToast])
+    }, [])
 
     const quitarDelCarrito = useCallback((productoId: number) => {
         setCarrito(prev => prev.filter(item => item.producto?.id !== productoId))

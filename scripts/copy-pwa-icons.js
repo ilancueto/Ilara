@@ -4,7 +4,7 @@
  * para que la PWA no devuelva 404. Ejecutar: node scripts/copy-pwa-icons.js
  * (Para tamaños exactos 192/512/180, usar una herramienta externa de redimensionado.)
  */
-
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs')
 const path = require('path')
 

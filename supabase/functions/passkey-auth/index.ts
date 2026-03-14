@@ -235,7 +235,7 @@ serve(async (req: Request) => {
         }
 
         let allowCredentials: { id: string; type: 'public-key' }[] | undefined;
-        let userEmail = email as string | undefined;
+        const userEmail = email as string | undefined;
 
         if (email) {
           const { data: users } = await supabaseAdmin.auth.admin.listUsers();

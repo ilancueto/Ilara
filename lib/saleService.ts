@@ -61,7 +61,7 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
       try {
         const path = receiptUrl.split('/').pop()
         if (path) await supabase.storage.from('receipts').remove([path])
-      } catch (_) {}
+      } catch {}
       const fallbackPayload = { ...updatePayload } as Record<string, unknown>
       delete fallbackPayload.receipt_url
       const { data: fallbackUpdated, error: fallbackError } = await supabase
@@ -81,7 +81,7 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
       try {
         const path = receiptUrl.split('/').pop()
         if (path) await supabase.storage.from('receipts').remove([path])
-      } catch (_) {}
+      } catch {}
     }
     throw error
   }
@@ -129,6 +129,6 @@ export async function deleteSale(saleId: number): Promise<void> {
     try {
       const path = sale.receipt_url.split('/').pop()
       if (path) await supabase.storage.from('receipts').remove([path])
-    } catch (_) {}
+    } catch {}
   }
 }

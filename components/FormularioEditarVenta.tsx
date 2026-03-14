@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Venta } from '@/lib/supabase'
 import { Cliente } from '@/lib/supabase'
 import { updateSale, SaleUpdateData } from '@/lib/saleService'
@@ -227,7 +228,7 @@ export default function FormularioEditarVenta({
                   {receiptPreview.startsWith('data:') || receiptPreview.startsWith('http') ? (
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-pink-100 flex-shrink-0">
                       {receiptPreview.startsWith('data:') && receiptPreview.includes('image') ? (
-                        <img src={receiptPreview} alt="Preview" className="w-full h-full object-cover" />
+                        <Image src={receiptPreview} alt="Preview" width={48} height={48} className="w-full h-full object-cover" unoptimized />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-pink-500">
                           <FileText className="w-6 h-6" />

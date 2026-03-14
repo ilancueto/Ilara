@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { LayoutDashboard, Package, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
 
@@ -176,9 +177,11 @@ function HomeContent() {
             <div className={`relative transition-transform hover:scale-105 duration-300 flex items-center justify-center ${logoError ? 'flex-col gap-2' : 'w-64 h-32 mb-2'}`}>
               {/* Logo Image or Fallback */}
               {!logoError ? (
-                <img
+                <Image
                   src="/logo_icon.png"
                   alt="Ilara Beauty"
+                  width={256}
+                  height={128}
                   className="w-full h-full object-contain"
                   onError={() => setLogoError(true)}
                 />
@@ -259,9 +262,11 @@ function HomeContent() {
         <div className="md:hidden flex items-center justify-between px-5 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-pink-100">
           <div className="flex items-center gap-2 min-h-[32px]">
             {!logoError ? (
-              <img
+              <Image
                 src="/logo_icon.png"
                 alt="Ilara Beauty"
+                width={200}
+                height={48}
                 className="h-12 w-auto max-w-[200px] object-contain object-left"
                 onError={() => setLogoError(true)}
               />

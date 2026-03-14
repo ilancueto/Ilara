@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Income, IncomeFormData, IncomeType, INCOME_TYPE_LABELS } from '@/lib/types'
 import { getIncomes, createIncome, updateIncome, deleteIncome } from '@/lib/incomeService'
@@ -51,7 +51,7 @@ export default function Ingresos() {
     notes: '',
   })
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const data = await getIncomes({
@@ -66,9 +66,9 @@ export default function Ingresos() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [dateFrom, dateTo, typeFilter, showError])
 
-  useEffect(() => { load() }, [dateFrom, dateTo, typeFilter])
+  useEffect(() => { load() }, [load])
 
   const openNew = () => {
     setEditing(null)

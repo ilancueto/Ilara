@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase, Cupon } from '@/lib/supabase'
 import { X, Plus, Trash2, Tag } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
@@ -18,19 +18,21 @@ export default function GestionCupones({ mostrar, cerrar }: Props) {
     const [porcentaje, setPorcentaje] = useState('')
     const [cargando, setCargando] = useState(false)
 
-    useEffect(() => {
-        if (mostrar) {
-            obtenerCupones()
-        }
-    }, [mostrar])
-
-    const obtenerCupones = async () => {
+    const obtenerCupones = useCallback(async () => {
         const { data, error } = await supabase
             .from('coupons')
             .select('*')
             .order('created_at', { ascending: false })
         if (!error && data) setCupones(data)
-    }
+    }, [])
+
+    /* eslint-disable react-hooks/set-state-in-effect -- load coupons when modal opens */
+    useEffect(() => {
+        if (mostrar) {
+            obtenerCupones()
+        }
+    }, [mostrar, obtenerCupones])
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const codigoNormalizado = (c: string) => c.trim().toUpperCase()
 

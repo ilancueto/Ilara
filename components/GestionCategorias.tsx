@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase, Categoria } from '@/lib/supabase'
 import { X, Plus, Edit2, Trash2, FolderOpen } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
@@ -19,19 +19,21 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
     const [nombre, setNombre] = useState('')
     const [cargando, setCargando] = useState(false)
 
-    useEffect(() => {
-        if (mostrar) {
-            obtenerCategorias()
-        }
-    }, [mostrar])
-
-    const obtenerCategorias = async () => {
+    const obtenerCategorias = useCallback(async () => {
         const { data, error } = await supabase
             .from('categories')
             .select('*')
             .order('name')
         if (!error && data) setCategorias(data)
-    }
+    }, [])
+
+    /* eslint-disable react-hooks/set-state-in-effect -- load categories when modal opens */
+    useEffect(() => {
+        if (mostrar) {
+            obtenerCategorias()
+        }
+    }, [mostrar, obtenerCategorias])
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const handleCrear = async () => {
         if (!nombre.trim()) return

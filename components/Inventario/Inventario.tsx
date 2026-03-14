@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle } from 'lucide-react'
 import GestionCategorias from '../GestionCategorias'
@@ -58,6 +59,7 @@ export default function Inventario() {
 
     useEffect(() => {
         obtenerData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
     }, [])
 
     const obtenerData = async () => {
@@ -427,7 +429,7 @@ export default function Inventario() {
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-lg bg-white flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100">
                                         {getProductImages(prod)[0] ? (
-                                            <img src={getProductImages(prod)[0]} alt={prod.name} className="w-full h-full object-cover" />
+                                            <Image src={getProductImages(prod)[0]} alt={prod.name} width={40} height={40} className="w-full h-full object-cover" />
                                         ) : (
                                             <AlertTriangle className="w-5 h-5 text-amber-300" />
                                         )}

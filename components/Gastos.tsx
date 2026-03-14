@@ -4,7 +4,7 @@
 // COMPONENTE PRINCIPAL: GASTOS (PASTEL)
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Expense, ExpenseFormData, ExpenseFilters } from '@/lib/types';
 import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats } from '@/lib/expenseService';
 import { exportToCSV } from '@/lib/expenseUtils';
@@ -32,7 +32,7 @@ export default function Gastos() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Cargar gastos
-    const loadExpenses = async () => {
+    const loadExpenses = useCallback(async () => {
         try {
             setIsLoading(true);
             const data = await getExpenses(filters);
@@ -43,7 +43,7 @@ export default function Gastos() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filters, showError]);
 
     // Cargar estadísticas
     const loadStats = async () => {
@@ -57,7 +57,7 @@ export default function Gastos() {
 
     useEffect(() => {
         loadExpenses();
-    }, [filters]);
+    }, [loadExpenses]);
 
     useEffect(() => {
         loadStats();
