@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "pwa-icons": "node scripts/copy-pwa-icons.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
     "@serwist/next": "^9.5.6",
@@ -29,6 +31,7 @@
     "supakeys": "^0.1.7"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.1.6",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/canvas-confetti": "^1.9.0",
@@ -36,6 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4.2.1",

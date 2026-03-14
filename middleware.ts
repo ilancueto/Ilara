@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { getEnv } from '@/lib/env';
 
 const PUBLIC_ROUTES = ['/login', '/catalogo', '/api/easter-claim'];
 
@@ -8,8 +9,8 @@ export async function middleware(request: NextRequest) {
     let response = NextResponse.next({ request });
 
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        getEnv('NEXT_PUBLIC_SUPABASE_URL'),
+        getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
         {
             cookies: {
                 get(name: string) {
@@ -48,6 +49,7 @@ export async function middleware(request: NextRequest) {
     return response;
 }
 
+// No ejecutar middleware en estáticos, PWA (sw, offline) ni assets
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|sw\\.js|swe-worker|~offline|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
 };

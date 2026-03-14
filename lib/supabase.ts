@@ -1,7 +1,8 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { getEnv } from '@/lib/env'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
+const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
 // Usar createBrowserClient para que la sesión se guarde en cookies
 // y el middleware pueda leerla al proteger rutas

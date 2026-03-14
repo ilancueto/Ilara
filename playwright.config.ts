@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: 'html',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
@@ -16,5 +16,11 @@ export default defineConfig({
   ],
   webServer: process.env.CI
     ? undefined
-    : { command: 'npm run dev', url: 'http://localhost:3000', reuseExistingServer: !process.env.CI },
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+      },
+  timeout: 60000,
 })

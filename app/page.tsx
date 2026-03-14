@@ -1,17 +1,30 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Tablero from '@/components/Tablero'
-import Inventory from '@/components/Inventario/Inventario'
-import Ventas from '@/components/Ventas'
-import Clientes from '@/components/Clientes'
-import Gastos from '@/components/Gastos'
-import Ingresos from '@/components/Ingresos'
 import Link from 'next/link'
 import { LayoutDashboard, Package, LogOut, Menu, X, Users, Wallet, TrendingUp, Sparkles, Store } from 'lucide-react'
 import { getUser, signOut } from '@/lib/supabase'
 
+const Tablero = dynamic(() => import('@/components/Tablero'), {
+  loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando...</span></div>,
+})
+const Inventory = dynamic(() => import('@/components/Inventario/Inventario'), {
+  loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando inventario...</span></div>,
+})
+const Ventas = dynamic(() => import('@/components/Ventas'), {
+  loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando ventas...</span></div>,
+})
+const Clientes = dynamic(() => import('@/components/Clientes'), {
+  loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando clientes...</span></div>,
+})
+const Gastos = dynamic(() => import('@/components/Gastos'), {
+  loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando gastos...</span></div>,
+})
+const Ingresos = dynamic(() => import('@/components/Ingresos'), {
+  loading: () => <div className="flex items-center justify-center min-h-[40vh] text-pink-400"><span className="animate-pulse">Cargando ingresos...</span></div>,
+})
 function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()

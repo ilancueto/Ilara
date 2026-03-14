@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { spawnSync } from 'node:child_process';
 import withSerwistInit from '@serwist/next';
+import bundleAnalyzer from '@next/bundle-analyzer';
 
 const revision = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' }).stdout?.trim() ?? 'offline';
 
@@ -9,6 +10,10 @@ const withSerwist = withSerwistInit({
   swSrc: 'app/sw.ts',
   swDest: 'public/sw.js',
   disable: process.env.NODE_ENV === 'development',
+});
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
 });
 
 const nextConfig: NextConfig = {
@@ -22,6 +27,18 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.vercel-insights.com https://vitals.vercel-insights.com",
+              "img-src 'self' data: https: blob:",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
         ],
       },
     ];
@@ -46,7 +63,9 @@ const nextConfig: NextConfig = {
     ],
   },
   reactCompiler: true,
-  turbopack: {},
+  turbopack: {
+    root: __dirname,
+  },
 };
 
-export default withSerwist(nextConfig);
+export default withBundleAnalyzer(withSerwist(nextConfig));

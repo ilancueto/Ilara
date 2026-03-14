@@ -3,7 +3,9 @@ import {
   getCategoryIcon,
   getCategoryLabel,
   getCategoryColor,
+  getPaymentMethodLabel,
   formatCurrency,
+  formatDate,
   calculatePercentageChange,
   getMonthName,
 } from '../expenseUtils'
@@ -59,6 +61,30 @@ describe('expenseUtils', () => {
       const name = getMonthName(new Date(2024, 0, 15))
       expect(name).toBeDefined()
       expect(name.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('getPaymentMethodLabel', () => {
+    it('returns label for payment method', () => {
+      expect(getPaymentMethodLabel('efectivo')).toBeDefined()
+      expect(getPaymentMethodLabel('transferencia')).toBeDefined()
+    })
+  })
+
+  describe('formatDate', () => {
+    it('formats ISO date string to es-AR', () => {
+      const formatted = formatDate('2024-03-15')
+      expect(formatted).toBeDefined()
+      expect(formatted).toMatch(/\d/)
+    })
+  })
+
+  describe('calculatePercentageChange edge cases', () => {
+    it('handles negative current with positive previous', () => {
+      expect(calculatePercentageChange(-50, 100)).toBe(-150)
+    })
+    it('handles same value', () => {
+      expect(calculatePercentageChange(100, 100)).toBe(0)
     })
   })
 })
