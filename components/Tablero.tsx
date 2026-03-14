@@ -306,7 +306,10 @@ export default function Tablero() {
                                             color: '#1f2937'
                                         }}
                                         cursor={{ fill: 'rgba(236, 72, 153, 0.06)' }}
-                                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ventas']}
+                                        formatter={(value: unknown) => {
+                                            const n = typeof value === 'number' && Number.isFinite(value) ? value : 0
+                                            return [`$${n.toLocaleString()}`, 'Ventas']
+                                        }}
                                     />
                                     <Bar
                                         dataKey="total"
