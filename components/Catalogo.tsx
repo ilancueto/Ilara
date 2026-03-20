@@ -6,6 +6,12 @@ import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, 
 import Image from 'next/image'
 import Link from 'next/link'
 import { WHATSAPP_NUMBER } from '@/lib/config'
+import {
+    priceWithProductDiscount,
+    cartSubtotal,
+    couponDiscountFromPercent,
+    totalAfterCoupon,
+} from '@/lib/catalogPricing'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
@@ -15,6 +21,7 @@ import { ModalImagenPrevia } from '@/components/Catalogo/ModalImagenPrevia'
 import { ModalDetalleCombo } from '@/components/Catalogo/ModalDetalleCombo'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
 import { useCarrito } from '@/hooks/useCarrito'
+import { useCatalogData } from '@/hooks/useCatalogData'
 import ThemeSwitch from '@/components/ThemeSwitch'
 
 const PRODUCTOS_POR_PAGINA = 15
@@ -39,15 +46,19 @@ export default function Catalogo() {
         baseShowToast(type, message, 4000, action)
     }, [baseShowToast])
     const { carrito, agregarAlCarrito, agregarComboAlCarrito, quitarDelCarrito, quitarComboDelCarrito, actualizarCantidad, actualizarCantidadCombo, clearCarrito, mantenerSoloProductosDisponibles, badgeAnimado } = useCarrito(showToast)
-    const [productos, setProductos] = useState<Producto[]>([])
-    const [combos, setCombos] = useState<ComboConItems[]>([])
-    const [categorias, setCategorias] = useState<Categoria[]>([])
     const [categoriaFiltro, setCategoriaFiltro] = useState<string>('all')
     const [busqueda, setBusqueda] = useState('')
-    const [cargando, setCargando] = useState(true)
     const [precioMin, setPrecioMin] = useState<number>(0)
     const [precioMax, setPrecioMax] = useState<number>(999999)
     const [ordenamiento, setOrdenamiento] = useState<string>('nombre-asc')
+    const {
+        productos,
+        combos,
+        categorias,
+        cargando,
+        ventasPorProducto,
+        obtenerProductos,
+    } = useCatalogData(ordenamiento)
     const [imagenPrevia, setImagenPrevia] = useState<{ images: string[]; index: number } | null>(null)
     const [indiceImagenPorProducto, setIndiceImagenPorProducto] = useState<Record<number, number>>({})
     const touchSwipeRef = useRef<{ productId: number; x: number; count: number } | null>(null)
@@ -59,62 +70,6 @@ export default function Catalogo() {
     const [cuponInput, setCuponInput] = useState('')
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
     const [paginaActual, setPaginaActual] = useState(1)
-    const [ventasPorProducto, setVentasPorProducto] = useState<Map<number, number>>(new Map())
-
-    const obtenerProductos = useCallback(async () => {
-        setCargando(true)
-        const { data } = await supabase
-            .from('products')
-            .select('*, categories(name)')
-            .gte('stock', 0)
-            .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
-            .order('name')
-        if (data) setProductos(data)
-        setCargando(false)
-    }, [])
-
-    const obtenerCombos = useCallback(async () => {
-        const { data } = await supabase
-            .from('combos')
-            .select(`
-                *,
-                combo_items (id, product_id, quantity, products (*))
-            `)
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-        if (data) setCombos(data as ComboConItems[])
-    }, [])
-
-    const obtenerCategorias = useCallback(async () => {
-        const { data } = await supabase
-            .from('categories')
-            .select('*')
-            .order('name')
-        if (data) setCategorias(data)
-    }, [])
-
-    // Carga inicial de productos, combos y categorías
-    /* eslint-disable react-hooks/set-state-in-effect -- initial data load on mount */
-    useEffect(() => {
-        obtenerProductos()
-        obtenerCombos()
-        obtenerCategorias()
-    }, [obtenerProductos, obtenerCombos, obtenerCategorias])
-    /* eslint-enable react-hooks/set-state-in-effect */
-
-    useEffect(() => {
-        if (ordenamiento !== 'vendidos-desc') return
-        const fetchVentas = async () => {
-            const { data } = await supabase.from('sale_items').select('product_id, quantity').not('product_id', 'is', null)
-            const map = new Map<number, number>()
-            for (const row of data || []) {
-                const id = row.product_id as number
-                map.set(id, (map.get(id) ?? 0) + (row.quantity ?? 0))
-            }
-            setVentasPorProducto(map)
-        }
-        fetchVentas()
-    }, [ordenamiento])
 
     // Al salir del catálogo, vaciar el carrito para no arrastrar pedidos viejos
     useEffect(() => {
@@ -137,11 +92,8 @@ export default function Catalogo() {
         return dias <= 7
     }
 
-    const getPrecioConDescuento = (producto: Producto): number => {
-        const d = producto.discount_percentage ?? 0
-        if (d <= 0) return producto.sale_price
-        return Math.round(producto.sale_price * (1 - d / 100))
-    }
+    const getPrecioConDescuento = (producto: Producto): number =>
+        priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
 
     const obtenerBadges = (producto: Producto): Array<{ texto: string; clase: string }> => {
         const badges: Array<{ texto: string; clase: string }> = []
@@ -216,12 +168,18 @@ export default function Catalogo() {
         showToast('info', 'Carrito vaciado')
     }
 
-    const subtotal = carrito.reduce((sum, item) => {
-        const precio = item.producto ? getPrecioConDescuento(item.producto) : (item.combo?.sale_price ?? 0)
-        return sum + precio * item.cantidad
-    }, 0)
-    const descuentoCupon = appliedCoupon ? Math.round(subtotal * (appliedCoupon.discount_percentage / 100)) : 0
-    const total = subtotal - descuentoCupon
+    const subtotal = cartSubtotal(
+        carrito.map(item => ({
+            unitPrice: item.producto
+                ? getPrecioConDescuento(item.producto)
+                : (item.combo?.sale_price ?? 0),
+            quantity: item.cantidad,
+        }))
+    )
+    const descuentoCupon = appliedCoupon
+        ? couponDiscountFromPercent(subtotal, appliedCoupon.discount_percentage)
+        : 0
+    const total = totalAfterCoupon(subtotal, descuentoCupon)
 
     const aplicarCupon = async () => {
         const code = cuponInput.trim().toUpperCase()

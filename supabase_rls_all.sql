@@ -59,3 +59,47 @@ DROP POLICY IF EXISTS "Authenticated can manage coupons" ON coupons;
 CREATE POLICY "Authenticated can manage coupons"
   ON coupons FOR ALL TO authenticated
   USING (true) WITH CHECK (true);
+
+-- ========== COMBOS (catálogo público + panel autenticado) ==========
+-- Requiere que existan las tablas combos / combo_items (ver supabase_combos.sql).
+ALTER TABLE combos ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anon read active combos" ON combos;
+DROP POLICY IF EXISTS "Authenticated manage combos" ON combos;
+CREATE POLICY "Anon read active combos"
+  ON combos FOR SELECT TO anon
+  USING (is_active = true);
+CREATE POLICY "Authenticated manage combos"
+  ON combos FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
+
+-- ========== COMBO_ITEMS ==========
+ALTER TABLE combo_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anon read combo_items for active combos" ON combo_items;
+DROP POLICY IF EXISTS "Authenticated manage combo_items" ON combo_items;
+CREATE POLICY "Anon read combo_items for active combos"
+  ON combo_items FOR SELECT TO anon
+  USING (
+    EXISTS (
+      SELECT 1 FROM combos c
+      WHERE c.id = combo_items.combo_id AND c.is_active = true
+    )
+  );
+CREATE POLICY "Authenticated manage combo_items"
+  ON combo_items FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
+
+-- ========== PRODUCTS: lectura anónima alineada con el catálogo público ==========
+-- Misma intención que .or('visible_in_catalog.eq.true,visible_in_catalog.is.null') y stock >= 0 en Catalogo.tsx
+DROP POLICY IF EXISTS "Anon catalog read products" ON products;
+CREATE POLICY "Anon catalog read products"
+  ON products FOR SELECT TO anon
+  USING (
+    (visible_in_catalog IS NULL OR visible_in_catalog = true)
+    AND stock >= 0
+  );
+
+-- ========== CATEGORIES: chips del catálogo sin login ==========
+DROP POLICY IF EXISTS "Anon catalog read categories" ON categories;
+CREATE POLICY "Anon catalog read categories"
+  ON categories FOR SELECT TO anon
+  USING (true);

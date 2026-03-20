@@ -6,8 +6,9 @@ Para que solo los usuarios autenticados accedan a los datos que les corresponden
 
 En la raíz del repo está **`supabase_rls_all.sql`**. Ejecutalo en Supabase (SQL Editor → New query → Pegar → Run) para:
 
-- Activar RLS en: `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`.
+- Activar RLS en: `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`, **`combos`**, **`combo_items`**.
 - Crear las políticas por tabla (idempotente: hace `DROP POLICY IF EXISTS` antes de cada `CREATE POLICY`).
+- Incluye políticas **`anon`** de solo lectura en `products`, `categories`, `combos` y `combo_items` para que **`/catalogo`** funcione sin login (alineadas con las queries del cliente).
 
 Si antes usaste otro script de RLS (p. ej. el que venía en `supabase_stock_movements.sql`), no hay conflicto: el script unificado reemplaza esas políticas.
 
@@ -16,13 +17,15 @@ Si antes usaste otro script de RLS (p. ej. el que venía en `supabase_stock_move
 | Tabla | Política | Comportamiento |
 |-------|----------|----------------|
 | `customers` | Usuarios autenticados pueden gestionar clientes | `FOR ALL TO authenticated` — todos los logueados comparten la lista (sin `user_id`). |
-| `products` | Authenticated can manage products | `FOR ALL TO authenticated` — CRUD completo para cualquier usuario logueado. |
-| `categories` | Authenticated can manage categories | `FOR ALL TO authenticated`. |
+| `products` | Authenticated + anon catálogo | `FOR ALL TO authenticated`; **`anon` SELECT** solo si el producto es visible en catálogo y `stock >= 0`. |
+| `categories` | Authenticated + anon catálogo | `FOR ALL TO authenticated`; **`anon` SELECT** para listar categorías en el catálogo público. |
+| `combos` | Anon activos + authenticated | **`anon` SELECT** si `is_active = true`; `authenticated` ALL. |
+| `combo_items` | Anon + authenticated | **`anon` SELECT** si el combo padre está activo; `authenticated` ALL. |
 | `sales` | Authenticated can manage sales | `FOR ALL TO authenticated`. |
 | `sale_items` | Authenticated can manage sale_items | `FOR ALL TO authenticated`. |
-| `expenses` | Users can manage own expenses | `USING (auth.uid() = user_id)` y `WITH CHECK (auth.uid() = user_id)` — cada usuario solo ve/edita sus gastos. |
+| `expenses` | Authenticated can manage expenses | En el script unificado: `FOR ALL TO authenticated` (datos compartidos; `user_id` queda para auditoría en inserts). |
 | `stock_movements` | Authenticated can manage stock_movements | `FOR ALL TO authenticated`. |
-| `coupons` | Authenticated can manage coupons | `FOR ALL TO authenticated`. |
+| `coupons` | Authenticated + anon cupones activos | Script unificado: `authenticated` ALL. Además ejecutar **`supabase_catalog_discounts_and_coupons.sql`** para **`anon` SELECT** de cupones activos en el catálogo. |
 | `incomes` | Users can manage own incomes | Definida en **`supabase_incomes.sql`**. Ejecutá ese archivo en el SQL Editor para crear la tabla y sus políticas. |
 
 La app ya envía `user_id` en los INSERT de gastos (`lib/expenseService.ts`); el resto de tablas no usan `user_id`, por eso comparten datos entre todos los autenticados.

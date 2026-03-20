@@ -11,4 +11,11 @@ test.describe('Catálogo público', () => {
     await page.goto('/catalogo', { waitUntil: 'domcontentloaded', timeout: 15000 })
     await expect(page.getByRole('link', { name: 'Login' })).toBeVisible({ timeout: 10000 })
   })
+
+  test('muestra el buscador de productos', async ({ page }) => {
+    await page.goto('/catalogo', { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await expect(
+      page.getByRole('searchbox', { name: /buscar productos/i })
+    ).toBeVisible({ timeout: 10000 })
+  })
 })
