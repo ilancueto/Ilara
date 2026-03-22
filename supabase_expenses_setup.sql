@@ -58,10 +58,11 @@ create policy "Users can upload receipts"
     and auth.role() = 'authenticated'
   );
 
--- Política para SELECT (view)
+-- Política para SELECT (view): solo autenticados (alineado con migración 20260313210000)
 drop policy if exists "Users can view receipts" on storage.objects;
-create policy "Users can view receipts"
-  on storage.objects for select
+drop policy if exists "Authenticated can view receipts" on storage.objects;
+create policy "Authenticated can view receipts"
+  on storage.objects for select to authenticated
   using (bucket_id = 'receipts');
 
 -- Política para DELETE

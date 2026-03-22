@@ -93,6 +93,7 @@ export default function Toast({ id, type, message, duration = 4000, action, onCl
                         type="button"
                         onClick={handleAction}
                         className="mt-2.5 text-sm font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-1 rounded"
+                        aria-label={action.label}
                     >
                         {action.label}
                     </button>

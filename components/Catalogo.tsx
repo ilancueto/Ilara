@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
-import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
-import { Search, ShoppingBag, Share2, SlidersHorizontal, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
+import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { WHATSAPP_NUMBER } from '@/lib/config'
 import {
-    priceWithProductDiscount,
     cartSubtotal,
     couponDiscountFromPercent,
     totalAfterCoupon,
@@ -16,29 +16,30 @@ import { getCatalogBadgesForProduct } from '@/lib/catalogBadges'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
-import { ModalCarrito } from '@/components/Catalogo/ModalCarrito'
-import { ModalConfirmacionVaciar } from '@/components/Catalogo/ModalConfirmacionVaciar'
-import { ModalImagenPrevia } from '@/components/Catalogo/ModalImagenPrevia'
-import { ModalDetalleCombo } from '@/components/Catalogo/ModalDetalleCombo'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
 import { useCarrito } from '@/hooks/useCarrito'
 import { useCatalogData } from '@/hooks/useCatalogData'
+import { useCatalogDerivedLists } from '@/hooks/useCatalogDerivedLists'
+import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
+import { validarCuponCatalogo } from '@/app/actions/coupons'
 import ThemeSwitch from '@/components/ThemeSwitch'
 
-const PRODUCTOS_POR_PAGINA = 15
-
-/** Orden inicial del catálogo: más recientes arriba */
-const ORDEN_DEFAULT = 'nuevo-desc'
-
-const ORDEN_OPTIONS: { value: string; label: string }[] = [
-    { value: 'nuevo-desc', label: 'Más nuevo primero' },
-    { value: 'nuevo-asc', label: 'Más viejo primero' },
-    { value: 'nombre-asc', label: 'Nombre (A-Z)' },
-    { value: 'nombre-desc', label: 'Nombre (Z-A)' },
-    { value: 'vendidos-desc', label: 'Más vendidos' },
-    { value: 'precio-asc', label: 'Precio: menor a mayor' },
-    { value: 'precio-desc', label: 'Precio: mayor a menor' },
-]
+const ModalCarrito = dynamic(
+    () => import('@/components/Catalogo/ModalCarrito').then(m => ({ default: m.ModalCarrito })),
+    { ssr: false }
+)
+const ModalConfirmacionVaciar = dynamic(
+    () => import('@/components/Catalogo/ModalConfirmacionVaciar').then(m => ({ default: m.ModalConfirmacionVaciar })),
+    { ssr: false }
+)
+const ModalImagenPrevia = dynamic(
+    () => import('@/components/Catalogo/ModalImagenPrevia').then(m => ({ default: m.ModalImagenPrevia })),
+    { ssr: false }
+)
+const ModalDetalleCombo = dynamic(
+    () => import('@/components/Catalogo/ModalDetalleCombo').then(m => ({ default: m.ModalDetalleCombo })),
+    { ssr: false }
+)
 
 export default function Catalogo() {
     const { showToast: baseShowToast } = useToast()
@@ -61,7 +62,6 @@ export default function Catalogo() {
         categorias,
         cargando,
         ventasPorProducto,
-        obtenerProductos,
     } = useCatalogData(ordenamiento)
     const [imagenPrevia, setImagenPrevia] = useState<{ images: string[]; index: number } | null>(null)
     const [indiceImagenPorProducto, setIndiceImagenPorProducto] = useState<Record<number, number>>({})
@@ -87,13 +87,29 @@ export default function Catalogo() {
         }
     }, [productos, combos, carrito.length, mantenerSoloProductosDisponibles])
 
-    const getPrecioConDescuento = (producto: Producto): number =>
-        priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
-
     const obtenerBadges = (producto: Producto) => getCatalogBadgesForProduct(producto)
 
+    const {
+        totalItems,
+        totalPaginas,
+        itemsPagina,
+        comboDisponible,
+        getPrecioConDescuento,
+    } = useCatalogDerivedLists({
+        productos,
+        combos,
+        ventasPorProducto,
+        categoriaFiltro,
+        busqueda,
+        precioMin,
+        precioMax,
+        ordenamiento,
+        paginaActual,
+    })
+    const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA
+
     // Reset página cuando cambian filtros o búsqueda
-    /* eslint-disable react-hooks/set-state-in-effect -- reset page index when filters change */
+    /* eslint-disable react-hooks/set-state-in-effect -- reset explícito de índice al cambiar filtros */
     useEffect(() => {
         setPaginaActual(1)
     }, [categoriaFiltro, busqueda, precioMin, precioMax, ordenamiento])
@@ -115,34 +131,6 @@ export default function Catalogo() {
         document.addEventListener('click', handleClick)
         return () => document.removeEventListener('click', handleClick)
     }, [ordenSelectOpen])
-
-    const productosFiltrados = productos
-        .filter(p => {
-            if (categoriaFiltro !== 'all' && p.category_id?.toString() !== categoriaFiltro) return false
-            if (busqueda) {
-                const termino = busqueda.toLowerCase()
-                if (!p.name.toLowerCase().includes(termino) && !p.brand?.toLowerCase().includes(termino)) return false
-            }
-            const precioProd = getPrecioConDescuento(p)
-            if (precioProd < precioMin || precioProd > precioMax) return false
-            return true
-        })
-        .sort((a, b) => {
-            // Productos agotados siempre al final
-            if (a.stock === 0 && b.stock !== 0) return 1
-            if (a.stock !== 0 && b.stock === 0) return -1
-            const precioA = getPrecioConDescuento(a)
-            const precioB = getPrecioConDescuento(b)
-            switch (ordenamiento) {
-                case 'precio-asc': return precioA - precioB
-                case 'precio-desc': return precioB - precioA
-                case 'nombre-desc': return b.name.localeCompare(a.name)
-                case 'nuevo-desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-                case 'nuevo-asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                case 'vendidos-desc': return (ventasPorProducto.get(b.id) ?? 0) - (ventasPorProducto.get(a.id) ?? 0)
-                default: return a.name.localeCompare(b.name)
-            }
-        })
 
     const vaciarCarrito = () => {
         clearCarrito()
@@ -171,19 +159,14 @@ export default function Catalogo() {
             showToast('warning', 'Escribí un código')
             return
         }
-        const { data, error } = await supabase
-            .from('coupons')
-            .select('discount_percentage')
-            .eq('code', code)
-            .eq('is_active', true)
-            .maybeSingle()
-        if (error || !data) {
+        const result = await validarCuponCatalogo(code)
+        if (!result.ok) {
             showToast('error', 'Cupón inválido o inactivo')
             return
         }
-        setAppliedCoupon({ code, discount_percentage: data.discount_percentage })
+        setAppliedCoupon({ code, discount_percentage: result.discount_percentage })
         setCuponInput('')
-        showToast('success', `Cupón ${code} aplicado: -${data.discount_percentage}%`)
+        showToast('success', `Cupón ${code} aplicado: -${result.discount_percentage}%`)
     }
 
     const quitarCupon = () => {
@@ -200,41 +183,8 @@ export default function Catalogo() {
         let totalLine = `*Total: $${total.toLocaleString()}*`
         if (appliedCoupon) totalLine = `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)%0A${totalLine}`
         const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A${totalLine}`
-        window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
-    }
-
-    const combosFiltrados = combos.filter(c => {
-        if (categoriaFiltro !== 'all') return false
-        if (busqueda) {
-            const t = busqueda.toLowerCase()
-            if (!c.name.toLowerCase().includes(t) && !(c.description || '').toLowerCase().includes(t)) return false
-        }
-        if (c.sale_price < precioMin || c.sale_price > precioMax) return false
-        return true
-    })
-    const combosOrdenados = [...combosFiltrados].sort((a, b) => {
-        if (ordenamiento === 'precio-asc') return a.sale_price - b.sale_price
-        if (ordenamiento === 'precio-desc') return b.sale_price - a.sale_price
-        if (ordenamiento === 'nombre-desc') return b.name.localeCompare(a.name)
-        if (ordenamiento === 'nuevo-desc') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        if (ordenamiento === 'nuevo-asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        return a.name.localeCompare(b.name)
-    })
-    const itemsDestacados = [...combosOrdenados, ...productosFiltrados]
-    const totalItems = itemsDestacados.length
-    const totalPaginas = Math.max(1, Math.ceil(totalItems / PRODUCTOS_POR_PAGINA))
-    const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA
-    const itemsPagina = itemsDestacados.slice(inicio, inicio + PRODUCTOS_POR_PAGINA)
-
-    const comboDisponible = (combo: ComboConItems) => {
-        const items = combo.combo_items || []
-        if (items.length === 0) return false
-        const porId = new Map(productos.map(p => [p.id, p]))
-        for (const ci of items) {
-            const prod = porId.get(ci.product_id)
-            if (!prod || prod.stock < ci.quantity) return false
-        }
-        return true
+        const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
+        globalThis.window.open(waUrl, '_self', 'noopener,noreferrer')
     }
 
     const compartirProducto = (producto: Producto) => {
@@ -442,7 +392,7 @@ export default function Catalogo() {
                                 const combo = item as ComboConItems
                                 const disponible = comboDisponible(combo)
                                 return (
-                                    <PastelCard key={`combo-${combo.id}`} className="group overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-[0_8px_28px_rgba(236,72,153,0.15)] dark:bg-gray-800/95 dark:border-gray-700/80 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5">
+                                    <PastelCard key={`combo-${combo.id}`} className="content-visibility-auto group overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-[0_8px_28px_rgba(236,72,153,0.15)] dark:bg-gray-800/95 dark:border-gray-700/80 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5">
                                         <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 dark:bg-gray-700/80 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
                                             <ImagenComboRotativa
                                                 combo={combo}
@@ -491,7 +441,7 @@ export default function Catalogo() {
                                 setIndiceImagenPorProducto(prev => ({ ...prev, [producto.id]: next }))
                             }
                             return (
-                                <PastelCard key={producto.id} className="group overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-[0_8px_28px_rgba(236,72,153,0.15)] dark:bg-gray-800/95 dark:border-gray-700/80 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5">
+                                <PastelCard key={producto.id} className="content-visibility-auto group overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-[0_8px_28px_rgba(236,72,153,0.15)] dark:bg-gray-800/95 dark:border-gray-700/80 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5">
                                     <div
                                         className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 dark:bg-gray-700/80 touch-pan-y"
                                         onClick={() => startTransition(() => { if (images.length > 0) setImagenPrevia({ images, index: idx }) })}
@@ -637,8 +587,10 @@ export default function Catalogo() {
             {/* Botón flotante carrito */}
             {carrito.length > 0 && !mostrarCarrito && (
                 <button
+                    type="button"
                     onClick={() => startTransition(() => setMostrarCarrito(true))}
                     className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl shadow-xl shadow-pink-400/50 dark:shadow-pink-900/40 hover:shadow-2xl hover:shadow-pink-400/60 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 font-bold text-base"
+                    aria-label={`Abrir carrito, ${carrito.length} ítems, total ${total.toLocaleString()} pesos`}
                 >
                     <div className="relative">
                         <ShoppingBag className="w-6 h-6" />

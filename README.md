@@ -40,8 +40,9 @@ Crear `.env.local` con:
 |----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon/Public key de Supabase |
+| `NEXT_PUBLIC_SUPABASE_IMAGE_HOST` | (Opcional) Solo hostname del storage, si cambiás de proyecto. Por defecto usa el del `next.config`. |
 
-Obtener valores en: Supabase Dashboard → Settings → API
+Obtener valores en: Supabase Dashboard → Settings → API. Ver **`.env.example`** para plantilla completa.
 
 ## Scripts
 
@@ -55,6 +56,32 @@ Obtener valores en: Supabase Dashboard → Settings → API
 | `npm run test:watch` | Tests en modo watch |
 | `npm run test:e2e` | Tests E2E (Playwright; arranca el servidor si hace falta) |
 | `npm run pwa-icons` | Copiar `logo_icon.png` a iconos PWA |
+| `npm run analyze` | Bundle analyzer (`ANALYZE=true`) |
+
+## Documentación extra
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`docs/AUDITORIA_APLICACION_COMPLETA.md`](docs/AUDITORIA_APLICACION_COMPLETA.md) | Auditoría de app, riesgos y roadmap |
+| [`docs/PLANIFICACION_IMPLEMENTACION_MASTER.md`](docs/PLANIFICACION_IMPLEMENTACION_MASTER.md) | Plan maestro por ítems (A–G) |
+| [`docs/EXPLICACION_A_y_B_CRIOOLLO.md`](docs/EXPLICACION_A_y_B_CRIOOLLO.md) | Supabase y seguridad explicados “en criollo” |
+| [`docs/F8_F9_EXPLICACION_NEGOCIO.md`](docs/F8_F9_EXPLICACION_NEGOCIO.md) | B2B y pagos online (alcance antes de codear) |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Convenciones y checklist de PR |
+| [`docs/COMPONENTES_UI.md`](docs/COMPONENTES_UI.md) | Patrones UI |
+| [`docs/OBSERVABILIDAD_SENTRY.md`](docs/OBSERVABILIDAD_SENTRY.md) | Sentry opcional |
+| [`docs/CHECKLIST_PRODUCCION_SUPABASE.md`](docs/CHECKLIST_PRODUCCION_SUPABASE.md) | Migraciones en producción (A1) |
+| [`docs/MIGRACIONES_SUPABASE.md`](docs/MIGRACIONES_SUPABASE.md) | Convención de migraciones (A5) |
+| [`docs/RLS_VERIFICACION.md`](docs/RLS_VERIFICACION.md) | Cómo verificar RLS (A2) |
+| [`docs/SEGURIDAD_DEPENDENCIAS_Y_CSP.md`](docs/SEGURIDAD_DEPENDENCIAS_Y_CSP.md) | Audit, Serwist, CSP, passkeys (B) |
+
+## BCyP (release rápido)
+
+**Build → Commit → Push:** antes de subir cambios importantes: `npm run build` tiene que pasar, luego `git commit` y `git push`. En equipo, conviene que **CI** (GitHub Actions) ejecute lint + test + build en cada PR (`.github/workflows/ci.yml`).
+
+## PWA y offline
+
+- Service Worker (Serwist) en **producción**; en desarrollo suele estar desactivado.
+- Ruta **`/~offline`**: página si no hay red después de cargar la app instalada. El catálogo en sí necesita conexión para leer Supabase.
 
 ## Estructura del proyecto
 

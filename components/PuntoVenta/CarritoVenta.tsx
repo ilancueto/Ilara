@@ -4,6 +4,7 @@ import { ItemCarrito, getProductImages } from '@/lib/supabase'
 import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { precioListaProducto } from '@/lib/posPricing'
 
 interface CarritoVentaProps {
     carrito: ItemCarrito[]
@@ -41,7 +42,7 @@ export default function CarritoVenta({ carrito, onUpdateQuantity, onUpdateQuanti
                     {carrito.map(item => {
                         const esProducto = !!item.producto
                         const nombre = esProducto ? item.producto!.name : item.combo!.name
-                        const precio = esProducto ? item.producto!.sale_price : item.combo!.sale_price
+                        const precio = esProducto ? precioListaProducto(item.producto!) : item.combo!.sale_price
                         const imagen = esProducto ? getProductImages(item.producto!)[0] : item.combo!.image_url
                         const key = esProducto ? `p-${item.producto!.id}` : `c-${item.combo!.id}`
                         const maxQty = esProducto ? item.producto!.stock : undefined

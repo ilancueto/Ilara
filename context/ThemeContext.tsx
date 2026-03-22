@@ -32,7 +32,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light')
   const [mounted, setMounted] = useState(false)
 
-  // Montar: usar localStorage + preferencia del sistema (igual que el script del layout)
+  // Montar: usar localStorage + preferencia del sistema (igual que el script del layout).
+  // Sincronizar estado tras hidratar; el setState en mount es intencional para evitar mismatch SSR.
+  /* eslint-disable react-hooks/set-state-in-effect -- init tema desde localStorage solo en cliente */
   useEffect(() => {
     const initial = getInitialTheme()
     setThemeState(initial)
@@ -40,6 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(initial)
     localStorage.setItem(STORAGE_KEY, initial)
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Siempre que cambie el tema (toggle), aplicar en el DOM y persistir
   useEffect(() => {

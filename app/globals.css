@@ -755,3 +755,9 @@ select:disabled {
 .login-card-bg .login-card-paragraph {
   color: #ffffff !important;
 }
+
+/* Catálogo: render perezoso de tarjetas fuera de viewport (E / performance) */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}

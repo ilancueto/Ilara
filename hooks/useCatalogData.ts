@@ -57,14 +57,16 @@ export function useCatalogData(ordenamiento: string) {
     useEffect(() => {
         if (ordenamiento !== 'vendidos-desc') return
         const fetchVentas = async () => {
-            const { data } = await supabase
-                .from('sale_items')
-                .select('product_id, quantity')
-                .not('product_id', 'is', null)
+            const { data, error } = await supabase.rpc('catalog_sales_by_product')
             const map = new Map<number, number>()
+            if (error) {
+                console.warn('[catálogo] catalog_sales_by_product:', error.message)
+                setVentasPorProducto(map)
+                return
+            }
             for (const row of data || []) {
-                const id = row.product_id as number
-                map.set(id, (map.get(id) ?? 0) + (row.quantity ?? 0))
+                const r = row as { product_id: number; units_sold: number }
+                map.set(Number(r.product_id), Number(r.units_sold))
             }
             setVentasPorProducto(map)
         }

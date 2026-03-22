@@ -5,6 +5,7 @@ import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Search, AlertTriangle, Package } from 'lucide-react'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { precioCatalogoProducto } from '@/lib/posPricing'
 
 interface CatalogoPOSProps {
     productos: Producto[]
@@ -69,7 +70,9 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                 </button>
                             )
                         })}
-                        {productosFiltrados.map(producto => (
+                        {productosFiltrados.map(producto => {
+                            const precioMostrar = precioCatalogoProducto(producto)
+                            return (
                             <button
                                 key={producto.id}
                                 onClick={() => {
@@ -77,7 +80,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                     setTerminoBusqueda('')
                                 }}
                                 className="w-full text-left p-4 rounded-2xl bg-white dark:bg-gray-700/80 border border-pink-100/80 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-700 transition-all group flex items-center gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 dark:focus-visible:ring-pink-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
-                                aria-label={`Agregar ${producto.name} al carrito, $${producto.sale_price.toLocaleString()}`}
+                                aria-label={`Agregar ${producto.name} al carrito, $${precioMostrar.toLocaleString()}`}
                             >
                                 <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-600 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100 dark:border-transparent relative">
                                     {getProductImages(producto)[0] ? (
@@ -99,12 +102,13 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                             </div>
                                         </div>
                                         <div className="text-right ml-3 flex-shrink-0">
-                                            <div className="font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/40 px-2 py-1 rounded-lg">${producto.sale_price.toLocaleString()}</div>
+                                            <div className="font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/40 px-2 py-1 rounded-lg">${precioMostrar.toLocaleString()}</div>
                                         </div>
                                     </div>
                                 </div>
                             </button>
-                        ))}
+                            )
+                        })}
                     </div>
                 ) : terminoBusqueda ? (
                     <div className="flex flex-col items-center justify-center h-40 rounded-2xl bg-pink-50/50 dark:bg-gray-700/50 border border-pink-100/60 dark:border-gray-600">

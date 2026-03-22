@@ -16,6 +16,11 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
+/** Host del storage de Supabase para `next/image` (A6 — otro proyecto = otra env). */
+const supabaseImageHost =
+  process.env.NEXT_PUBLIC_SUPABASE_IMAGE_HOST?.trim() ||
+  'qbbnvdmadgomfmrsfxlo.supabase.co';
+
 const nextConfig: NextConfig = {
   /* config options here */
   async headers() {
@@ -56,7 +61,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'qbbnvdmadgomfmrsfxlo.supabase.co',
+        hostname: supabaseImageHost,
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
