@@ -67,7 +67,7 @@ Obtener valores en: Supabase Dashboard → Settings → API
 ├── components/       # Componentes React
 ├── lib/              # Servicios, tipos, utilidades
 ├── context/          # Contextos (Toast)
-└── middleware.ts     # Protección de rutas (auth)
+└── proxy.ts            # Protección de rutas (auth, Next.js 16+)
 ```
 
 ## Rutas

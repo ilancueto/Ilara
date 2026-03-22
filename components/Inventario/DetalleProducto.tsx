@@ -7,6 +7,7 @@ import { X, Edit2, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { etiquetaBadgeCatalogo } from '@/lib/catalogBadges'
 
 interface DetalleProductoProps {
     producto: Producto | null
@@ -168,13 +169,21 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                         </span>
                                         <span className="font-medium text-xs text-gray-800 dark:text-gray-100 tabular-nums">{producto.min_stock} un.</span>
                                     </div>
-                                    <div className="flex items-center justify-between gap-4 py-2.5 last:pb-0">
+                                    <div className="flex items-center justify-between gap-4 py-2.5">
                                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
                                             {producto.visible_in_catalog !== false ? <Eye className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> : <EyeOff className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
                                             Visible en catálogo
                                         </span>
                                         <span className={`font-medium text-xs ${producto.visible_in_catalog !== false ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                                             {producto.visible_in_catalog !== false ? 'Sí' : 'No'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4 py-2.5 last:pb-0">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
+                                            <Award className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> Badge catálogo
+                                        </span>
+                                        <span className="font-medium text-xs text-gray-800 dark:text-gray-100 text-right">
+                                            {etiquetaBadgeCatalogo(producto.catalog_badge)}
                                         </span>
                                     </div>
                                 </div>

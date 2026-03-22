@@ -1,6 +1,7 @@
 'use client'
 
 import { Producto, getProductImages } from '@/lib/supabase'
+import { etiquetaBadgeCatalogo } from '@/lib/catalogBadges'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -123,6 +124,14 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                 {producto.categories && (
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-pink-500 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/40 px-2.5 py-1 rounded-full">
                                         {producto.categories.name}
+                                    </span>
+                                )}
+                                {producto.catalog_badge && (
+                                    <span
+                                        className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/40 px-2.5 py-1 rounded-full"
+                                        title="Badge fijo en el catálogo público"
+                                    >
+                                        {etiquetaBadgeCatalogo(producto.catalog_badge)}
                                     </span>
                                 )}
                                 <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors line-clamp-2 flex-1">

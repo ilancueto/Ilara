@@ -13,10 +13,12 @@ interface ImagenComboRotativaProps {
     className?: string
     sizes?: string
     onClick?: () => void
+    /** Primera fila del grid: mejora LCP (Next/Image) */
+    priority?: boolean
 }
 
 /** Muestra las imágenes de los productos del combo rotando cada 5 segundos */
-export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClick }: ImagenComboRotativaProps) {
+export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClick, priority }: ImagenComboRotativaProps) {
     const [indice, setIndice] = useState(0)
     const visibleRef = useRef(false)
     const containerRef = useRef<HTMLDivElement>(null)
@@ -73,6 +75,8 @@ export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClic
                     fill
                     className="object-cover transition-opacity duration-700"
                     sizes={sizes ?? '(max-width: 768px) 50vw, 25vw'}
+                    priority={priority}
+                    loading={priority ? 'eager' : undefined}
                 />
             ) : (
                 <Image
@@ -81,6 +85,8 @@ export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClic
                     width={400}
                     height={400}
                     className="w-full h-full object-cover transition-opacity duration-700"
+                    priority={priority}
+                    loading={priority ? 'eager' : undefined}
                 />
             )}
         </div>

@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { SupabaseSessionRecovery } from "@/components/SupabaseSessionRecovery";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -78,6 +79,7 @@ export default function RootLayout({
       </head>
       <body className={`${outfit.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
+          <SupabaseSessionRecovery />
           <ToastProvider>
             {children}
           </ToastProvider>

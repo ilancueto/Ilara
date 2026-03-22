@@ -12,6 +12,7 @@ import {
     couponDiscountFromPercent,
     totalAfterCoupon,
 } from '@/lib/catalogPricing'
+import { getCatalogBadgesForProduct } from '@/lib/catalogBadges'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
@@ -26,11 +27,14 @@ import ThemeSwitch from '@/components/ThemeSwitch'
 
 const PRODUCTOS_POR_PAGINA = 15
 
+/** Orden inicial del catálogo: más recientes arriba */
+const ORDEN_DEFAULT = 'nuevo-desc'
+
 const ORDEN_OPTIONS: { value: string; label: string }[] = [
-    { value: 'nombre-asc', label: 'Nombre (A-Z)' },
-    { value: 'nombre-desc', label: 'Nombre (Z-A)' },
     { value: 'nuevo-desc', label: 'Más nuevo primero' },
     { value: 'nuevo-asc', label: 'Más viejo primero' },
+    { value: 'nombre-asc', label: 'Nombre (A-Z)' },
+    { value: 'nombre-desc', label: 'Nombre (Z-A)' },
     { value: 'vendidos-desc', label: 'Más vendidos' },
     { value: 'precio-asc', label: 'Precio: menor a mayor' },
     { value: 'precio-desc', label: 'Precio: mayor a menor' },
@@ -50,7 +54,7 @@ export default function Catalogo() {
     const [busqueda, setBusqueda] = useState('')
     const [precioMin, setPrecioMin] = useState<number>(0)
     const [precioMax, setPrecioMax] = useState<number>(999999)
-    const [ordenamiento, setOrdenamiento] = useState<string>('nombre-asc')
+    const [ordenamiento, setOrdenamiento] = useState<string>(ORDEN_DEFAULT)
     const {
         productos,
         combos,
@@ -83,30 +87,10 @@ export default function Catalogo() {
         }
     }, [productos, combos, carrito.length, mantenerSoloProductosDisponibles])
 
-    // Badge "Nuevo" durante 7 días desde created_at
-    const esNuevo = (fecha: string) => {
-        const ahora = new Date()
-        const fechaProducto = new Date(fecha)
-        const diferencia = ahora.getTime() - fechaProducto.getTime()
-        const dias = diferencia / (1000 * 3600 * 24)
-        return dias <= 7
-    }
-
     const getPrecioConDescuento = (producto: Producto): number =>
         priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
 
-    const obtenerBadges = (producto: Producto): Array<{ texto: string; clase: string }> => {
-        const badges: Array<{ texto: string; clase: string }> = []
-        if (producto.stock === 0) {
-            badges.push({ texto: 'Agotado', clase: 'bg-gray-500 text-white shadow-md shadow-gray-200/50' })
-            return badges
-        }
-        if ((producto.discount_percentage ?? 0) > 0) badges.push({ texto: '🔥 En descuento', clase: 'bg-orange-500 text-white shadow-md shadow-orange-200/50' })
-        if (esNuevo(producto.created_at)) badges.push({ texto: 'Nuevo', clase: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/50' })
-        if (producto.stock <= 2) badges.push({ texto: 'Últimas unidades', clase: 'bg-rose-600 text-white shadow-md shadow-rose-200/50' })
-        else if (producto.stock < 5) badges.push({ texto: '¡Últimos!', clase: 'bg-amber-500 text-white shadow-md shadow-amber-200/50' })
-        return badges
-    }
+    const obtenerBadges = (producto: Producto) => getCatalogBadgesForProduct(producto)
 
     // Reset página cuando cambian filtros o búsqueda
     /* eslint-disable react-hooks/set-state-in-effect -- reset page index when filters change */
@@ -335,13 +319,13 @@ export default function Catalogo() {
                                 aria-haspopup="listbox"
                                 aria-expanded={ordenSelectOpen}
                                 aria-labelledby="catalogo-ordenar-label"
-                                aria-label={`Ordenar por: ${ORDEN_OPTIONS.find(o => o.value === (ordenamiento || 'nombre-asc'))?.label ?? ORDEN_OPTIONS[0].label}`}
+                                aria-label={`Ordenar por: ${ORDEN_OPTIONS.find(o => o.value === (ordenamiento || ORDEN_DEFAULT))?.label ?? ORDEN_OPTIONS[0].label}`}
                                 onClick={() => setOrdenSelectOpen(prev => !prev)}
                                 className="relative w-full h-9 flex items-center gap-2 pl-3 pr-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 border border-pink-100 text-left text-gray-900 dark:text-gray-100 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/40 outline-none transition-all min-w-0"
                                 suppressHydrationWarning
                             >
                                 <span className="flex-1 min-w-0 truncate">
-                                    {ORDEN_OPTIONS.find(o => o.value === (ordenamiento || 'nombre-asc'))?.label ?? ORDEN_OPTIONS[0].label}
+                                    {ORDEN_OPTIONS.find(o => o.value === (ordenamiento || ORDEN_DEFAULT))?.label ?? ORDEN_OPTIONS[0].label}
                                 </span>
                                 <ChevronDown className={`w-4 h-4 shrink-0 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none transition-transform ${ordenSelectOpen ? 'rotate-180' : ''}`} />
                             </button>
@@ -431,7 +415,7 @@ export default function Catalogo() {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => { setPrecioMin(0); setPrecioMax(999999); setOrdenamiento('nombre-asc') }}
+                                    onClick={() => { setPrecioMin(0); setPrecioMax(999999); setOrdenamiento(ORDEN_DEFAULT) }}
                                     className="h-9 px-4 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/60 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 transition-colors"
                                 >
                                     Limpiar
@@ -451,7 +435,8 @@ export default function Catalogo() {
                 ) : totalItems > 0 ? (
                     <>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 w-full">
-                        {itemsPagina.map(item => {
+                        {itemsPagina.map((item, slotIndex) => {
+                            const esPrioridadLcp = slotIndex < 8
                             const esCombo = 'sale_price' in item && 'combo_items' in item
                             if (esCombo) {
                                 const combo = item as ComboConItems
@@ -464,6 +449,7 @@ export default function Catalogo() {
                                                 fill
                                                 className="absolute inset-0 w-full h-full"
                                                 sizes="(max-width: 768px) 50vw, 25vw"
+                                                priority={esPrioridadLcp}
                                             />
                                             <BadgeRotator badges={[{ texto: 'Combo', clase: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200/50' }]} />
                                             <button
@@ -529,7 +515,15 @@ export default function Catalogo() {
                                         }}
                                     >
                                         {currentImage ? (
-                                            <Image src={currentImage} alt={producto.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none" sizes="(max-width: 768px) 50vw, 25vw" />
+                                            <Image
+                                                src={currentImage}
+                                                alt={producto.name}
+                                                fill
+                                                className="object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none"
+                                                sizes="(max-width: 768px) 50vw, 25vw"
+                                                priority={esPrioridadLcp}
+                                                loading={esPrioridadLcp ? 'eager' : undefined}
+                                            />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center"><Sparkles className="w-16 h-16 text-pink-200 dark:text-pink-500/60" /></div>
                                         )}

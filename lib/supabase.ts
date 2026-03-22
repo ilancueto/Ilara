@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { CatalogBadgeKey } from './catalogBadges'
 
 // En el cliente Next inlina process.env.NEXT_PUBLIC_* en build; getEnv() aquí puede fallar si el build fue sin env
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -29,6 +30,8 @@ export type Producto = {
   discount_percentage?: number | null
   /** Si false, no se muestra en el catálogo público (útil para ítems sin precio o fotos). */
   visible_in_catalog?: boolean | null
+  /** Badge en catálogo: manual o null para automático (novedad por fecha + descuento). */
+  catalog_badge?: CatalogBadgeKey | null
   categories?: {
     name: string
   }

@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
-import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle, Eye, EyeOff } from 'lucide-react'
+import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle, Eye, EyeOff, Sparkles } from 'lucide-react'
+import { CATALOG_BADGE_OPTIONS, type CatalogBadgeKey, etiquetaBadgeCatalogo } from '@/lib/catalogBadges'
 import GestionCategorias from '../GestionCategorias'
 import GestionCupones from '../GestionCupones'
 import { useToast } from '@/context/ToastContext'
@@ -60,6 +61,11 @@ export default function Inventario() {
     // Ocultar / mostrar en catálogo (modal múltiple)
     const [mostrarVisibilidadModal, setMostrarVisibilidadModal] = useState(false)
     const [actualizandoVisibilidad, setActualizandoVisibilidad] = useState(false)
+
+    // Badge del catálogo (lote)
+    const [mostrarBadgeModal, setMostrarBadgeModal] = useState(false)
+    const [actualizandoBadge, setActualizandoBadge] = useState(false)
+    const [badgeLoteElegido, setBadgeLoteElegido] = useState<CatalogBadgeKey | 'auto'>('auto')
 
     useEffect(() => {
         obtenerData()
@@ -212,6 +218,41 @@ export default function Inventario() {
         }
     }
 
+    const aplicarBadgeSeleccionados = async () => {
+        if (productosSeleccionados.size === 0) {
+            showError('Seleccioná al menos un producto.')
+            return
+        }
+        setActualizandoBadge(true)
+        const valorDb: CatalogBadgeKey | null = badgeLoteElegido === 'auto' ? null : badgeLoteElegido
+        try {
+            const ids = Array.from(productosSeleccionados)
+            const { error } = await supabase
+                .from('products')
+                .update({ catalog_badge: valorDb })
+                .in('id', ids)
+            if (error) throw error
+            setProductos(prev =>
+                prev.map(p => (ids.includes(p.id) ? { ...p, catalog_badge: valorDb } : p))
+            )
+            setProductosSeleccionados(new Set())
+            setMostrarBadgeModal(false)
+            showSuccess(
+                valorDb
+                    ? `Badge aplicado a ${ids.length} producto(s).`
+                    : `Catálogo automático en ${ids.length} producto(s) (sin badge fijo).`
+            )
+        } catch (err: unknown) {
+            const msg =
+                err && typeof err === 'object' && 'message' in err
+                    ? String((err as { message: string }).message)
+                    : 'Error al actualizar'
+            showError(msg)
+        } finally {
+            setActualizandoBadge(false)
+        }
+    }
+
     // Filtrado
     const productosFiltrados = productos.filter(producto => {
         const coincideBusqueda =
@@ -335,11 +376,26 @@ export default function Inventario() {
                     <div className="flex flex-wrap items-center gap-2">
                         <button
                             type="button"
-                            onClick={() => { setMostrarVisibilidadModal(true); setProductosSeleccionados(new Set()); }}
+                            onClick={() => {
+                                setMostrarVisibilidadModal(true)
+                                setProductosSeleccionados(new Set())
+                            }}
                             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-pink-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-700 font-bold text-sm transition-colors"
                         >
                             <Eye className="w-4 h-4" />
                             Ocultar / Mostrar en catálogo
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setMostrarBadgeModal(true)
+                                setProductosSeleccionados(new Set())
+                                setBadgeLoteElegido('auto')
+                            }}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 border border-violet-200 dark:border-violet-700 font-bold text-sm transition-colors"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            Badges del catálogo
                         </button>
                         <button
                             type="button"
@@ -602,6 +658,122 @@ export default function Inventario() {
             )}
 
             {/* Modal Ocultar / Mostrar en catálogo */}
+            {/* Modal badges catálogo (lote) */}
+            {mostrarBadgeModal && (
+                <>
+                    <div
+                        className="modal-backdrop"
+                        onClick={() => !actualizandoBadge && setMostrarBadgeModal(false)}
+                    />
+                    <PastelCard
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700"
+                        noHover
+                    >
+                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+                                Badges del catálogo
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Elegí el badge y los productos. &quot;Automático&quot; quita el badge fijo y vuelve a
+                                novedad por fecha + descuento.
+                            </p>
+                            <div className="mt-4">
+                                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
+                                    Badge a aplicar
+                                </label>
+                                <select
+                                    value={badgeLoteElegido}
+                                    onChange={(e) =>
+                                        setBadgeLoteElegido(e.target.value as CatalogBadgeKey | 'auto')
+                                    }
+                                    className="w-full rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100"
+                                >
+                                    {CATALOG_BADGE_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                                    {
+                                        CATALOG_BADGE_OPTIONS.find((o) => o.value === badgeLoteElegido)
+                                            ?.hint
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-4 py-3 overflow-y-auto flex-1 min-h-0">
+                            <label className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
+                                <input
+                                    type="checkbox"
+                                    checked={
+                                        productosFiltrados.length > 0 &&
+                                        productosSeleccionados.size === productosFiltrados.length
+                                    }
+                                    onChange={seleccionarTodosProductos}
+                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
+                                />
+                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">
+                                    Seleccionar todos
+                                </span>
+                            </label>
+                            <div className="space-y-1.5">
+                                {productosFiltrados.length === 0 ? (
+                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">
+                                        No hay productos con los filtros actuales.
+                                    </p>
+                                ) : (
+                                    productosFiltrados.map((producto) => (
+                                        <label
+                                            key={producto.id}
+                                            className={`flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl cursor-pointer border transition-colors ${
+                                                productosSeleccionados.has(producto.id)
+                                                    ? 'bg-violet-50/70 dark:bg-violet-900/25 border-violet-100/80 dark:border-violet-800/40'
+                                                    : 'bg-transparent border-transparent hover:bg-violet-50/50 dark:hover:bg-gray-700/50 hover:border-violet-100 dark:hover:border-gray-600'
+                                            }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={productosSeleccionados.has(producto.id)}
+                                                onChange={() => toggleSeleccionProducto(producto.id)}
+                                                className="rounded border-violet-300 text-violet-600 focus:ring-violet-500 shrink-0"
+                                            />
+                                            <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">
+                                                {producto.name}
+                                            </span>
+                                            <span className="text-[10px] flex-shrink-0 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 max-w-[120px] truncate">
+                                                {etiquetaBadgeCatalogo(producto.catalog_badge)}
+                                            </span>
+                                        </label>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                        <div className="p-5 sm:p-6 border-t border-pink-100 dark:border-gray-700 flex flex-wrap gap-3 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setMostrarBadgeModal(false)}
+                                disabled={actualizandoBadge}
+                                className="btn-ghost"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={aplicarBadgeSeleccionados}
+                                disabled={actualizandoBadge || productosSeleccionados.size === 0}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-600 dark:text-white dark:hover:bg-violet-500 border border-violet-200 dark:border-violet-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {actualizandoBadge
+                                    ? 'Guardando...'
+                                    : `Aplicar a ${productosSeleccionados.size} producto(s)`}
+                            </button>
+                        </div>
+                    </PastelCard>
+                </>
+            )}
+
             {mostrarVisibilidadModal && (
                 <>
                     <div className="modal-backdrop" onClick={() => !actualizandoVisibilidad && setMostrarVisibilidadModal(false)} />

@@ -5,7 +5,8 @@ import { getEnv } from '@/lib/env';
 
 const PUBLIC_ROUTES = ['/login', '/catalogo'];
 
-export async function middleware(request: NextRequest) {
+/** Next.js 16+: sustituye la convención `middleware` (renombrada a `proxy`). */
+export async function proxy(request: NextRequest) {
     let response = NextResponse.next({ request });
 
     const supabase = createServerClient(
@@ -34,7 +35,6 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
-    // Raíz: visitantes sin login van al catálogo; el resto de rutas protegidas → login
     if (!user && pathname === '/') {
         return NextResponse.redirect(new URL('/catalogo', request.url));
     }
@@ -49,7 +49,6 @@ export async function middleware(request: NextRequest) {
     return response;
 }
 
-// No ejecutar middleware en estáticos, PWA (sw, offline) ni assets
 export const config = {
     matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|sw\\.js|swe-worker|~offline|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
 };

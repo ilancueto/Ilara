@@ -6,6 +6,7 @@ import { Loader, X, Upload, Trash2 } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { CATALOG_BADGE_OPTIONS, type CatalogBadgeKey } from '@/lib/catalogBadges'
 
 interface ProductFormProps {
     isOpen: boolean
@@ -15,13 +16,28 @@ interface ProductFormProps {
     categories: Categoria[]
 }
 
+type FormProductoState = {
+    name: string
+    category_id: string
+    brand: string
+    purchase_price: string
+    sale_price: string
+    stock: string
+    min_stock: string
+    notes: string
+    image_urls: string[]
+    discount_percentage: string
+    visible_in_catalog: boolean
+    catalog_badge: '' | CatalogBadgeKey | 'auto'
+}
+
 export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess, categories }: ProductFormProps) {
     const { showSuccess, showError } = useToast()
     const [guardando, setGuardando] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [errores, setErrores] = useState<{ [key: string]: string }>({})
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormProductoState>({
         name: '',
         category_id: '',
         brand: '',
@@ -30,9 +46,10 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         stock: '',
         min_stock: '1',
         notes: '',
-        image_urls: [] as string[],
+        image_urls: [],
         discount_percentage: '',
-        visible_in_catalog: true
+        visible_in_catalog: true,
+        catalog_badge: 'auto',
     })
 
     // Reset form when opening/closing or changing product
@@ -55,13 +72,15 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     notes: productToEdit.notes || '',
                     image_urls: urls,
                     discount_percentage: productToEdit.discount_percentage != null ? String(productToEdit.discount_percentage) : '',
-                    visible_in_catalog: productToEdit.visible_in_catalog !== false
+                    visible_in_catalog: productToEdit.visible_in_catalog !== false,
+                    catalog_badge: productToEdit.catalog_badge ? productToEdit.catalog_badge : 'auto'
                 })
             } else {
                 setFormData({
                     name: '', category_id: '', brand: '',
                     purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_urls: [], discount_percentage: '',
-                    visible_in_catalog: true
+                    visible_in_catalog: true,
+                    catalog_badge: 'auto'
                 })
             }
             setErrores({})
@@ -153,7 +172,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             image_url: imageUrls?.[0] ?? null,
             image_urls: imageUrls,
             discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0,
-            visible_in_catalog: formData.visible_in_catalog
+            visible_in_catalog: formData.visible_in_catalog,
+            catalog_badge: formData.catalog_badge === 'auto' || !formData.catalog_badge ? null : formData.catalog_badge
         }
         const user = await getUser()
         if (productToEdit && user?.id) {
@@ -391,6 +411,30 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                             className="form-input form-control-h w-full max-w-[120px]"
                         />
                         <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Si es mayor a 0, en el catálogo público se muestra &quot;En descuento&quot; y el precio rebajado.</p>
+                    </div>
+
+                    {/* Badge visible en catálogo */}
+                    <div className="form-section">
+                        <label className="form-label">Badge en el catálogo público</label>
+                        <select
+                            value={formData.catalog_badge}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    catalog_badge: (e.target.value || 'auto') as FormProductoState['catalog_badge'],
+                                })
+                            }
+                            className="form-select form-control-h w-full max-w-md"
+                        >
+                            {CATALOG_BADGE_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                            {CATALOG_BADGE_OPTIONS.find((o) => o.value === formData.catalog_badge)?.hint}
+                        </p>
                     </div>
 
                     {/* Notas */}
