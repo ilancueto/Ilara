@@ -17,11 +17,21 @@ const outfit = Outfit({
 const siteUrl = getSiteUrl();
 const metadataBase = new URL(siteUrl);
 
+/** URL canónica para previews sociales (WhatsApp, Meta, Telegram). */
+const canonicalShareOrigin =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ||
+  "https://ilara.com.ar";
+
 const defaultDescription =
   "Descubrí Ilara, tu catálogo de productos de belleza en Neuquén. Maquillaje, skincare y cosmética con pedidos por WhatsApp.";
 
-/** OG/Twitter: icono del sitio; fallback a asset público si hiciera falta */
-const ogImageUrl = `${siteUrl.replace(/\/$/, "")}/icon-512.png`;
+/** Texto para compartir (OG/Twitter); más corto y de marca que el meta description SEO. */
+const shareTitle = "Ilara Beauty";
+const shareDescription =
+  "Descubrí productos de maquillaje, skincare y cosmética en Ilara Beauty.";
+
+/** Link preview (OG/Twitter): `public/og-image.png` — recomendado 1200×630. */
+const ogImageUrl = `${canonicalShareOrigin}/og-image.png`;
 
 export const metadata: Metadata = {
   metadataBase,
@@ -57,16 +67,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_AR",
-    url: siteUrl,
-    siteName: "Ilara",
-    title: "Ilara | Productos de belleza en Neuquén",
-    description: defaultDescription,
-    images: [{ url: ogImageUrl, width: 512, height: 512, alt: "Ilara" }],
+    url: canonicalShareOrigin,
+    siteName: shareTitle,
+    title: shareTitle,
+    description: shareDescription,
+    images: [
+      {
+        url: ogImageUrl,
+        width: 1200,
+        height: 630,
+        alt: "Ilara Beauty",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ilara | Productos de belleza en Neuquén",
-    description: defaultDescription,
+    title: shareTitle,
+    description: shareDescription,
     images: [ogImageUrl],
   },
 };
