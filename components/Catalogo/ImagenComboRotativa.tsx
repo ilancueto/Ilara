@@ -73,7 +73,7 @@ export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClic
                     src={img}
                     alt=""
                     fill
-                    className="object-cover transition-opacity duration-700"
+                    className="object-cover transition-opacity duration-300"
                     sizes={sizes ?? '(max-width: 768px) 50vw, 25vw'}
                     priority={priority}
                     loading={priority ? 'eager' : undefined}
@@ -84,7 +84,7 @@ export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClic
                     alt=""
                     width={400}
                     height={400}
-                    className="w-full h-full object-cover transition-opacity duration-700"
+                    className="w-full h-full object-cover transition-opacity duration-300"
                     priority={priority}
                     loading={priority ? 'eager' : undefined}
                 />

@@ -488,7 +488,7 @@ export default function Catalogo() {
                                                 src={currentImage}
                                                 alt={producto.name}
                                                 fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none"
+                                                className="object-cover md:transition-transform md:duration-200 md:group-hover:scale-105 pointer-events-none"
                                                 sizes="(max-width: 768px) 50vw, 25vw"
                                                 priority={esPrioridadLcp}
                                                 loading={esPrioridadLcp ? 'eager' : undefined}

@@ -66,11 +66,11 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                         src={getProductImages(producto)[0]}
                                         alt={producto.name}
                                         fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        className="object-cover md:transition-transform md:duration-200 md:group-hover:scale-105"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
-                                        <span className="text-4xl opacity-10 dark:opacity-20 filter grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110">✨</span>
+                                        <span className="text-4xl opacity-10 dark:opacity-20 filter grayscale group-hover:grayscale-0 md:transition-all md:duration-200 md:group-hover:scale-110">✨</span>
                                     </div>
                                 )}
 
