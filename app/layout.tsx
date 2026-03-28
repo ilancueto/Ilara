@@ -30,8 +30,8 @@ const shareTitle = "Ilara Beauty";
 const shareDescription =
   "Descubrí productos de maquillaje, skincare y cosmética en Ilara Beauty.";
 
-/** Link preview (OG/Twitter): `public/og-image.png` — recomendado 1200×630. */
-const ogImageUrl = `${canonicalShareOrigin}/og-image.png`;
+/** Link preview (OG/Twitter): `public/og-image.png` — recomendado 1200×630. URL absoluta normalizada. */
+const ogImageUrl = new URL("/og-image.png", `${canonicalShareOrigin}/`).href;
 
 export const metadata: Metadata = {
   metadataBase,
