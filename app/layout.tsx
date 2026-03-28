@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { SupabaseSessionRecovery } from "@/components/SupabaseSessionRecovery";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { getSiteUrl } from "@/lib/site";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -13,18 +14,22 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const siteUrl = getSiteUrl();
+const metadataBase = new URL(siteUrl);
 
-// URL absoluta del logo para preview al compartir (WhatsApp, etc.) – Raw GitHub
-const ogImageUrl =
-  "https://raw.githubusercontent.com/ilancueto/AppIlara/main/assets/logo_icon.png";
+const defaultDescription =
+  "Ilara: productos de belleza y cosmética. Catálogo online, novedades y pedidos por WhatsApp.";
+
+/** OG/Twitter: icono del sitio; fallback a asset público si hiciera falta */
+const ogImageUrl = `${siteUrl.replace(/\/$/, "")}/icon-512.png`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
-  title: "✨ Ilara Beauty",
-  description: "Sistema de inventario, ventas y finanzas",
+  metadataBase,
+  title: {
+    default: "Ilara",
+    template: "%s | Ilara",
+  },
+  description: defaultDescription,
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-512.png",
@@ -33,16 +38,35 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Ilara Beauty",
+    title: "Ilara",
+  },
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   openGraph: {
-    title: "Ilara Beauty",
-    description: "Sistema de inventario, ventas y finanzas",
-    images: [ogImageUrl],
+    type: "website",
+    locale: "es_AR",
+    url: siteUrl,
+    siteName: "Ilara",
+    title: "Ilara",
+    description: defaultDescription,
+    images: [{ url: ogImageUrl, width: 512, height: 512, alt: "Ilara" }],
   },
   twitter: {
-    card: "summary",
-    title: "Ilara Beauty",
+    card: "summary_large_image",
+    title: "Ilara",
+    description: defaultDescription,
     images: [ogImageUrl],
   },
 };

@@ -1,14 +1,32 @@
 import type { Metadata } from 'next'
 import Catalogo from '@/components/Catalogo'
+import { getSiteUrl } from '@/lib/site'
 
-const ogImageUrl = 'https://raw.githubusercontent.com/ilancueto/AppIlara/main/assets/logo_icon.png';
+const catalogDescription =
+    'Catálogo de productos de belleza y cosmética. Novedades, ofertas y pedido por WhatsApp.'
+const siteOrigin = getSiteUrl().replace(/\/$/, '')
+const ogImageUrl = `${siteOrigin}/icon-512.png`
 
 export const metadata: Metadata = {
-    title: 'Catálogo - Ilara Beauty',
-    description: 'Descubre nuestros productos de belleza. Haz tu pedido fácilmente por WhatsApp.',
+    title: 'Catálogo',
+    description: catalogDescription,
+    alternates: {
+        canonical: '/catalogo',
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
     openGraph: {
-        title: 'Catálogo - Ilara Beauty',
-        description: 'Descubre nuestros productos de belleza. Haz tu pedido fácilmente por WhatsApp.',
+        title: 'Catálogo | Ilara',
+        description: catalogDescription,
+        url: `${siteOrigin}/catalogo`,
+        images: [{ url: ogImageUrl, width: 512, height: 512, alt: 'Ilara' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Catálogo | Ilara',
+        description: catalogDescription,
         images: [ogImageUrl],
     },
 }
