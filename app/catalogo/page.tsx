@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
 import Catalogo from '@/components/Catalogo'
-import { getSiteUrl } from '@/lib/site'
 
 const catalogDescription =
     'Catálogo de productos de belleza en Neuquén: maquillaje, skincare y cosmética. Pedidos rápidos por WhatsApp.'
-const siteOrigin = getSiteUrl().replace(/\/$/, '')
-const ogImageUrl = `${siteOrigin}/icon-512.png`
+
+/** Mismo origen que app/layout.tsx para OG/Twitter (previews en Meta, WhatsApp, etc.). */
+const canonicalShareOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') ||
+    'https://ilara.com.ar'
+
+const shareOgImageUrl = new URL('/og-image.png', `${canonicalShareOrigin}/`).href
+const catalogOgUrl = new URL('/catalogo', `${canonicalShareOrigin}/`).href
 
 export const metadata: Metadata = {
     title: 'Catálogo de belleza en Neuquén',
@@ -20,14 +25,22 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Catálogo de belleza en Neuquén | Ilara',
         description: catalogDescription,
-        url: `${siteOrigin}/catalogo`,
-        images: [{ url: ogImageUrl, width: 512, height: 512, alt: 'Ilara' }],
+        url: catalogOgUrl,
+        images: [
+            {
+                url: shareOgImageUrl,
+                width: 1200,
+                height: 630,
+                alt: 'Ilara Beauty',
+                type: 'image/png',
+            },
+        ],
     },
     twitter: {
         card: 'summary_large_image',
         title: 'Catálogo de belleza en Neuquén | Ilara',
         description: catalogDescription,
-        images: [ogImageUrl],
+        images: [shareOgImageUrl],
     },
 }
 
