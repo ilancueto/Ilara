@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { getEnv } from '@/lib/env';
 
-const PUBLIC_ROUTES = ['/login', '/catalogo'];
+/** Rutas sin sesión: SEO (sitemap/robots deben ser XML/texto, no HTML de /login). */
+const PUBLIC_ROUTES = ['/login', '/catalogo', '/sitemap.xml', '/robots.txt'];
 
 /** Next.js 16+: sustituye la convención `middleware` (renombrada a `proxy`). */
 export async function proxy(request: NextRequest) {
@@ -50,5 +51,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|sw\\.js|swe-worker|~offline|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+    matcher: [
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw\\.js|swe-worker|~offline|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    ],
 };
