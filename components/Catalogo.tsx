@@ -199,13 +199,25 @@ export default function Catalogo() {
             {/* Encabezado: barra sticky + hero (un H1; SEO local en subtítulo) */}
             <header className="w-full">
                 <div className="sticky top-0 z-40 bg-white/95 dark:bg-[#08080b]/80 dark:backdrop-blur-md border-b border-pink-100/40 dark:border-gray-800/30 shadow-sm shadow-pink-500/5 dark:shadow-none">
-                    <div className="w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5">
-                        <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-gray-800/60 dark:border-gray-700/60 border border-pink-100 shadow-md shadow-pink-200/40 flex items-center justify-center" aria-hidden>
-                                    <Image src="/logo_icon.png" alt="" width={40} height={40} className="object-contain w-full h-full" />
+                    <div className="w-full px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+                        <div className="flex items-center justify-between gap-2 sm:gap-3 min-h-0">
+                            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                                <div
+                                    className="h-11 w-[128px] sm:h-[52px] sm:w-[172px] rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-gray-800/60 dark:border-gray-700/60 border border-pink-100 shadow-md shadow-pink-200/40 flex items-center justify-center px-1.5"
+                                    aria-hidden
+                                >
+                                    <Image
+                                        src="/logo-header.png"
+                                        alt=""
+                                        width={344}
+                                        height={120}
+                                        className="object-contain w-full h-full max-h-full"
+                                        sizes="(max-width: 640px) 128px, 172px"
+                                    />
                                 </div>
-                                <p className="text-xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight truncate">Ilara Beauty</p>
+                                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight truncate">
+                                    Ilara Beauty
+                                </p>
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
