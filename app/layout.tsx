@@ -64,6 +64,7 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  /** Open Graph global: og:type website. Sin fb:app_id. */
   openGraph: {
     type: "website",
     locale: "es_AR",
