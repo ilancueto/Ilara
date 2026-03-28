@@ -79,11 +79,12 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+/** Predeterminado claro; oscuro solo si el usuario lo guardó en localStorage. */
 const themeScript = `
 (function() {
   var key = 'ilara-theme';
   var stored = localStorage.getItem(key);
-  var dark = stored === 'dark' || (!stored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var dark = stored === 'dark';
   document.documentElement.classList.toggle('dark', dark);
 })();
 `;

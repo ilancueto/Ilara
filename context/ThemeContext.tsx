@@ -17,8 +17,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
-  if (stored === 'light' || stored === 'dark') return stored
-  if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark'
+  if (stored === 'dark') return 'dark'
   return 'light'
 }
 
@@ -32,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light')
   const [mounted, setMounted] = useState(false)
 
-  // Montar: usar localStorage + preferencia del sistema (igual que el script del layout).
+  // Montar: localStorage o claro por defecto (mismo criterio que el script del layout).
   // Sincronizar estado tras hidratar; el setState en mount es intencional para evitar mismatch SSR.
   /* eslint-disable react-hooks/set-state-in-effect -- init tema desde localStorage solo en cliente */
   useEffect(() => {
