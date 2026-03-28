@@ -23,6 +23,10 @@ const supabaseImageHost =
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    /** Menos JS en el bundle inicial (iconos, gráficos, fechas). */
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
+  },
   async headers() {
     return [
       {

@@ -1,11 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { supabase, Producto, Venta, ItemVenta, getProductImages } from '@/lib/supabase'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+
+const TableroVentasChart = dynamic(() => import('@/components/TableroVentasChart'), {
+    ssr: false,
+    loading: () => (
+        <div
+            className="flex-1 min-h-[280px] w-full pt-2 rounded-xl bg-pink-50/40 dark:bg-gray-800/40 animate-pulse"
+            aria-hidden
+        />
+    ),
+})
 import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
 import { format, subDays, isSameDay } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -273,53 +283,7 @@ export default function Tablero() {
                             </span>
                         </div>
 
-                        <div className="flex-1 min-h-[280px] w-full pt-2">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={ventasPorDia} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="barGradientPink" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#f472b6" />
-                                            <stop offset="100%" stopColor="#db2777" />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(236,72,153,0.08)'} />
-                                    <XAxis
-                                        dataKey="fecha"
-                                        tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12, fontWeight: 500 }}
-                                        axisLine={{ stroke: theme === 'dark' ? '#3f3f46' : '#fce7f3' }}
-                                        tickLine={false}
-                                        dy={10}
-                                    />
-                                    <YAxis
-                                        tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12, fontWeight: 500 }}
-                                        tickFormatter={(value) => value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    <Tooltip
-                                        contentStyle={{
-                                            background: theme === 'dark' ? '#27272a' : '#fff',
-                                            border: theme === 'dark' ? '1px solid #3f3f46' : '1px solid #fbcfe8',
-                                            borderRadius: '16px',
-                                            boxShadow: theme === 'dark' ? '0 10px 30px -5px rgba(0,0,0,0.4)' : '0 10px 30px -5px rgba(236,72,153,0.15)',
-                                            padding: '12px 16px',
-                                            color: theme === 'dark' ? '#f3f4f6' : '#1f2937'
-                                        }}
-                                        cursor={{ fill: 'rgba(236, 72, 153, 0.06)' }}
-                                        formatter={(value: unknown) => {
-                                            const n = typeof value === 'number' && Number.isFinite(value) ? value : 0
-                                            return [`$${n.toLocaleString()}`, 'Ventas']
-                                        }}
-                                    />
-                                    <Bar
-                                        dataKey="total"
-                                        radius={[8, 8, 8, 8]}
-                                        fill="url(#barGradientPink)"
-                                        barSize={32}
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <TableroVentasChart ventasPorDia={ventasPorDia} theme={theme} />
                     </PastelCard>
                 </div>
 

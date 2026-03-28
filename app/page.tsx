@@ -183,6 +183,9 @@ function HomeContent() {
                   width={256}
                   height={128}
                   className="w-full h-full object-contain"
+                  sizes="224px"
+                  priority
+                  fetchPriority="high"
                   onError={() => setLogoError(true)}
                 />
               ) : (
@@ -272,6 +275,9 @@ function HomeContent() {
                 width={200}
                 height={48}
                 className="h-12 w-auto max-w-[200px] object-contain object-left"
+                sizes="200px"
+                priority
+                fetchPriority="high"
                 onError={() => setLogoError(true)}
               />
             ) : (
