@@ -18,7 +18,7 @@ const siteUrl = getSiteUrl();
 const metadataBase = new URL(siteUrl);
 
 const defaultDescription =
-  "Ilara: productos de belleza y cosmética. Catálogo online, novedades y pedidos por WhatsApp.";
+  "Descubrí Ilara, tu catálogo de productos de belleza en Neuquén. Maquillaje, skincare y cosmética con pedidos por WhatsApp.";
 
 /** OG/Twitter: icono del sitio; fallback a asset público si hiciera falta */
 const ogImageUrl = `${siteUrl.replace(/\/$/, "")}/icon-512.png`;
@@ -26,7 +26,7 @@ const ogImageUrl = `${siteUrl.replace(/\/$/, "")}/icon-512.png`;
 export const metadata: Metadata = {
   metadataBase,
   title: {
-    default: "Ilara",
+    default: "Ilara | Productos de belleza en Neuquén",
     template: "%s | Ilara",
   },
   description: defaultDescription,
@@ -59,13 +59,13 @@ export const metadata: Metadata = {
     locale: "es_AR",
     url: siteUrl,
     siteName: "Ilara",
-    title: "Ilara",
+    title: "Ilara | Productos de belleza en Neuquén",
     description: defaultDescription,
     images: [{ url: ogImageUrl, width: 512, height: 512, alt: "Ilara" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ilara",
+    title: "Ilara | Productos de belleza en Neuquén",
     description: defaultDescription,
     images: [ogImageUrl],
   },

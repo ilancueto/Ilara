@@ -196,56 +196,63 @@ export default function Catalogo() {
 
     return (
         <div className="min-h-screen w-full min-w-0 bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-[#08080b] dark:via-[#060609] dark:to-[#08080b]" suppressHydrationWarning>
-            {/* Header */}
-            <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#08080b]/80 dark:backdrop-blur-md border-b border-pink-100/40 dark:border-gray-800/30 shadow-sm shadow-pink-500/5 dark:shadow-none">
-                <div className="w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-gray-800/60 dark:border-gray-700/60 border border-pink-100 shadow-md shadow-pink-200/40 flex items-center justify-center" aria-hidden>
-                                <Image src="/logo_icon.png" alt="" width={40} height={40} className="object-contain w-full h-full" />
+            {/* Encabezado: barra sticky + hero (un H1; SEO local en subtítulo) */}
+            <header className="w-full">
+                <div className="sticky top-0 z-40 bg-white/95 dark:bg-[#08080b]/80 dark:backdrop-blur-md border-b border-pink-100/40 dark:border-gray-800/30 shadow-sm shadow-pink-500/5 dark:shadow-none">
+                    <div className="w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-gray-800/60 dark:border-gray-700/60 border border-pink-100 shadow-md shadow-pink-200/40 flex items-center justify-center" aria-hidden>
+                                    <Image src="/logo_icon.png" alt="" width={40} height={40} className="object-contain w-full h-full" />
+                                </div>
+                                <p className="text-xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight truncate">Ilara Beauty</p>
                             </div>
-                            <div>
-                                <h1 className="text-xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">Ilara Beauty</h1>
-                                <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Catálogo · Pedí por WhatsApp</p>
-                            </div>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                            <ThemeSwitch />
-                            <Link
-                                href="/login"
-                                className="px-3 py-2 rounded-xl border border-pink-100 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:border-pink-200 dark:hover:border-pink-700 hover:text-pink-600 dark:hover:text-pink-400 transition-all duration-200"
-                            >
-                                Login
-                            </Link>
-                            <button
-                                onClick={() => startTransition(() => setMostrarCarrito(true))}
-                                className="relative p-2.5 rounded-xl bg-pink-50 dark:bg-gray-800/60 dark:hover:bg-gray-700/70 hover:bg-pink-100 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
-                                aria-label={carrito.length > 0 ? `Ver carrito, ${carrito.length} producto${carrito.length !== 1 ? 's' : ''}` : 'Ver carrito'}
-                            >
-                                <ShoppingBag className="w-5 h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
-                                {carrito.length > 0 && (
-                                    <span className={`absolute -top-0.5 -right-0.5 bg-pink-500 text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center ${badgeAnimado ? 'animate-bounce' : ''}`}>
-                                        {carrito.length}
-                                    </span>
-                                )}
-                            </button>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                <ThemeSwitch />
+                                <Link
+                                    href="/login"
+                                    className="px-3 py-2 rounded-xl border border-pink-100 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:border-pink-200 dark:hover:border-pink-700 hover:text-pink-600 dark:hover:text-pink-400 transition-all duration-200"
+                                >
+                                    Login
+                                </Link>
+                                <button
+                                    onClick={() => startTransition(() => setMostrarCarrito(true))}
+                                    className="relative p-2.5 rounded-xl bg-pink-50 dark:bg-gray-800/60 dark:hover:bg-gray-700/70 hover:bg-pink-100 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+                                    aria-label={carrito.length > 0 ? `Ver carrito, ${carrito.length} producto${carrito.length !== 1 ? 's' : ''}` : 'Ver carrito'}
+                                >
+                                    <ShoppingBag className="w-5 h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
+                                    {carrito.length > 0 && (
+                                        <span className={`absolute -top-0.5 -right-0.5 bg-pink-500 text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center ${badgeAnimado ? 'animate-bounce' : ''}`}>
+                                            {carrito.length}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Mismo padding horizontal que el bloque del buscador → mismo eje visual */}
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-b border-pink-100/30 dark:border-gray-800/25 text-center">
+                    <h1
+                        id="catalogo-titulo-principal"
+                        className="text-xl sm:text-2xl md:text-[1.75rem] font-extrabold text-gray-900 dark:text-gray-100 tracking-tight leading-snug text-balance"
+                    >
+                        Bienvenidos a Ilara Beauty
+                    </h1>
+                    <div className="mt-3 flex w-full justify-center">
+                        <p className="max-w-3xl text-center text-pretty text-gray-500 dark:text-gray-400 text-sm sm:text-base leading-relaxed">
+                            Catálogo de productos de belleza en Neuquén. Maquillaje, skincare y cosmética. Pedí por WhatsApp.
+                        </p>
                     </div>
                 </div>
             </header>
 
             {/* Contenedor principal: ancho completo para aprovechar todo el espacio */}
             <div className="w-full px-4 sm:px-6 lg:px-8">
-                {/* Hero / bienvenida */}
-                <section className="pt-6 pb-8 text-center">
-                    <p className="text-pink-600/90 dark:text-pink-400 font-semibold text-[11px] uppercase tracking-widest mb-0.5">Catálogo</p>
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">Bienvenidos a Ilara Beauty</h2>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5">Elegí lo que te guste y pedilo por WhatsApp</p>
-                </section>
-
                 {/* Bloque superior: búsqueda, orden, categorías y filtros integrados */}
-                <div className="pt-2 pb-4">
+                <div className="pt-4 pb-4">
                     {/* Fila 1: buscador + ordenar */}
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
                         <div className="relative flex-1 min-w-0 h-9">
@@ -306,7 +313,7 @@ export default function Catalogo() {
                         <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full min-w-0 -mx-1 px-1 sm:flex-1">
                             <button
                                 onClick={() => setCategoriaFiltro('all')}
-                                className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 shrink-0 ${categoriaFiltro === 'all'
+                                className={`px-4 py-2 rounded-full text-base font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 shrink-0 ${categoriaFiltro === 'all'
                                     ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/40 dark:shadow-pink-900/30'
                                     : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 hover:bg-pink-50/80 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'
                                 }`}
@@ -318,7 +325,7 @@ export default function Catalogo() {
                                 <button
                                     key={cat.id}
                                     onClick={() => setCategoriaFiltro(cat.id.toString())}
-                                    className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 shrink-0 ${categoriaFiltro === cat.id.toString()
+                                    className={`px-4 py-2 rounded-full text-base font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 shrink-0 ${categoriaFiltro === cat.id.toString()
                                         ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/40 dark:shadow-pink-900/30'
                                         : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 hover:bg-pink-50/80 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'
                                     }`}
@@ -413,7 +420,7 @@ export default function Catalogo() {
                                         <div className="p-4 flex flex-col flex-1 min-h-0 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
                                             <div className="flex-1 min-h-[4.5rem] flex flex-col">
                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-1">Combo</span>
-                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 mb-1.5">{combo.name}</h3>
+                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 mb-1.5">{combo.name}</h3>
                                                 {combo.description ? <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{combo.description}</p> : <span className="min-h-[1.25rem]" aria-hidden />}
                                             </div>
                                             <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
@@ -500,7 +507,7 @@ export default function Catalogo() {
                                     <div className="p-4 flex flex-col flex-1 min-h-0">
                                         <div className="flex-1 min-h-[4.5rem] flex flex-col">
                                             {producto.categories ? <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 dark:text-pink-400 mb-1">{producto.categories.name}</span> : <span className="min-h-[0.875rem]" aria-hidden />}
-                                            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 mb-1.5">{producto.name}</h3>
+                                            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 mb-1.5">{producto.name}</h3>
                                             {producto.brand ? <p className="text-xs text-gray-500 dark:text-gray-400">{producto.brand}</p> : <span className="min-h-[1rem]" aria-hidden />}
                                         </div>
                                         <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
