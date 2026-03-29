@@ -10,12 +10,20 @@ import { PastelCard } from '@/components/ui/PastelCard';
 
 interface ExpenseFormProps {
     expense?: Expense;
+    /** URL firmada del comprobante guardado (la carga async va en el padre para evitar setState en effect). */
+    storedReceiptPreviewUrl?: string | null;
     onSubmit: (data: ExpenseFormData) => void;
     onCancel: () => void;
     isLoading?: boolean;
 }
 
-export default function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseFormProps) {
+export default function ExpenseForm({
+    expense,
+    storedReceiptPreviewUrl = null,
+    onSubmit,
+    onCancel,
+    isLoading,
+}: ExpenseFormProps) {
     const [formData, setFormData] = useState<ExpenseFormData>({
         date: expense?.date || new Date().toISOString().split('T')[0],
         category: expense?.category || 'otros',
@@ -25,15 +33,15 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: 
         notes: expense?.notes || '',
     });
 
-    const [receiptPreview, setReceiptPreview] = useState<string | null>(expense?.receipt_url || null);
-
+    /** Data URL del archivo elegido en este formulario. */
+    const [localReceiptDataUrl, setLocalReceiptDataUrl] = useState<string | null>(null);
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setFormData({ ...formData, receipt: file });
             const reader = new FileReader();
             reader.onloadend = () => {
-                setReceiptPreview(reader.result as string);
+                setLocalReceiptDataUrl(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -163,20 +171,31 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: 
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
-                                {receiptPreview ? (
+                                {localReceiptDataUrl || (expense?.receipt_url && !formData.receipt) ? (
                                     <div className="flex items-center gap-3 p-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-pink-50/80 dark:bg-pink-900/30">
-                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex-shrink-0">
-                                            <Image src={receiptPreview} alt="Preview" width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                                            {localReceiptDataUrl && localReceiptDataUrl.includes('image') ? (
+                                                <Image src={localReceiptDataUrl} alt="Preview" width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                                            ) : storedReceiptPreviewUrl && !(expense?.receipt_url ?? '').toLowerCase().includes('pdf') ? (
+                                                <Image src={storedReceiptPreviewUrl} alt="Preview" width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                                            ) : (
+                                                <span className="text-pink-500 text-xs font-bold">PDF</span>
+                                            )}
                                         </div>
                                         <span className="text-sm font-medium text-pink-700 dark:text-pink-300 truncate flex-1 min-w-0">Comprobante cargado</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => { setReceiptPreview(null); setFormData({ ...formData, receipt: undefined }); }}
-                                            className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors flex-shrink-0"
-                                            aria-label="Quitar comprobante"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        {formData.receipt ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setLocalReceiptDataUrl(null);
+                                                    setFormData({ ...formData, receipt: undefined });
+                                                }}
+                                                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors flex-shrink-0"
+                                                aria-label="Quitar comprobante"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        ) : null}
                                     </div>
                                 ) : (
                                     <label
@@ -187,6 +206,14 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: 
                                         <span>Subir imagen o PDF</span>
                                     </label>
                                 )}
+                                {expense?.receipt_url && !formData.receipt ? (
+                                    <label
+                                        htmlFor="receipt-upload"
+                                        className="mt-2 inline-block text-xs font-semibold text-pink-600 dark:text-pink-400 hover:underline cursor-pointer"
+                                    >
+                                        Reemplazar comprobante
+                                    </label>
+                                ) : null}
                             </div>
                         </div>
 

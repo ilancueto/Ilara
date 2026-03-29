@@ -21,6 +21,37 @@ const supabaseImageHost =
   process.env.NEXT_PUBLIC_SUPABASE_IMAGE_HOST?.trim() ||
   'qbbnvdmadgomfmrsfxlo.supabase.co';
 
+const isDev = process.env.NODE_ENV === 'development';
+
+/** P3: sin unsafe-eval en prod; fuentes vía next/font (sin fonts.googleapis.com en runtime). */
+function buildContentSecurityPolicy(): string {
+  const scriptParts = [
+    "'self'",
+    "'unsafe-inline'",
+    'https://va.vercel-scripts.com',
+    ...(isDev ? (["'unsafe-eval'"] as const) : []),
+  ];
+  return [
+    "default-src 'self'",
+    [
+      'connect-src',
+      "'self'",
+      'https://*.supabase.co',
+      'wss://*.supabase.co',
+      'https://*.vercel-insights.com',
+      'https://vitals.vercel-insights.com',
+      'https://va.vercel-scripts.com',
+    ].join(' '),
+    "img-src 'self' data: blob: https:",
+    `script-src ${scriptParts.join(' ')}`,
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ');
+}
+
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
@@ -38,15 +69,7 @@ const nextConfig: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           {
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.vercel-insights.com https://vitals.vercel-insights.com",
-              "img-src 'self' data: https: blob:",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "frame-ancestors 'none'",
-            ].join('; '),
+            value: buildContentSecurityPolicy(),
           },
         ],
       },

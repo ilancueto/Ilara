@@ -1,4 +1,6 @@
 import { Expense } from '@/lib/types';
+import { useToast } from '@/context/ToastContext';
+import { getExpenseReceiptViewUrl } from '@/lib/expenseService';
 import {
     getCategoryIcon,
     getCategoryLabel,
@@ -16,6 +18,14 @@ interface ExpenseCardProps {
 }
 
 export default function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
+    const { showError } = useToast();
+
+    const abrirComprobante = async () => {
+        const u = await getExpenseReceiptViewUrl(expense);
+        if (u) window.open(u, '_blank', 'noopener,noreferrer');
+        else showError('No se pudo abrir el comprobante.');
+    };
+
     return (
         <PastelCard className="p-4 sm:p-5 group hover:-translate-y-0.5 transition-transform duration-200 border-pink-100/50 dark:border-gray-600">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-5 relative z-10">
@@ -29,15 +39,14 @@ export default function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardPr
                                 {expense.description}
                             </h3>
                             {expense.receipt_url && (
-                                <a
-                                    href={expense.receipt_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <button
+                                    type="button"
+                                    onClick={() => void abrirComprobante()}
                                     className="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-900/40 text-pink-500 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-800/50 flex-shrink-0 transition-colors"
                                     title="Ver comprobante"
                                 >
                                     <Receipt size={14} />
-                                </a>
+                                </button>
                             )}
                         </div>
                         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">

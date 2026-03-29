@@ -102,6 +102,8 @@ export type ItemVenta = {
   id: number
   sale_id: number
   product_id: number | null
+  /** Línea de combo vendido; permite restaurar stock al borrar la venta. */
+  combo_id?: number | null
   product_name: string
   quantity: number
   unit_price: number

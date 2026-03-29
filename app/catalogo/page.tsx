@@ -1,5 +1,11 @@
 import type { Metadata } from 'next'
 import Catalogo from '@/components/Catalogo'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
+import {
+    fetchCatalogProductsServer,
+    fetchCatalogCombosServer,
+    fetchCatalogCategoriesServer,
+} from '@/lib/catalog/serverCatalog'
 
 const catalogDescription =
     'Catálogo de productos de belleza en Neuquén: maquillaje, skincare y cosmética. Pedidos rápidos por WhatsApp.'
@@ -44,6 +50,26 @@ export const metadata: Metadata = {
     },
 }
 
-export default function CatalogoPage() {
-    return <Catalogo />
+/** ISR: datos del catálogo en HTML inicial + revalidación periódica. */
+export const revalidate = 60
+
+export default async function CatalogoPage() {
+    const supabase = await createSupabaseServerClient()
+    const [pr, co, ca] = await Promise.all([
+        fetchCatalogProductsServer(supabase),
+        fetchCatalogCombosServer(supabase),
+        fetchCatalogCategoriesServer(supabase),
+    ])
+    const serverFetchFailed = !pr.ok || !co.ok || !ca.ok
+
+    return (
+        <Catalogo
+            initialCatalog={{
+                productos: pr.ok ? pr.data : [],
+                combos: co.ok ? co.data : [],
+                categorias: ca.ok ? ca.data : [],
+                serverFetchFailed,
+            }}
+        />
+    )
 }

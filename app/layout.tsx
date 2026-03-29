@@ -1,17 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit } from "next/font/google";
+import { Outfit, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { SupabaseSessionRecovery } from "@/components/SupabaseSessionRecovery";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import { getSiteUrl } from "@/lib/site";
 
 const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-outfit",
+});
+
+/** Reemplaza Mareline (cdnfonts) por fuente self-hosted vía Google → Next (privacidad + CSP). */
+const ilaraScript = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-ilara-script",
+  display: "swap",
 });
 
 const siteUrl = getSiteUrl();
@@ -98,16 +107,6 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-/** Predeterminado claro; oscuro solo si el usuario lo guardó en localStorage. */
-const themeScript = `
-(function() {
-  var key = 'ilara-theme';
-  var stored = localStorage.getItem(key);
-  var dark = stored === 'dark';
-  document.documentElement.classList.toggle('dark', dark);
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -116,12 +115,14 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script src="/ilara-theme-init.js" strategy="beforeInteractive" />
         <link rel="icon" href="/icon-512.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link href="https://fonts.cdnfonts.com/css/mareline-script" rel="stylesheet" />
       </head>
-      <body className={`${outfit.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${outfit.variable} ${ilaraScript.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           <SupabaseSessionRecovery />
           <ToastProvider>

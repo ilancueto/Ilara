@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createPortal } from 'react-dom'
 import { supabase, getUser, Cliente, Venta, ItemVenta } from '@/lib/supabase'
 import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt, ChevronDown, ChevronUp, X } from 'lucide-react'
@@ -34,6 +35,10 @@ export default function Clientes() {
     const [ventaExpandida, setVentaExpandida] = useState<number | null>(null)
     const [itemsPorVenta, setItemsPorVenta] = useState<Map<number, ItemVenta[]>>(new Map())
 
+    const refModalCliente = useRef<HTMLDivElement>(null)
+    const refModalEliminar = useRef<HTMLDivElement>(null)
+    const refModalPerfil = useRef<HTMLDivElement>(null)
+
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -59,24 +64,51 @@ export default function Clientes() {
         obtenerClientes()
     }, [obtenerClientes])
 
-    const obtenerStatsClientes = async (clientes: Cliente[]) => {
+    const obtenerStatsClientes = async (lista: Cliente[]) => {
         const statsMap = new Map<number, ClienteStats>()
+        if (lista.length === 0) {
+            setClientesStats(statsMap)
+            return
+        }
 
-        for (const cliente of clientes) {
-            const { data: ventas } = await supabase
+        const agg = new Map<number, { totalVentas: number; totalGastado: number; ultimaIso: string | null }>()
+        for (const c of lista) {
+            agg.set(c.id, { totalVentas: 0, totalGastado: 0, ultimaIso: null })
+        }
+
+        const ids = lista.map((c) => c.id)
+        const chunkSize = 80
+        for (let i = 0; i < ids.length; i += chunkSize) {
+            const slice = ids.slice(i, i + chunkSize)
+            const { data: rows, error } = await supabase
                 .from('sales')
-                .select('total, created_at')
-                .eq('customer_id', cliente.id)
+                .select('customer_id, total, created_at')
+                .in('customer_id', slice)
 
-            if (ventas) {
-                const totalVentas = ventas.length
-                const totalGastado = ventas.reduce((sum, v) => sum + v.total, 0)
-                const ultimaCompra = ventas.length > 0
-                    ? format(new Date(ventas[0].created_at), 'dd MMM yyyy', { locale: es })
-                    : null
+            if (error) continue
 
-                statsMap.set(cliente.id, { totalVentas, totalGastado, ultimaCompra })
+            for (const row of rows || []) {
+                const cid = row.customer_id as number
+                const a = agg.get(cid)
+                if (!a) continue
+                a.totalVentas += 1
+                a.totalGastado += Number(row.total)
+                const iso = row.created_at as string
+                if (!a.ultimaIso || new Date(iso) > new Date(a.ultimaIso)) {
+                    a.ultimaIso = iso
+                }
             }
+        }
+
+        for (const c of lista) {
+            const a = agg.get(c.id)!
+            statsMap.set(c.id, {
+                totalVentas: a.totalVentas,
+                totalGastado: a.totalGastado,
+                ultimaCompra: a.ultimaIso
+                    ? format(new Date(a.ultimaIso), 'dd MMM yyyy', { locale: es })
+                    : null,
+            })
         }
 
         setClientesStats(statsMap)
@@ -233,6 +265,10 @@ export default function Clientes() {
         setVentaExpandida(null)
         setItemsPorVenta(new Map())
     }
+
+    useDialogA11y(mostrarModal, cerrarModal, refModalCliente)
+    useDialogA11y(mostrarEliminarClientesModal, () => setMostrarEliminarClientesModal(false), refModalEliminar)
+    useDialogA11y(!!clientePerfil, cerrarPerfil, refModalPerfil)
 
     const toggleDetalleVenta = async (saleId: number) => {
         if (ventaExpandida === saleId) {
@@ -448,9 +484,15 @@ export default function Clientes() {
                 <>
                     <div className="fixed inset-0 bg-black/55 dark:bg-black/65 z-[200]" onClick={() => !eliminandoClientes && setMostrarEliminarClientesModal(false)} aria-hidden />
                     <div className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none">
-                        <div className="pointer-events-auto w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden">
+                        <div
+                            ref={refModalEliminar}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="clientes-eliminar-titulo"
+                            className="pointer-events-auto w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden outline-none"
+                        >
                             <div className="flex-shrink-0 p-6 border-b border-gray-100 dark:border-gray-700">
-                                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar clientes</h3>
+                                <h3 id="clientes-eliminar-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar clientes</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los clientes a eliminar. Las ventas asociadas quedarán sin cliente.</p>
                             </div>
                             <div className="flex-1 min-h-0 overflow-y-auto p-4">
@@ -488,9 +530,15 @@ export default function Clientes() {
             {mostrarModal && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="fixed inset-0 bg-black/50 dark:bg-black/60 z-[200] animate-fade-in" onClick={cerrarModal} aria-hidden />
-                    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] flex flex-col z-[201] rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden">
+                    <div
+                        ref={refModalCliente}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="clientes-form-titulo"
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] flex flex-col z-[201] rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden outline-none"
+                    >
                         <div className="flex items-center justify-between flex-shrink-0 p-6 sm:p-8 pb-4">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+                            <h3 id="clientes-form-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
                                 <div className="p-2.5 bg-pink-100 dark:bg-pink-900/40 rounded-xl text-pink-600 dark:text-pink-400">
                                     <User className="w-5 h-5" />
                                 </div>
@@ -537,13 +585,19 @@ export default function Clientes() {
             {clientePerfil && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="fixed inset-0 bg-black/50 dark:bg-black/60 z-[200]" onClick={cerrarPerfil} aria-hidden />
-                    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] flex flex-col z-[201] rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden">
+                    <div
+                        ref={refModalPerfil}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="clientes-perfil-titulo"
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] flex flex-col z-[201] rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden outline-none"
+                    >
                         <div className="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-4 flex-shrink-0">
                             <div className="flex items-center gap-4 min-w-0">
                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/50 dark:to-gray-700 border border-pink-100 dark:border-gray-600 flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-lg flex-shrink-0">
                                     {clientePerfil.first_name.charAt(0)}{clientePerfil.last_name.charAt(0)}
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
+                                <h3 id="clientes-perfil-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
                                     {clientePerfil.first_name} {clientePerfil.last_name}
                                 </h3>
                             </div>

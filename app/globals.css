@@ -514,9 +514,9 @@ select:disabled {
   margin-bottom: 0 !important;
 }
 
-/* Marca Ilara - script */
+/* Marca Ilara — script vía next/font (variable --font-ilara-script en layout) */
 .font-ilara {
-  font-family: 'Mareline Script', cursive;
+  font-family: var(--font-ilara-script), ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 }
 
 .text-gradient {

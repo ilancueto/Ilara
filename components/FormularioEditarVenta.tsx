@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { Venta } from '@/lib/supabase'
 import { Cliente } from '@/lib/supabase'
-import { updateSale, SaleUpdateData } from '@/lib/saleService'
+import { updateSale, SaleUpdateData, getSaleReceiptViewUrl } from '@/lib/saleService'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useToast } from '@/context/ToastContext'
 import { X, Upload, Trash2, User, Banknote, CreditCard, FileText, ExternalLink, Clock, Receipt } from 'lucide-react'
@@ -29,6 +30,8 @@ export default function FormularioEditarVenta({
   setGuardando,
 }: FormularioEditarVentaProps) {
   const { showError } = useToast()
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useDialogA11y(true, onCancelar, dialogRef)
   const [saleDate, setSaleDate] = useState(
     venta.sale_date ? format(new Date(venta.sale_date), 'yyyy-MM-dd') : ''
   )
@@ -37,7 +40,10 @@ export default function FormularioEditarVenta({
   const [paymentMethod, setPaymentMethod] = useState(venta.payment_method || 'efectivo')
   const [notes, setNotes] = useState(venta.notes || '')
   const [receiptFile, setReceiptFile] = useState<File | undefined>()
-  const [receiptPreview, setReceiptPreview] = useState<string | null>(venta.receipt_url || null)
+  /** Solo archivo recién elegido (data URL). */
+  const [localReceiptDataUrl, setLocalReceiptDataUrl] = useState<string | null>(null)
+  /** Miniatura / vista para comprobante ya guardado (URL firmada). */
+  const [remoteSignedThumb, setRemoteSignedThumb] = useState<string | null>(null)
   const [clearReceipt, setClearReceipt] = useState(false)
   const [eligioOtro, setEligioOtro] = useState(false)
 
@@ -47,10 +53,27 @@ export default function FormularioEditarVenta({
     setCustomerId(venta.customer_id ?? null)
     setPaymentMethod(venta.payment_method || 'efectivo')
     setNotes(venta.notes || '')
-    setReceiptPreview(venta.receipt_url || null)
+    setReceiptFile(undefined)
+    setLocalReceiptDataUrl(null)
+    setRemoteSignedThumb(null)
     setClearReceipt(false)
     setEligioOtro(!!(venta.customer_id == null && (venta.customer_name ?? '').trim() !== ''))
   }, [venta])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!venta.receipt_url || clearReceipt || receiptFile) {
+      setRemoteSignedThumb(null)
+      return
+    }
+    ;(async () => {
+      const u = await getSaleReceiptViewUrl(venta)
+      if (!cancelled) setRemoteSignedThumb(u)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [venta, venta.receipt_url, venta.id, clearReceipt, receiptFile])
 
   const OTRO_CLIENTE = '__otro__'
 
@@ -86,7 +109,7 @@ export default function FormularioEditarVenta({
       setReceiptFile(file)
       setClearReceipt(false)
       const reader = new FileReader()
-      reader.onloadend = () => setReceiptPreview(reader.result as string)
+      reader.onloadend = () => setLocalReceiptDataUrl(reader.result as string)
       reader.readAsDataURL(file)
     }
   }
@@ -94,10 +117,31 @@ export default function FormularioEditarVenta({
   const handleQuitarComprobante = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setReceiptFile(undefined)
-    setReceiptPreview(null)
-    setClearReceipt(!!venta.receipt_url)
+    if (receiptFile) {
+      setReceiptFile(undefined)
+      setLocalReceiptDataUrl(null)
+      return
+    }
+    setClearReceipt(true)
+    setRemoteSignedThumb(null)
   }
+
+  const openStoredReceipt = async () => {
+    if (localReceiptDataUrl) {
+      window.open(localReceiptDataUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+    const u = await getSaleReceiptViewUrl(venta)
+    if (u) window.open(u, '_blank', 'noopener,noreferrer')
+    else showError('No se pudo abrir el comprobante. Revisá permisos del bucket o volvé a subirlo.')
+  }
+
+  const tieneBloqueComprobante =
+    !!localReceiptDataUrl || (!!venta.receipt_url && !clearReceipt)
+  const esPdfGuardado =
+    !localReceiptDataUrl &&
+    !!venta.receipt_url &&
+    venta.receipt_url.toLowerCase().includes('pdf')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -133,7 +177,14 @@ export default function FormularioEditarVenta({
   const modalContent = (
     <>
       <div className="modal-backdrop" onClick={onCancelar} />
-      <PastelCard className="fixed left-1/2 -translate-x-1/2 top-8 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 !p-0 overflow-hidden bg-white dark:bg-gray-900" noHover>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="editar-venta-titulo"
+        className="fixed left-1/2 -translate-x-1/2 top-8 w-full max-w-lg max-h-[calc(100vh-4rem)] z-[100] outline-none"
+      >
+      <PastelCard className="max-h-[calc(100vh-4rem)] overflow-y-auto !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 !p-0 overflow-hidden bg-white dark:bg-gray-900" noHover>
         {/* Header con gradiente */}
         <div className="bg-gradient-to-br from-pink-500/10 via-rose-50 to-transparent dark:from-pink-900/20 dark:via-gray-800/80 dark:to-transparent border-b border-pink-100 dark:border-gray-700 px-6 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9">
           <div className="flex items-center justify-between gap-4">
@@ -142,7 +193,7 @@ export default function FormularioEditarVenta({
                 <Receipt className="w-5 h-5" strokeWidth={2} />
               </div>
               <div className="min-w-0">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">
+                <h3 id="editar-venta-titulo" className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">
                   Editar venta #{venta.id}
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1.5">Modificá los datos de la venta</p>
@@ -246,31 +297,30 @@ export default function FormularioEditarVenta({
                 onChange={handleFileChange}
                 className="hidden"
               />
-              {receiptPreview ? (
+              {tieneBloqueComprobante ? (
                 <div className="flex flex-wrap items-center gap-4 p-5 border border-pink-200 dark:border-pink-800 rounded-2xl bg-pink-50 dark:bg-pink-900/30">
-                  {receiptPreview.startsWith('data:') || receiptPreview.startsWith('http') ? (
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-gray-700 border border-pink-100 dark:border-transparent flex-shrink-0">
-                      {receiptPreview.startsWith('data:') && receiptPreview.includes('image') ? (
-                        <Image src={receiptPreview} alt="Preview" width={56} height={56} className="w-full h-full object-cover" unoptimized />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-pink-500 dark:text-pink-400">
-                          <FileText className="w-6 h-6" />
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-gray-700 border border-pink-100 dark:border-transparent flex-shrink-0">
+                    {localReceiptDataUrl && localReceiptDataUrl.includes('image') ? (
+                      <Image src={localReceiptDataUrl} alt="Preview" width={56} height={56} className="w-full h-full object-cover" unoptimized />
+                    ) : remoteSignedThumb && !esPdfGuardado ? (
+                      <Image src={remoteSignedThumb} alt="Preview" width={56} height={56} className="w-full h-full object-cover" unoptimized />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-pink-500 dark:text-pink-400">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
                   <span className="text-sm text-pink-700 dark:text-pink-300 flex-1 truncate min-w-0 font-medium">
                     {receiptFile ? receiptFile.name : 'Comprobante adjunto'}
                   </span>
-                  <a
-                    href={receiptPreview}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => void openStoredReceipt()}
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300 hover:bg-pink-200 dark:hover:bg-pink-800 text-xs font-bold transition-colors"
                   >
                     <ExternalLink size={14} />
                     Ver comprobante
-                  </a>
+                  </button>
                   <button
                     type="button"
                     onClick={handleQuitarComprobante}
@@ -316,6 +366,7 @@ export default function FormularioEditarVenta({
           </div>
         </form>
       </PastelCard>
+      </div>
     </>
   )
 

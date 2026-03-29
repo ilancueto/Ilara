@@ -12,7 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "migrate:receipts": "node --env-file=.env.local scripts/migrate-receipts-legacy-to-user-prefix.mjs",
+    "migrate:receipts:execute": "node --env-file=.env.local scripts/migrate-receipts-legacy-to-user-prefix.mjs --execute"
   },
   "dependencies": {
     "@serwist/next": "^9.5.6",

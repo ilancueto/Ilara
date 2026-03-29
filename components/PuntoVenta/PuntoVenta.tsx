@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase, getUser, Producto, ItemCarrito, Cliente, ComboConItems } from '@/lib/supabase'
+import { supabase, Producto, ItemCarrito, Cliente, ComboConItems, type PagoDesglose } from '@/lib/supabase'
 import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { useToast } from '@/context/ToastContext'
 import CatalogoPOS from './CatalogoPOS'
@@ -154,8 +154,7 @@ export default function PuntoVenta() {
 
             // Con "cobrar después" no se envía desglose de pago (es cuenta por cobrar)
             const tieneDesglose = !cobrarDespues && paymentBreakdown && paymentBreakdown.length > 0
-            const user = await getUser()
-            const payload: Record<string, unknown> = {
+            const salePayload: Record<string, unknown> = {
                 sale_date: new Date().toISOString(),
                 total,
                 payment_method: cobrarDespues ? 'credito' : (tieneDesglose ? 'mixto' : metodoPago),
@@ -164,90 +163,98 @@ export default function PuntoVenta() {
                 notes: notas || null,
                 status: cobrarDespues ? 'pending_payment' : 'completed'
             }
-            if (user?.id) payload.created_by = user.id
-            if (tieneDesglose && paymentBreakdown) payload.payment_breakdown = paymentBreakdown
+            if (tieneDesglose && paymentBreakdown) salePayload.payment_breakdown = paymentBreakdown
 
-            const { data: venta, error: errorVenta } = await supabase
-                .from('sales')
-                .insert([payload])
-                .select()
-                .single()
-
-            if (errorVenta) throw errorVenta
-
-            // 2. Crear items de venta
-            const itemsVenta: Array<{ sale_id: number; product_id: number | null; product_name: string; quantity: number; unit_price: number; subtotal: number; discount_percentage: number }> = []
-            const movimientos: Array<{ product_id: number; type: string; quantity: number; reference_type: string; reference_id: number; notes: null }> = []
-
+            const lines: Array<Record<string, unknown>> = []
             for (const item of carrito) {
                 if (item.producto) {
-                    itemsVenta.push({
-                        sale_id: venta.id,
+                    lines.push({
+                        line_type: 'product',
                         product_id: item.producto.id,
                         product_name: item.producto.name,
                         quantity: item.cantidad,
                         unit_price: item.producto.sale_price,
                         subtotal: item.producto.sale_price * item.cantidad,
-                        discount_percentage: 0
+                        discount_percentage: 0,
                     })
-                    movimientos.push({ product_id: item.producto.id, type: 'sale', quantity: -item.cantidad, reference_type: 'sale', reference_id: venta.id, notes: null })
                 } else if (item.combo) {
-                    itemsVenta.push({
-                        sale_id: venta.id,
-                        product_id: null,
+                    lines.push({
+                        line_type: 'combo',
+                        combo_id: item.combo.id,
                         product_name: item.combo.name,
                         quantity: item.cantidad,
                         unit_price: item.combo.sale_price,
                         subtotal: item.combo.sale_price * item.cantidad,
-                        discount_percentage: 0
+                        discount_percentage: 0,
                     })
-                    for (const ci of item.combo.combo_items || []) {
-                        const qty = ci.quantity * item.cantidad
-                        movimientos.push({ product_id: ci.product_id, type: 'sale', quantity: -qty, reference_type: 'sale', reference_id: venta.id, notes: null })
-                    }
                 }
             }
 
-            const { error: errorItems } = await supabase.from('sale_items').insert(itemsVenta)
-            if (errorItems) throw errorItems
+            const { data: rpcData, error: rpcError } = await supabase.rpc('create_sale_with_items', {
+                p_payload: { sale: salePayload, lines },
+            })
 
-            // 3. Actualizar stock
-            for (const item of carrito) {
-                if (item.producto) {
-                    const nuevoStock = item.producto.stock - item.cantidad
-                    await supabase.from('products').update({ stock: nuevoStock }).eq('id', item.producto.id)
-                } else if (item.combo) {
-                    for (const ci of item.combo.combo_items || []) {
-                        const prod = productos.find(p => p.id === ci.product_id)
-                        if (prod) {
-                            const nuevoStock = prod.stock - ci.quantity * item.cantidad
-                            await supabase.from('products').update({ stock: nuevoStock }).eq('id', ci.product_id)
-                        }
-                    }
+            if (rpcError) {
+                const m = rpcError.message || ''
+                if (m.includes('insufficient_stock')) {
+                    showError('No hay stock suficiente para esta venta. Actualizá el catálogo e intentá de nuevo.')
+                    return
                 }
+                if (m.includes('not_authenticated')) {
+                    showError('Sesión expirada. Volvé a iniciar sesión.')
+                    return
+                }
+                if (m.includes('invalid_combo')) {
+                    showError('Uno de los combos ya no es válido. Actualizá la página.')
+                    return
+                }
+                if (m.includes('empty_combo')) {
+                    showError('Uno de los combos no tiene productos configurados.')
+                    return
+                }
+                if (m.includes('invalid_quantity')) {
+                    showError('Cantidades inválidas en el carrito. Revisá las cantidades e intentá de nuevo.')
+                    return
+                }
+                throw rpcError
             }
 
-            // 4. Movimientos de stock
-            const { error: errMov } = await supabase.from('stock_movements').insert(movimientos)
-            if (errMov) {
-                // Tabla stock_movements puede no existir aún; la venta ya se guardó
+            const venta = (rpcData as { sale?: Record<string, unknown> } | null)?.sale as
+                | {
+                      id: number
+                      total: number
+                      customer_name: string | null
+                      payment_method: string | null
+                      payment_breakdown?: unknown
+                      notes: string | null
+                      sale_date: string
+                      created_at: string
+                  }
+                | undefined
+
+            if (!venta?.id) {
+                showError('La venta no se pudo registrar correctamente.')
+                return
             }
+
+            const itemsComprobante = lines.map((ln) => ({
+                product_name: String(ln.product_name ?? ''),
+                quantity: Number(ln.quantity),
+                unit_price: Number(ln.unit_price),
+                subtotal: Number(ln.subtotal),
+            }))
+
+            const desglose =
+              Array.isArray(venta.payment_breakdown) ? (venta.payment_breakdown as PagoDesglose[]) : null
 
             showSuccess(cobrarDespues ? 'Venta registrada como cuenta por cobrar' : '¡Venta completada! Stock actualizado')
-            // Abrir comprobante para imprimir o guardar PDF y dar al cliente
-            const itemsComprobante = itemsVenta.map(({ product_name, quantity, unit_price, subtotal }) => ({
-              product_name,
-              quantity,
-              unit_price,
-              subtotal,
-            }))
             const abrio = imprimirComprobante(
               {
                 id: venta.id,
-                total: venta.total,
+                total: Number(venta.total),
                 customer_name: venta.customer_name ?? null,
                 payment_method: venta.payment_method ?? null,
-                payment_breakdown: venta.payment_breakdown ?? null,
+                payment_breakdown: desglose,
                 notes: venta.notes ?? null,
                 sale_date: venta.sale_date,
                 created_at: venta.created_at,

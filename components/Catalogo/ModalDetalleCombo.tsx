@@ -1,6 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
 import { ComboConItems, Producto, getProductImages } from '@/lib/supabase'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import Image from 'next/image'
 import { X, Package, Sparkles } from 'lucide-react'
 
@@ -13,11 +15,19 @@ interface ModalDetalleComboProps {
 
 export function ModalDetalleCombo({ combo, onClose, onAgregar, disponible }: ModalDetalleComboProps) {
   const items = combo.combo_items || []
+  const panelRef = useRef<HTMLDivElement>(null)
+  useDialogA11y(true, onClose, panelRef)
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="combo-detail-title">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
-      <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-none border border-gray-100 dark:border-gray-600 overflow-hidden animate-fade-in-scale">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="combo-detail-title"
+        className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-none border border-gray-100 dark:border-gray-600 overflow-hidden animate-fade-in-scale outline-none"
+      >
         <div className="relative px-6 pt-6 pb-4 bg-gradient-to-br from-amber-50 to-orange-50/80 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-amber-100/80 dark:border-gray-600">
           <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-700 transition-colors" aria-label="Cerrar">
             <X className="w-5 h-5" />

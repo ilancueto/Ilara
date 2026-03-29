@@ -7,10 +7,12 @@ export type VentaDiaChartPoint = { fecha: string; total: number; cantidad: numbe
 type Props = {
     ventasPorDia: VentaDiaChartPoint[]
     theme: 'light' | 'dark'
+    /** Leyenda del tooltip (día vs mes). */
+    valueLabel?: string
 }
 
 /** Gráfico extraído para cargar Recharts en chunk aparte (mejor TTI/LCP en `/`). */
-export default function TableroVentasChart({ ventasPorDia, theme }: Props) {
+export default function TableroVentasChart({ ventasPorDia, theme, valueLabel = 'Ventas' }: Props) {
     return (
         <div className="flex-1 min-h-[280px] w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -50,7 +52,7 @@ export default function TableroVentasChart({ ventasPorDia, theme }: Props) {
                         cursor={{ fill: 'rgba(236, 72, 153, 0.06)' }}
                         formatter={(value: unknown) => {
                             const n = typeof value === 'number' && Number.isFinite(value) ? value : 0
-                            return [`$${n.toLocaleString()}`, 'Ventas']
+                            return [`$${n.toLocaleString()}`, valueLabel]
                         }}
                     />
                     <Bar dataKey="total" radius={[8, 8, 8, 8]} fill="url(#barGradientPink)" barSize={32} />

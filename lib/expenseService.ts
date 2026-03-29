@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase';
+import { deleteReceiptObject, getReceiptSignedUrl, uploadReceiptFile } from '@/lib/receiptStorage';
 import {
     Expense,
     ExpenseFormData,
@@ -61,7 +62,7 @@ export async function createExpense(formData: ExpenseFormData): Promise<Expense>
     // Subir comprobante si existe
     let receiptUrl: string | undefined;
     if (formData.receipt) {
-        receiptUrl = await uploadReceipt(formData.receipt);
+        receiptUrl = await uploadReceiptFile(formData.receipt, 'expense');
     }
 
     // Obtener user_id
@@ -89,7 +90,7 @@ export async function createExpense(formData: ExpenseFormData): Promise<Expense>
         console.error('Error creating expense:', error);
         // Si falla, eliminar el comprobante subido
         if (receiptUrl) {
-            await deleteReceipt(receiptUrl);
+            await deleteReceiptObject(receiptUrl);
         }
         throw error;
     }
@@ -103,7 +104,7 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
     // Si hay un nuevo comprobante, subirlo
     let receiptUrl: string | undefined;
     if (formData.receipt) {
-        receiptUrl = await uploadReceipt(formData.receipt);
+        receiptUrl = await uploadReceiptFile(formData.receipt, 'expense');
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -129,7 +130,7 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
         console.error('Error updating expense:', error);
         // Si falla, eliminar el nuevo comprobante subido
         if (receiptUrl) {
-            await deleteReceipt(receiptUrl);
+            await deleteReceiptObject(receiptUrl);
         }
         throw error;
     }
@@ -160,59 +161,13 @@ export async function deleteExpense(id: string): Promise<void> {
 
     // Eliminar el comprobante si existe
     if (expense?.receipt_url) {
-        await deleteReceipt(expense.receipt_url);
+        await deleteReceiptObject(expense.receipt_url);
     }
 }
 
-// Subir comprobante
-export async function uploadReceipt(file: File): Promise<string> {
-    if (!file || file.size === 0) {
-        throw new Error('El archivo está vacío o no es válido.');
-    }
-
-    // Extensión segura (solo alfanuméricos, minúscula)
-    const rawExt = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const ext = rawExt || 'jpg';
-    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`;
-
-    // Content-Type explícito para evitar 400 por MIME
-    const contentType = file.type || (ext === 'png' ? 'image/png' : ext === 'pdf' ? 'application/pdf' : 'image/jpeg');
-
-    const { error: uploadError } = await supabase.storage
-        .from('receipts')
-        .upload(fileName, file, {
-            contentType,
-            cacheControl: '3600',
-            upsert: false,
-        });
-
-    if (uploadError) {
-        console.error('Error uploading receipt:', uploadError);
-        throw uploadError;
-    }
-
-    const { data } = supabase.storage
-        .from('receipts')
-        .getPublicUrl(fileName);
-
-    return data.publicUrl;
-}
-
-// Eliminar comprobante
-export async function deleteReceipt(url: string): Promise<void> {
-
-    // Extraer el path del URL
-    const urlParts = url.split('/');
-    const filePath = urlParts[urlParts.length - 1];
-
-    const { error } = await supabase.storage
-        .from('receipts')
-        .remove([filePath]);
-
-    if (error) {
-        console.error('Error deleting receipt:', error);
-        // No lanzar error, solo loguear
-    }
+/** URL temporal para ver comprobante de gasto (bucket privado). */
+export async function getExpenseReceiptViewUrl(expense: Pick<Expense, 'receipt_url'>): Promise<string | null> {
+    return getReceiptSignedUrl(expense.receipt_url);
 }
 
 // Obtener estadísticas de gastos

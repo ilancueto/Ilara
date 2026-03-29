@@ -1,6 +1,7 @@
 // Servicio para actualizar ventas (historial) y subir comprobantes
 import { supabase, getUser } from '@/lib/supabase'
 import { Venta } from '@/lib/supabase'
+import { deleteReceiptObject, getReceiptSignedUrl, uploadReceiptFile } from '@/lib/receiptStorage'
 
 export type SaleUpdateData = {
   sale_date?: string
@@ -14,26 +15,19 @@ export type SaleUpdateData = {
 }
 
 async function uploadReceipt(file: File): Promise<string> {
-  if (!file || file.size === 0) throw new Error('El archivo está vacío o no es válido.')
-  const rawExt = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-  const ext = rawExt || 'jpg'
-  const fileName = `sale-${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`
-  const contentType = file.type || (ext === 'png' ? 'image/png' : ext === 'pdf' ? 'application/pdf' : 'image/jpeg')
+  return uploadReceiptFile(file, 'sale')
+}
 
-  const { error } = await supabase.storage
-    .from('receipts')
-    .upload(fileName, file, { contentType, cacheControl: '3600', upsert: false })
-
-  if (error) throw error
-  const { data } = supabase.storage.from('receipts').getPublicUrl(fileName)
-  return data.publicUrl
+/** URL temporal para ver/descargar comprobante (bucket privado). */
+export async function getSaleReceiptViewUrl(venta: Pick<Venta, 'receipt_url'>): Promise<string | null> {
+  return getReceiptSignedUrl(venta.receipt_url)
 }
 
 export async function updateSale(id: number, data: SaleUpdateData): Promise<Venta> {
-  let receiptUrl: string | undefined
+  let receiptPath: string | undefined
 
   if (data.receipt) {
-    receiptUrl = await uploadReceipt(data.receipt)
+    receiptPath = await uploadReceipt(data.receipt)
   }
 
   const updatePayload: Record<string, unknown> = {}
@@ -43,7 +37,7 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
   if (data.payment_method !== undefined) updatePayload.payment_method = data.payment_method
   if (data.notes !== undefined) updatePayload.notes = data.notes
   if (data.clearReceipt) updatePayload.receipt_url = null
-  else if (receiptUrl !== undefined) updatePayload.receipt_url = receiptUrl
+  else if (receiptPath !== undefined) updatePayload.receipt_url = receiptPath
 
   const user = await getUser()
   if (user?.id) updatePayload.updated_by = user.id
@@ -56,12 +50,12 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
     .single()
 
   if (error) {
-    // Columna receipt_url no existe: guardamos el resto y avisamos
-    if (error.code === 'PGRST204' && receiptUrl !== undefined) {
+    if (error.code === 'PGRST204' && receiptPath !== undefined) {
       try {
-        const path = receiptUrl.split('/').pop()
-        if (path) await supabase.storage.from('receipts').remove([path])
-      } catch {}
+        await deleteReceiptObject(receiptPath)
+      } catch {
+        /* ignore */
+      }
       const fallbackPayload = { ...updatePayload } as Record<string, unknown>
       delete fallbackPayload.receipt_url
       const { data: fallbackUpdated, error: fallbackError } = await supabase
@@ -71,17 +65,20 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
         .select()
         .single()
       if (!fallbackError && fallbackUpdated) {
-        const err = new Error('La venta se actualizó, pero no se pudo guardar el comprobante. Agregá la columna receipt_url en la tabla sales.') as Error & { code?: string; updated?: Venta }
+        const err = new Error(
+          'La venta se actualizó, pero no se pudo guardar el comprobante. Agregá la columna receipt_url en la tabla sales.'
+        ) as Error & { code?: string; updated?: Venta }
         err.code = 'RECEIPT_COLUMN_MISSING'
         ;(err as Error & { updated: Venta }).updated = fallbackUpdated as Venta
         throw err
       }
     }
-    if (receiptUrl) {
+    if (receiptPath) {
       try {
-        const path = receiptUrl.split('/').pop()
-        if (path) await supabase.storage.from('receipts').remove([path])
-      } catch {}
+        await deleteReceiptObject(receiptPath)
+      } catch {
+        /* ignore */
+      }
     }
     throw error
   }
@@ -89,46 +86,22 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
   return updated
 }
 
-/** Elimina una venta y devuelve el stock de los productos a su estado anterior */
+type DeleteSaleRpcResult = {
+  receipt_stored?: string | null
+  ok?: boolean
+}
+
+/** Elimina una venta y devuelve el stock (atómico en DB vía RPC). Limpia el archivo de comprobante si existe. */
 export async function deleteSale(saleId: number): Promise<void> {
-  const { data: items, error: errItems } = await supabase
-    .from('sale_items')
-    .select('product_id, quantity')
-    .eq('sale_id', saleId)
+  const { data, error } = await supabase.rpc('delete_sale_and_restore_stock', {
+    p_sale_id: saleId,
+  })
 
-  if (errItems) throw errItems
+  if (error) throw error
 
-  const { data: sale, error: errSale } = await supabase
-    .from('sales')
-    .select('receipt_url')
-    .eq('id', saleId)
-    .single()
-
-  if (errSale || !sale) throw errSale || new Error('Venta no encontrada')
-
-  for (const item of items || []) {
-    if (item.product_id == null) continue
-    const { data: product, error: errProd } = await supabase
-      .from('products')
-      .select('stock')
-      .eq('id', item.product_id)
-      .single()
-    if (errProd || product == null) continue
-    const newStock = (product.stock ?? 0) + item.quantity
-    await supabase
-      .from('products')
-      .update({ stock: newStock })
-      .eq('id', item.product_id)
-  }
-
-  await supabase.from('sale_items').delete().eq('sale_id', saleId)
-  const { error: errDelete } = await supabase.from('sales').delete().eq('id', saleId)
-  if (errDelete) throw errDelete
-
-  if (sale.receipt_url) {
-    try {
-      const path = sale.receipt_url.split('/').pop()
-      if (path) await supabase.storage.from('receipts').remove([path])
-    } catch {}
+  const payload = data as DeleteSaleRpcResult | null
+  const stored = payload?.receipt_stored
+  if (stored != null && String(stored).length > 0) {
+    await deleteReceiptObject(String(stored))
   }
 }

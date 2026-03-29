@@ -1,6 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
 import Image from 'next/image'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { Plus, Minus, Trash2, MessageCircle, X, ShoppingBag, Sparkles } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 import type { Producto, ItemCarrito } from '@/lib/supabase'
@@ -47,16 +49,26 @@ export function ModalCarrito({
     onWhatsApp,
     onSolicitarVaciar,
 }: ModalCarritoProps) {
+    const panelRef = useRef<HTMLDivElement>(null)
+    useDialogA11y(open, onClose, panelRef)
+
     if (!open) return null
 
     return (
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
+            <div
+                ref={panelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-carrito-titulo"
+                className="relative z-10 w-full max-w-md max-h-[90vh] flex flex-col outline-none"
+            >
             <PastelCard className="w-full max-w-md max-h-[90vh] flex flex-col z-50 animate-slide-up sm:animate-fade-in-scale shadow-2xl overflow-hidden" noHover>
                 <div className="p-6 border-b border-pink-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
                     <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Tu pedido</h3>
+                        <h3 id="modal-carrito-titulo" className="text-xl font-bold text-gray-900 dark:text-gray-100">Tu pedido</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{carrito.length} {carrito.length === 1 ? 'producto' : 'productos'}</p>
                     </div>
                     <div className="flex gap-2">
@@ -177,6 +189,7 @@ export function ModalCarrito({
                     </div>
                 )}
             </PastelCard>
+            </div>
         </div>
     )
 }

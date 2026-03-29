@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -17,23 +18,38 @@ const TableroVentasChart = dynamic(() => import('@/components/TableroVentasChart
     ),
 })
 import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
-import { format, subDays, isSameDay } from 'date-fns'
+import { format, subDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
 import ExportarDatos from '@/components/ExportarDatos'
 import { useTheme } from '@/context/ThemeContext'
-import { getExpenses } from '@/lib/expenseService'
-import type { Expense } from '@/lib/types'
-
 type PeriodoIngresos = 'total' | '7d' | '30d'
+
+type DashboardKpi = {
+    sales_total: number
+    sales_count: number
+    incomes_total: number
+    incomes_count: number
+    expenses_total: number
+}
+
+const KPI_ZERO: DashboardKpi = {
+    sales_total: 0,
+    sales_count: 0,
+    incomes_total: 0,
+    incomes_count: 0,
+    expenses_total: 0,
+}
 
 export default function Tablero() {
     const router = useRouter()
     const { theme } = useTheme()
     const [productos, setProductos] = useState<Producto[]>([])
-    const [ventas, setVentas] = useState<Venta[]>([])
-    const [ingresosManuales, setIngresosManuales] = useState<{ amount: number; created_at: string }[]>([])
-    const [gastos, setGastos] = useState<Expense[]>([])
+    const [kpi, setKpi] = useState<DashboardKpi>(KPI_ZERO)
+    const [ventasRecientes, setVentasRecientes] = useState<Venta[]>([])
+    const [ventasPorDia, setVentasPorDia] = useState<{ fecha: string; total: number; cantidad: number }[]>([])
+    /** true = gráfico de barras por mes (período Total); false = por día (7d / 30d). */
+    const [ventasChartEsMensual, setVentasChartEsMensual] = useState(false)
     const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
@@ -43,53 +59,128 @@ export default function Tablero() {
     const [itemsDetalleVenta, setItemsDetalleVenta] = useState<ItemVenta[]>([])
     const [cargandoDetalleVenta, setCargandoDetalleVenta] = useState(false)
 
-    useEffect(() => {
-        cargarDatos()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
-    }, [])
+    const refDetalleVenta = useRef<HTMLDivElement>(null)
+    const refModalPeriodo = useRef<HTMLDivElement>(null)
+    const refModalAlertas = useRef<HTMLDivElement>(null)
+    useDialogA11y(!!detalleVenta, () => setDetalleVenta(null), refDetalleVenta)
+    useDialogA11y(mostrarModalPeriodo, () => setMostrarModalPeriodo(false), refModalPeriodo)
+    useDialogA11y(mostrarAlertas, () => setMostrarModalAlertas(false), refModalAlertas)
 
-    const cargarDatos = async () => {
-        setCargando(true)
-        await Promise.all([obtenerProductos(), obtenerVentas(), obtenerIngresosManuales(), obtenerGastos()])
-        setCargando(false)
-    }
+    const refrescarMetricas = useCallback(async () => {
+        const corte =
+            periodoIngresos === '7d'
+                ? subDays(new Date(), 7)
+                : periodoIngresos === '30d'
+                  ? subDays(new Date(), 30)
+                  : null
+        const pSince = corte ? corte.toISOString() : null
 
-    const obtenerGastos = async () => {
-        try {
-            const data = await getExpenses()
-            setGastos(data || [])
-        } catch {
-            setGastos([])
+        const { data: kpiRaw, error: kpiErr } = await supabase.rpc('dashboard_finance_kpis', {
+            p_since: pSince,
+        })
+        if (kpiErr) {
+            console.warn('[tablero] dashboard_finance_kpis', kpiErr.message)
         }
-    }
-
-    const obtenerIngresosManuales = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('incomes')
-                .select('amount, created_at')
-            if (!error && data) setIngresosManuales(data)
-            else setIngresosManuales([])
-        } catch {
-            setIngresosManuales([])
+        if (!kpiErr && kpiRaw && typeof kpiRaw === 'object') {
+            const o = kpiRaw as Record<string, unknown>
+            setKpi({
+                sales_total: Number(o.sales_total ?? 0),
+                sales_count: Number(o.sales_count ?? 0),
+                incomes_total: Number(o.incomes_total ?? 0),
+                incomes_count: Number(o.incomes_count ?? 0),
+                expenses_total: Number(o.expenses_total ?? 0),
+            })
         }
-    }
+
+        if (periodoIngresos === 'total') {
+            setVentasChartEsMensual(true)
+            const { data: monthlyRaw, error: monthlyErr } = await supabase.rpc('dashboard_sales_monthly_total_span')
+            if (monthlyErr) {
+                console.warn('[tablero] dashboard_sales_monthly_total_span', monthlyErr.message)
+                setVentasPorDia([])
+            } else {
+                const rows = (monthlyRaw ?? []) as Array<{
+                    month_start: string
+                    total: unknown
+                    sale_count: unknown
+                }>
+                setVentasPorDia(
+                    rows.map((row) => ({
+                        fecha: format(parseISO(`${row.month_start}T12:00:00`), 'MMM yyyy', { locale: es }),
+                        total: Number(row.total ?? 0),
+                        cantidad: Number(row.sale_count ?? 0),
+                    }))
+                )
+            }
+        } else {
+            setVentasChartEsMensual(false)
+            const diasChart = periodoIngresos === '30d' ? 30 : 7
+            const { data: dailyRaw, error: dailyErr } = await supabase.rpc('dashboard_sales_daily', {
+                p_days: diasChart,
+            })
+            if (dailyErr) {
+                console.warn('[tablero] dashboard_sales_daily', dailyErr.message)
+                setVentasPorDia([])
+            } else {
+                const rows = (dailyRaw ?? []) as Array<{
+                    sale_day: string
+                    total: unknown
+                    sale_count: unknown
+                }>
+                const fmt = periodoIngresos === '30d' ? 'd MMM' : 'EEE d'
+                setVentasPorDia(
+                    rows.map((row) => ({
+                        fecha: format(parseISO(`${row.sale_day}T12:00:00`), fmt, { locale: es }),
+                        total: Number(row.total ?? 0),
+                        cantidad: Number(row.sale_count ?? 0),
+                    }))
+                )
+            }
+        }
+
+        let vq = supabase
+            .from('sales')
+            .select(
+                'id, sale_date, total, payment_method, customer_name, customer_id, notes, status, created_at'
+            )
+            .neq('status', 'pending_payment')
+            .order('created_at', { ascending: false })
+            .limit(5)
+        if (corte) vq = vq.gte('created_at', corte.toISOString())
+        const { data: vrec, error: vErr } = await vq
+        if (vErr) setVentasRecientes([])
+        else setVentasRecientes((vrec ?? []) as unknown as Venta[])
+    }, [periodoIngresos])
 
     const obtenerProductos = async () => {
         const { data, error } = await supabase
             .from('products')
-            .select('*, categories(name)')
+            .select(
+                'id, name, brand, color, notes, stock, min_stock, sale_price, purchase_price, category_id, created_at, updated_at, image_url, image_urls, categories(name)'
+            )
             .order('created_at', { ascending: false })
-        if (!error && data) setProductos(data)
+        if (!error && data) setProductos(data as unknown as Producto[])
     }
 
-    const obtenerVentas = async () => {
-        const { data, error } = await supabase
-            .from('sales')
-            .select('*')
-            .order('created_at', { ascending: false })
-        if (!error && data) setVentas(data)
+    const cargarDatos = async () => {
+        setCargando(true)
+        await Promise.all([obtenerProductos(), refrescarMetricas()])
+        setCargando(false)
     }
+
+    useEffect(() => {
+        void cargarDatos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- carga inicial
+    }, [])
+
+    const omitFirstPeriodoEffect = useRef(true)
+    useEffect(() => {
+        if (omitFirstPeriodoEffect.current) {
+            omitFirstPeriodoEffect.current = false
+            return
+        }
+        void refrescarMetricas()
+    }, [periodoIngresos, refrescarMetricas])
 
     // Calcular estadísticas (crítico = debajo de min_stock O stock ≤ umbral si está en Inventario)
     const umbralStockCritico = typeof window !== 'undefined' ? (() => {
@@ -107,35 +198,14 @@ export default function Tablero() {
     const inversionTotal = productos.reduce((sum, p) => sum + ((p.purchase_price || 0) * p.stock), 0)
     const gananciaPotencial = valorTotalInventario - inversionTotal
 
-    const corte = periodoIngresos === '7d' ? subDays(new Date(), 7) : periodoIngresos === '30d' ? subDays(new Date(), 30) : null
-    const ventasFiltradas = corte ? ventas.filter(v => new Date(v.created_at) >= corte) : ventas
-    const ventasCobradas = ventasFiltradas.filter(v => v.status !== 'pending_payment')
-    const ingresosFiltrados = corte ? ingresosManuales.filter(i => new Date(i.created_at) >= corte) : ingresosManuales
-    const gastosFiltrados = corte ? gastos.filter(g => new Date(g.date) >= corte) : gastos
-
-    const totalVentas = ventasCobradas.reduce((sum, v) => sum + v.total, 0)
-    const cantidadVentas = ventasCobradas.length
-    const totalIngresosManuales = ingresosFiltrados.reduce((sum, i) => sum + i.amount, 0)
-    const totalIngresos = totalVentas + totalIngresosManuales
-    const totalGastos = gastosFiltrados.reduce((sum, g) => sum + g.amount, 0)
+    const totalIngresos = kpi.sales_total + kpi.incomes_total
+    const cantidadVentas = kpi.sales_count
+    const totalGastos = kpi.expenses_total
     const balance = totalIngresos - totalGastos
 
     const etiquetaPeriodo = periodoIngresos === 'total' ? 'Total' : periodoIngresos === '7d' ? '7 días' : '30 días'
 
-    const diasChart = periodoIngresos === '30d' ? 30 : 7
-    const ventasPorDia = []
-    for (let i = diasChart - 1; i >= 0; i--) {
-        const fecha = subDays(new Date(), i)
-        const ventasDelDia = ventasCobradas.filter(v => isSameDay(new Date(v.created_at), fecha))
-        const total = ventasDelDia.reduce((sum, v) => sum + v.total, 0)
-        ventasPorDia.push({
-            fecha: format(fecha, periodoIngresos === '30d' ? 'd MMM' : 'EEE d', { locale: es }),
-            total: total,
-            cantidad: ventasDelDia.length
-        })
-    }
-
-    const ultimasVentas = ventasCobradas.slice(0, 5)
+    const ultimasVentas = ventasRecientes
 
     const obtenerIconoPago = (metodo: string | null) => {
         switch (metodo) {
@@ -230,7 +300,7 @@ export default function Tablero() {
                         valor={`$${totalIngresos.toLocaleString()}`}
                         color="text-pink-500"
                         bgIcon="bg-pink-50"
-                        subtitulo={`${cantidadVentas} ventas + ${ingresosFiltrados.length} ingresos manuales`}
+                        subtitulo={`${cantidadVentas} ventas + ${kpi.incomes_count} ingresos manuales`}
                         trend={true}
                                 selectorPeriodo={
                             <button
@@ -292,16 +362,27 @@ export default function Tablero() {
                 {/* Column 1: Sales Chart (Span 2) */}
                 <div className="lg:col-span-2 flex flex-col">
                     <PastelCard noHover className="h-full min-h-[380px] flex flex-col p-6 sm:p-7">
-                        <div className="flex items-center justify-between gap-4 mb-5 flex-shrink-0">
-                            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                                Actividad de Ventas
-                            </h3>
-                            <span className="px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[11px] text-pink-600 dark:text-pink-400 font-bold uppercase tracking-wider shrink-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5 flex-shrink-0">
+                            <div className="min-w-0">
+                                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                                    Actividad de Ventas
+                                </h3>
+                                {ventasChartEsMensual ? (
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 leading-relaxed max-w-xl">
+                                        Alineado al período Total: barras mensuales desde la primera venta cobrada (máx. 120 meses en pantalla). Las tarjetas de ingresos y balance siguen sumando todo el historial.
+                                    </p>
+                                ) : null}
+                            </div>
+                            <span className="px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[11px] text-pink-600 dark:text-pink-400 font-bold uppercase tracking-wider shrink-0 self-start">
                                 {etiquetaPeriodo}
                             </span>
                         </div>
 
-                        <TableroVentasChart ventasPorDia={ventasPorDia} theme={theme} />
+                        <TableroVentasChart
+                            ventasPorDia={ventasPorDia}
+                            theme={theme}
+                            valueLabel={ventasChartEsMensual ? 'Ventas (mes)' : 'Ventas'}
+                        />
                     </PastelCard>
                 </div>
 
@@ -352,11 +433,18 @@ export default function Tablero() {
             {detalleVenta && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="modal-backdrop" onClick={() => setDetalleVenta(null)} />
-                    <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md max-h-[85vh] overflow-hidden flex flex-col z-[200] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
+                    <div
+                        ref={refDetalleVenta}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="tablero-detalle-venta-titulo"
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md max-h-[85vh] z-[200] outline-none"
+                    >
+                    <PastelCard noHover className="max-h-[85vh] overflow-hidden flex flex-col !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
                         {/* Header: sale ID primary, date + payment as metadata */}
                         <div className="p-6 pb-5 border-b border-pink-100 dark:border-gray-700 flex-shrink-0 flex justify-between items-start gap-4">
                             <div className="flex flex-col gap-1.5 min-w-0">
-                                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">Venta #{detalleVenta.id}</h3>
+                                <h3 id="tablero-detalle-venta-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">Venta #{detalleVenta.id}</h3>
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-gray-500 dark:text-gray-400">
                                     <span>{format(new Date(detalleVenta.created_at), "EEEE d MMM yyyy, HH:mm", { locale: es })}</span>
                                     <span className="flex items-center gap-1.5">
@@ -421,6 +509,7 @@ export default function Tablero() {
                             </div>
                         </div>
                     </PastelCard>
+                    </div>
                 </>,
                 document.body
             )}
@@ -429,9 +518,16 @@ export default function Tablero() {
             {mostrarModalPeriodo && typeof document !== 'undefined' && createPortal(
                 <>
                     <div className="modal-backdrop" onClick={() => setMostrarModalPeriodo(false)} />
-                    <PastelCard noHover className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[340px] z-[200] p-6 !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
+                    <div
+                        ref={refModalPeriodo}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="tablero-periodo-titulo"
+                        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[340px] z-[200] outline-none"
+                    >
+                    <PastelCard noHover className="p-6 !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
                         <div className="flex justify-between items-center mb-5">
-                            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                            <h3 id="tablero-periodo-titulo" className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                 <Settings className="w-5 h-5 text-pink-500 dark:text-pink-400" />
                                 Período de ingresos
                             </h3>
@@ -460,6 +556,7 @@ export default function Tablero() {
                             ))}
                         </div>
                     </PastelCard>
+                    </div>
                 </>,
                 document.body
             )}
@@ -474,10 +571,16 @@ export default function Tablero() {
                 <>
                     <div className="modal-backdrop" onClick={() => setMostrarModalAlertas(false)} />
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 pointer-events-none">
-                        <div className="pointer-events-auto w-[90vw] max-w-[500px] max-h-[80vh] flex flex-col min-h-0">
+                        <div
+                            ref={refModalAlertas}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="tablero-alertas-titulo"
+                            className="pointer-events-auto w-[90vw] max-w-[500px] max-h-[80vh] flex flex-col min-h-0 outline-none"
+                        >
                     <PastelCard noHover className="flex flex-col flex-1 min-h-0 overflow-hidden p-6 sm:p-8 !shadow-2xl">
                         <div className="flex justify-between items-center mb-5 flex-shrink-0">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                            <h3 id="tablero-alertas-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                 <AlertTriangle className="w-6 h-6 text-amber-500 dark:text-amber-400" />
                                 Stock Crítico
                             </h3>

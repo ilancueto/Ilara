@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Expense, ExpenseFormData, ExpenseFilters } from '@/lib/types';
-import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats } from '@/lib/expenseService';
+import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseStats, getExpenseReceiptViewUrl } from '@/lib/expenseService';
 import { exportToCSV } from '@/lib/expenseUtils';
 import ExpenseCard from './ExpenseCard';
 import ExpenseForm from './ExpenseForm';
@@ -33,6 +33,7 @@ export default function Gastos() {
     const [eliminandoGastos, setEliminandoGastos] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
+    const [receiptPreviewForForm, setReceiptPreviewForForm] = useState<string | null>(null);
 
     // Cargar gastos
     const loadExpenses = useCallback(async () => {
@@ -81,6 +82,7 @@ export default function Gastos() {
             }
             setIsFormOpen(false);
             setEditingExpense(undefined);
+            setReceiptPreviewForForm(null);
             loadExpenses();
             loadStats();
         } catch (error: unknown) {
@@ -153,8 +155,13 @@ export default function Gastos() {
     };
 
     // Manejar edición
-    const handleEdit = (expense: Expense) => {
+    const handleEdit = async (expense: Expense) => {
         setEditingExpense(expense);
+        setReceiptPreviewForForm(null);
+        if (expense.receipt_url) {
+            const u = await getExpenseReceiptViewUrl(expense);
+            setReceiptPreviewForForm(u);
+        }
         setIsFormOpen(true);
     };
 
@@ -192,7 +199,7 @@ export default function Gastos() {
                         <span className="hidden sm:inline">Exportar</span>
                     </button>
                     <button
-                        onClick={() => { setEditingExpense(undefined); setIsFormOpen(true); }}
+                        onClick={() => { setEditingExpense(undefined); setReceiptPreviewForForm(null); setIsFormOpen(true); }}
                         className="btn-primary shadow-lg shadow-pink-200 px-5 py-2.5 text-sm font-bold rounded-xl gap-2"
                     >
                         <Plus size={18} />
@@ -294,10 +301,12 @@ export default function Gastos() {
             {isFormOpen && (
                 <ExpenseForm
                     expense={editingExpense}
+                    storedReceiptPreviewUrl={receiptPreviewForForm}
                     onSubmit={handleSubmit}
                     onCancel={() => {
                         setIsFormOpen(false);
                         setEditingExpense(undefined);
+                        setReceiptPreviewForForm(null);
                     }}
                     isLoading={isSubmitting}
                 />

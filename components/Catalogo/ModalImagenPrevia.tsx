@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -15,6 +16,7 @@ interface ModalImagenPreviaProps {
 
 export function ModalImagenPrevia({ imageUrl, images, initialIndex = 0, onClose }: ModalImagenPreviaProps) {
     const list = images?.length ? images : imageUrl ? [imageUrl] : []
+    const panelRef = useRef<HTMLDivElement>(null)
     const [index, setIndex] = useState(initialIndex >= 0 && initialIndex < list.length ? initialIndex : 0)
     const [touchStart, setTouchStart] = useState<number | null>(null)
     const [touchEnd, setTouchEnd] = useState<number | null>(null)
@@ -40,13 +42,16 @@ export function ModalImagenPrevia({ imageUrl, images, initialIndex = 0, onClose 
         setTouchEnd(null)
     }
 
+    useDialogA11y(list.length > 0, onClose, panelRef)
+
     if (list.length === 0) return null
 
     const current = list[index]
 
     return (
         <div
-            className="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center p-4"
+            ref={panelRef}
+            className="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center p-4 outline-none"
             onClick={onClose}
             role="dialog"
             aria-modal="true"

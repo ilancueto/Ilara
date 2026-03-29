@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
 import dynamic from 'next/dynamic'
 import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
-import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { WHATSAPP_NUMBER } from '@/lib/config'
@@ -18,7 +18,7 @@ import { PastelCard } from '@/components/ui/PastelCard'
 import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
 import { useCarrito } from '@/hooks/useCarrito'
-import { useCatalogData } from '@/hooks/useCatalogData'
+import { useCatalogData, type CatalogInitialSnapshot } from '@/hooks/useCatalogData'
 import { useCatalogDerivedLists } from '@/hooks/useCatalogDerivedLists'
 import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
@@ -41,7 +41,9 @@ const ModalDetalleCombo = dynamic(
     { ssr: false }
 )
 
-export default function Catalogo() {
+type CatalogoProps = { initialCatalog?: CatalogInitialSnapshot | null }
+
+export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
     const { showToast: baseShowToast } = useToast()
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
     const showToast = useCallback((type: 'success' | 'error' | 'warning' | 'info', message: string) => {
@@ -61,8 +63,10 @@ export default function Catalogo() {
         combos,
         categorias,
         cargando,
+        catalogLoadError,
+        recargarCatalogo,
         ventasPorProducto,
-    } = useCatalogData(ordenamiento)
+    } = useCatalogData(ordenamiento, initialCatalog)
     const [imagenPrevia, setImagenPrevia] = useState<{ images: string[]; index: number } | null>(null)
     const [indiceImagenPorProducto, setIndiceImagenPorProducto] = useState<Record<number, number>>({})
     const touchSwipeRef = useRef<{ productId: number; x: number; count: number } | null>(null)
@@ -74,11 +78,6 @@ export default function Catalogo() {
     const [cuponInput, setCuponInput] = useState('')
     const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percentage: number } | null>(null)
     const [paginaActual, setPaginaActual] = useState(1)
-
-    // Al salir del catálogo, vaciar el carrito para no arrastrar pedidos viejos
-    useEffect(() => {
-        return () => { clearCarrito() }
-    }, [clearCarrito])
 
     useEffect(() => {
         if (productos.length > 0 && carrito.length > 0) {
@@ -188,8 +187,13 @@ export default function Catalogo() {
     }
 
     const compartirProducto = (producto: Producto) => {
+        const origin =
+            typeof globalThis.window !== 'undefined'
+                ? globalThis.window.location.origin
+                : (process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') || 'https://ilara.com.ar')
+        const productUrl = `${origin}/catalogo/p/${producto.id}`
         const precio = getPrecioConDescuento(producto)
-        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${precio.toLocaleString()}%0A%0A¿Te interesa?`
+        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${precio.toLocaleString()}%0A%0A${encodeURIComponent(productUrl)}%0A%0A¿Te interesa?`
         const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
         window.open(url, '_blank', 'noopener,noreferrer')
     }
@@ -401,6 +405,21 @@ export default function Catalogo() {
                         <div className="w-14 h-14 border-4 border-pink-200 dark:border-gray-600 border-t-pink-500 dark:border-t-pink-400 rounded-full animate-spin mb-6" />
                         <p className="text-gray-500 dark:text-gray-400 font-medium">Cargando productos...</p>
                     </div>
+                ) : catalogLoadError ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center px-4">
+                        <p className="text-gray-800 dark:text-gray-100 font-semibold mb-2">No pudimos cargar el catálogo</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                            Puede ser un problema de conexión con el servidor. Probá de nuevo en unos segundos.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => void recargarCatalogo()}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-pink-500 text-white font-semibold text-sm hover:bg-pink-600 transition-colors"
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                            Reintentar
+                        </button>
+                    </div>
                 ) : totalItems > 0 ? (
                     <>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 w-full">
@@ -519,7 +538,12 @@ export default function Catalogo() {
                                     <div className="p-4 flex flex-col flex-1 min-h-0">
                                         <div className="flex-1 min-h-[4.5rem] flex flex-col">
                                             {producto.categories ? <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 dark:text-pink-400 mb-1">{producto.categories.name}</span> : <span className="min-h-[0.875rem]" aria-hidden />}
-                                            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 mb-1.5">{producto.name}</h3>
+                                            <Link
+                                                href={`/catalogo/p/${producto.id}`}
+                                                className="block min-w-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+                                            >
+                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 mb-1.5 hover:text-pink-600 dark:hover:text-pink-400 transition-colors">{producto.name}</h3>
+                                            </Link>
                                             {producto.brand ? <p className="text-xs text-gray-500 dark:text-gray-400">{producto.brand}</p> : <span className="min-h-[1rem]" aria-hidden />}
                                         </div>
                                         <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">

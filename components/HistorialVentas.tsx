@@ -9,7 +9,7 @@ import { es } from 'date-fns/locale'
 import ExportarReporte from './ExportarReporte'
 import Loader from './Loader'
 import FormularioEditarVenta from './FormularioEditarVenta'
-import { deleteSale } from '@/lib/saleService'
+import { deleteSale, getSaleReceiptViewUrl } from '@/lib/saleService'
 import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -35,7 +35,9 @@ export default function HistorialVentas() {
 
         let query = supabase
             .from('sales')
-            .select('*')
+            .select(
+                'id, sale_date, total, payment_method, payment_breakdown, customer_name, customer_id, notes, status, created_at, receipt_url, created_by, updated_by'
+            )
             .order('created_at', { ascending: false })
 
         // Aplicar filtro de fecha
@@ -59,7 +61,10 @@ export default function HistorialVentas() {
 
     useEffect(() => {
         const cargarClientes = async () => {
-            const { data } = await supabase.from('customers').select('*').order('first_name')
+            const { data } = await supabase
+                .from('customers')
+                .select('id, first_name, last_name, email, phone, created_at')
+                .order('first_name')
             if (data) setClientes(data)
         }
         cargarClientes()
@@ -68,7 +73,9 @@ export default function HistorialVentas() {
     const obtenerItemsVenta = async (ventaId: number) => {
         const { data } = await supabase
             .from('sale_items')
-            .select('*')
+            .select(
+                'id, sale_id, product_id, combo_id, product_name, quantity, unit_price, subtotal, discount_percentage'
+            )
             .eq('sale_id', ventaId)
 
         if (data) {
@@ -110,6 +117,12 @@ export default function HistorialVentas() {
         }
     }
 
+    const abrirComprobanteVenta = async (venta: Venta) => {
+        const u = await getSaleReceiptViewUrl(venta)
+        if (u) window.open(u, '_blank', 'noopener,noreferrer')
+        else showError('No se pudo abrir el comprobante.')
+    }
+
     const marcarComoCobrada = async (ventaId: number) => {
         const user = await getUser()
         const updatePayload: Record<string, unknown> = { status: 'completed' }
@@ -133,7 +146,12 @@ export default function HistorialVentas() {
     const abrirComprobante = async (venta: Venta & { items?: ItemVenta[] }) => {
         let itemsList = venta.items
         if (!itemsList || itemsList.length === 0) {
-            const { data } = await supabase.from('sale_items').select('*').eq('sale_id', venta.id)
+            const { data } = await supabase
+                .from('sale_items')
+                .select(
+                    'id, sale_id, product_id, combo_id, product_name, quantity, unit_price, subtotal, discount_percentage'
+                )
+                .eq('sale_id', venta.id)
             itemsList = (data as ItemVenta[]) ?? []
         }
         const items = itemsList.map(({ product_name, quantity, unit_price, subtotal }) => ({
@@ -378,16 +396,17 @@ export default function HistorialVentas() {
                                         </div>
                                         <div className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center sm:border-l border-gray-100 dark:border-gray-600 sm:pl-1">
                                             {venta.receipt_url ? (
-                                                <a
-                                                    href={venta.receipt_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    onClick={(e) => e.stopPropagation()}
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        void abrirComprobanteVenta(venta)
+                                                    }}
                                                     className="p-1.5 sm:p-2 rounded-xl text-pink-500 dark:text-pink-400 hover:text-pink-600 dark:hover:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/40 border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors shadow-sm"
                                                     title="Ver comprobante"
                                                 >
                                                     <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                </a>
+                                                </button>
                                             ) : null}
                                         </div>
                                         <button
@@ -455,15 +474,14 @@ export default function HistorialVentas() {
                                                 Imprimir comprobante
                                             </button>
                                             {venta.receipt_url && (
-                                                <a
-                                                    href={venta.receipt_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void abrirComprobanteVenta(venta)}
                                                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/60 border border-pink-100 dark:border-pink-800 font-semibold text-sm transition-colors"
                                                 >
                                                     <Receipt className="w-4 h-4" />
                                                     Ver comprobante
-                                                </a>
+                                                </button>
                                             )}
                                         </div>
 
