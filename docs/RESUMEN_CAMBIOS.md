@@ -1,4 +1,4 @@
-# Resumen de cambios – sesión TODO + carrito
+﻿# Resumen de cambios – sesión TODO + carrito
 
 Resumen de todo lo implementado en esta sesión (TODO proyecto Ilara, ajustes CSS, carrito catálogo).
 
@@ -21,7 +21,7 @@ Resumen de todo lo implementado en esta sesión (TODO proyecto Ilara, ajustes CS
 
 ## 3. TODO 6.1 – RLS en todas las tablas
 
-- **Script:** `supabase_rls_all.sql` – Activa RLS y define políticas en `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`. En `expenses` solo el dueño (`auth.uid() = user_id`); el resto `FOR ALL TO authenticated`.
+- **Script:** `supabase/sql/supabase_rls_all.sql` – Activa RLS y define políticas en `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`. En `expenses` solo el dueño (`auth.uid() = user_id`); el resto `FOR ALL TO authenticated`.
 - **Doc:** `docs/RLS_SUPABASE.md` actualizado (script unificado y tabla de políticas).
 
 ---
@@ -36,7 +36,7 @@ Resumen de todo lo implementado en esta sesión (TODO proyecto Ilara, ajustes CS
 
 ## 5. TODO 6.4 – Auditoría (quién editó)
 
-- **Script:** `supabase_audit_columns.sql` – Columnas `created_by` y `updated_by` (uuid → auth.users) en `sales`, `products`, `customers`; solo `updated_by` en `expenses`.
+- **Script:** `supabase/sql/supabase_audit_columns.sql` – Columnas `created_by` y `updated_by` (uuid → auth.users) en `sales`, `products`, `customers`; solo `updated_by` en `expenses`.
 - **App:** Se envía el usuario logueado en crear/actualizar:
   - Ventas: `PuntoVenta` (created_by), `HistorialVentas` (marcar cobrada), `saleService.updateSale`.
   - Gastos: `expenseService.updateExpense` (updated_by).
@@ -95,7 +95,7 @@ Resumen de todo lo implementado en esta sesión (TODO proyecto Ilara, ajustes CS
 - `lib/__tests__/expenseUtils.test.ts`
 - `playwright.config.ts`, `vitest.config.ts`, `vitest.setup.ts`
 - `scripts/copy-pwa-icons.js`
-- `supabase_audit_columns.sql`, `supabase_rls_all.sql` (y otros `.sql` ya existentes en repo según tu caso)
+- `supabase/sql/supabase_audit_columns.sql`, `supabase/sql/supabase_rls_all.sql` (y otros `.sql` ya existentes en repo según tu caso)
 
 ## Archivos modificados (principales)
 
@@ -114,6 +114,6 @@ Resumen de todo lo implementado en esta sesión (TODO proyecto Ilara, ajustes CS
 
 ## Antes del push
 
-1. Ejecutar en Supabase (si aún no lo hiciste) los scripts SQL que correspondan: `supabase_rls_all.sql`, `supabase_audit_columns.sql`, y los de migraciones que uses (customers email/phone, payment breakdown, stock_movements, etc.).
+1. Ejecutar en Supabase (si aún no lo hiciste) los scripts SQL que correspondan: `supabase/sql/supabase_rls_all.sql`, `supabase/sql/supabase_audit_columns.sql`, y los de migraciones que uses (customers email/phone, payment breakdown, stock_movements, etc.).
 2. Opcional: `npm run pwa-icons` si tenés `public/logo_icon.png` para generar los iconos PWA.
 3. `npm run test` y `npm run test:e2e` para validar que todo siga pasando.

@@ -1,6 +1,6 @@
 -- RLS en todas las tablas del proyecto Ilara (6.1)
 -- Ejecutar en Supabase: SQL Editor → New query → Pegar y Run
--- Si ya corriste supabase_customers_rls.sql o supabase_stock_movements.sql, no hay conflicto:
+-- Si ya corriste supabase_customers_rls.sql o supabase/sql/supabase_stock_movements.sql, no hay conflicto:
 --   customers y stock_movements se re-definen aquí para tener un solo script idempotente.
 
 -- ========== CUSTOMERS ==========
@@ -61,7 +61,7 @@ CREATE POLICY "Authenticated can manage coupons"
   USING (true) WITH CHECK (true);
 
 -- ========== COMBOS (catálogo público + panel autenticado) ==========
--- Requiere que existan las tablas combos / combo_items (ver supabase_combos.sql).
+-- Requiere que existan las tablas combos / combo_items (ver supabase/sql/supabase_combos.sql).
 ALTER TABLE combos ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anon read active combos" ON combos;
 DROP POLICY IF EXISTS "Authenticated manage combos" ON combos;

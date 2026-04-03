@@ -1,4 +1,4 @@
-# Auditoría completa – Ilara Beauty App
+﻿# Auditoría completa – Ilara Beauty App
 
 **Fecha:** marzo 2026  
 **Alcance:** aplicación completa (código, docs internas, arquitectura, negocio).  
@@ -31,7 +31,7 @@ La app es un **ERP ligero + catálogo público** bien encaminado: autenticación
 
 ## 3. Seguridad y datos
 
-1. **RLS** – Crítico que en Supabase producción coincidan los scripts (`supabase_rls_all.sql` y migraciones). Revisión periódica al añadir tablas/columnas (p. ej. `catalog_badge`).
+1. **RLS** – Crítico que en Supabase producción coincidan los scripts (`supabase/sql/supabase_rls_all.sql` y migraciones). Revisión periódica al añadir tablas/columnas (p. ej. `catalog_badge`).
 2. **`sale_items` y orden “más vendidos”** – Si `anon` no puede leer agregados de ventas, el orden por ventas en el catálogo **no refleja la realidad** sin una vista/RPC de solo lectura (ver `docs/SECURITY_PENTEST.md`).
 3. **Comprobantes** – URLs públicas en bucket `receipts`: valorar políticas de Storage (no listar; acceso por path) y si el negocio exige privacidad, URLs firmadas vía backend.
 4. **`npm audit`** – Cadenas relacionadas con build (Serwist/workbox); mitigar con actualizaciones o `npm audit fix` donde no rompa.

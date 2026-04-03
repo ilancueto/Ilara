@@ -22,6 +22,7 @@ import { useCatalogData, type CatalogInitialSnapshot } from '@/hooks/useCatalogD
 import { useCatalogDerivedLists } from '@/hooks/useCatalogDerivedLists'
 import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
+import { formatPesoAR } from '@/lib/formatPesoAR'
 import ThemeSwitch from '@/components/ThemeSwitch'
 
 const ModalCarrito = dynamic(
@@ -177,9 +178,9 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         const items = carrito.map(item => {
             const nombre = item.producto ? item.producto.name : item.combo!.name
             const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
-            return `• ${nombre} x${item.cantidad} - $${(precioUnit * item.cantidad).toLocaleString()}`
+            return `• ${nombre} x${item.cantidad} - $${formatPesoAR(precioUnit * item.cantidad)}`
         }).join('%0A')
-        let totalLine = `*Total: $${total.toLocaleString()}*`
+        let totalLine = `*Total: $${formatPesoAR(total)}*`
         if (appliedCoupon) totalLine = `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)%0A${totalLine}`
         const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A${totalLine}`
         const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
@@ -193,7 +194,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                 : (process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') || 'https://ilara.com.ar')
         const productUrl = `${origin}/catalogo/p/${producto.id}`
         const precio = getPrecioConDescuento(producto)
-        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${precio.toLocaleString()}%0A%0A${encodeURIComponent(productUrl)}%0A%0A¿Te interesa?`
+        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${formatPesoAR(precio)}%0A%0A${encodeURIComponent(productUrl)}%0A%0A¿Te interesa?`
         const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
         window.open(url, '_blank', 'noopener,noreferrer')
     }
@@ -441,7 +442,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                             />
                                             <BadgeRotator badges={[{ texto: 'Combo', clase: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200/50' }]} />
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=¡Mirá este combo!%0A%0A*${combo.name}*%0APrecio: $${combo.sale_price.toLocaleString()}%0A%0A¿Te interesa?` }}
+                                                onClick={(e) => { e.stopPropagation(); window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=¡Mirá este combo!%0A%0A*${combo.name}*%0APrecio: $${formatPesoAR(combo.sale_price)}%0A%0A¿Te interesa?` }}
                                                 className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                                                 aria-label={`Compartir ${combo.name}`}
                                             >
@@ -455,7 +456,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                                 {combo.description ? <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{combo.description}</p> : <span className="min-h-[1.25rem]" aria-hidden />}
                                             </div>
                                             <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
-                                                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${combo.sale_price.toLocaleString()}</p>
+                                                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(combo.sale_price)}</p>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); if (disponible) startTransition(() => agregarComboAlCarrito(combo)); }}
                                                     disabled={!disponible}
@@ -549,9 +550,9 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                         <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
                                             <div className="min-w-0">
                                                 {(producto.discount_percentage ?? 0) > 0 ? (
-                                                    <><p className="text-xs text-gray-400 dark:text-gray-500 line-through">${producto.sale_price.toLocaleString()}</p><p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${getPrecioConDescuento(producto).toLocaleString()}</p></>
+                                                    <><p className="text-xs text-gray-400 dark:text-gray-500 line-through">${formatPesoAR(producto.sale_price)}</p><p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(getPrecioConDescuento(producto))}</p></>
                                                 ) : (
-                                                    <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${producto.sale_price.toLocaleString()}</p>
+                                                    <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(producto.sale_price)}</p>
                                                 )}
                                             </div>
                                             <button onClick={() => producto.stock > 0 && startTransition(() => agregarAlCarrito(producto))} disabled={producto.stock === 0} className="w-full sm:w-auto flex-shrink-0 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px] transition-all duration-200">
@@ -633,7 +634,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                     type="button"
                     onClick={() => startTransition(() => setMostrarCarrito(true))}
                     className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl shadow-xl shadow-pink-400/50 dark:shadow-pink-900/40 hover:shadow-2xl hover:shadow-pink-400/60 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 font-bold text-base"
-                    aria-label={`Abrir carrito, ${carrito.length} ítems, total ${total.toLocaleString()} pesos`}
+                    aria-label={`Abrir carrito, ${carrito.length} ítems, total ${formatPesoAR(total)} pesos`}
                 >
                     <div className="relative">
                         <ShoppingBag className="w-6 h-6" />
@@ -641,7 +642,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                             {carrito.length}
                         </span>
                     </div>
-                    <span className="font-extrabold text-lg">${total.toLocaleString()}</span>
+                    <span className="font-extrabold text-lg">${formatPesoAR(total)}</span>
                 </button>
             )}
 

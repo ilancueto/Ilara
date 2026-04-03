@@ -26,9 +26,9 @@ export async function getIncomes(filters?: IncomeFilters): Promise<Income[]> {
         const msg = (error as { message?: string }).message || JSON.stringify(error);
         const code = (error as { code?: string }).code || '';
         console.error('Error fetching incomes:', { message: msg, code, error });
-        // Tabla no existe: ejecutar supabase_incomes.sql en el SQL Editor
+        // Tabla no existe: ejecutar supabase/sql/supabase_incomes.sql en el SQL Editor
         if (code === '42P01' || /relation.*incomes.*does not exist/i.test(msg)) {
-            throw new Error('La tabla "incomes" no existe. Ejecuta supabase_incomes.sql en el SQL Editor de Supabase.');
+            throw new Error('La tabla "incomes" no existe. Ejecuta supabase/sql/supabase_incomes.sql en el SQL Editor de Supabase.');
         }
         throw error;
     }

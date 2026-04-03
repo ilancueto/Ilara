@@ -11,7 +11,7 @@ Permite iniciar sesión con huella dactilar, Face ID, Windows Hello, etc. usando
 
 Ejecutá el SQL en **Supabase → SQL Editor**:
 
-**Archivo:** `supabase_passkey_auth.sql` (en la raíz del repo)
+**Archivo:** `supabase/sql/supabase_passkey_auth.sql`
 
 Ese script crea las tablas `passkey_credentials`, `passkey_challenges`, `passkey_rate_limits`, `passkey_audit_log` y las funciones necesarias.
 

@@ -1,4 +1,4 @@
-# TODO – Proyecto Ilara (para luz verde)
+﻿# TODO – Proyecto Ilara (para luz verde)
 
 Listado de tareas acordadas. Revisá y dame luz verde para avanzar en el orden que prefieras (o indicá cambios).
 
@@ -20,7 +20,7 @@ Listado de tareas acordadas. Revisá y dame luz verde para avanzar en el orden q
 ## 1. Clientes
 
 ### 1.1 Email y teléfono en clientes ✅
-- [x] **DB:** Script `supabase_customers_email_phone.sql` para agregar columnas `email` y `phone` a `customers`.
+- [x] **DB:** Script `supabase/sql/supabase_customers_email_phone.sql` para agregar columnas `email` y `phone` a `customers`.
 - [x] **Tipos:** Tipo `Cliente` en `lib/supabase.ts` actualizado con `email` y `phone` (opcionales).
 - [x] **UI – Listado:** Email y teléfono mostrados en las cards de clientes (iconos Mail/Phone).
 - [x] **UI – Formulario:** Campos email y teléfono en el modal de alta/edición (opcionales).
@@ -64,7 +64,7 @@ Listado de tareas acordadas. Revisá y dame luz verde para avanzar en el orden q
 ### 6.1 RLS en todas las tablas ✅
 - [x] **Supabase:** Activar RLS en `customers`, `products`, `categories`, `sales`, `sale_items`, `expenses`, `stock_movements`, `coupons`.
 - [x] **Políticas:** Definir políticas por tabla: `authenticated` puede SELECT/INSERT/UPDATE/DELETE; en `expenses` restricción por `auth.uid() = user_id`. Documentado en `docs/RLS_SUPABASE.md`.
-- [x] **Script SQL:** Archivo `supabase_rls_all.sql` con `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` y políticas (idempotente), para ejecutar en el SQL Editor.
+- [x] **Script SQL:** Archivo `supabase/sql/supabase_rls_all.sql` con `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` y políticas (idempotente), para ejecutar en el SQL Editor.
 
 ### 6.2 Backup / export global ✅
 - [x] **Funcionalidad:** Pantalla o botón “Exportar datos” (ej. en configuración o dashboard) que permita descargar: productos, ventas, clientes, gastos en CSV (y/o JSON).

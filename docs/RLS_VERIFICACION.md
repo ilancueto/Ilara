@@ -1,10 +1,10 @@
-# Cómo verificar RLS (A2)
+﻿# Cómo verificar RLS (A2)
 
 ## En Supabase Dashboard
 
 1. **Authentication → Policies** (o **Table Editor** → tabla → **RLS**).
 2. Comparar con el repo:
-   - `supabase_rls_all.sql` — políticas base de tablas de negocio.
+   - `supabase/sql/supabase_rls_all.sql` — políticas base de tablas de negocio.
    - Migraciones en `supabase/migrations/` — cambios incrementales.
 
 ## Comprobaciones útiles

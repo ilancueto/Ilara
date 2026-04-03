@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Producto, getProductImages } from '@/lib/supabase'
 import { priceWithProductDiscount } from '@/lib/catalogPricing'
+import { formatPesoAR } from '@/lib/formatPesoAR'
 import { WHATSAPP_NUMBER } from '@/lib/config'
 import { useCarrito } from '@/hooks/useCarrito'
 import { useToast } from '@/context/ToastContext'
@@ -37,7 +38,7 @@ export function ProductoPublicoClient({ producto, canonicalPath }: Props) {
   const urlProducto = `${site}${canonicalPath}`
 
   const compartir = () => {
-    const texto = `¡Mirá este producto!%0A%0A*${encodeURIComponent(producto.name)}*%0A${producto.brand ? encodeURIComponent(producto.brand) + '%0A' : ''}Precio: $${precio.toLocaleString()}%0A%0A${encodeURIComponent(urlProducto)}`
+    const texto = `¡Mirá este producto!%0A%0A*${encodeURIComponent(producto.name)}*%0A${producto.brand ? encodeURIComponent(producto.brand) + '%0A' : ''}Precio: $${formatPesoAR(precio)}%0A%0A${encodeURIComponent(urlProducto)}`
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`, '_blank', 'noopener,noreferrer')
   }
 
@@ -100,12 +101,12 @@ export function ProductoPublicoClient({ producto, canonicalPath }: Props) {
             {producto.brand && <p className="text-sm text-gray-500 dark:text-gray-400">{producto.brand}</p>}
             {(producto.discount_percentage ?? 0) > 0 ? (
               <div className="flex flex-wrap items-baseline gap-2">
-                <span className="text-sm text-gray-400 line-through">${producto.sale_price.toLocaleString()}</span>
-                <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${precio.toLocaleString()}</span>
+                <span className="text-sm text-gray-400 line-through">${formatPesoAR(producto.sale_price)}</span>
+                <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(precio)}</span>
                 <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">-{producto.discount_percentage}%</span>
               </div>
             ) : (
-              <p className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${precio.toLocaleString()}</p>
+              <p className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(precio)}</p>
             )}
             {producto.notes && (
               <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{producto.notes}</p>

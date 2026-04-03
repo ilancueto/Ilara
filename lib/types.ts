@@ -33,7 +33,7 @@ export interface Expense {
     receipt_url?: string;
     notes?: string;
     user_id: string;
-    /** Usuario que editó por última vez. Requiere supabase_audit_columns.sql */
+    /** Usuario que editó por última vez. Requiere supabase/sql/supabase_audit_columns.sql */
     updated_by?: string | null;
 }
 

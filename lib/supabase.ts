@@ -63,9 +63,9 @@ export type Cliente = {
   id: number
   first_name: string
   last_name: string
-  /** Email del cliente (opcional). Requiere migración supabase_customers_email_phone.sql */
+  /** Email del cliente (opcional). Requiere migración supabase/sql/supabase_customers_email_phone.sql */
   email?: string | null
-  /** Teléfono o WhatsApp (opcional). Requiere migración supabase_customers_email_phone.sql */
+  /** Teléfono o WhatsApp (opcional). Requiere migración supabase/sql/supabase_customers_email_phone.sql */
   phone?: string | null
   created_at: string
   created_by?: string | null
@@ -83,7 +83,7 @@ export type Venta = {
   sale_date: string
   total: number
   payment_method: string | null
-  /** Desglose cuando hay más de un método de pago. Requiere migración supabase_sales_payment_breakdown.sql */
+  /** Desglose cuando hay más de un método de pago. Requiere migración supabase/sql/supabase_sales_payment_breakdown.sql */
   payment_breakdown?: PagoDesglose[] | null
   customer_name: string | null
   customer_id: number | null
@@ -92,7 +92,7 @@ export type Venta = {
   status: string
   created_at: string
   customers?: Cliente | null
-  /** Usuario que registró la venta. Requiere supabase_audit_columns.sql */
+  /** Usuario que registró la venta. Requiere supabase/sql/supabase_audit_columns.sql */
   created_by?: string | null
   /** Usuario que actualizó por última vez */
   updated_by?: string | null
