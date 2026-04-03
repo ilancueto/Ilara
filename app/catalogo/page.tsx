@@ -6,6 +6,7 @@ import {
     fetchCatalogCombosServer,
     fetchCatalogCategoriesServer,
 } from '@/lib/catalog/serverCatalog'
+import { getSiteUrl } from '@/lib/site'
 
 const catalogDescription =
     'Catálogo de productos de belleza en Neuquén: maquillaje, skincare y cosmética. Pedidos rápidos por WhatsApp.'
@@ -17,12 +18,13 @@ const canonicalShareOrigin =
 
 const shareOgImageUrl = new URL('/og-image.png', `${canonicalShareOrigin}/`).href
 const catalogOgUrl = new URL('/catalogo', `${canonicalShareOrigin}/`).href
+const catalogCanonicalUrl = `${getSiteUrl().replace(/\/$/, '')}/catalogo`
 
 export const metadata: Metadata = {
     title: 'Catálogo de belleza en Neuquén',
     description: catalogDescription,
     alternates: {
-        canonical: '/catalogo',
+        canonical: catalogCanonicalUrl,
     },
     robots: {
         index: true,

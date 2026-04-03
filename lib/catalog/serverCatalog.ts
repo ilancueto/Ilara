@@ -83,3 +83,57 @@ export async function fetchCatalogProductByIdServer(
   if (p.stock < 0 || p.visible_in_catalog === false) return { status: 'not_found' }
   return { status: 'ok', product: p }
 }
+
+/**
+ * Productos relacionados para la ficha: prioriza la misma categoría y completa hasta `limit` con el resto del catálogo.
+ */
+export async function fetchCatalogRelatedProductsServer(
+  supabase: SupabaseClient,
+  excludeId: number,
+  categoryId: number | null,
+  limit = 8
+): Promise<Producto[]> {
+  const seen = new Set<number>()
+  const out: Producto[] = []
+
+  const pushRows = (rows: unknown) => {
+    for (const row of (rows ?? []) as Producto[]) {
+      if (row.id === excludeId || seen.has(row.id)) continue
+      seen.add(row.id)
+      out.push(row)
+    }
+  }
+
+  try {
+    if (categoryId != null) {
+      const { data, error } = await supabase
+        .from('products')
+        .select(CATALOG_PRODUCT_SELECT)
+        .neq('id', excludeId)
+        .eq('category_id', categoryId)
+        .gte('stock', 0)
+        .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (!error) pushRows(data)
+    }
+
+    if (out.length < limit) {
+      const { data, error } = await supabase
+        .from('products')
+        .select(CATALOG_PRODUCT_SELECT)
+        .neq('id', excludeId)
+        .gte('stock', 0)
+        .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
+        .order('created_at', { ascending: false })
+        .limit(limit * 2)
+
+      if (!error) pushRows(data)
+    }
+  } catch {
+    return []
+  }
+
+  return out.slice(0, limit)
+}

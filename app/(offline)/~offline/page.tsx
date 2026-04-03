@@ -1,3 +1,13 @@
+import type { Metadata } from 'next'
+import { getSiteUrl } from '@/lib/site'
+
+const base = getSiteUrl().replace(/\/$/, '')
+
+export const metadata: Metadata = {
+  alternates: { canonical: `${base}/~offline` },
+  robots: { index: false, follow: false },
+}
+
 export default function OfflinePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 to-gray-50 p-6 text-center">

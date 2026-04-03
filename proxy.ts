@@ -37,7 +37,8 @@ export async function proxy(request: NextRequest) {
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
     if (!user && pathname === '/') {
-        return NextResponse.redirect(new URL('/catalogo', request.url));
+        /** 308: redirect permanente; evita que Google trate / y /catalogo como duplicados con señales contradictorias. */
+        return NextResponse.redirect(new URL('/catalogo', request.url), 308);
     }
     if (!user && !isPublicRoute) {
         return NextResponse.redirect(new URL('/login', request.url));

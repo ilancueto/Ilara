@@ -18,9 +18,9 @@ export async function GET() {
     const base = getSiteUrl().replace(/\/$/, '')
     const today = new Date().toISOString().split('T')[0]
 
+    /** Sin URL raíz: para visitantes anónimos / redirige a /catalogo; listar ambas generaba “duplicado” en Search Console. */
     const entries: { loc: string; lastmod: string; changefreq: string; priority: string }[] = [
-        { loc: base, lastmod: today, changefreq: 'weekly', priority: '1.0' },
-        { loc: `${base}/catalogo`, lastmod: today, changefreq: 'daily', priority: '0.9' },
+        { loc: `${base}/catalogo`, lastmod: today, changefreq: 'daily', priority: '1.0' },
     ]
 
     try {

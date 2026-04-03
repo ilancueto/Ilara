@@ -12,7 +12,7 @@ type ThemeContextValue = {
   toggleTheme: () => void
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null)
+export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light'

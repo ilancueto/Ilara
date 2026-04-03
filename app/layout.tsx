@@ -59,9 +59,6 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Ilara",
   },
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,

@@ -34,7 +34,7 @@ const ModalConfirmacionVaciar = dynamic(
     { ssr: false }
 )
 const ModalImagenPrevia = dynamic(
-    () => import('@/components/Catalogo/ModalImagenPrevia').then(m => ({ default: m.ModalImagenPrevia })),
+    () => import('@/components/gallery/ModalImagenPrevia').then(m => ({ default: m.ModalImagenPrevia })),
     { ssr: false }
 )
 const ModalDetalleCombo = dynamic(

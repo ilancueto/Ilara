@@ -1,14 +1,82 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { fetchCatalogProductByIdServer } from '@/lib/catalog/serverCatalog'
-import { ProductoPublicoClient } from '@/components/Catalogo/ProductoPublicoClient'
+import {
+    fetchCatalogProductByIdServer,
+    fetchCatalogRelatedProductsServer,
+} from '@/lib/catalog/serverCatalog'
+import { ProductPublicDetailClient } from '@/components/product/ProductPublicDetailClient'
 import { ProductoCatalogoRecover } from '@/components/Catalogo/ProductoCatalogoRecover'
 import { getSiteUrl } from '@/lib/site'
+import { getProductImages, type Producto } from '@/lib/supabase'
+import { priceWithProductDiscount } from '@/lib/catalogPricing'
+import { formatPesoAR } from '@/lib/formatPesoAR'
 
 export const revalidate = 120
 
 type PageProps = { params: Promise<{ id: string }> }
+
+function absoluteFromSite(pathOrUrl: string, siteOrigin: string): string {
+    const t = pathOrUrl.trim()
+    if (!t) return ''
+    if (/^https?:\/\//i.test(t)) return t
+    return new URL(t.replace(/^\//, ''), `${siteOrigin.replace(/\/$/, '')}/`).href
+}
+
+function buildProductDescription(p: Producto, precioFinal: number): string {
+    const parts: string[] = []
+    const brand = p.brand?.trim()
+    if (brand) parts.push(`${p.name} · ${brand}`)
+    else parts.push(p.name)
+    parts.push(`$${formatPesoAR(precioFinal)}`)
+    if (p.categories?.name) parts.push(p.categories.name)
+    const note = p.notes?.trim()
+    if (note) {
+        const short = note.length > 120 ? `${note.slice(0, 117)}…` : note
+        parts.push(short)
+    } else {
+        parts.push('Belleza y cosmética en Neuquén. Pedidos por WhatsApp en Ilara Beauty.')
+    }
+    const joined = parts.join('. ')
+    return joined.length > 165 ? `${joined.slice(0, 162)}…` : joined
+}
+
+function productJsonLd(p: Producto, canonical: string, siteOrigin: string, precioFinal: number) {
+    const images = getProductImages(p).map(src => absoluteFromSite(src, siteOrigin)).filter(Boolean)
+    const availability =
+        p.stock <= 0
+            ? 'https://schema.org/OutOfStock'
+            : p.stock <= p.min_stock
+              ? 'https://schema.org/LimitedAvailability'
+              : 'https://schema.org/InStock'
+
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: p.name,
+        description: p.notes?.trim() || `${p.name} — Ilara Beauty, Neuquén.`,
+        image: images.length ? images : undefined,
+        brand: p.brand?.trim()
+            ? {
+                  '@type': 'Brand',
+                  name: p.brand.trim(),
+              }
+            : undefined,
+        sku: String(p.id),
+        offers: {
+            '@type': 'Offer',
+            url: canonical,
+            priceCurrency: 'ARS',
+            price: precioFinal,
+            availability,
+            itemCondition: 'https://schema.org/NewCondition',
+            seller: {
+                '@type': 'Organization',
+                name: 'Ilara Beauty',
+            },
+        },
+    }
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id: raw } = await params
@@ -21,26 +89,47 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (res.status === 'not_found') return { title: 'Producto no encontrado' }
     const p = res.product
 
-    const base = getSiteUrl().replace(/\/$/, '')
-    const canonical = `/catalogo/p/${id}`
-    const desc =
-        (p.notes && p.notes.trim().slice(0, 160)) ||
-        `${p.name} — Belleza y cosmética en Neuquén. Pedidos por WhatsApp en Ilara Beauty.`
+    const siteOrigin = getSiteUrl().replace(/\/$/, '')
+    const canonical = `${siteOrigin}/catalogo/p/${id}`
+    const precioFinal = priceWithProductDiscount(p.sale_price, p.discount_percentage)
+    const desc = buildProductDescription(p, precioFinal)
+    const titleBase = p.brand?.trim() ? `${p.name} · ${p.brand.trim()}` : p.name
+
+    /** Misma base que canonical para evitar OG/canonical en dominios distintos (p. ej. preview vs producción). */
+    const fallbackOg = new URL('/og-image.png', `${siteOrigin}/`).href
+    const imgs = getProductImages(p)
+    const primaryImg = imgs[0] ? absoluteFromSite(imgs[0], siteOrigin) : ''
+    const ogImages = primaryImg
+        ? [{ url: primaryImg, alt: p.name }]
+        : [
+              {
+                  url: fallbackOg,
+                  width: 1200,
+                  height: 630,
+                  alt: 'Ilara Beauty',
+                  type: 'image/png' as const,
+              },
+          ]
 
     return {
-        title: p.name,
+        title: titleBase,
         description: desc,
         alternates: { canonical },
+        robots: { index: true, follow: true },
         openGraph: {
-            title: `${p.name} | Ilara`,
+            title: `${titleBase} | Ilara Beauty`,
             description: desc,
-            url: `${base}${canonical}`,
+            url: canonical,
             type: 'website',
+            locale: 'es_AR',
+            siteName: 'Ilara Beauty',
+            images: ogImages,
         },
         twitter: {
             card: 'summary_large_image',
-            title: `${p.name} | Ilara`,
+            title: `${titleBase} | Ilara Beauty`,
             description: desc,
+            images: primaryImg ? [primaryImg] : [fallbackOg],
         },
     }
 }
@@ -57,5 +146,30 @@ export default async function CatalogoProductoPage({ params }: PageProps) {
     }
     if (res.status === 'not_found') notFound()
 
-    return <ProductoPublicoClient producto={res.product} canonicalPath={`/catalogo/p/${id}`} />
+    const p = res.product
+    const related = await fetchCatalogRelatedProductsServer(
+        supabase,
+        p.id,
+        p.category_id,
+        8
+    )
+
+    const siteOrigin = getSiteUrl().replace(/\/$/, '')
+    const canonical = `${siteOrigin}/catalogo/p/${id}`
+    const precioFinal = priceWithProductDiscount(p.sale_price, p.discount_percentage)
+    const jsonLd = productJsonLd(p, canonical, siteOrigin, precioFinal)
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <ProductPublicDetailClient
+                producto={p}
+                canonicalPath={`/catalogo/p/${id}`}
+                relatedProducts={related}
+            />
+        </>
+    )
 }
