@@ -6,7 +6,8 @@ import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { WHATSAPP_NUMBER } from '@/lib/config'
+import { getShareAbsoluteUrl } from '@/lib/site'
+import { openWhatsApp } from '@/lib/whatsappLink'
 import {
     cartSubtotal,
     couponDiscountFromPercent,
@@ -175,28 +176,39 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
 
     const handleWhatsAppClick = () => {
         if (carrito.length === 0) return
-        const items = carrito.map(item => {
-            const nombre = item.producto ? item.producto.name : item.combo!.name
-            const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
-            return `• ${nombre} x${item.cantidad} - $${formatPesoAR(precioUnit * item.cantidad)}`
-        }).join('%0A')
-        let totalLine = `*Total: $${formatPesoAR(total)}*`
-        if (appliedCoupon) totalLine = `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)%0A${totalLine}`
-        const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A${totalLine}`
-        const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
-        globalThis.window.open(waUrl, '_self', 'noopener,noreferrer')
+        const lines = [
+            '¡Hola! Me gustaría hacer el siguiente pedido:',
+            '',
+            ...carrito.map(item => {
+                const nombre = item.producto ? item.producto.name : item.combo!.name
+                const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
+                return `• ${nombre} x${item.cantidad} - $${formatPesoAR(precioUnit * item.cantidad)}`
+            }),
+            '',
+            ...(appliedCoupon
+                ? [
+                      `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)`,
+                      `Total: $${formatPesoAR(total)}`,
+                  ]
+                : [`Total: $${formatPesoAR(total)}`]),
+        ]
+        openWhatsApp(lines.join('\n'), false)
     }
 
     const compartirProducto = (producto: Producto) => {
-        const origin =
-            typeof globalThis.window !== 'undefined'
-                ? globalThis.window.location.origin
-                : (process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') || 'https://ilara.com.ar')
-        const productUrl = `${origin}/catalogo/p/${producto.id}`
+        const productUrl = getShareAbsoluteUrl(`/catalogo/p/${producto.id}`)
         const precio = getPrecioConDescuento(producto)
-        const mensaje = `¡Mirá este producto!%0A%0A*${producto.name}*%0A${producto.brand ? producto.brand + '%0A' : ''}Precio: $${formatPesoAR(precio)}%0A%0A${encodeURIComponent(productUrl)}%0A%0A¿Te interesa?`
-        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`
-        window.open(url, '_blank', 'noopener,noreferrer')
+        const partes = [
+            '¡Mirá este producto!',
+            '',
+            `*${producto.name}*`,
+            ...(producto.brand ? [producto.brand] : []),
+            `Precio: $${formatPesoAR(precio)}`,
+            productUrl,
+            '',
+            '¿Te interesa?',
+        ]
+        openWhatsApp(partes.join('\n'), false)
     }
 
     return (
@@ -442,7 +454,21 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                             />
                                             <BadgeRotator badges={[{ texto: 'Combo', clase: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200/50' }]} />
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=¡Mirá este combo!%0A%0A*${combo.name}*%0APrecio: $${formatPesoAR(combo.sale_price)}%0A%0A¿Te interesa?` }}
+                                                type="button"
+                                                onClick={e => {
+                                                    e.stopPropagation()
+                                                    openWhatsApp(
+                                                        [
+                                                            '¡Mirá este combo!',
+                                                            '',
+                                                            `*${combo.name}*`,
+                                                            `Precio: $${formatPesoAR(combo.sale_price)}`,
+                                                            '',
+                                                            '¿Te interesa?',
+                                                        ].join('\n'),
+                                                        false
+                                                    )
+                                                }}
                                                 className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                                                 aria-label={`Compartir ${combo.name}`}
                                             >

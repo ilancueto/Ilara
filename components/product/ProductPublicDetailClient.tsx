@@ -13,7 +13,8 @@ import {
 } from '@/lib/catalogPricing'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
 import { formatPesoAR } from '@/lib/formatPesoAR'
-import { WHATSAPP_NUMBER } from '@/lib/config'
+import { getShareAbsoluteUrl } from '@/lib/site'
+import { openWhatsApp } from '@/lib/whatsappLink'
 import { useCarrito } from '@/hooks/useCarrito'
 import { ToastContext } from '@/context/ToastContext'
 import ThemeSwitch from '@/components/ThemeSwitch'
@@ -116,19 +117,25 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
 
   const handleCarritoWhatsApp = () => {
     if (carrito.length === 0) return
-    const items = carrito
-      .map(item => {
+    const lines = [
+      '¡Hola! Me gustaría hacer el siguiente pedido:',
+      '',
+      ...carrito.map(item => {
         const nombre = item.producto ? item.producto.name : item.combo!.name
         const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
         return `• ${nombre} x${item.cantidad} - $${formatPesoAR(precioUnit * item.cantidad)}`
-      })
-      .join('%0A')
-    let totalLine = `*Total: $${formatPesoAR(total)}*`
-    if (appliedCoupon) {
-      totalLine = `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)%0A${totalLine}`
+      }),
+      '',
+      ...(appliedCoupon
+        ? [
+            `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)`,
+            `Total: $${formatPesoAR(total)}`,
+          ]
+        : [`Total: $${formatPesoAR(total)}`]),
+    ]
+    if (!openWhatsApp(lines.join('\n'), false)) {
+      showToast('error', 'No se pudo generar el enlace de WhatsApp')
     }
-    const mensaje = `¡Hola! Me gustaría hacer el siguiente pedido:%0A%0A${items}%0A%0A${totalLine}`
-    globalThis.window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`, '_self', 'noopener,noreferrer')
   }
 
   const vaciarCarritoYcerrar = () => {
@@ -141,26 +148,36 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
 
   const mainSrc = images[activeIdx]
   const precio = priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
-  const site =
-    typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : ''
-  const urlProducto = `${site}${canonicalPath}`
 
   const compartir = () => {
-    const texto = `¡Mirá este producto!%0A%0A*${encodeURIComponent(producto.name)}*%0A${producto.brand ? encodeURIComponent(producto.brand) + '%0A' : ''}Precio: $${formatPesoAR(precio)}%0A%0A${encodeURIComponent(urlProducto)}`
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`, '_blank', 'noopener,noreferrer')
+    const link = getShareAbsoluteUrl(canonicalPath)
+    const partes = [
+      '¡Mirá este producto!',
+      '',
+      `*${producto.name}*`,
+      ...(producto.brand ? [producto.brand] : []),
+      `Precio: $${formatPesoAR(precio)}`,
+      link,
+    ]
+    // Misma pestaña: en PC Chrome suele bloquear `target=_blank` programático; el pedido ya usa assign.
+    if (!openWhatsApp(partes.join('\n'), false)) {
+      showToast('error', 'No se pudo generar el enlace de WhatsApp')
+    }
   }
 
   const consultarWhatsApp = () => {
+    const link = getShareAbsoluteUrl(canonicalPath)
     const lineas = [
       '¡Hola! Consulto por este producto:',
       '',
       `*${producto.name}*`,
-      producto.brand ? producto.brand : '',
+      ...(producto.brand ? [producto.brand] : []),
       `Precio: $${formatPesoAR(precio)}`,
-      urlProducto ? urlProducto : '',
-    ].filter(Boolean)
-    const text = encodeURIComponent(lineas.join('\n'))
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank', 'noopener,noreferrer')
+      link,
+    ]
+    if (!openWhatsApp(lineas.join('\n'), false)) {
+      showToast('error', 'No se pudo generar el enlace de WhatsApp')
+    }
   }
 
   const stockAgotado = producto.stock <= 0

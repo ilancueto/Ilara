@@ -23,3 +23,20 @@ export function getSiteUrl(): string {
 
     return DEFAULT_PRODUCTION_URL
 }
+
+/**
+ * Origen para enlaces dentro de mensajes compartidos (WhatsApp, etc.).
+ * Evita `window.location` y `*.vercel.app` en previews: el cliente debe ver siempre el dominio público.
+ */
+export function getShareSiteOrigin(): string {
+    const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '')
+    if (explicit) return explicit
+    return DEFAULT_PRODUCTION_URL
+}
+
+/** URL absoluta de una ruta del sitio para compartir (p. ej. PDP). */
+export function getShareAbsoluteUrl(path: string): string {
+    const base = getShareSiteOrigin()
+    const p = path.startsWith('/') ? path : `/${path}`
+    return `${base}${p}`
+}
