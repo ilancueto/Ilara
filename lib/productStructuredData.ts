@@ -21,7 +21,7 @@ function merchantReturnPolicyForOffer(): object {
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'AR',
         returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 7,
+        merchantReturnDays: 3,
         returnMethod: [
             'https://schema.org/ReturnInStore',
             'https://schema.org/ReturnByMail',
@@ -31,10 +31,10 @@ function merchantReturnPolicyForOffer(): object {
 }
 
 /**
- * Envío (Offer → shippingDetails): Neuquén (AR-Q), sin cargo en JSON-LD alineado a retiro/envío local.
- * Plazos orientativos; coordinación real por WhatsApp.
+ * Envío (Offer → shippingDetails): Argentina, sin cargo; alineado al texto visible de la ficha.
+ * Plazos orientativos; coordinación por WhatsApp.
  */
-function offerShippingDetailsNeuquen(): object {
+function offerShippingDetailsArgentina(): object {
     return {
         '@type': 'OfferShippingDetails',
         shippingRate: {
@@ -45,7 +45,6 @@ function offerShippingDetailsNeuquen(): object {
         shippingDestination: {
             '@type': 'DefinedRegion',
             addressCountry: 'AR',
-            addressRegion: 'AR-Q',
         },
         deliveryTime: {
             '@type': 'ShippingDeliveryTime',
@@ -104,7 +103,7 @@ export function buildProductJsonLd(
                 name: MERCHANT_NAME,
             },
             hasMerchantReturnPolicy: merchantReturnPolicyForOffer(),
-            shippingDetails: offerShippingDetailsNeuquen(),
+            shippingDetails: offerShippingDetailsArgentina(),
         },
     }
 }
