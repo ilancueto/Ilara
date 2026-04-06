@@ -10,6 +10,7 @@ import { ProductoCatalogoRecover } from '@/components/Catalogo/ProductoCatalogoR
 import { getSiteUrl } from '@/lib/site'
 import { getProductImages, type Producto } from '@/lib/supabase'
 import { priceWithProductDiscount } from '@/lib/catalogPricing'
+import { buildProductJsonLd } from '@/lib/productStructuredData'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 
 export const revalidate = 120
@@ -39,43 +40,6 @@ function buildProductDescription(p: Producto, precioFinal: number): string {
     }
     const joined = parts.join('. ')
     return joined.length > 165 ? `${joined.slice(0, 162)}…` : joined
-}
-
-function productJsonLd(p: Producto, canonical: string, siteOrigin: string, precioFinal: number) {
-    const images = getProductImages(p).map(src => absoluteFromSite(src, siteOrigin)).filter(Boolean)
-    const availability =
-        p.stock <= 0
-            ? 'https://schema.org/OutOfStock'
-            : p.stock <= p.min_stock
-              ? 'https://schema.org/LimitedAvailability'
-              : 'https://schema.org/InStock'
-
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: p.name,
-        description: p.notes?.trim() || `${p.name} — Ilara Beauty, Neuquén.`,
-        image: images.length ? images : undefined,
-        brand: p.brand?.trim()
-            ? {
-                  '@type': 'Brand',
-                  name: p.brand.trim(),
-              }
-            : undefined,
-        sku: String(p.id),
-        offers: {
-            '@type': 'Offer',
-            url: canonical,
-            priceCurrency: 'ARS',
-            price: precioFinal,
-            availability,
-            itemCondition: 'https://schema.org/NewCondition',
-            seller: {
-                '@type': 'Organization',
-                name: 'Ilara Beauty',
-            },
-        },
-    }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -157,7 +121,7 @@ export default async function CatalogoProductoPage({ params }: PageProps) {
     const siteOrigin = getSiteUrl().replace(/\/$/, '')
     const canonical = `${siteOrigin}/catalogo/p/${id}`
     const precioFinal = priceWithProductDiscount(p.sale_price, p.discount_percentage)
-    const jsonLd = productJsonLd(p, canonical, siteOrigin, precioFinal)
+    const jsonLd = buildProductJsonLd(p, canonical, siteOrigin, precioFinal)
 
     return (
         <>

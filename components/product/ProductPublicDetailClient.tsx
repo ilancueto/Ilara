@@ -522,12 +522,20 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
                 </div>
 
                 <footer className="mt-auto border-t border-pink-100 pt-6 dark:border-zinc-500/25 sm:pt-7">
-                  <p className="flex items-start gap-3 text-sm leading-relaxed text-gray-600 dark:text-zinc-300">
-                    <Truck className="mt-0.5 h-4 w-4 shrink-0 text-pink-500 dark:text-pink-400" aria-hidden />
-                    <span className="min-w-0">
-                      Coordinamos tu pedido por WhatsApp. Retiro o envío según disponibilidad en Neuquén.
-                    </span>
-                  </p>
+                  <div className="space-y-3 text-sm leading-relaxed text-gray-600 dark:text-zinc-300">
+                    <p className="flex items-start gap-3">
+                      <Truck className="mt-0.5 h-4 w-4 shrink-0 text-pink-500 dark:text-pink-400" aria-hidden />
+                      <span className="min-w-0">
+                        Coordinamos tu pedido por WhatsApp. Retiro en Neuquén o envío sin cargo en provincia
+                        Neuquén (AR) cuando aplique; plazos orientativos 1 a 7 días hábiles según disponibilidad.
+                      </span>
+                    </p>
+                    <p className="border-t border-pink-100/80 pt-3 text-xs sm:text-sm dark:border-zinc-500/20">
+                      Cambios y devoluciones: hasta <strong className="font-semibold text-gray-800 dark:text-zinc-200">7 días</strong>{' '}
+                      con producto sin uso y comprobante; en local o coordinando por WhatsApp. Sin cargo por
+                      devolución en las condiciones acordadas.
+                    </p>
+                  </div>
                 </footer>
               </div>
             </div>
