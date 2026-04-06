@@ -147,6 +147,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   }
 
   const mainSrc = images[activeIdx]
+  const isPrimaryLcpImage = activeIdx === 0
   const precio = priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
 
   const compartir = () => {
@@ -316,7 +317,8 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
                       className="w-full h-auto object-cover"
                       style={{ maxHeight: 'min(85vh, 720px)' }}
                       sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority
+                      priority={isPrimaryLcpImage}
+                      loading={isPrimaryLcpImage ? 'eager' : undefined}
                     />
                   </button>
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/20 to-transparent dark:from-black/40" aria-hidden />

@@ -1,12 +1,26 @@
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
 import { getEnv } from '@/lib/env';
 
-/** Rutas sin sesión: SEO (sitemap/robots deben ser XML/texto, no HTML de /login). */
-const PUBLIC_ROUTES = ['/login', '/catalogo', '/sitemap.xml', '/sitemap-xml', '/robots.txt'];
+/** Rutas públicas exactas: no requieren sesión y no deben redirigir a /login. */
+const PUBLIC_EXACT_ROUTES = new Set(['/login', '/sitemap.xml', '/sitemap-xml', '/robots.txt']);
 
-/** Next.js 16+: sustituye la convención `middleware` (renombrada a `proxy`). */
+/** Rutas públicas por prefijo: el catálogo público incluye subrutas como /catalogo/p/[id]. */
+const PUBLIC_PREFIX_ROUTES = ['/catalogo'];
+
+function matchesRoutePrefix(pathname: string, route: string) {
+    return pathname === route || pathname.startsWith(`${route}/`);
+}
+
+function isPublicRoute(pathname: string) {
+    if (PUBLIC_EXACT_ROUTES.has(pathname)) {
+        return true;
+    }
+
+    return PUBLIC_PREFIX_ROUTES.some((route) => matchesRoutePrefix(pathname, route));
+}
+
 export async function proxy(request: NextRequest) {
     let response = NextResponse.next({ request });
 
@@ -15,32 +29,35 @@ export async function proxy(request: NextRequest) {
         getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
         {
             cookies: {
-                get(name: string) {
-                    return request.cookies.get(name)?.value;
+                getAll() {
+                    return request.cookies.getAll();
                 },
-                set(name: string, value: string, options: Record<string, unknown>) {
-                    request.cookies.set({ name, value, ...options });
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value }) => {
+                        request.cookies.set(name, value);
+                    });
+
                     response = NextResponse.next({ request });
-                    response.cookies.set({ name, value, ...options });
-                },
-                remove(name: string, options: Record<string, unknown>) {
-                    request.cookies.set({ name, value: '', ...options });
-                    response = NextResponse.next({ request });
-                    response.cookies.set({ name, value: '', ...options });
+
+                    cookiesToSet.forEach(({ name, value, options }) => {
+                        response.cookies.set(name, value, options);
+                    });
                 },
             },
         }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     const pathname = request.nextUrl.pathname;
-    const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
     if (!user && pathname === '/') {
-        /** 308: redirect permanente; evita que Google trate / y /catalogo como duplicados con señales contradictorias. */
-        return NextResponse.redirect(new URL('/catalogo', request.url), 308);
+        return NextResponse.redirect(new URL('/catalogo', request.url));
     }
-    if (!user && !isPublicRoute) {
+
+    if (!user && !isPublicRoute(pathname)) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
@@ -53,6 +70,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw\\.js|swe-worker|~offline|sitemap\\.xml|sitemap-xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw\\.js|swe-worker|~offline|sitemap\\.xml|sitemap-xml|robots\\.txt|.*\\.[^/]+$).*)',
     ],
 };
