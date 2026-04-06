@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase, Producto, ItemCarrito, Cliente, ComboConItems, type PagoDesglose } from '@/lib/supabase'
 import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { useToast } from '@/context/ToastContext'
@@ -25,6 +25,7 @@ export default function PuntoVenta() {
     const [cobrarDespues, setCobrarDespues] = useState(false)
     const [notas, setNotas] = useState('')
     const [cargando, setCargando] = useState(false)
+    const procesandoVenta = useRef(false)
 
     useEffect(() => {
         obtenerProductos()
@@ -140,6 +141,8 @@ export default function PuntoVenta() {
 
     const manejarVenta = async () => {
         if (carrito.length === 0) return
+        if (procesandoVenta.current) return
+        procesandoVenta.current = true
 
         setCargando(true)
         try {
@@ -277,6 +280,7 @@ export default function PuntoVenta() {
             showError('Error al procesar la venta')
         } finally {
             setCargando(false)
+            procesandoVenta.current = false
         }
     }
 
