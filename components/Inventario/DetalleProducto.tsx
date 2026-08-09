@@ -63,6 +63,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                 alt={producto.name}
                                 fill
                                 className="object-cover"
+                                sizes="(max-width: 768px) 100vw, 288px"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">

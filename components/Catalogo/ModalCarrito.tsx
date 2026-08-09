@@ -97,7 +97,7 @@ export function ModalCarrito({
                                     <div key={key} className="flex gap-3 p-3.5 rounded-xl bg-pink-50/50 dark:bg-gray-700/60 border border-pink-100/50 dark:border-gray-600">
                                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden relative flex-shrink-0 bg-white dark:bg-gray-600 border border-pink-100 dark:border-gray-500">
                                             {imagen ? (
-                                                <Image src={imagen} alt={nombre} fill className="object-cover" />
+                                                <Image src={imagen} alt={nombre} fill className="object-cover" sizes="80px" />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full w-full"><Sparkles className="w-8 h-8 text-pink-200 dark:text-pink-500" /></div>
                                             )}

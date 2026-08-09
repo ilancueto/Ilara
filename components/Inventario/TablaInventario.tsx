@@ -67,6 +67,7 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                         alt={producto.name}
                                         fill
                                         className="object-cover md:transition-transform md:duration-200 md:group-hover:scale-105"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">

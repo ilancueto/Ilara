@@ -56,7 +56,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                     aria-label={`Agregar combo ${combo.name}`}
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-700 flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100 dark:border-transparent relative">
-                                        {img ? <Image src={img} alt={combo.name} fill className="object-cover" /> : <Package className="w-6 h-6 text-amber-400 dark:text-amber-500" />}
+                                        {img ? <Image src={img} alt={combo.name} fill className="object-cover" sizes="48px" /> : <Package className="w-6 h-6 text-amber-400 dark:text-amber-500" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start">
@@ -84,7 +84,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                             >
                                 <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-600 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100 dark:border-transparent relative">
                                     {getProductImages(producto)[0] ? (
-                                        <Image src={getProductImages(producto)[0]} alt={producto.name} fill className="object-cover" />
+                                        <Image src={getProductImages(producto)[0]} alt={producto.name} fill className="object-cover" sizes="48px" />
                                     ) : (
                                         <span className="text-xs opacity-30">✨</span>
                                     )}

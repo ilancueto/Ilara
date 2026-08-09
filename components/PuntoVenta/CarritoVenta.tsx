@@ -49,7 +49,7 @@ export default function CarritoVenta({ carrito, onUpdateQuantity, onUpdateQuanti
                         return (
                             <div key={key} className="flex items-center gap-4 p-4 rounded-2xl bg-pink-50/40 dark:bg-gray-700/60 border border-pink-100/80 dark:border-gray-600 hover:border-pink-200 dark:hover:border-pink-800 transition-all group">
                                 <div className="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-600 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100 dark:border-transparent relative">
-                                    {imagen ? <Image src={imagen} alt={nombre} fill className="object-cover" /> : <span className="text-sm opacity-30">✨</span>}
+                                    {imagen ? <Image src={imagen} alt={nombre} fill className="object-cover" sizes="56px" /> : <span className="text-sm opacity-30">✨</span>}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm mb-1 truncate group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">{nombre}{!esProducto && <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-1 rounded ml-1">Combo</span>}</h4>
