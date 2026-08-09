@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Great_Vibes } from "next/font/google";
+import { Fraunces, Outfit, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -13,6 +13,12 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-outfit",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-fraunces",
 });
 
 /** Reemplaza Mareline (cdnfonts) por fuente self-hosted vía Google → Next (privacidad + CSP). */
@@ -117,7 +123,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
-        className={`${outfit.variable} ${ilaraScript.variable} antialiased`}
+        className={`${outfit.variable} ${fraunces.variable} ${ilaraScript.variable} antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider>

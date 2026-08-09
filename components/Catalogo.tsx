@@ -1,30 +1,37 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
-import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, RefreshCw, Plus } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import {
+    ArrowUpDown,
+    ChevronLeft,
+    ChevronRight,
+    Plus,
+    RefreshCw,
+    Search,
+    Share2,
+    ShoppingBag,
+    SlidersHorizontal,
+    Sparkles,
+} from 'lucide-react'
+import { ComboConItems, Producto, getProductImages } from '@/lib/supabase'
 import { getShareAbsoluteUrl } from '@/lib/site'
 import { openWhatsApp } from '@/lib/whatsappLink'
-import {
-    cartSubtotal,
-    couponDiscountFromPercent,
-    totalAfterCoupon,
-} from '@/lib/catalogPricing'
+import { cartSubtotal, couponDiscountFromPercent, totalAfterCoupon } from '@/lib/catalogPricing'
 import { getCatalogBadgesForProduct } from '@/lib/catalogBadges'
+import { formatPesoAR } from '@/lib/formatPesoAR'
 import { useToast } from '@/context/ToastContext'
-import { PastelCard } from '@/components/ui/PastelCard'
 import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
+import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 import { useCarrito } from '@/hooks/useCarrito'
 import { useCatalogData, type CatalogInitialSnapshot } from '@/hooks/useCatalogData'
 import { useCatalogDerivedLists } from '@/hooks/useCatalogDerivedLists'
-import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
-import { formatPesoAR } from '@/lib/formatPesoAR'
 import ThemeSwitch from '@/components/ThemeSwitch'
+import styles from '@/components/Catalogo/CatalogoEditorial.module.css'
 
 const ModalCarrito = dynamic(
     () => import('@/components/Catalogo/ModalCarrito').then(m => ({ default: m.ModalCarrito })),
@@ -45,6 +52,9 @@ const ModalDetalleCombo = dynamic(
 
 type CatalogoProps = { initialCatalog?: CatalogInitialSnapshot | null }
 
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1679307658813-da95b901ecd9?auto=format&fit=crop&w=1200&q=85'
+const RITUAL_IMAGE = 'https://images.unsplash.com/photo-1687716432612-2a46da37a43b?auto=format&fit=crop&w=1200&q=85'
+
 export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
     const { showToast: baseShowToast } = useToast()
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
@@ -54,12 +64,25 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
             : undefined
         baseShowToast(type, message, 4000, action)
     }, [baseShowToast])
-    const { carrito, agregarAlCarrito, agregarComboAlCarrito, quitarDelCarrito, quitarComboDelCarrito, actualizarCantidad, actualizarCantidadCombo, clearCarrito, mantenerSoloProductosDisponibles, badgeAnimado } = useCarrito(showToast)
+
+    const {
+        carrito,
+        agregarAlCarrito,
+        agregarComboAlCarrito,
+        quitarDelCarrito,
+        quitarComboDelCarrito,
+        actualizarCantidad,
+        actualizarCantidadCombo,
+        clearCarrito,
+        mantenerSoloProductosDisponibles,
+        badgeAnimado,
+    } = useCarrito(showToast)
+
     const [categoriaFiltro, setCategoriaFiltro] = useState<string>('all')
     const [busqueda, setBusqueda] = useState('')
-    const [precioMin, setPrecioMin] = useState<number>(0)
-    const [precioMax, setPrecioMax] = useState<number>(999999)
-    const [ordenamiento, setOrdenamiento] = useState<string>(ORDEN_DEFAULT)
+    const [precioMin, setPrecioMin] = useState(0)
+    const [precioMax, setPrecioMax] = useState(999999)
+    const [ordenamiento, setOrdenamiento] = useState(ORDEN_DEFAULT)
     const {
         productos,
         combos,
@@ -69,9 +92,11 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         recargarCatalogo,
         ventasPorProducto,
     } = useCatalogData(ordenamiento, initialCatalog)
+
     const [imagenPrevia, setImagenPrevia] = useState<{ images: string[]; index: number } | null>(null)
     const [indiceImagenPorProducto, setIndiceImagenPorProducto] = useState<Record<number, number>>({})
     const touchSwipeRef = useRef<{ productId: number; x: number; count: number } | null>(null)
+    const searchRef = useRef<HTMLInputElement>(null)
     const [comboSeleccionado, setComboSeleccionado] = useState<ComboConItems | null>(null)
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [ordenSelectOpen, setOrdenSelectOpen] = useState(false)
@@ -87,8 +112,6 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
             mantenerSoloProductosDisponibles(productos, combosIds)
         }
     }, [productos, combos, carrito.length, mantenerSoloProductosDisponibles])
-
-    const obtenerBadges = (producto: Producto) => getCatalogBadgesForProduct(producto)
 
     const {
         totalItems,
@@ -108,24 +131,24 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         paginaActual,
     })
     const inicio = (paginaActual - 1) * PRODUCTOS_POR_PAGINA
+    const orderLabel = ORDEN_OPTIONS.find(option => option.value === ordenamiento)?.label ?? ORDEN_OPTIONS[0].label
 
-    // Reset página cuando cambian filtros o búsqueda
-    /* eslint-disable react-hooks/set-state-in-effect -- reset explícito de índice al cambiar filtros */
+    /* eslint-disable react-hooks/set-state-in-effect -- el índice depende de los filtros activos */
     useEffect(() => {
         setPaginaActual(1)
     }, [categoriaFiltro, busqueda, precioMin, precioMax, ordenamiento])
     /* eslint-enable react-hooks/set-state-in-effect */
 
-    // Scroll al top al cambiar de página
     useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        if (paginaActual > 1) {
+            document.querySelector('#productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
     }, [paginaActual])
 
-    // Cerrar selector de orden al hacer clic fuera
     useEffect(() => {
         if (!ordenSelectOpen) return
-        const handleClick = (e: MouseEvent) => {
-            if (ordenSelectRef.current && !ordenSelectRef.current.contains(e.target as Node)) {
+        const handleClick = (event: MouseEvent) => {
+            if (ordenSelectRef.current && !ordenSelectRef.current.contains(event.target as Node)) {
                 setOrdenSelectOpen(false)
             }
         }
@@ -170,10 +193,6 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         showToast('success', `Cupón ${code} aplicado: -${result.discount_percentage}%`)
     }
 
-    const quitarCupon = () => {
-        setAppliedCoupon(null)
-    }
-
     const handleWhatsAppClick = () => {
         if (carrito.length === 0) return
         const lines = [
@@ -186,10 +205,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
             }),
             '',
             ...(appliedCoupon
-                ? [
-                      `Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)`,
-                      `Total: $${formatPesoAR(total)}`,
-                  ]
+                ? [`Cupón ${appliedCoupon.code} (-${appliedCoupon.discount_percentage}%)`, `Total: $${formatPesoAR(total)}`]
                 : [`Total: $${formatPesoAR(total)}`]),
         ]
         openWhatsApp(lines.join('\n'), false)
@@ -197,474 +213,494 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
 
     const compartirProducto = (producto: Producto) => {
         const productUrl = getShareAbsoluteUrl(`/catalogo/p/${producto.id}`)
-        const precio = getPrecioConDescuento(producto)
-        const partes = [
+        openWhatsApp([
             '¡Mirá este producto!',
             '',
             `*${producto.name}*`,
             ...(producto.brand ? [producto.brand] : []),
-            `Precio: $${formatPesoAR(precio)}`,
+            `Precio: $${formatPesoAR(getPrecioConDescuento(producto))}`,
             productUrl,
             '',
             '¿Te interesa?',
-        ]
-        openWhatsApp(partes.join('\n'), false)
+        ].join('\n'), false)
+    }
+
+    const compartirCombo = (combo: ComboConItems) => {
+        openWhatsApp([
+            '¡Mirá este combo!',
+            '',
+            `*${combo.name}*`,
+            `Precio: $${formatPesoAR(combo.sale_price)}`,
+            '',
+            '¿Te interesa?',
+        ].join('\n'), false)
+    }
+
+    const focusSearch = () => {
+        document.querySelector('#productos')?.scrollIntoView({ behavior: 'smooth' })
+        window.setTimeout(() => searchRef.current?.focus(), 450)
+    }
+
+    const clearFilters = () => {
+        setBusqueda('')
+        setCategoriaFiltro('all')
+        setPrecioMin(0)
+        setPrecioMax(999999)
+        setOrdenamiento(ORDEN_DEFAULT)
     }
 
     return (
-        <div
-            className="min-h-screen w-full min-w-0 bg-[radial-gradient(ellipse_80%_50%_at_100%_-10%,rgba(244,114,182,0.14),transparent_50%),radial-gradient(ellipse_60%_40%_at_0%_100%,rgba(168,85,247,0.1),transparent_45%),#f6f2f7] dark:bg-[radial-gradient(ellipse_70%_45%_at_100%_0%,rgba(219,39,119,0.12),transparent_50%),#0f0f12]"
-            suppressHydrationWarning
-        >
-            <header className="w-full">
-                <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md border-b border-pink-100/50 dark:border-white/10">
-                    <div className="catalog-shell-width px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-                        <div className="flex items-center justify-between gap-2 sm:gap-3 min-h-0">
-                            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                                <div className="h-10 w-[112px] sm:h-12 sm:w-[148px] rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-900 border border-pink-100/80 dark:border-white/10 shadow-sm flex items-center justify-center px-1.5">
-                                    <Image
-                                        src="/logo-header.png"
-                                        alt=""
-                                        width={344}
-                                        height={120}
-                                        className="object-contain w-full h-full max-h-full"
-                                        sizes="(max-width: 640px) 112px, 148px"
-                                    />
-                                </div>
-                                <p className="text-base sm:text-lg font-extrabold text-gray-900 dark:text-gray-50 tracking-tight truncate">
-                                    Ilara Beauty
-                                </p>
-                            </div>
+        <div className={styles.root} suppressHydrationWarning>
+            <div className={styles.announcement}>
+                <span>Envíos en Neuquén</span>
+                <span className={styles.announcementDot} aria-hidden />
+                <span className={styles.announcementSecondary}>Pedidos por WhatsApp</span>
+            </div>
 
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                                <ThemeSwitch />
-                                <Link
-                                    href="/login"
-                                    className="px-3 py-2 rounded-xl border border-pink-100 dark:border-white/10 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:border-pink-200 dark:hover:border-pink-700 hover:text-pink-600 dark:hover:text-pink-400 transition-all"
-                                >
-                                    Login
-                                </Link>
-                                <button
-                                    onClick={() => startTransition(() => setMostrarCarrito(true))}
-                                    className="relative p-2.5 rounded-xl bg-pink-50 dark:bg-zinc-800 hover:bg-pink-100 dark:hover:bg-zinc-700 transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
-                                    aria-label={carrito.length > 0 ? `Ver carrito, ${carrito.length} producto${carrito.length !== 1 ? 's' : ''}` : 'Ver carrito'}
-                                >
-                                    <ShoppingBag className="w-5 h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
-                                    {carrito.length > 0 && (
-                                        <span className={`absolute -top-0.5 -right-0.5 bg-pink-500 text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center ${badgeAnimado ? 'animate-bounce' : ''}`}>
-                                            {carrito.length}
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <header className={styles.siteHeader}>
+                <a className={styles.brand} href="#inicio" aria-label="Ir al inicio">
+                    <span className={styles.brandMark}>
+                        <Image src="/logo-header.png" alt="" width={344} height={120} priority />
+                    </span>
+                    <span className={styles.brandCopy}>
+                        <strong>Ilara</strong>
+                        <small>BEAUTY EDIT</small>
+                    </span>
+                </a>
 
-                {/* Hero vitrina (mock overhaul) */}
-                <div className="catalog-shell-width px-4 sm:px-6 lg:px-8 pt-5 sm:pt-7 pb-2">
-                    <div className="rounded-[22px] sm:rounded-[28px] border border-pink-100/70 dark:border-white/10 px-5 sm:px-8 py-6 sm:py-8 bg-[radial-gradient(ellipse_80%_80%_at_100%_0%,rgba(200,142,255,0.22),transparent_50%),radial-gradient(ellipse_60%_60%_at_0%_100%,rgba(244,114,182,0.16),transparent_50%),linear-gradient(135deg,#fff_0%,#fdf2f8_100%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_90%_0%,rgba(168,85,247,0.15),transparent_50%),#18181b]">
-                        <h1
-                            id="catalogo-titulo-principal"
-                            className="text-2xl sm:text-3xl md:text-[2rem] font-extrabold text-gray-900 dark:text-gray-50 tracking-tight leading-tight text-balance"
-                        >
-                            Productos de belleza en Neuquén
-                        </h1>
-                        <p className="mt-2 max-w-2xl text-pretty text-gray-500 dark:text-gray-400 text-sm sm:text-base font-medium leading-relaxed">
-                            Maquillaje, skincare y combos · pedidos por WhatsApp
-                        </p>
-                    </div>
+                <nav className={styles.desktopNav} aria-label="Navegación del catálogo">
+                    <a href="#novedades">Novedades</a>
+                    <a href="#productos">Productos</a>
+                    <a href="#ritual">Rituales</a>
+                </nav>
+
+                <div className={styles.headerActions}>
+                    <button className={styles.iconButton} type="button" onClick={focusSearch} aria-label="Buscar productos">
+                        <Search size={18} />
+                    </button>
+                    <span className={styles.themeControl}><ThemeSwitch /></span>
+                    <Link className={styles.loginButton} href="/login">Login</Link>
+                    <button
+                        className={styles.bagButton}
+                        type="button"
+                        onClick={() => startTransition(() => setMostrarCarrito(true))}
+                        aria-label={carrito.length > 0 ? `Ver bolsa, ${carrito.length} ítems` : 'Ver bolsa'}
+                    >
+                        <ShoppingBag size={16} />
+                        Bolsa
+                        <span className={`${styles.bagCount} ${badgeAnimado ? 'animate-bounce' : ''}`}>{carrito.length}</span>
+                    </button>
                 </div>
             </header>
 
-            <div className="catalog-shell-width px-4 sm:px-6 lg:px-8">
-                <div className="pt-4 pb-4">
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
-                        <div className="relative flex-1 min-w-0 h-11">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 pointer-events-none text-pink-400">
-                                <Search className="w-4 h-4" />
-                            </span>
+            <main id="inicio" className={styles.main}>
+                <section className={styles.hero} id="novedades" aria-labelledby="catalogo-titulo-principal">
+                    <div className={styles.heroCopy}>
+                        <p className={styles.eyebrow}>Nueva temporada · Ilara Beauty</p>
+                        <h1 id="catalogo-titulo-principal" className={styles.heroTitle}>
+                            Tu ritual,<br /><em>tu momento.</em>
+                        </h1>
+                        <p className={styles.heroLead}>
+                            Una selección de maquillaje y skincare elegida para sumar color, textura y un poco de magia a todos los días.
+                        </p>
+                        <div className={styles.heroActions}>
+                            <a className={styles.primaryButton} href="#productos">Explorar colección <span>↘</span></a>
+                            <a className={styles.textLink} href="#ritual">Descubrir el ritual <span>→</span></a>
+                        </div>
+                        <div className={styles.heroProof}>
+                            <div className={styles.proofMarks} aria-hidden><span>I</span><span>L</span><span>A</span></div>
+                            <p><strong>Elegidos con intención</strong><br />Pedidos simples por WhatsApp</p>
+                        </div>
+                    </div>
+
+                    <div className={styles.heroVisual} aria-label="Selección editorial de productos de belleza">
+                        <figure className={styles.heroMainImage}>
+                            <Image
+                                src={HERO_IMAGE}
+                                alt="Brochas de maquillaje sobre un fondo rosa"
+                                fill
+                                priority
+                                sizes="(max-width: 980px) 88vw, 46vw"
+                            />
+                            <figcaption className={styles.heroCaption}><span>01</span> La edición rosa</figcaption>
+                        </figure>
+                        <aside className={styles.floatingNote}>
+                            <span aria-hidden>✦</span>
+                            <p>Pequeños lujos<br />para todos los días.</p>
+                        </aside>
+                        <div className={styles.heroOrbit} aria-hidden>ILARA · BEAUTY · NEUQUÉN ·</div>
+                    </div>
+                </section>
+
+                <section className={styles.marquee} aria-label="Beneficios">
+                    <div className={styles.marqueeTrack}>
+                        <span>Curaduría independiente</span><i>✦</i><span>Retiro en Neuquén</span><i>✦</i><span>Atención personalizada</span><i>✦</i><span>Combos únicos</span><i>✦</i>
+                        <span>Curaduría independiente</span><i>✦</i><span>Retiro en Neuquén</span><i>✦</i><span>Atención personalizada</span><i>✦</i><span>Combos únicos</span><i>✦</i>
+                    </div>
+                </section>
+
+                <section className={styles.shopSection} id="productos" aria-labelledby="catalogo-productos-titulo">
+                    <div className={styles.sectionHeading}>
+                        <div>
+                            <p className={styles.eyebrow}>La selección Ilara</p>
+                            <h2 id="catalogo-productos-titulo">Encontrá tu próximo favorito</h2>
+                        </div>
+                        <p>Productos elegidos uno por uno,<br />sin abrumarte con opciones.</p>
+                    </div>
+
+                    <div className={styles.shopToolbar}>
+                        <div className={styles.categoryTabs} role="group" aria-label="Filtrar por categoría">
+                            <button
+                                className={`${styles.categoryTab} ${categoriaFiltro === 'all' ? styles.categoryTabActive : ''}`}
+                                type="button"
+                                onClick={() => setCategoriaFiltro('all')}
+                                aria-pressed={categoriaFiltro === 'all'}
+                            >
+                                Todo <sup>{productos.length + combos.length}</sup>
+                            </button>
+                            {categorias.map(categoria => (
+                                <button
+                                    key={categoria.id}
+                                    className={`${styles.categoryTab} ${categoriaFiltro === categoria.id.toString() ? styles.categoryTabActive : ''}`}
+                                    type="button"
+                                    onClick={() => setCategoriaFiltro(categoria.id.toString())}
+                                    aria-pressed={categoriaFiltro === categoria.id.toString()}
+                                >
+                                    {categoria.name} <sup>{productos.filter(producto => producto.category_id === categoria.id).length}</sup>
+                                </button>
+                            ))}
+                        </div>
+
+                        <label className={styles.searchField}>
+                            <Search size={17} aria-hidden />
                             <input
+                                ref={searchRef}
                                 type="search"
-                                placeholder="Buscar en el catálogo…"
+                                placeholder="Buscar producto"
                                 value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
+                                onChange={event => setBusqueda(event.target.value)}
                                 aria-label="Buscar productos por nombre o marca"
-                                className="w-full h-full pl-10 pr-3 py-2 bg-white dark:bg-zinc-900 border border-pink-100/80 dark:border-white/10 rounded-2xl shadow-[0_4px_16px_rgba(190,24,93,0.05)] focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/30 text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm font-medium transition-all outline-none"
                                 suppressHydrationWarning
                             />
-                        </div>
-                        <div ref={ordenSelectRef} className="relative w-full sm:min-w-[200px] sm:max-w-[240px] shrink-0">
-                            <label id="catalogo-ordenar-label" className="sr-only">Ordenar por</label>
+                        </label>
+
+                        <button
+                            className={`${styles.filterButton} ${mostrarFiltros ? styles.filterButtonActive : ''}`}
+                            type="button"
+                            onClick={() => setMostrarFiltros(value => !value)}
+                            aria-expanded={mostrarFiltros}
+                        >
+                            Filtros <SlidersHorizontal size={16} />
+                        </button>
+
+                        <div className={styles.orderWrap} ref={ordenSelectRef}>
                             <button
+                                className={styles.orderButton}
                                 type="button"
+                                onClick={() => setOrdenSelectOpen(value => !value)}
                                 aria-haspopup="listbox"
                                 aria-expanded={ordenSelectOpen}
-                                aria-labelledby="catalogo-ordenar-label"
-                                aria-label={`Ordenar por: ${ORDEN_OPTIONS.find(o => o.value === (ordenamiento || ORDEN_DEFAULT))?.label ?? ORDEN_OPTIONS[0].label}`}
-                                onClick={() => setOrdenSelectOpen(prev => !prev)}
-                                className="relative w-full h-9 flex items-center gap-2 pl-3 pr-8 rounded-lg text-sm bg-white dark:bg-gray-700 dark:border-gray-600 border border-pink-100 text-left text-gray-900 dark:text-gray-100 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/40 outline-none transition-all min-w-0"
-                                suppressHydrationWarning
+                                aria-label={`Ordenar por: ${orderLabel}`}
                             >
-                                <span className="flex-1 min-w-0 truncate">
-                                    {ORDEN_OPTIONS.find(o => o.value === (ordenamiento || ORDEN_DEFAULT))?.label ?? ORDEN_OPTIONS[0].label}
-                                </span>
-                                <ChevronDown className={`w-4 h-4 shrink-0 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none transition-transform ${ordenSelectOpen ? 'rotate-180' : ''}`} />
+                                Ordenar <ArrowUpDown size={15} />
                             </button>
                             {ordenSelectOpen && (
-                                <ul
-                                    role="listbox"
-                                    aria-labelledby="catalogo-ordenar-label"
-                                    className="absolute top-full left-0 right-0 z-50 mt-1 py-1 rounded-lg border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-lg max-h-60 overflow-auto"
-                                >
-                                    {ORDEN_OPTIONS.map(opt => (
-                                        <li key={opt.value} role="option" aria-selected={ordenamiento === opt.value}>
-                                            <button
-                                                type="button"
-                                                className={`w-full text-left px-3 py-2 text-sm transition-colors ${ordenamiento === opt.value ? 'bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 font-medium' : 'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600/80'}`}
-                                                onClick={() => { setOrdenamiento(opt.value); setOrdenSelectOpen(false) }}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        </li>
+                                <div className={styles.orderMenu} role="listbox" aria-label="Ordenar productos">
+                                    {ORDEN_OPTIONS.map(option => (
+                                        <button
+                                            key={option.value}
+                                            className={`${styles.orderOption} ${ordenamiento === option.value ? styles.orderOptionActive : ''}`}
+                                            type="button"
+                                            role="option"
+                                            aria-selected={ordenamiento === option.value}
+                                            onClick={() => {
+                                                setOrdenamiento(option.value)
+                                                setOrdenSelectOpen(false)
+                                            }}
+                                        >
+                                            {option.label}
+                                        </button>
                                     ))}
-                                </ul>
+                                </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Fila 2: chips de categorías + Más filtros (mobile: chips arriba, botón abajo para no cortarse) */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center pt-5">
-                        <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full min-w-0 -mx-1 px-1 sm:flex-1">
-                            <button
-                                onClick={() => setCategoriaFiltro('all')}
-                                className={`px-4 py-2 rounded-full text-sm font-extrabold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 shrink-0 ${categoriaFiltro === 'all'
-                                    ? 'bg-pink-500 text-white shadow-[0_6px_16px_-4px_rgba(236,72,153,0.5)]'
-                                    : 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-pink-100/80 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-zinc-800'
-                                }`}
-                                aria-pressed={categoriaFiltro === 'all'}
-                            >
-                                Todo
-                            </button>
-                            {categorias.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setCategoriaFiltro(cat.id.toString())}
-                                    className={`px-4 py-2 rounded-full text-sm font-extrabold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 shrink-0 ${categoriaFiltro === cat.id.toString()
-                                        ? 'bg-pink-500 text-white shadow-[0_6px_16px_-4px_rgba(236,72,153,0.5)]'
-                                        : 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-pink-100/80 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-zinc-800'
-                                    }`}
-                                    aria-pressed={categoriaFiltro === cat.id.toString()}
-                                >
-                                    {cat.name}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                            className={`w-full sm:w-auto shrink-0 h-9 px-3.5 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${mostrarFiltros ? 'bg-pink-500 text-white' : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'}`}
-                            aria-expanded={mostrarFiltros}
-                        >
-                            {mostrarFiltros ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                            {mostrarFiltros ? 'Menos filtros' : 'Más filtros'}
-                        </button>
-                    </div>
-
-                    {/* Fila 3: panel compacto inline (precio + limpiar) */}
                     {mostrarFiltros && (
-                        <div className="mt-4 p-4 rounded-xl border border-pink-100/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-800/50">
-                            <div className="flex flex-wrap items-end gap-4">
-                                <div className="min-w-[120px]">
-                                    <label htmlFor="catalogo-precio-min" className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 block">Precio mínimo</label>
-                                    <input
-                                        id="catalogo-precio-min"
-                                        type="number"
-                                        value={precioMin}
-                                        onChange={(e) => setPrecioMin(Number(e.target.value))}
-                                        className="w-full h-9 px-3 rounded-lg text-sm bg-gray-50 dark:bg-gray-700/60 border border-pink-100/80 dark:border-gray-600 text-gray-800 dark:text-gray-100 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/40 dark:focus:ring-pink-900/30 outline-none transition-all"
-                                    />
-                                </div>
-                                <div className="min-w-[120px]">
-                                    <label htmlFor="catalogo-precio-max" className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5 block">Precio máximo</label>
-                                    <input
-                                        id="catalogo-precio-max"
-                                        type="number"
-                                        value={precioMax}
-                                        onChange={(e) => setPrecioMax(Number(e.target.value))}
-                                        className="w-full h-9 px-3 rounded-lg text-sm bg-gray-50 dark:bg-gray-700/60 border border-pink-100/80 dark:border-gray-600 text-gray-800 dark:text-gray-100 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/40 dark:focus:ring-pink-900/30 outline-none transition-all"
-                                    />
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => { setPrecioMin(0); setPrecioMax(999999); setOrdenamiento(ORDEN_DEFAULT) }}
-                                    className="h-9 px-4 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/60 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 transition-colors"
-                                >
-                                    Limpiar
-                                </button>
-                            </div>
+                        <div className={styles.filterPanel}>
+                            <label>
+                                Precio mínimo
+                                <input type="number" value={precioMin} min={0} onChange={event => setPrecioMin(Number(event.target.value))} />
+                            </label>
+                            <label>
+                                Precio máximo
+                                <input type="number" value={precioMax} min={0} onChange={event => setPrecioMax(Number(event.target.value))} />
+                            </label>
+                            <button className={styles.clearButton} type="button" onClick={clearFilters}>Limpiar filtros</button>
                         </div>
                     )}
-                </div>
 
-                {/* Grid de productos */}
-                <div className="w-full pb-32">
-                {cargando ? (
-                    <div className="flex flex-col items-center justify-center py-24">
-                        <div className="w-14 h-14 border-4 border-pink-200 dark:border-gray-600 border-t-pink-500 dark:border-t-pink-400 rounded-full animate-spin mb-6" />
-                        <p className="text-gray-500 dark:text-gray-400 font-medium">Cargando productos...</p>
-                    </div>
-                ) : catalogLoadError ? (
-                    <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-                        <p className="text-gray-800 dark:text-gray-100 font-semibold mb-2">No pudimos cargar el catálogo</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
-                            Puede ser un problema de conexión con el servidor. Probá de nuevo en unos segundos.
-                        </p>
-                        <button
-                            type="button"
-                            onClick={() => void recargarCatalogo()}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-pink-500 text-white font-semibold text-sm hover:bg-pink-600 transition-colors"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                            Reintentar
-                        </button>
-                    </div>
-                ) : totalItems > 0 ? (
-                    <>
-                    <div className="catalog-product-grid w-full">
-                        {itemsPagina.map((item, slotIndex) => {
-                            const esPrioridadLcp = slotIndex < 8
-                            const esCombo = 'sale_price' in item && 'combo_items' in item
-                            if (esCombo) {
-                                const combo = item as ComboConItems
-                                const disponible = comboDisponible(combo)
-                                return (
-                                    <PastelCard key={`combo-${combo.id}`} className="content-visibility-auto group overflow-hidden flex flex-col h-full !rounded-[20px] hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.16)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5">
-                                        <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gradient-to-br from-amber-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-900 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
-                                            <ImagenComboRotativa
-                                                combo={combo}
-                                                fill
-                                                className="absolute inset-0 w-full h-full"
-                                                sizes="(max-width: 768px) 50vw, 25vw"
-                                                priority={esPrioridadLcp}
-                                            />
-                                            <BadgeRotator badges={[{ texto: 'Combo', clase: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-200/50' }]} />
-                                            <button
-                                                type="button"
-                                                onClick={e => {
-                                                    e.stopPropagation()
-                                                    openWhatsApp(
-                                                        [
-                                                            '¡Mirá este combo!',
-                                                            '',
-                                                            `*${combo.name}*`,
-                                                            `Precio: $${formatPesoAR(combo.sale_price)}`,
-                                                            '',
-                                                            '¿Te interesa?',
-                                                        ].join('\n'),
-                                                        false
-                                                    )
-                                                }}
-                                                className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                                aria-label={`Compartir ${combo.name}`}
-                                            >
-                                                <Share2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <div className="p-3 sm:p-3.5 flex flex-col flex-1 min-h-0 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
-                                            <div className="flex-1 min-h-[3.9rem] flex flex-col">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-1">Combo</span>
-                                                <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2">{combo.name}</h3>
-                                                {combo.description && <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">{combo.description}</p>}
-                                            </div>
-                                            <div className="mt-auto pt-2.5 border-t border-pink-50 dark:border-white/10 flex items-center justify-between gap-2 flex-shrink-0">
-                                                <p className="text-[clamp(0.95rem,1.5vw,1.1rem)] font-extrabold text-gray-900 dark:text-white tabular-nums whitespace-nowrap shrink-0">${formatPesoAR(combo.sale_price)}</p>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); if (disponible) startTransition(() => agregarComboAlCarrito(combo)); }}
-                                                    disabled={!disponible}
-                                                    className="h-9 min-w-9 px-2.5 flex-shrink-0 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-extrabold shadow-md hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all grid place-items-center"
-                                                    aria-label={disponible ? `Agregar ${combo.name}` : `${combo.name}: agotado`}
+                    {cargando ? (
+                        <div className={styles.statePanel}>
+                            <div className={styles.spinner} aria-hidden />
+                            <p>Cargando la selección Ilara…</p>
+                        </div>
+                    ) : catalogLoadError ? (
+                        <div className={styles.statePanel}>
+                            <RefreshCw className={styles.stateIcon} size={32} />
+                            <h3>No pudimos cargar el catálogo</h3>
+                            <p>Puede ser un problema de conexión. Probá de nuevo en unos segundos.</p>
+                            <button className={styles.clearButton} type="button" onClick={() => void recargarCatalogo()}>Reintentar</button>
+                        </div>
+                    ) : totalItems > 0 ? (
+                        <>
+                            <div className={styles.productGrid}>
+                                {itemsPagina.map((item, slotIndex) => {
+                                    const esPrioridadLcp = slotIndex < 4
+                                    const esCombo = 'combo_items' in item
+
+                                    if (esCombo) {
+                                        const combo = item as ComboConItems
+                                        const disponible = comboDisponible(combo)
+                                        return (
+                                            <article key={`combo-${combo.id}`} className={`${styles.productCard} group content-visibility-auto`}>
+                                                <div
+                                                    className={styles.productMedia}
+                                                    onClick={() => startTransition(() => setComboSeleccionado(combo))}
                                                 >
-                                                    {disponible ? <Plus className="w-4 h-4" /> : 'Agotado'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </PastelCard>
-                                )
-                            }
-                            const producto = item as Producto
-                            const badges = obtenerBadges(producto)
-                            const images = getProductImages(producto)
-                            const idx = indiceImagenPorProducto[producto.id] ?? 0
-                            const currentImage = images[idx]
-                            const setIdx = (delta: number) => {
-                                const next = (idx + delta + images.length) % images.length
-                                setIndiceImagenPorProducto(prev => ({ ...prev, [producto.id]: next }))
-                            }
-                            return (
-                                <PastelCard key={producto.id} className="content-visibility-auto group overflow-hidden flex flex-col h-full !rounded-[20px] hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.16)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5">
-                                    <div
-                                        className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gradient-to-br from-pink-50 to-violet-50/40 dark:from-zinc-800 dark:to-zinc-900 touch-pan-y"
-                                        onClick={() => startTransition(() => { if (images.length > 0) setImagenPrevia({ images, index: idx }) })}
-                                        onTouchStart={e => {
-                                            if (images.length > 1) touchSwipeRef.current = { productId: producto.id, x: e.targetTouches[0].clientX, count: images.length }
-                                        }}
-                                        onTouchEnd={e => {
-                                            const ref = touchSwipeRef.current
-                                            if (!ref || ref.productId !== producto.id) return
-                                            const end = e.changedTouches[0].clientX
-                                            const delta = ref.x - end
-                                            if (Math.abs(delta) > 50) {
-                                                const dir = delta > 0 ? 1 : -1
-                                                setIndiceImagenPorProducto(prev => {
-                                                    const cur = prev[ref.productId] ?? 0
-                                                    const next = (cur + dir + ref.count) % ref.count
-                                                    return { ...prev, [ref.productId]: next }
-                                                })
-                                            }
-                                            touchSwipeRef.current = null
-                                        }}
-                                    >
-                                        {currentImage ? (
-                                            <Image
-                                                src={currentImage}
-                                                alt={producto.name}
-                                                fill
-                                                className="object-cover md:transition-transform md:duration-200 md:group-hover:scale-105 pointer-events-none"
-                                                sizes="(max-width: 768px) 50vw, 25vw"
-                                                priority={esPrioridadLcp}
-                                                loading={esPrioridadLcp ? 'eager' : undefined}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center"><Sparkles className="w-16 h-16 text-pink-200 dark:text-pink-500/60" /></div>
-                                        )}
-                                        {images.length > 1 && (
-                                            <>
-                                                <button type="button" onClick={e => { e.stopPropagation(); setIdx(-1) }} className="absolute left-1 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md hover:bg-white text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Anterior">
-                                                    <ChevronLeft className="w-5 h-5" />
-                                                </button>
-                                                <button type="button" onClick={e => { e.stopPropagation(); setIdx(1) }} className="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md hover:bg-white text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Siguiente">
-                                                    <ChevronRight className="w-5 h-5" />
-                                                </button>
-                                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                                                    {images.map((_, i) => (
-                                                        <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === idx ? 'bg-white shadow' : 'bg-white/50'}`} aria-hidden />
-                                                    ))}
+                                                    <ImagenComboRotativa
+                                                        combo={combo}
+                                                        fill
+                                                        className="absolute inset-0 h-full w-full"
+                                                        sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw"
+                                                        priority={esPrioridadLcp}
+                                                    />
+                                                    <span className={styles.comboBadge}>Combo</span>
+                                                    <button
+                                                        className={styles.shareButton}
+                                                        type="button"
+                                                        onClick={event => { event.stopPropagation(); compartirCombo(combo) }}
+                                                        aria-label={`Compartir ${combo.name}`}
+                                                    >
+                                                        <Share2 size={16} />
+                                                    </button>
+                                                    <button
+                                                        className={styles.quickAdd}
+                                                        type="button"
+                                                        disabled={!disponible}
+                                                        onClick={event => {
+                                                            event.stopPropagation()
+                                                            if (disponible) startTransition(() => agregarComboAlCarrito(combo))
+                                                        }}
+                                                    >
+                                                        {disponible ? 'Agregar' : 'Agotado'} <Plus size={17} />
+                                                    </button>
                                                 </div>
-                                            </>
-                                        )}
-                                        {badges.length > 0 && <BadgeRotator badges={badges} />}
-                                        <button onClick={e => { e.stopPropagation(); compartirProducto(producto) }} className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm text-gray-500 shadow-md hover:text-pink-600 hover:bg-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10" aria-label={`Compartir ${producto.name}`}>
-                                            <Share2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                    <div className="p-3 sm:p-3.5 flex flex-col flex-1 min-h-0">
-                                        <div className="flex-1 min-h-[3.9rem] flex flex-col">
-                                            {producto.categories ? <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 dark:text-pink-400 mb-1">{producto.categories.name}</span> : <span className="min-h-[0.875rem]" aria-hidden />}
-                                            <Link
-                                                href={`/catalogo/p/${producto.id}`}
-                                                className="block min-w-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
-                                            >
-                                                <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 hover:text-pink-600 dark:hover:text-pink-400 transition-colors">{producto.name}</h3>
-                                            </Link>
-                                            {producto.brand && <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 truncate">{producto.brand}</p>}
-                                        </div>
-                                        <div className="mt-auto pt-2.5 border-t border-pink-50 dark:border-white/10 flex items-center justify-between gap-2 flex-shrink-0">
-                                            <div className="min-w-0">
-                                                {(producto.discount_percentage ?? 0) > 0 ? (
-                                                    <><p className="text-[10px] text-gray-400 dark:text-gray-500 line-through whitespace-nowrap">${formatPesoAR(producto.sale_price)}</p><p className="text-[clamp(0.95rem,1.5vw,1.1rem)] font-extrabold text-gray-900 dark:text-white tabular-nums whitespace-nowrap">${formatPesoAR(getPrecioConDescuento(producto))}</p></>
-                                                ) : (
-                                                    <p className="text-[clamp(0.95rem,1.5vw,1.1rem)] font-extrabold text-gray-900 dark:text-white tabular-nums whitespace-nowrap">${formatPesoAR(producto.sale_price)}</p>
-                                                )}
-                                            </div>
-                                            <button onClick={() => producto.stock > 0 && startTransition(() => agregarAlCarrito(producto))} disabled={producto.stock === 0} className="h-9 min-w-9 px-2.5 flex-shrink-0 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[11px] font-extrabold shadow-md hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all grid place-items-center" aria-label={producto.stock === 0 ? `${producto.name}: agotado` : `Agregar ${producto.name}`}>
-                                                {producto.stock === 0 ? 'Agotado' : <Plus className="w-4 h-4" />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </PastelCard>
-                            )
-                        })}
-                    </div>
+                                                <div className={styles.productInfo}>
+                                                    <span className={styles.productCategory}>Combo Ilara</span>
+                                                    <button
+                                                        type="button"
+                                                        className={styles.productName}
+                                                        onClick={() => startTransition(() => setComboSeleccionado(combo))}
+                                                    >
+                                                        {combo.name}
+                                                    </button>
+                                                    <p className={styles.price}>${formatPesoAR(combo.sale_price)}</p>
+                                                    {combo.description && <p className={styles.productBrand}>{combo.description}</p>}
+                                                </div>
+                                            </article>
+                                        )
+                                    }
 
-                    {totalPaginas > 1 && (
-                        <div className="paginacion-catalogo-wrapper">
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Mostrando {inicio + 1}–{Math.min(inicio + PRODUCTOS_POR_PAGINA, totalItems)} de {totalItems}
-                            </p>
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
-                                    disabled={paginaActual === 1}
-                                    className="p-2.5 rounded-xl border border-pink-200 dark:border-gray-600 text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
-                                    aria-label="Página anterior"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                <div className="flex items-center gap-1 mx-1">
-                                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(p => (
-                                        <button
-                                            key={p}
-                                            onClick={() => setPaginaActual(p)}
-                                            className={`min-w-[36px] h-9 px-2 rounded-xl font-semibold text-sm transition-colors ${
-                                                p === paginaActual
-                                                    ? 'bg-pink-500 text-white shadow-md shadow-pink-200/50 dark:shadow-pink-900/30'
-                                                    : 'border border-pink-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-700 hover:border-pink-300 dark:hover:border-gray-500'
-                                            }`}
-                                            aria-label={`Página ${p}`}
-                                            aria-current={p === paginaActual ? 'page' : undefined}
-                                        >
-                                            {p}
+                                    const producto = item as Producto
+                                    const badges = getCatalogBadgesForProduct(producto)
+                                    const images = getProductImages(producto)
+                                    const idx = indiceImagenPorProducto[producto.id] ?? 0
+                                    const currentImage = images[idx]
+                                    const setIdx = (delta: number) => {
+                                        const next = (idx + delta + images.length) % images.length
+                                        setIndiceImagenPorProducto(previous => ({ ...previous, [producto.id]: next }))
+                                    }
+
+                                    return (
+                                        <article key={`producto-${producto.id}`} className={`${styles.productCard} group content-visibility-auto`}>
+                                            <div
+                                                className={styles.productMedia}
+                                                onClick={() => startTransition(() => {
+                                                    if (images.length > 0) setImagenPrevia({ images, index: idx })
+                                                })}
+                                                onTouchStart={event => {
+                                                    if (images.length > 1) {
+                                                        touchSwipeRef.current = { productId: producto.id, x: event.targetTouches[0].clientX, count: images.length }
+                                                    }
+                                                }}
+                                                onTouchEnd={event => {
+                                                    const ref = touchSwipeRef.current
+                                                    if (!ref || ref.productId !== producto.id) return
+                                                    const delta = ref.x - event.changedTouches[0].clientX
+                                                    if (Math.abs(delta) > 50) {
+                                                        const direction = delta > 0 ? 1 : -1
+                                                        setIndiceImagenPorProducto(previous => {
+                                                            const current = previous[ref.productId] ?? 0
+                                                            return { ...previous, [ref.productId]: (current + direction + ref.count) % ref.count }
+                                                        })
+                                                    }
+                                                    touchSwipeRef.current = null
+                                                }}
+                                            >
+                                                {currentImage ? (
+                                                    <Image
+                                                        src={currentImage}
+                                                        alt={producto.name}
+                                                        fill
+                                                        sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw"
+                                                        priority={esPrioridadLcp}
+                                                        loading={esPrioridadLcp ? 'eager' : undefined}
+                                                    />
+                                                ) : (
+                                                    <div className={styles.mediaPlaceholder} aria-label={`${producto.name}, sin imagen`} />
+                                                )}
+
+                                                {images.length > 1 && (
+                                                    <>
+                                                        <button
+                                                            className={`${styles.imageArrow} ${styles.imageArrowLeft}`}
+                                                            type="button"
+                                                            onClick={event => { event.stopPropagation(); setIdx(-1) }}
+                                                            aria-label={`Imagen anterior de ${producto.name}`}
+                                                        >
+                                                            <ChevronLeft size={17} />
+                                                        </button>
+                                                        <button
+                                                            className={`${styles.imageArrow} ${styles.imageArrowRight}`}
+                                                            type="button"
+                                                            onClick={event => { event.stopPropagation(); setIdx(1) }}
+                                                            aria-label={`Imagen siguiente de ${producto.name}`}
+                                                        >
+                                                            <ChevronRight size={17} />
+                                                        </button>
+                                                        <div className={styles.imageDots} aria-hidden>
+                                                            {images.map((_, imageIndex) => (
+                                                                <span key={imageIndex} className={imageIndex === idx ? styles.imageDotActive : styles.imageDot} />
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                {badges.length > 0 && <BadgeRotator badges={badges} />}
+                                                <button
+                                                    className={styles.shareButton}
+                                                    type="button"
+                                                    onClick={event => { event.stopPropagation(); compartirProducto(producto) }}
+                                                    aria-label={`Compartir ${producto.name}`}
+                                                >
+                                                    <Share2 size={16} />
+                                                </button>
+                                                <button
+                                                    className={styles.quickAdd}
+                                                    type="button"
+                                                    disabled={producto.stock === 0}
+                                                    onClick={event => {
+                                                        event.stopPropagation()
+                                                        if (producto.stock > 0) startTransition(() => agregarAlCarrito(producto))
+                                                    }}
+                                                >
+                                                    {producto.stock > 0 ? 'Agregar' : 'Agotado'} <Plus size={17} />
+                                                </button>
+                                            </div>
+                                            <div className={styles.productInfo}>
+                                                <span className={styles.productCategory}>{producto.categories?.name ?? 'Belleza'}</span>
+                                                <Link className={styles.productName} href={`/catalogo/p/${producto.id}`}>{producto.name}</Link>
+                                                <p className={styles.price}>
+                                                    {(producto.discount_percentage ?? 0) > 0 && <s>${formatPesoAR(producto.sale_price)}</s>}
+                                                    ${formatPesoAR(getPrecioConDescuento(producto))}
+                                                </p>
+                                                {producto.brand && <p className={styles.productBrand}>{producto.brand}</p>}
+                                            </div>
+                                        </article>
+                                    )
+                                })}
+                            </div>
+
+                            {totalPaginas > 1 && (
+                                <nav className={styles.pagination} aria-label="Paginación del catálogo">
+                                    <span>Mostrando {inicio + 1}–{Math.min(inicio + PRODUCTOS_POR_PAGINA, totalItems)} de {totalItems}</span>
+                                    <div className={styles.pageButtons}>
+                                        <button className={styles.pageButton} type="button" disabled={paginaActual === 1} onClick={() => setPaginaActual(page => Math.max(1, page - 1))} aria-label="Página anterior">
+                                            <ChevronLeft size={17} />
                                         </button>
-                                    ))}
-                                </div>
-                                <button
-                                    onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
-                                    disabled={paginaActual === totalPaginas}
-                                    className="p-2.5 rounded-xl border border-pink-200 dark:border-gray-600 text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
-                                    aria-label="Página siguiente"
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
-                            </div>
-                            </div>
+                                        {Array.from({ length: totalPaginas }, (_, index) => index + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                className={page === paginaActual ? styles.pageButtonActive : styles.pageButton}
+                                                type="button"
+                                                onClick={() => setPaginaActual(page)}
+                                                aria-current={page === paginaActual ? 'page' : undefined}
+                                                aria-label={`Página ${page}`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                        <button className={styles.pageButton} type="button" disabled={paginaActual === totalPaginas} onClick={() => setPaginaActual(page => Math.min(totalPaginas, page + 1))} aria-label="Página siguiente">
+                                            <ChevronRight size={17} />
+                                        </button>
+                                    </div>
+                                </nav>
+                            )}
+                        </>
+                    ) : (
+                        <div className={styles.statePanel}>
+                            <Sparkles className={styles.stateIcon} size={34} />
+                            <h3>No encontramos ese producto</h3>
+                            <p>Probá con otra búsqueda o recorré todas las categorías.</p>
+                            <button className={styles.clearButton} type="button" onClick={clearFilters}>Ver todo el catálogo</button>
                         </div>
                     )}
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-24 text-center">
-                        <div className="w-24 h-24 rounded-full bg-pink-50 dark:bg-gray-800 flex items-center justify-center mb-6">
-                            <Search className="w-12 h-12 text-pink-300 dark:text-pink-500" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">No se encontraron productos</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">Probá con otros filtros o una búsqueda diferente.</p>
-                        <button
-                            onClick={() => { setBusqueda(''); setCategoriaFiltro('all'); setPrecioMin(0); setPrecioMax(999999) }}
-                            className="px-6 py-3 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 font-bold hover:bg-pink-100 dark:hover:bg-pink-900/50 transition-colors"
-                        >
-                            Limpiar filtros
-                        </button>
-                    </div>
-                )}
-                </div>
-            </div>
+                </section>
 
-            {/* Botón flotante carrito */}
+                <section className={styles.ritualBanner} id="ritual">
+                    <div className={styles.ritualCopy}>
+                        <p className={styles.eyebrow}>Ilara Journal · 01</p>
+                        <h2>Un momento para vos,<br />antes de salir al mundo.</h2>
+                        <p>Tres pasos, cinco minutos y productos que se sienten tan bien como se ven.</p>
+                        <a href="#productos">Armar mi ritual <span>→</span></a>
+                    </div>
+                    <div className={styles.ritualImage}>
+                        <Image src={RITUAL_IMAGE} alt="Brochas y flores sobre un fondo rosa" fill sizes="(max-width: 980px) 100vw, 55vw" />
+                        <span className={styles.ritualStamp}>05<br /><small>MINUTOS</small></span>
+                    </div>
+                </section>
+            </main>
+
+            <footer className={styles.footer}>
+                <div className={styles.footerBrand}>
+                    <strong>Ilara</strong>
+                    <p>Belleza elegida con intención.<br />Neuquén, Argentina.</p>
+                </div>
+                <div className={styles.footerLinks}>
+                    <small>DESCUBRÍ</small>
+                    <a href="#productos">Productos</a>
+                    <a href="#ritual">Sets y rituales</a>
+                    <a href="#novedades">Novedades</a>
+                </div>
+                <div className={styles.footerLinks}>
+                    <small>HABLEMOS</small>
+                    <button type="button" onClick={() => openWhatsApp('¡Hola! Quiero hacer una consulta sobre el catálogo de Ilara.', false)}>WhatsApp</button>
+                    <Link href="/login">Acceso al panel</Link>
+                </div>
+                <p className={styles.footerNote}>© {new Date().getFullYear()} Ilara Beauty · Neuquén</p>
+            </footer>
+
             {carrito.length > 0 && !mostrarCarrito && (
                 <button
+                    className={styles.floatingCart}
                     type="button"
                     onClick={() => startTransition(() => setMostrarCarrito(true))}
-                    className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl shadow-xl shadow-pink-400/50 dark:shadow-pink-900/40 hover:shadow-2xl hover:shadow-pink-400/60 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 font-bold text-base"
-                    aria-label={`Abrir carrito, ${carrito.length} ítems, total ${formatPesoAR(total)} pesos`}
+                    aria-label={`Abrir bolsa, ${carrito.length} ítems, total ${formatPesoAR(total)} pesos`}
                 >
-                    <div className="relative">
-                        <ShoppingBag className="w-6 h-6" />
-                        <span className="absolute -top-2 -right-2 bg-white text-pink-600 text-xs font-bold min-w-[20px] h-5 rounded-full flex items-center justify-center">
-                            {carrito.length}
-                        </span>
-                    </div>
-                    <span className="font-extrabold text-lg">${formatPesoAR(total)}</span>
+                    <span>Bolsa</span>
+                    <b>{carrito.length}</b>
+                    <i>${formatPesoAR(total)}</i>
                 </button>
             )}
 
@@ -681,7 +717,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                 setCuponInput={setCuponInput}
                 appliedCoupon={appliedCoupon}
                 onAplicarCupon={aplicarCupon}
-                quitarCupon={quitarCupon}
+                quitarCupon={() => setAppliedCoupon(null)}
                 subtotal={subtotal}
                 descuentoCupon={descuentoCupon}
                 total={total}
@@ -689,11 +725,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                 onSolicitarVaciar={() => setMostrarConfirmacion(true)}
             />
 
-            <ModalConfirmacionVaciar
-                open={mostrarConfirmacion}
-                onClose={() => setMostrarConfirmacion(false)}
-                onConfirm={vaciarCarrito}
-            />
+            <ModalConfirmacionVaciar open={mostrarConfirmacion} onClose={() => setMostrarConfirmacion(false)} onConfirm={vaciarCarrito} />
 
             {imagenPrevia && (
                 <ModalImagenPrevia images={imagenPrevia.images} initialIndex={imagenPrevia.index} onClose={() => setImagenPrevia(null)} />
@@ -707,7 +739,6 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                     disponible={comboDisponible(comboSeleccionado)}
                 />
             )}
-
         </div>
     )
 }
