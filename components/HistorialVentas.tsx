@@ -240,45 +240,45 @@ export default function HistorialVentas() {
 
     return (
         <div className="tab-content w-full space-y-10 animate-fade-in max-w-5xl sm:max-w-6xl lg:max-w-7xl xl:max-w-[90rem] 2xl:max-w-[100rem] mx-auto px-0 pt-6 sm:pt-8">
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-historial-block">
-                <PastelCard className="p-6 sm:p-7 flex items-center gap-5 group">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                        <DollarSign className="w-7 h-7 text-emerald-500 dark:text-emerald-400" />
+            {/* Stats: 1 col hasta lg (sidebar + media pantalla aplastaba 3 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-historial-block">
+                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center shadow-sm overflow-hidden">
+                        <DollarSign size={26} className="text-emerald-500 dark:text-emerald-400" aria-hidden />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">
                             Total Recaudado
                         </p>
-                        <p className="text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all tabular-nums break-all">
                             ${totalRecaudado.toLocaleString()}
                         </p>
                     </div>
                 </PastelCard>
 
-                <PastelCard className="p-6 sm:p-7 flex items-center gap-5 group">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                        <Clock className="w-7 h-7 text-amber-500 dark:text-amber-400" />
+                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shadow-sm overflow-hidden">
+                        <Clock size={26} className="text-amber-500 dark:text-amber-400" aria-hidden />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">
                             Total por Cobrar
                         </p>
-                        <p className="text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-all tabular-nums break-all">
                             ${totalPorCobrar.toLocaleString()}
                         </p>
                     </div>
                 </PastelCard>
 
-                <PastelCard className="p-6 sm:p-7 flex items-center gap-5 group">
-                    <div className="w-14 h-14 rounded-2xl bg-pink-50 dark:bg-pink-900/40 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                        <Receipt className="w-7 h-7 text-pink-500 dark:text-pink-400" />
+                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-pink-50 dark:bg-pink-900/40 flex items-center justify-center shadow-sm overflow-hidden">
+                        <Receipt size={26} className="text-pink-500 dark:text-pink-400" aria-hidden />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">
                             Cantidad de Ventas
                         </p>
-                        <p className="text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all tabular-nums">
                             {cantidadVentas}
                         </p>
                     </div>

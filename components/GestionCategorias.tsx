@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, Categoria } from '@/lib/supabase'
-import { X, Plus, Edit2, Trash2, FolderOpen } from 'lucide-react'
+import { X, Plus, SquarePen, Trash2, FolderOpen } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
 
@@ -189,7 +189,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                                     disabled={cargando || !nombre.trim()}
                                     className="btn-primary flex-1 justify-center gap-2 shadow-lg shadow-pink-200"
                                 >
-                                    <Edit2 className="w-4 h-4" />
+                                    <SquarePen size={16} aria-hidden />
                                     Actualizar
                                 </button>
                                 <button

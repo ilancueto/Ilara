@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createPortal } from 'react-dom'
 import { supabase, getUser, Cliente, Venta, ItemVenta } from '@/lib/supabase'
-import { Search, Plus, Edit2, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt, ChevronDown, ChevronUp, X } from 'lucide-react'
+import { Search, Plus, SquarePen, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { format, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -387,65 +387,65 @@ export default function Clientes() {
             </div>
 
             {/* Lista de clientes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* 1 col hasta lg: en media pantalla + sidebar, 2 cols aplastaban el nombre a 0px */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {clientesFiltrados.map(cliente => {
                     const stats = clientesStats.get(cliente.id) || { totalVentas: 0, totalGastado: 0, ultimaCompra: null }
 
                     return (
-                        <PastelCard key={cliente.id} className="group p-0 flex flex-col h-full hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-600 rounded-2xl overflow-hidden">
-                            <div className="p-6 sm:p-7 flex justify-between items-start gap-4">
-                                <div className="flex items-start gap-4 min-w-0">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/50 dark:to-gray-700 border border-pink-100 dark:border-gray-600 flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-sm flex-shrink-0">
-                                        {cliente.first_name.charAt(0)}{cliente.last_name.charAt(0)}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">
-                                            {cliente.first_name} {cliente.last_name}
-                                        </h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1.5">
-                                            <Calendar className="w-3 h-3 flex-shrink-0" />
-                                            {format(new Date(cliente.created_at), 'MMM yyyy', { locale: es })}
-                                        </p>
-                                        {(cliente.email || cliente.phone) && (
-                                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                                {cliente.email && (
-                                                    <span className="flex items-center gap-1.5 min-w-0 truncate">
-                                                        <Mail className="w-3 h-3 flex-shrink-0" />
-                                                        <span className="truncate">{cliente.email}</span>
-                                                    </span>
-                                                )}
-                                                {cliente.phone && (
-                                                    <span className="flex items-center gap-1.5">
-                                                        <Phone className="w-3 h-3 flex-shrink-0" />
-                                                        {cliente.phone}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
+                        <PastelCard key={cliente.id} className="group relative p-0 flex flex-col h-full hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-600 rounded-2xl overflow-hidden">
+                            {/* Acciones fuera del flujo (absolute): opacity-0 igual ocupaba ancho y escondía el nombre */}
+                            <div className="absolute top-3 right-3 z-10 flex gap-1 rounded-xl bg-white/90 dark:bg-gray-800/90 p-0.5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                <button type="button" onClick={() => abrirPerfil(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Ver perfil" aria-label="Ver perfil">
+                                    <Eye size={16} aria-hidden />
+                                </button>
+                                <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Editar" aria-label="Editar cliente">
+                                    <SquarePen size={16} aria-hidden />
+                                </button>
+                                <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
+                                    <Trash2 size={16} aria-hidden />
+                                </button>
+                            </div>
+                            <div className="p-6 sm:p-7 pr-14 sm:pr-16 flex items-start gap-4 min-w-0">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/50 dark:to-gray-700 border border-pink-100 dark:border-gray-600 flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-sm shrink-0">
+                                    {cliente.first_name.charAt(0)}{cliente.last_name.charAt(0)}
                                 </div>
-                                <div className="flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                    <button type="button" onClick={() => abrirPerfil(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Ver perfil" aria-label="Ver perfil">
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Editar" aria-label="Editar cliente">
-                                        <Edit2 className="w-4 h-4" />
-                                    </button>
-                                    <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors break-words">
+                                        {cliente.first_name} {cliente.last_name}
+                                    </h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1.5 min-w-0">
+                                        <Calendar size={12} className="shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
+                                        <span>{format(new Date(cliente.created_at), 'MMM yyyy', { locale: es })}</span>
+                                    </p>
+                                    {(cliente.email || cliente.phone) && (
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            {cliente.email && (
+                                                <span className="flex items-center gap-1.5 min-w-0 max-w-full">
+                                                    <Mail size={12} className="shrink-0" aria-hidden />
+                                                    <span className="truncate">{cliente.email}</span>
+                                                </span>
+                                            )}
+                                            {cliente.phone && (
+                                                <span className="flex items-center gap-1.5">
+                                                    <Phone size={12} className="shrink-0" aria-hidden />
+                                                    {cliente.phone}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <div className="mt-auto border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/50 px-6 py-5 grid grid-cols-3 gap-4">
-                                <div className="text-center">
+                            <div className="mt-auto border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/50 px-4 sm:px-6 py-4 sm:py-5 grid grid-cols-3 gap-2 sm:gap-4">
+                                <div className="text-center min-w-0">
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Compras</p>
                                     <p className="text-gray-800 dark:text-gray-100 font-bold tabular-nums">{stats.totalVentas}</p>
                                 </div>
-                                <div className="text-center border-x border-gray-100 dark:border-gray-700">
+                                <div className="text-center min-w-0 border-x border-gray-100 dark:border-gray-700 px-1">
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Total</p>
-                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums">${stats.totalGastado.toLocaleString()}</p>
+                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums text-sm sm:text-base break-all">${stats.totalGastado.toLocaleString()}</p>
                                 </div>
-                                <div className="text-center">
+                                <div className="text-center min-w-0">
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Última</p>
                                     <p className="text-gray-600 dark:text-gray-400 text-xs font-medium truncate">{stats.ultimaCompra || '—'}</p>
                                 </div>
@@ -696,7 +696,7 @@ export default function Clientes() {
                         </div>
                         <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                             <button type="button" onClick={() => { cerrarPerfil(); handleEditar(clientePerfil); }} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold shadow-lg shadow-pink-200 dark:shadow-pink-900/20">
-                                <Edit2 className="w-4 h-4" />
+                                <SquarePen size={16} aria-hidden />
                                 Editar cliente
                             </button>
                         </div>

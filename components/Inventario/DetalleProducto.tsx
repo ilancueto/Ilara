@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Producto, StockMovement, supabase, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
-import { X, Edit2, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus, DollarSign, Eye, EyeOff } from 'lucide-react'
+import { X, SquarePen, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus, DollarSign, Eye, EyeOff } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
@@ -210,7 +210,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                 onClick={() => { onClose(); onEdit(producto) }}
                                 className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 rounded-xl shadow-lg shadow-pink-200/50 dark:shadow-pink-900/30"
                             >
-                                <Edit2 className="w-4 h-4" />
+                                <SquarePen size={16} aria-hidden />
                                 Editar producto
                             </button>
                         </div>

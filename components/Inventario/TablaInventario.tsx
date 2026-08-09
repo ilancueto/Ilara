@@ -5,7 +5,7 @@ import { etiquetaBadgeCatalogo } from '@/lib/catalogBadges'
 import Image from 'next/image'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Edit2, Trash2, Package } from 'lucide-react'
+import { SquarePen, Trash2, Package } from 'lucide-react'
 
 interface TablaInventarioProps {
     productos: Producto[]
@@ -108,7 +108,7 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                         className="w-9 h-9 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600 transition-all duration-300 shadow-lg hover:scale-105 active:scale-95"
                                         title="Ver Detalles / Editar"
                                     >
-                                        <Edit2 className="w-3.5 h-3.5" />
+                                        <SquarePen size={14} aria-hidden />
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onDelete(producto.id); }}

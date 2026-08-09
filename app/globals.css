@@ -54,6 +54,17 @@
   box-sizing: border-box;
 }
 
+/**
+ * Lucide React v1: los SVG traen width/height=24 por defecto.
+ * Aseguramos que las utilidades Tailwind (w-*, h-*) manden sobre esos attrs
+ * y que en flex no empujen/solapen texto adyacente.
+ */
+svg.lucide {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 html {
   width: 100%;
   overflow-x: clip;

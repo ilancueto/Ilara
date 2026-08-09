@@ -652,7 +652,7 @@ function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, 
         >
             <div className="flex items-start justify-between gap-3 flex-shrink-0">
                 <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${bgIcon} dark:bg-gray-700 ${color}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${bgIcon} dark:bg-gray-700 ${color}`}
                 >
                     {icono}
                 </div>
