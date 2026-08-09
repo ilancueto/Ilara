@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react'
 import dynamic from 'next/dynamic'
 import { Producto, ComboConItems, getProductImages } from '@/lib/supabase'
-import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
+import { Search, ShoppingBag, Share2, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, RefreshCw, Plus } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getShareAbsoluteUrl } from '@/lib/site'
@@ -212,27 +212,26 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
     }
 
     return (
-        <div className="min-h-screen w-full min-w-0 bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-[#08080b] dark:via-[#060609] dark:to-[#08080b]" suppressHydrationWarning>
-            {/* Encabezado: barra sticky + hero (un H1; SEO local en subtítulo) */}
+        <div
+            className="min-h-screen w-full min-w-0 bg-[radial-gradient(ellipse_80%_50%_at_100%_-10%,rgba(244,114,182,0.14),transparent_50%),radial-gradient(ellipse_60%_40%_at_0%_100%,rgba(168,85,247,0.1),transparent_45%),#f6f2f7] dark:bg-[radial-gradient(ellipse_70%_45%_at_100%_0%,rgba(219,39,119,0.12),transparent_50%),#0f0f12]"
+            suppressHydrationWarning
+        >
             <header className="w-full">
-                <div className="sticky top-0 z-40 bg-white/95 dark:bg-[#08080b]/80 dark:backdrop-blur-md border-b border-pink-100/40 dark:border-gray-800/30 shadow-sm shadow-pink-500/5 dark:shadow-none">
-                    <div className="w-full px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+                <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md border-b border-pink-100/50 dark:border-white/10">
+                    <div className="catalog-shell-width px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
                         <div className="flex items-center justify-between gap-2 sm:gap-3 min-h-0">
                             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                                <div
-                                    className="h-11 w-[128px] sm:h-[52px] sm:w-[172px] rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-gray-800/60 dark:border-gray-700/60 border border-pink-100 shadow-md shadow-pink-200/40 flex items-center justify-center px-1.5"
-                                    aria-hidden
-                                >
+                                <div className="h-10 w-[112px] sm:h-12 sm:w-[148px] rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-900 border border-pink-100/80 dark:border-white/10 shadow-sm flex items-center justify-center px-1.5">
                                     <Image
                                         src="/logo-header.png"
                                         alt=""
                                         width={344}
                                         height={120}
                                         className="object-contain w-full h-full max-h-full"
-                                        sizes="(max-width: 640px) 128px, 172px"
+                                        sizes="(max-width: 640px) 112px, 148px"
                                     />
                                 </div>
-                                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight truncate">
+                                <p className="text-base sm:text-lg font-extrabold text-gray-900 dark:text-gray-50 tracking-tight truncate">
                                     Ilara Beauty
                                 </p>
                             </div>
@@ -241,13 +240,13 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                 <ThemeSwitch />
                                 <Link
                                     href="/login"
-                                    className="px-3 py-2 rounded-xl border border-pink-100 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:border-pink-200 dark:hover:border-pink-700 hover:text-pink-600 dark:hover:text-pink-400 transition-all duration-200"
+                                    className="px-3 py-2 rounded-xl border border-pink-100 dark:border-white/10 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:border-pink-200 dark:hover:border-pink-700 hover:text-pink-600 dark:hover:text-pink-400 transition-all"
                                 >
                                     Login
                                 </Link>
                                 <button
                                     onClick={() => startTransition(() => setMostrarCarrito(true))}
-                                    className="relative p-2.5 rounded-xl bg-pink-50 dark:bg-gray-800/60 dark:hover:bg-gray-700/70 hover:bg-pink-100 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+                                    className="relative p-2.5 rounded-xl bg-pink-50 dark:bg-zinc-800 hover:bg-pink-100 dark:hover:bg-zinc-700 transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
                                     aria-label={carrito.length > 0 ? `Ver carrito, ${carrito.length} producto${carrito.length !== 1 ? 's' : ''}` : 'Ver carrito'}
                                 >
                                     <ShoppingBag className="w-5 h-5 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
@@ -262,39 +261,36 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                     </div>
                 </div>
 
-                {/* Mismo padding horizontal que el bloque del buscador → mismo eje visual */}
-                <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-b border-pink-100/30 dark:border-gray-800/25 text-center">
-                    <h1
-                        id="catalogo-titulo-principal"
-                        className="text-xl sm:text-2xl md:text-[1.75rem] font-extrabold text-gray-900 dark:text-gray-100 tracking-tight leading-snug text-balance"
-                    >
-                        Bienvenidos a Ilara Beauty
-                    </h1>
-                    <div className="mt-3 flex w-full justify-center">
-                        <p className="max-w-3xl text-center text-pretty text-gray-500 dark:text-gray-400 text-sm sm:text-base leading-relaxed">
-                            Catálogo de productos de belleza en Neuquén. Maquillaje, skincare y cosmética. Pedí por WhatsApp.
+                {/* Hero vitrina (mock overhaul) */}
+                <div className="catalog-shell-width px-4 sm:px-6 lg:px-8 pt-5 sm:pt-7 pb-2">
+                    <div className="rounded-[22px] sm:rounded-[28px] border border-pink-100/70 dark:border-white/10 px-5 sm:px-8 py-6 sm:py-8 bg-[radial-gradient(ellipse_80%_80%_at_100%_0%,rgba(200,142,255,0.22),transparent_50%),radial-gradient(ellipse_60%_60%_at_0%_100%,rgba(244,114,182,0.16),transparent_50%),linear-gradient(135deg,#fff_0%,#fdf2f8_100%)] dark:bg-[radial-gradient(ellipse_70%_60%_at_90%_0%,rgba(168,85,247,0.15),transparent_50%),#18181b]">
+                        <h1
+                            id="catalogo-titulo-principal"
+                            className="text-2xl sm:text-3xl md:text-[2rem] font-extrabold text-gray-900 dark:text-gray-50 tracking-tight leading-tight text-balance"
+                        >
+                            Productos de belleza en Neuquén
+                        </h1>
+                        <p className="mt-2 max-w-2xl text-pretty text-gray-500 dark:text-gray-400 text-sm sm:text-base font-medium leading-relaxed">
+                            Maquillaje, skincare y combos · pedidos por WhatsApp
                         </p>
                     </div>
                 </div>
             </header>
 
-            {/* Contenedor principal: ancho completo para aprovechar todo el espacio */}
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-                {/* Bloque superior: búsqueda, orden, categorías y filtros integrados */}
+            <div className="catalog-shell-width px-4 sm:px-6 lg:px-8">
                 <div className="pt-4 pb-4">
-                    {/* Fila 1: buscador + ordenar */}
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
-                        <div className="relative flex-1 min-w-0 h-9">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 pointer-events-none text-gray-400 dark:text-gray-400">
+                        <div className="relative flex-1 min-w-0 h-11">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 pointer-events-none text-pink-400">
                                 <Search className="w-4 h-4" />
                             </span>
                             <input
                                 type="search"
-                                placeholder="Buscar productos..."
+                                placeholder="Buscar en el catálogo…"
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
                                 aria-label="Buscar productos por nombre o marca"
-                                className="w-full h-full pl-8 pr-3 py-1.5 bg-white dark:bg-gray-800/80 dark:border-gray-700/80 border border-pink-100 rounded-lg shadow-sm focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/30 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 text-sm transition-all outline-none"
+                                className="w-full h-full pl-10 pr-3 py-2 bg-white dark:bg-zinc-900 border border-pink-100/80 dark:border-white/10 rounded-2xl shadow-[0_4px_16px_rgba(190,24,93,0.05)] focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-100/50 dark:focus:ring-pink-900/30 text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm font-medium transition-all outline-none"
                                 suppressHydrationWarning
                             />
                         </div>
@@ -338,31 +334,31 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                     </div>
 
                     {/* Fila 2: chips de categorías + Más filtros (mobile: chips arriba, botón abajo para no cortarse) */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center pt-6">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center pt-5">
                         <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full min-w-0 -mx-1 px-1 sm:flex-1">
                             <button
                                 onClick={() => setCategoriaFiltro('all')}
-                                className={`px-4 py-2 rounded-full text-base font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 shrink-0 ${categoriaFiltro === 'all'
-                                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/40 dark:shadow-pink-900/30'
-                                    : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 hover:bg-pink-50/80 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'
+                                className={`px-4 py-2 rounded-full text-sm font-extrabold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 shrink-0 ${categoriaFiltro === 'all'
+                                    ? 'bg-pink-500 text-white shadow-[0_6px_16px_-4px_rgba(236,72,153,0.5)]'
+                                    : 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-pink-100/80 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-zinc-800'
                                 }`}
                                 aria-pressed={categoriaFiltro === 'all'}
                             >
-                                Todos
+                                Todo
                             </button>
                             {categorias.map(cat => (
                                 <button
                                     key={cat.id}
                                     onClick={() => setCategoriaFiltro(cat.id.toString())}
-                                    className={`px-4 py-2 rounded-full text-base font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 shrink-0 ${categoriaFiltro === cat.id.toString()
-                                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-200/40 dark:shadow-pink-900/30'
-                                        : 'bg-white dark:bg-gray-800/90 dark:border-gray-700 text-gray-600 dark:text-gray-300 border border-pink-100 hover:bg-pink-50/80 dark:hover:bg-gray-700/80 dark:hover:border-gray-600'
+                                    className={`px-4 py-2 rounded-full text-sm font-extrabold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 shrink-0 ${categoriaFiltro === cat.id.toString()
+                                        ? 'bg-pink-500 text-white shadow-[0_6px_16px_-4px_rgba(236,72,153,0.5)]'
+                                        : 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border border-pink-100/80 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-zinc-800'
                                     }`}
                                     aria-pressed={categoriaFiltro === cat.id.toString()}
                                 >
-{cat.name}
-                                        </button>
-                                    ))}
+                                    {cat.name}
+                                </button>
+                            ))}
                         </div>
                         <button
                             type="button"
@@ -435,7 +431,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                     </div>
                 ) : totalItems > 0 ? (
                     <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 w-full">
+                    <div className="catalog-product-grid w-full">
                         {itemsPagina.map((item, slotIndex) => {
                             const esPrioridadLcp = slotIndex < 8
                             const esCombo = 'sale_price' in item && 'combo_items' in item
@@ -443,8 +439,8 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                 const combo = item as ComboConItems
                                 const disponible = comboDisponible(combo)
                                 return (
-                                    <PastelCard key={`combo-${combo.id}`} className="content-visibility-auto group overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-[0_8px_28px_rgba(236,72,153,0.15)] dark:bg-gray-800/95 dark:border-gray-700/80 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5">
-                                        <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 dark:bg-gray-700/80 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
+                                    <PastelCard key={`combo-${combo.id}`} className="content-visibility-auto group overflow-hidden flex flex-col h-full !rounded-[20px] hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.16)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5">
+                                        <div className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gradient-to-br from-amber-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-900 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
                                             <ImagenComboRotativa
                                                 combo={combo}
                                                 fill
@@ -475,21 +471,21 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                                 <Share2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <div className="p-4 flex flex-col flex-1 min-h-0 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
-                                            <div className="flex-1 min-h-[4.5rem] flex flex-col">
+                                        <div className="p-3 sm:p-3.5 flex flex-col flex-1 min-h-0 cursor-pointer" onClick={() => startTransition(() => setComboSeleccionado(combo))}>
+                                            <div className="flex-1 min-h-[3.9rem] flex flex-col">
                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-1">Combo</span>
-                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 mb-1.5">{combo.name}</h3>
-                                                {combo.description ? <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{combo.description}</p> : <span className="min-h-[1.25rem]" aria-hidden />}
+                                                <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2">{combo.name}</h3>
+                                                {combo.description && <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">{combo.description}</p>}
                                             </div>
-                                            <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
-                                                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(combo.sale_price)}</p>
+                                            <div className="mt-auto pt-2.5 border-t border-pink-50 dark:border-white/10 flex items-center justify-between gap-2 flex-shrink-0">
+                                                <p className="text-[clamp(0.95rem,1.5vw,1.1rem)] font-extrabold text-gray-900 dark:text-white tabular-nums whitespace-nowrap shrink-0">${formatPesoAR(combo.sale_price)}</p>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); if (disponible) startTransition(() => agregarComboAlCarrito(combo)); }}
                                                     disabled={!disponible}
-                                                    className="w-full sm:w-auto flex-shrink-0 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px] transition-all duration-200"
+                                                    className="h-9 min-w-9 px-2.5 flex-shrink-0 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-extrabold shadow-md hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all grid place-items-center"
                                                     aria-label={disponible ? `Agregar ${combo.name}` : `${combo.name}: agotado`}
                                                 >
-                                                    {disponible ? 'Agregar' : 'Agotado'}
+                                                    {disponible ? <Plus className="w-4 h-4" /> : 'Agotado'}
                                                 </button>
                                             </div>
                                         </div>
@@ -506,9 +502,9 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                 setIndiceImagenPorProducto(prev => ({ ...prev, [producto.id]: next }))
                             }
                             return (
-                                <PastelCard key={producto.id} className="content-visibility-auto group overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-[0_8px_28px_rgba(236,72,153,0.15)] dark:bg-gray-800/95 dark:border-gray-700/80 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5">
+                                <PastelCard key={producto.id} className="content-visibility-auto group overflow-hidden flex flex-col h-full !rounded-[20px] hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.16)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5">
                                     <div
-                                        className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gray-50 dark:bg-gray-700/80 touch-pan-y"
+                                        className="relative aspect-square overflow-hidden rounded-t-[20px] bg-gradient-to-br from-pink-50 to-violet-50/40 dark:from-zinc-800 dark:to-zinc-900 touch-pan-y"
                                         onClick={() => startTransition(() => { if (images.length > 0) setImagenPrevia({ images, index: idx }) })}
                                         onTouchStart={e => {
                                             if (images.length > 1) touchSwipeRef.current = { productId: producto.id, x: e.targetTouches[0].clientX, count: images.length }
@@ -562,27 +558,27 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                             <Share2 className="w-4 h-4" />
                                         </button>
                                     </div>
-                                    <div className="p-4 flex flex-col flex-1 min-h-0">
-                                        <div className="flex-1 min-h-[4.5rem] flex flex-col">
+                                    <div className="p-3 sm:p-3.5 flex flex-col flex-1 min-h-0">
+                                        <div className="flex-1 min-h-[3.9rem] flex flex-col">
                                             {producto.categories ? <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 dark:text-pink-400 mb-1">{producto.categories.name}</span> : <span className="min-h-[0.875rem]" aria-hidden />}
                                             <Link
                                                 href={`/catalogo/p/${producto.id}`}
                                                 className="block min-w-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
                                             >
-                                                <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 mb-1.5 hover:text-pink-600 dark:hover:text-pink-400 transition-colors">{producto.name}</h3>
+                                                <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-sm leading-snug line-clamp-2 hover:text-pink-600 dark:hover:text-pink-400 transition-colors">{producto.name}</h3>
                                             </Link>
-                                            {producto.brand ? <p className="text-xs text-gray-500 dark:text-gray-400">{producto.brand}</p> : <span className="min-h-[1rem]" aria-hidden />}
+                                            {producto.brand && <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 truncate">{producto.brand}</p>}
                                         </div>
-                                        <div className="mt-auto pt-3 border-t border-pink-50 dark:border-gray-600/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 flex-shrink-0">
+                                        <div className="mt-auto pt-2.5 border-t border-pink-50 dark:border-white/10 flex items-center justify-between gap-2 flex-shrink-0">
                                             <div className="min-w-0">
                                                 {(producto.discount_percentage ?? 0) > 0 ? (
-                                                    <><p className="text-xs text-gray-400 dark:text-gray-500 line-through">${formatPesoAR(producto.sale_price)}</p><p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(getPrecioConDescuento(producto))}</p></>
+                                                    <><p className="text-[10px] text-gray-400 dark:text-gray-500 line-through whitespace-nowrap">${formatPesoAR(producto.sale_price)}</p><p className="text-[clamp(0.95rem,1.5vw,1.1rem)] font-extrabold text-gray-900 dark:text-white tabular-nums whitespace-nowrap">${formatPesoAR(getPrecioConDescuento(producto))}</p></>
                                                 ) : (
-                                                    <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${formatPesoAR(producto.sale_price)}</p>
+                                                    <p className="text-[clamp(0.95rem,1.5vw,1.1rem)] font-extrabold text-gray-900 dark:text-white tabular-nums whitespace-nowrap">${formatPesoAR(producto.sale_price)}</p>
                                                 )}
                                             </div>
-                                            <button onClick={() => producto.stock > 0 && startTransition(() => agregarAlCarrito(producto))} disabled={producto.stock === 0} className="w-full sm:w-auto flex-shrink-0 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px] transition-all duration-200">
-                                                {producto.stock === 0 ? 'Agotado' : 'Agregar'}
+                                            <button onClick={() => producto.stock > 0 && startTransition(() => agregarAlCarrito(producto))} disabled={producto.stock === 0} className="h-9 min-w-9 px-2.5 flex-shrink-0 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[11px] font-extrabold shadow-md hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all grid place-items-center" aria-label={producto.stock === 0 ? `${producto.name}: agotado` : `Agregar ${producto.name}`}>
+                                                {producto.stock === 0 ? 'Agotado' : <Plus className="w-4 h-4" />}
                                             </button>
                                         </div>
                                     </div>

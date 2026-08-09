@@ -285,54 +285,48 @@ export default function PuntoVenta() {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-[1400px] mx-auto">
-            {/* Columna Izquierda: Catálogo + Carrito */}
-            <div className="lg:col-span-2 flex flex-col gap-6 min-h-0">
-                {/* Catálogo: ocupa espacio disponible y hace scroll si hace falta */}
-                <div className="flex-1 min-h-0 flex flex-col">
-                    <CatalogoPOS
-                        productos={productos}
-                        combos={combos}
-                        onAddToCart={agregarAlCarrito}
-                        onAddCombo={agregarComboAlCarrito}
-                        comboDisponible={comboDisponible}
-                    />
-                </div>
-
-                {/* Carrito: altura según contenido, no se superpone al catálogo */}
-                <div className="flex-shrink-0">
-                    <CarritoVenta
-                        carrito={carrito}
-                        onUpdateQuantity={actualizarCantidad}
-                        onUpdateQuantityCombo={actualizarCantidadCombo}
-                        onRemove={quitarDelCarrito}
-                        onRemoveCombo={quitarComboDelCarrito}
-                    />
-                </div>
+        <div className="grid grid-cols-1 min-[900px]:grid-cols-[1.35fr_1fr] gap-4 max-w-[1200px] mx-auto items-stretch min-h-[min(70dvh,640px)]">
+            {/* Catálogo de búsqueda */}
+            <div className="min-w-0 min-h-0">
+                <CatalogoPOS
+                    productos={productos}
+                    combos={combos}
+                    onAddToCart={agregarAlCarrito}
+                    onAddCombo={agregarComboAlCarrito}
+                    comboDisponible={comboDisponible}
+                />
             </div>
 
-            {/* Columna Derecha: Panel de Pago */}
-            <div className="lg:col-span-1">
-                <PanelPago
-                    total={total}
-                    cantidadItems={carrito.reduce((acc, item) => acc + item.cantidad, 0)}
-                    metodoPago={metodoPago}
-                    setMetodoPago={setMetodoPago}
-                    clientes={clientes}
-                    clienteSeleccionado={clienteSeleccionado}
-                    setClienteSeleccionado={setClienteSeleccionado}
-                    nombreClienteOtro={nombreClienteOtro}
-                    setNombreClienteOtro={setNombreClienteOtro}
-                    notas={notas}
-                    setNotas={setNotas}
-                    paymentBreakdown={paymentBreakdown}
-                    setPaymentBreakdown={setPaymentBreakdown}
-                    cobrarDespues={cobrarDespues}
-                    setCobrarDespues={setCobrarDespues}
-                    onProcesar={manejarVenta}
-                    cargando={cargando}
-                    disabled={carrito.length === 0}
-                />
+            {/* Columna carrito + cobro (stack estilo mock) */}
+            <div className="min-w-0">
+                <CarritoVenta
+                    carrito={carrito}
+                    onUpdateQuantity={actualizarCantidad}
+                    onUpdateQuantityCombo={actualizarCantidadCombo}
+                    onRemove={quitarDelCarrito}
+                    onRemoveCombo={quitarComboDelCarrito}
+                >
+                    <PanelPago
+                        total={total}
+                        cantidadItems={carrito.reduce((acc, item) => acc + item.cantidad, 0)}
+                        metodoPago={metodoPago}
+                        setMetodoPago={setMetodoPago}
+                        clientes={clientes}
+                        clienteSeleccionado={clienteSeleccionado}
+                        setClienteSeleccionado={setClienteSeleccionado}
+                        nombreClienteOtro={nombreClienteOtro}
+                        setNombreClienteOtro={setNombreClienteOtro}
+                        notas={notas}
+                        setNotas={setNotas}
+                        paymentBreakdown={paymentBreakdown}
+                        setPaymentBreakdown={setPaymentBreakdown}
+                        cobrarDespues={cobrarDespues}
+                        setCobrarDespues={setCobrarDespues}
+                        onProcesar={manejarVenta}
+                        cargando={cargando}
+                        disabled={carrito.length === 0}
+                    />
+                </CarritoVenta>
             </div>
         </div>
     )

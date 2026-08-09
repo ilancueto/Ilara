@@ -10,11 +10,11 @@ export function PastelCard({ children, className = '', noHover = false, ...props
     return (
         <div
             className={`
-                bg-white/90 dark:bg-gray-800/90 backdrop-blur-md
-                border border-pink-100/80 dark:border-gray-600/80
-                rounded-[24px]
-                shadow-[0_4px_24px_rgba(0,0,0,0.04),0_0_0_1px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]
-                ${!noHover ? 'hover:shadow-[0_8px_32px_rgba(236,72,153,0.12)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-all duration-300' : ''}
+                bg-white dark:bg-zinc-900/95
+                border border-pink-100/70 dark:border-white/10
+                rounded-[20px]
+                shadow-[0_4px_24px_rgba(190,24,93,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]
+                ${!noHover ? 'hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.14)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 transition-all duration-200' : ''}
                 ${className}
             `}
             {...props}

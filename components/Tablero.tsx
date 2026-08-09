@@ -17,13 +17,18 @@ const TableroVentasChart = dynamic(() => import('@/components/TableroVentasChart
         />
     ),
 })
-import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Download, Settings, Wallet } from 'lucide-react'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Settings, Wallet, Store } from 'lucide-react'
 import { format, subDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
-import ExportarDatos from '@/components/ExportarDatos'
 import { useTheme } from '@/context/ThemeContext'
+import type { AppTab } from '@/lib/appTabs'
+
 type PeriodoIngresos = 'total' | '7d' | '30d'
+
+type TableroProps = {
+    onNavigate?: (tab: AppTab) => void
+}
 
 type DashboardKpi = {
     sales_total: number
@@ -41,7 +46,7 @@ const KPI_ZERO: DashboardKpi = {
     expenses_total: 0,
 }
 
-export default function Tablero() {
+export default function Tablero({ onNavigate }: TableroProps) {
     const router = useRouter()
     const { theme } = useTheme()
     const [productos, setProductos] = useState<Producto[]>([])
@@ -53,7 +58,7 @@ export default function Tablero() {
     const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
-    const [mostrarExportar, setMostrarExportar] = useState(false)
+
     const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
     const [detalleVenta, setDetalleVenta] = useState<Venta | null>(null)
     const [itemsDetalleVenta, setItemsDetalleVenta] = useState<ItemVenta[]>([])
@@ -195,8 +200,6 @@ export default function Tablero() {
     )
     const productosStockBajo = productosCriticos.length
     const valorTotalInventario = productos.reduce((sum, p) => sum + (p.sale_price * p.stock), 0)
-    const inversionTotal = productos.reduce((sum, p) => sum + ((p.purchase_price || 0) * p.stock), 0)
-    const gananciaPotencial = valorTotalInventario - inversionTotal
 
     const totalIngresos = kpi.sales_total + kpi.incomes_total
     const cantidadVentas = kpi.sales_count
@@ -265,48 +268,56 @@ export default function Tablero() {
         )
     }
 
+    const hora = new Date().getHours()
+    const saludoHora =
+        hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches'
+
     return (
-        <div className="flex flex-col gap-10 pb-12 text-gray-800 dark:text-gray-100">
-            <div className="flex flex-wrap items-center justify-between gap-6">
+        <div className="flex flex-col gap-6 sm:gap-8 pb-6 text-gray-800 dark:text-gray-100">
+            {/* Header estilo mock */}
+            <div className="flex flex-wrap items-end justify-between gap-4">
                 <div className="min-w-0">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">¡Hola de nuevo! ✨</h2>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5">Aquí tienes el resumen de hoy.</p>
+                    <h2 className="text-2xl sm:text-[1.65rem] font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
+                        {saludoHora} ✨
+                    </h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 font-medium">
+                        Resumen de tu negocio · hoy
+                    </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden />
+                        En vivo
+                    </span>
                     <button
                         type="button"
-                        onClick={() => router.push('/?tab=sales')}
-                        className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-sm shadow-xl shadow-pink-300/50 hover:shadow-2xl hover:shadow-pink-400/50 hover:-translate-y-0.5 transition-all ring-2 ring-pink-200/50"
+                        onClick={() =>
+                            onNavigate ? onNavigate('sales') : router.push('/?tab=sales')
+                        }
+                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-bold text-sm shadow-[0_8px_20px_-6px_rgba(219,39,119,0.55)] hover:brightness-105 hover:-translate-y-0.5 transition-all"
                     >
-                        <Receipt className="w-5 h-5" strokeWidth={2.5} />
+                        <Receipt className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                         Nueva venta
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setMostrarExportar(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-pink-200 dark:border-gray-600 bg-pink-50/50 dark:bg-gray-900 dark:text-white text-pink-600 hover:bg-pink-50 dark:hover:bg-gray-800 hover:border-pink-300 dark:hover:border-gray-500 transition-all font-semibold text-sm"
-                    >
-                        <Download className="w-4 h-4" />
-                        Exportar datos
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 items-stretch overflow-visible">
-                <div>
+            {/* KPIs — grilla fluida como mock */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-stretch">
+                <div className="col-span-2 sm:col-span-1">
                     <TarjetaEstadistica
-                        icono={<DollarSign className="w-6 h-6" />}
+                        icono={<DollarSign className="w-5 h-5" />}
                         etiqueta="Ingresos"
                         valor={`$${totalIngresos.toLocaleString()}`}
                         color="text-pink-500"
                         bgIcon="bg-pink-50"
-                        subtitulo={`${cantidadVentas} ventas + ${kpi.incomes_count} ingresos manuales`}
+                        subtitulo={`${cantidadVentas} ventas + ${kpi.incomes_count} manuales`}
                         trend={true}
-                                selectorPeriodo={
+                        selectorPeriodo={
                             <button
                                 type="button"
                                 onClick={() => setMostrarModalPeriodo(true)}
-                                className="p-2 rounded-lg bg-white/80 dark:bg-gray-700 border border-pink-200 dark:border-gray-600 text-pink-600 dark:text-pink-400 hover:bg-white dark:hover:bg-gray-600 hover:border-pink-300 dark:hover:border-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300 dark:focus:ring-pink-600 transition-colors"
+                                className="p-2 rounded-lg bg-white/80 dark:bg-zinc-800 border border-pink-100 dark:border-zinc-700 text-pink-600 dark:text-pink-400 hover:bg-white dark:hover:bg-zinc-700 transition-colors"
                                 aria-label="Cambiar período de ingresos"
                             >
                                 <Settings className="w-4 h-4" />
@@ -316,30 +327,22 @@ export default function Tablero() {
                 </div>
                 <div>
                     <TarjetaEstadistica
-                        icono={<Wallet className="w-6 h-6" />}
+                        icono={<Wallet className="w-5 h-5" />}
                         etiqueta="Balance"
                         valor={`$${balance.toLocaleString()}`}
                         color={balance >= 0 ? 'text-emerald-500' : 'text-red-500'}
                         bgIcon={balance >= 0 ? 'bg-emerald-50' : 'bg-red-50'}
+                        subtitulo="Ingresos − gastos"
                     />
                 </div>
                 <div>
                     <TarjetaEstadistica
-                        icono={<Package className="w-6 h-6" />}
-                        etiqueta="Total Productos"
+                        icono={<Package className="w-5 h-5" />}
+                        etiqueta="Productos"
                         valor={totalProductos.toString()}
                         color="text-violet-500"
                         bgIcon="bg-violet-50"
-                    />
-                </div>
-                <div>
-                    <TarjetaEstadistica
-                        icono={<TrendingUp className="w-6 h-6" />}
-                        etiqueta="Valor Inventario"
-                        valor={`$${valorTotalInventario.toLocaleString()}`}
-                        color="text-blue-500"
-                        bgIcon="bg-blue-50"
-                        subtitulo={inversionTotal > 0 ? `${Math.round((gananciaPotencial / inversionTotal) * 100)}% rentabilidad` : undefined}
+                        subtitulo={productosStockBajo > 0 ? `${productosStockBajo} bajo mínimo` : 'Stock OK'}
                     />
                 </div>
                 <div
@@ -347,33 +350,78 @@ export default function Tablero() {
                     onClick={() => productosStockBajo > 0 && setMostrarModalAlertas(true)}
                 >
                     <TarjetaEstadistica
-                        icono={<AlertTriangle className="w-6 h-6" />}
-                        etiqueta="Stock Crítico"
+                        icono={<AlertTriangle className="w-5 h-5" />}
+                        etiqueta="Stock crítico"
                         valor={productosStockBajo.toString()}
                         color="text-amber-500"
                         bgIcon="bg-amber-50"
                         alerta={productosStockBajo > 0}
+                        subtitulo={`Inv. $${valorTotalInventario.toLocaleString()}`}
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
+            {/* Atajos */}
+            {onNavigate && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                    <button
+                        type="button"
+                        onClick={() => onNavigate('incomes')}
+                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                    >
+                        <span className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                            <TrendingUp className="w-5 h-5" />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Ingresos</span>
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Ventas e historial</span>
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onNavigate('expenses')}
+                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                    >
+                        <span className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <Wallet className="w-5 h-5" />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Gastos</span>
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Egresos del mes</span>
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/catalogo')}
+                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                    >
+                        <span className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0">
+                            <Store className="w-5 h-5" />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Catálogo</span>
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Vitrina pública</span>
+                        </span>
+                    </button>
+                </div>
+            )}
 
-                {/* Column 1: Sales Chart (Span 2) */}
-                <div className="lg:col-span-2 flex flex-col">
-                    <PastelCard noHover className="h-full min-h-[380px] flex flex-col p-6 sm:p-7">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5 flex-shrink-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+                {/* Chart */}
+                <div className="lg:col-span-2 flex flex-col min-w-0">
+                    <PastelCard noHover className="h-full min-h-[320px] sm:min-h-[360px] flex flex-col p-5 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4 shrink-0">
                             <div className="min-w-0">
-                                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                                    Actividad de Ventas
+                                <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+                                    Actividad de ventas
                                 </h3>
                                 {ventasChartEsMensual ? (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 leading-relaxed max-w-xl">
-                                        Alineado al período Total: barras mensuales desde la primera venta cobrada (máx. 120 meses en pantalla). Las tarjetas de ingresos y balance siguen sumando todo el historial.
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed max-w-xl">
+                                        Barras mensuales desde la primera venta cobrada (máx. 120 meses).
                                     </p>
                                 ) : null}
                             </div>
-                            <span className="px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[11px] text-pink-600 dark:text-pink-400 font-bold uppercase tracking-wider shrink-0 self-start">
+                            <span className="px-2.5 py-1 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[10px] text-pink-600 dark:text-pink-300 font-bold uppercase tracking-wider shrink-0 self-start">
                                 {etiquetaPeriodo}
                             </span>
                         </div>
@@ -386,46 +434,65 @@ export default function Tablero() {
                     </PastelCard>
                 </div>
 
-                {/* Column 2: Side Panel (Span 1) */}
-                <div className="flex flex-col">
-
-                    {/* Recent Sales */}
-                    <PastelCard noHover className="p-6 sm:p-7 h-full">
-                        <h3 className="text-lg font-bold mb-5 text-gray-900 dark:text-gray-100">
-                            ⏱️ Recientes
-                        </h3>
+                {/* Recientes */}
+                <div className="flex flex-col min-w-0">
+                    <PastelCard noHover className="p-5 sm:p-6 h-full">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+                                Recientes
+                            </h3>
+                            <span className="px-2.5 py-1 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[10px] text-pink-600 dark:text-pink-300 font-bold uppercase tracking-wider">
+                                Hoy
+                            </span>
+                        </div>
 
                         {ultimasVentas.length > 0 ? (
-                            <div className="flex flex-col gap-2">
-                                {ultimasVentas.slice(0, 4).map(venta => (
-                                    <button
-                                        key={venta.id}
-                                        type="button"
-                                        onClick={() => abrirDetalleVenta(venta)}
-                                        className="dashboard-recent-item w-full flex items-center justify-between gap-4 px-4 py-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 transition-all group border border-transparent hover:border-pink-100 dark:hover:border-gray-600 text-left cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-9 h-9 rounded-lg bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 flex items-center justify-center shadow-sm flex-shrink-0">
-                                                {obtenerIconoPago(venta.payment_method)}
+                            <div className="flex flex-col">
+                                {ultimasVentas.slice(0, 5).map(venta => {
+                                    const fromCustomer = venta.customers
+                                        ? `${venta.customers.first_name ?? ''} ${venta.customers.last_name ?? ''}`.trim()
+                                        : ''
+                                    const nombre = venta.customer_name?.trim() || fromCustomer
+                                    const display = nombre || `Venta #${venta.id}`
+                                    const initials = nombre
+                                        ? nombre
+                                              .split(/\s+/)
+                                              .filter(Boolean)
+                                              .slice(0, 2)
+                                              .map((w) => w[0]?.toUpperCase() ?? '')
+                                              .join('') || '#'
+                                        : '#'
+                                    return (
+                                        <button
+                                            key={venta.id}
+                                            type="button"
+                                            onClick={() => abrirDetalleVenta(venta)}
+                                            className="w-full flex items-center gap-3 py-3 border-b border-gray-100/80 dark:border-white/5 last:border-0 text-left group"
+                                        >
+                                            <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/40 dark:to-zinc-800 border border-pink-100 dark:border-white/10 flex items-center justify-center text-[11px] font-extrabold text-pink-600 dark:text-pink-300 shrink-0">
+                                                {initials}
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">#{venta.id}</p>
-                                                <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5">{format(new Date(venta.created_at), "HH:mm", { locale: es })}</p>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-bold text-sm text-gray-900 dark:text-gray-100 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">
+                                                    {display}
+                                                </p>
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5 truncate capitalize">
+                                                    {venta.payment_method || '—'} · {format(new Date(venta.created_at), 'HH:mm', { locale: es })}
+                                                </p>
                                             </div>
-                                        </div>
-                                        <p className="font-semibold text-emerald-600 dark:text-emerald-400 text-sm bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg shrink-0">
-                                            ${venta.total.toLocaleString()}
-                                        </p>
-                                    </button>
-                                ))}
+                                            <p className="font-extrabold text-sm tabular-nums text-gray-900 dark:text-gray-50 shrink-0">
+                                                ${venta.total.toLocaleString()}
+                                            </p>
+                                        </button>
+                                    )
+                                })}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-xs border border-dashed border-gray-200 dark:border-gray-600 rounded-xl">
-                                <p>Sin ventas recientes</p>
+                            <div className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm border border-dashed border-pink-100 dark:border-white/10 rounded-2xl">
+                                <p className="font-medium">Sin ventas recientes</p>
                             </div>
                         )}
                     </PastelCard>
-
                 </div>
             </div>
 
@@ -561,11 +628,6 @@ export default function Tablero() {
                 document.body
             )}
 
-            {/* Modal Exportar datos */}
-            {mostrarExportar && (
-                <ExportarDatos mostrar={true} cerrar={() => setMostrarExportar(false)} />
-            )}
-
             {/* Modal de Alertas — renderizado en portal para que el backdrop cubra toda la pantalla */}
             {mostrarAlertas && typeof document !== 'undefined' && createPortal(
                 <>
@@ -646,45 +708,46 @@ function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, 
         <PastelCard
             noHover
             className={`
-                dashboard-metric-card h-full flex flex-col justify-between group cursor-default min-h-[140px] overflow-visible
-                ${alerta ? 'border-2 border-amber-400 dark:border-amber-500 shadow-lg shadow-amber-100 dark:shadow-amber-900/30' : ''}
+                relative overflow-hidden h-full flex flex-col gap-3 p-4 sm:p-5 min-h-[128px] group cursor-default
+                ${alerta ? 'ring-2 ring-amber-400/80 dark:ring-amber-500/60' : ''}
             `}
         >
-            <div className="flex items-start justify-between gap-3 flex-shrink-0">
+            {/* glow suave del mock */}
+            <div
+                className="pointer-events-none absolute -right-5 -top-5 w-24 h-24 rounded-full bg-pink-400/10 dark:bg-pink-500/10 blur-2xl"
+                aria-hidden
+            />
+            <div className="relative flex items-start justify-between gap-2 shrink-0">
                 <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${bgIcon} dark:bg-gray-700 ${color}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${bgIcon} dark:bg-zinc-800 ${color}`}
                 >
                     {icono}
                 </div>
-                {alerta && (
-                    <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
-                        Acción
-                    </span>
-                )}
-                {(trend || selectorPeriodo) && (
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                        {selectorPeriodo}
-                        {trend && !selectorPeriodo && (
-                            <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
-                                <ArrowUpRight className="w-3.5 h-3.5" />
-                            </div>
-                        )}
-                    </div>
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                    {alerta && (
+                        <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                            Acción
+                        </span>
+                    )}
+                    {selectorPeriodo}
+                    {trend && !selectorPeriodo && (
+                        <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                        </div>
+                    )}
+                </div>
             </div>
-
-            <div className="flex flex-col gap-1 mt-4 flex-1 min-h-0">
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+            <div className="relative flex flex-col gap-0.5 min-w-0 mt-auto">
+                <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400 font-bold">
                     {etiqueta}
                 </p>
-                <p className="text-2xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors leading-tight">
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight tabular-nums leading-tight break-all">
                     {valor}
                 </p>
                 {subtitulo && (
-                    <div className="flex items-center gap-2 mt-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-pink-400 dark:bg-pink-500 flex-shrink-0" />
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{subtitulo}</span>
-                    </div>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                        {subtitulo}
+                    </p>
                 )}
             </div>
         </PastelCard>

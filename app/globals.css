@@ -50,7 +50,6 @@
 
 /* ─── Reset & Base ─── */
 * {
-  margin: 0;
   box-sizing: border-box;
 }
 
@@ -107,6 +106,235 @@ body {
 @media (min-width: 768px) {
   .app-content {
     padding: 36px 44px;
+  }
+}
+
+/* ─── Shell overhaul: top + dock (sin sidebar) ─── */
+.app-shell {
+  --app-top-h: 64px;
+  --app-dock-h: 76px;
+  --app-safe-b: env(safe-area-inset-bottom, 0px);
+  --app-safe-t: env(safe-area-inset-top, 0px);
+  --app-pad-x: clamp(0.85rem, 2.5vw, 1.75rem);
+  min-height: 100dvh;
+  /* Mismo fondo suave del mock overhaul */
+  background:
+    radial-gradient(ellipse 80% 50% at 100% -10%, rgba(244, 114, 182, 0.12), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgba(168, 85, 247, 0.08), transparent 45%),
+    #f6f2f7;
+}
+
+.dark .app-shell {
+  background:
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(219, 39, 119, 0.12), transparent 50%),
+    radial-gradient(ellipse 50% 35% at 0% 100%, rgba(168, 85, 247, 0.08), transparent 45%),
+    #0f0f12;
+}
+
+.app-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: calc(var(--app-top-h) + var(--app-safe-t));
+  padding-top: var(--app-safe-t);
+  background: color-mix(in srgb, #ffffff 90%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid rgba(236, 72, 153, 0.12);
+}
+
+.dark .app-topbar {
+  background: color-mix(in srgb, #111827 92%, transparent);
+  border-bottom-color: rgba(244, 114, 182, 0.12);
+}
+
+.app-topbar-inner {
+  height: var(--app-top-h);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--app-pad-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.app-main {
+  padding-top: calc(var(--app-top-h) + var(--app-safe-t));
+  padding-bottom: calc(var(--app-dock-h) + var(--app-safe-b) + 0.75rem);
+  min-height: 100dvh;
+}
+
+.app-main-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 1.75rem) var(--app-pad-x);
+}
+
+.catalog-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 158px), 1fr));
+  gap: clamp(0.65rem, 1.5vw, 1rem);
+}
+
+.catalog-shell-width {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.pos-cart-head h3,
+.pos-cart-head p {
+  color: #ffffff;
+}
+
+@media (min-width: 640px) {
+  .catalog-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+}
+
+.app-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  padding: 0 var(--app-pad-x) calc(0.55rem + var(--app-safe-b));
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+.app-dock-inner {
+  pointer-events: auto;
+  width: min(520px, 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.1rem;
+  padding: 0.4rem 0.4rem;
+  background: color-mix(in srgb, #ffffff 94%, transparent);
+  backdrop-filter: blur(18px) saturate(1.25);
+  border: 1px solid rgba(236, 72, 153, 0.14);
+  border-radius: 22px;
+  box-shadow:
+    0 16px 40px -12px rgba(190, 24, 93, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+}
+
+.dark .app-dock-inner {
+  background: color-mix(in srgb, #18181b 94%, transparent);
+  border-color: rgba(244, 114, 182, 0.16);
+  box-shadow:
+    0 16px 40px -12px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.app-dock-item {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  padding: 0.3rem 0.1rem;
+  cursor: pointer;
+  border-radius: 14px;
+  transition: color 0.15s ease;
+}
+
+.dark .app-dock-item {
+  color: #9ca3af;
+}
+
+.app-dock-item:hover {
+  color: #1f2937;
+}
+
+.dark .app-dock-item:hover {
+  color: #f3f4f6;
+}
+
+.app-dock-ico {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  transition: 0.15s ease;
+}
+
+.app-dock-lbl {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.app-dock-item.is-active {
+  color: #db2777;
+}
+
+.dark .app-dock-item.is-active {
+  color: #f9a8d4;
+}
+
+.app-dock-item.is-active .app-dock-ico {
+  background: linear-gradient(145deg, #f472b6, #db2777);
+  color: #fff;
+  box-shadow: 0 8px 16px -6px rgba(219, 39, 119, 0.55);
+}
+
+.app-dock-item--pos {
+  margin-top: -1rem;
+}
+
+.app-dock-item--pos .app-dock-ico {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f472b6, #db2777);
+  color: #fff;
+  box-shadow: 0 10px 22px -6px rgba(219, 39, 119, 0.55);
+}
+
+.app-dock-item--pos .app-dock-lbl {
+  color: #db2777;
+  font-weight: 800;
+}
+
+.dark .app-dock-item--pos .app-dock-lbl {
+  color: #f9a8d4;
+}
+
+.app-dock-item--pos.is-active .app-dock-ico {
+  filter: brightness(1.05);
+}
+
+@media (min-width: 900px) {
+  .app-dock-inner {
+    width: min(560px, 100%);
+    padding: 0.45rem 0.55rem;
+  }
+  .app-dock-item {
+    font-size: 0.68rem;
+  }
+  .app-dock-ico {
+    width: 34px;
+    height: 34px;
+  }
+  .app-dock-item--pos .app-dock-ico {
+    width: 52px;
+    height: 52px;
   }
 }
 
