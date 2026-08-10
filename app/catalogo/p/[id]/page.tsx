@@ -12,6 +12,7 @@ import { getProductImages, type Producto } from '@/lib/supabase'
 import { priceWithProductDiscount } from '@/lib/catalogPricing'
 import { buildProductJsonLd } from '@/lib/productStructuredData'
 import { formatPesoAR } from '@/lib/formatPesoAR'
+import { serializeJsonLd } from '@/lib/security/serializeJsonLd'
 
 export const revalidate = 120
 
@@ -31,13 +32,8 @@ function buildProductDescription(p: Producto, precioFinal: number): string {
     else parts.push(p.name)
     parts.push(`$${formatPesoAR(precioFinal)}`)
     if (p.categories?.name) parts.push(p.categories.name)
-    const note = p.notes?.trim()
-    if (note) {
-        const short = note.length > 120 ? `${note.slice(0, 117)}…` : note
-        parts.push(short)
-    } else {
-        parts.push('Belleza y cosmética en Neuquén. Pedidos por WhatsApp en Ilara Beauty.')
-    }
+    // Sin notes internas en meta pública (Etapa 0 / SEC-02).
+    parts.push('Belleza y cosmética en Neuquén. Pedidos por WhatsApp en Ilara Beauty.')
     const joined = parts.join('. ')
     return joined.length > 165 ? `${joined.slice(0, 162)}…` : joined
 }
@@ -127,7 +123,7 @@ export default async function CatalogoProductoPage({ params }: PageProps) {
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
             />
             <ProductPublicDetailClient
                 producto={p}

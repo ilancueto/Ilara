@@ -13,8 +13,9 @@
  * Uso real:
  *   node --env-file=.env.local scripts/migrate-receipts-legacy-to-user-prefix.mjs --execute
  *
- * Después de migrar todo y verificar la app, podés aplicar la migración opcional
- * 20260328206000_storage_receipts_select_strict.sql para quitar la lectura global de legacy.
+ * Después de migrar todo (0 legacy en inventario) y verificar la app, aplicar:
+ *   supabase/migrations/*_stage0_receipts_private_bucket.sql
+ * (SELECT estricto sin position('/' in name)=0). Ver docs/STO01_LEGACY_RECEIPTS.md
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -191,7 +192,7 @@ async function main() {
     console.log('\nCuando revises la lista, ejecutá de nuevo con --execute.')
   } else {
     console.log(
-      '\nSi todo está bien, aplicá en Supabase la migración opcional 20260328206000_storage_receipts_select_strict.sql'
+      '\nSi inventario legacy = 0, aplicá stage0_receipts_private_bucket (SELECT estricto). Ver docs/STO01_LEGACY_RECEIPTS.md'
     )
   }
 }

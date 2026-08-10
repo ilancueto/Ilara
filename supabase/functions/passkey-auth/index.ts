@@ -67,6 +67,19 @@ function generateWebAuthnUserId(): string {
   return uint8ArrayToBase64Url(bytes);
 }
 
+/**
+ * Etapa 0 / SEC-01: contención — bloquear TODAS las rutas de passkey en servidor.
+ * No reactivar hasta rediseño con sesión autenticada (Etapa 1).
+ * El código de registro/login inferior se conserva solo como referencia; no se ejecuta
+ * mientras PASSKEYS_CONTAINED sea true.
+ */
+const PASSKEYS_CONTAINED = true;
+
+const jsonHeaders = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+};
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -76,6 +89,24 @@ serve(async (req: Request) => {
         'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
       },
     });
+  }
+
+  if (PASSKEYS_CONTAINED) {
+    // Consumir body para no dejar conexiones colgadas; no inspeccionar PII.
+    try {
+      await req.json();
+    } catch {
+      /* ignore */
+    }
+    return new Response(
+      JSON.stringify(
+        error(
+          'PASSKEYS_DISABLED',
+          'Passkeys temporalmente desactivadas por seguridad. Usá email y contraseña.',
+        ),
+      ),
+      { status: 403, headers: jsonHeaders },
+    );
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

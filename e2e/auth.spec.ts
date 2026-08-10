@@ -17,4 +17,9 @@ test.describe('Auth y redirecciones', () => {
     await expect(page.getByLabel(/email|correo/i).or(page.getByPlaceholder(/email|correo/i)).first()).toBeVisible({ timeout: 8000 })
     await expect(page.getByRole('button', { name: /iniciar|entrar|ingresar/i })).toBeVisible({ timeout: 5000 })
   })
+
+  test('login no ofrece passkeys (contención SEC-01)', async ({ page }) => {
+    await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await expect(page.getByRole('button', { name: /huella|face id|passkey/i })).toHaveCount(0)
+  })
 })

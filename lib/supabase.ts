@@ -16,6 +16,7 @@ export type Producto = {
   category_id: number | null
   brand: string | null
   color: string | null
+  /** Solo panel autenticado; el catálogo público no lo selecciona (Etapa 0). */
   purchase_price: number | null
   sale_price: number
   stock: number
@@ -23,6 +24,7 @@ export type Producto = {
   image_url: string | null
   /** Múltiples imágenes (catálogo). Si existe, preferir sobre image_url. */
   image_urls?: string[] | null
+  /** Solo panel; el catálogo público no lo selecciona (Etapa 0). */
   notes: string | null
   created_at: string
   updated_at: string

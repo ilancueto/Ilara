@@ -71,20 +71,21 @@ export function buildProductJsonLd(
     precioFinal: number
 ): Record<string, unknown> {
     const images = getProductImages(p).map(src => absoluteFromSite(src, siteOrigin)).filter(Boolean)
+    // Sin min_stock en DTO público: solo InStock / OutOfStock.
     const availability =
         p.stock <= 0
             ? 'https://schema.org/OutOfStock'
-            : p.stock <= p.min_stock
-              ? 'https://schema.org/LimitedAvailability'
-              : 'https://schema.org/InStock'
+            : 'https://schema.org/InStock'
 
     const brandName = p.brand?.trim() || SCHEMA_FALLBACK_BRAND
+    // Sin notes internas en superficie pública.
+    const description = `${p.name} — ${MERCHANT_NAME}, Neuquén.`
 
     return {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: p.name,
-        description: p.notes?.trim() || `${p.name} — ${MERCHANT_NAME}, Neuquén.`,
+        description,
         image: images.length ? images : undefined,
         brand: {
             '@type': 'Brand',

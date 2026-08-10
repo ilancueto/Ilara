@@ -1,84 +1,387 @@
-# Auditoría del proyecto Ilara Beauty
+# Auditoría técnica y funcional — Ilara
 
-## 1. Lo que está bien
+- **Fecha de corte:** 9 de agosto de 2026
+- **Aplicación revisada:** Ilara App / Ilara Beauty
+- **Estado del documento:** vigente
 
-- **Stack actual:** Next.js 16, React 19, TypeScript, Supabase, Tailwind v4, PWA.
-- **App Router:** Rutas claras (`/`, `/login`, `/catalogo`, `/gastos`), layout único con metadata y viewport.
-- **Auth:** Middleware con Supabase SSR protege rutas; raíz sin usuario va a catálogo; `/login` y `/catalogo` públicas.
-- **Tipado:** Tipos en `lib/supabase.ts` y `lib/types.ts`; `strict: true` en `tsconfig`.
-- **Estilo:** Variables en `globals.css`, diseño consistente (rosa/outfit), componentes reutilizables (`PastelCard`, `Toast`).
-- **Servicios:** `expenseService`, `saleService` con validación y códigos de error coherentes.
-- **Documentación:** README y `DEPLOY_VERCEL_PASO_A_PASO.md` útiles para setup y deploy.
+**Documento de ejecución asociado:** [`PLAN.md`](./PLAN.md)
 
----
+> Este documento reemplaza la auditoría anterior de la raíz, que había quedado
+> desactualizada. Los documentos históricos dentro de `docs/` se conservan como
+> referencia, pero no deben utilizarse para determinar el estado actual.
 
-## 2. Seguridad
+## 1. Resumen ejecutivo
 
-| Punto | Estado | Recomendación |
-|-------|--------|----------------|
-| Variables de entorno | OK | `.env` en `.gitignore`; no subir nunca `SUPABASE_SERVICE_ROLE_KEY`. |
-| RLS en Supabase | No revisado en código | Asegurar en Supabase que `expenses`, `sales`, etc. tengan RLS por `auth.uid()`. |
-| `SUPABASE_SERVICE_ROLE_KEY` en API | Correcto | Solo en servidor; no exponer al cliente. |
-| `.env.example` | Revisar | Documentar en README y en `.env.example` las variables necesarias para producción. |
+Ilara tiene una base funcional y visual sólida: el proyecto compila, pasa lint y
+tipos, sus pruebas unitarias están verdes y el catálogo público funciona bien en
+desktop y mobile. No obstante, **no debe considerarse segura para producción**
+hasta resolver dos vulnerabilidades críticas verificadas:
 
----
+1. El flujo de registro de passkeys no vincula la credencial a una sesión
+   autenticada y confía en correo, RP ID y origen aportados por el cliente.
+2. La API de producción permite leer anónimamente ventas, líneas de venta y
+   columnas internas de productos.
 
-## 3. Rutas y auth
+También existe una inconsistencia de precios entre el POS y el RPC que persiste
+la venta, una PWA que no publica su service worker, drift entre las políticas de
+base versionadas y producción, y deuda operativa en migraciones, observabilidad
+y pruebas de integración.
 
-- **Middleware:** Define bien públicas vs protegidas.
-- **Doble chequeo de auth:** En `app/gastos/page.tsx` y `app/page.tsx` se hace `getUser()` en cliente además del middleware. No es un error, pero:
-  - Si confiás 100% en el middleware, el `getUser()` en cliente sirve sobre todo para no mostrar contenido sensible antes del redirect.
-  - Si en algún momento hubiera una ruta que el middleware no cubra, ese chequeo extra ayuda. Opción: dejar como está o documentar que el middleware es la fuente de verdad.
+### Dictamen por área
 
----
+| Área | Estado | Motivo principal |
+|---|---|---|
+| Seguridad de identidad | Crítico | Registro de passkeys susceptible de vinculación a otra cuenta |
+| Privacidad de datos | Crítico | Ventas y campos internos accesibles con el rol `anon` |
+| Integridad monetaria | Alto | POS y base aplican reglas de precio distintas |
+| Gobierno de base de datos | Alto | Drift confirmado y esquema no completamente reproducible |
+| PWA / offline | Alto | `/sw.js` devuelve 404 y los iconos no cumplen el manifest |
+| Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
+| UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
+| Accesibilidad | Mejorable | Diálogos y controles interactivos no siguen un patrón completo |
+| Observabilidad | Bajo | Sin trazas de errores, alertas ni diagnóstico centralizado |
+| Dependencias | Bueno | Sin vulnerabilidades conocidas en `npm audit` al corte |
 
-## 4. Configuración y assets
+## 2. Alcance y metodología
 
-- **Manifest PWA** (`public/manifest.json`): Referencia `/icon-192.png`, `/icon-512.png`, `/apple-touch-icon.png`. Esos archivos no están en el repo (solo `logo_icon.png`). En producción puede dar 404 al instalar la PWA.  
-  **Sugerencia:** Generar esos iconos desde `logo_icon.png` o apuntar el manifest a `/logo_icon.png` para las rutas que lo permitan (según soporte de tamaños).
-- **Favicon:** Ya configurado en `layout.tsx` con `logo_icon.png`.
-- **next.config:** PWA con `next-pwa`; imágenes de Supabase en `remotePatterns`. Correcto.
+La auditoría incluyó:
 
----
+- Arquitectura Next.js 16 / React 19 y configuración de producción.
+- Autenticación, autorización, Edge Functions, RLS, RPC y Storage de Supabase.
+- Flujos de ventas, inventario, combos, catálogo, comprobantes y gastos.
+- Revisión de TypeScript, lint, pruebas, build, CI y dependencias.
+- Comprobaciones HTTP y funcionales no destructivas sobre producción.
+- Consultas de solo lectura con el rol anónimo para comprobar exposición real.
+- Revisión visual del catálogo en viewport desktop y mobile.
+- Contraste con documentación vigente de Next.js, Serwist y Supabase.
 
-## 5. Código y mantenibilidad
+No se realizaron:
 
-- **Catalogo.tsx (~775 líneas):** Componente muy grande (estado, efectos, handlers, listas, modales).  
-  **Sugerencia:** Extraer por ejemplo: `BadgeRotator`, lógica del carrito (custom hook `useCarrito`), modales (carrito, confirmación, imagen previa) en componentes o hooks. Mejora tests y lectura.
-- **Toast:** `removeToast` no se pasa en el `Provider` al `Toast`; en el código actual se usa `onClose={removeToast}` y el toast se cierra por timer o por el botón. Revisar que ningún toast quede colgado (por ejemplo si `duration` es 0 o no se limpia el timer). Por lo que vi, está bien usado.
-- **Consistencia:** Mezcla de español e inglés en nombres (ej. `getSaludo` vs `getUser`). No es bloqueante; si querés homogeneizar, definir "idioma" de la API interna (por ejemplo todo en inglés) y mantener español en UI/strings.
+- Tomas de cuenta, creación de usuarios o explotación del flujo vulnerable.
+- Escrituras, eliminaciones o modificaciones de datos de producción.
+- Pruebas de carga o denegación de servicio.
+- Inspección privilegiada del dashboard, logs internos o configuración efectiva
+  de buckets; esos puntos se marcan como pendientes de verificación.
+- Exposición de valores de secretos o datos comerciales encontrados.
 
----
+Los conteos y respuestas de producción corresponden al momento de la prueba y
+pueden cambiar con la actividad normal del negocio.
 
-## 6. UX y accesibilidad
+## 3. Validaciones ejecutadas
 
-- **Toasts:** El botón de cerrar no tiene `aria-label` (ej. `"Cerrar"`). Añadirlo mejora accesibilidad.
-- **Catálogo:** Hay `aria-label` en el botón del logo. Revisar que filtros, botones de "Agregar" y modales tengan labels o texto visible para lectores de pantalla.
-- **Loading:** Hay estados de carga ("Cargando Ilara...", "Cargando productos..."). Bien para evitar pantallas en blanco.
+| Control | Resultado | Observación |
+|---|---|---|
+| `npm run lint` | Correcto | Sin errores |
+| `tsc --noEmit --incremental false` | Correcto | TypeScript estricto sin errores |
+| `npm run test` | Correcto | 5 archivos, 29 pruebas |
+| `npm run build` | Correcto con advertencia | Serwist no soporta la ruta Turbopack actual |
+| `npm audit --json` | Correcto | 0 vulnerabilidades conocidas |
+| `npm run test:e2e` | No ejecutable | Chromium de Playwright no está instalado |
+| Smoke tests reproducidos en producción | 5 de 6 | El sexto espera un encabezado antiguo del catálogo |
+| Service worker en producción | Fallido | `/sw.js` devuelve 404 |
+| Catálogo desktop/mobile | Correcto | Responsive, 15 tarjetas y CLS observado igual a 0 |
 
----
+El build clasifica `/catalogo`, `/catalogo/p/[id]` y `/sitemap-xml` como rutas
+dinámicas. Aunque el catálogo declara revalidación, su cliente de Supabase usa
+`cookies()` y producción responde con cache privada y `no-store`.
 
-## 7. Errores y resiliencia
+## 4. Hallazgos
 
-- No hay **Error Boundary** global. Si un componente lanza en render, Next.js muestra el error por defecto.  
-  **Sugerencia:** Añadir `app/error.tsx` (y opcionalmente `global-error.tsx`) para capturar errores y mostrar un mensaje amigable en español.
-- En servicios y API se usa `console.error` y en muchos casos `showToast('error', ...)`. Está bien; podrías en algún momento centralizar mensajes de error (por ejemplo por código de error de Supabase) para no repetir textos.
+### SEC-01 — Registro de passkeys sin identidad autenticada
 
----
+- **Severidad:** crítica
+- **Estado:** confirmado por revisión de código; función desplegada comprobada de
+forma no destructiva.
 
-## 8. Performance
+`supabase/functions/passkey-auth/index.ts` presenta los siguientes problemas:
 
-- **Imágenes:** Uso de `next/image` en catálogo con `sizes` razonables. Dominio de Supabase en `remotePatterns`. Bien.
-- **Logo:** `logo_icon.png` en public es grande (~1.3 MB). Para favicon/iconos PWA conviene tener versiones reducidas; para la UI del header podría valer la pena una versión más liviana.
-- **Bundle:** Un solo `Catalogo.tsx` muy grande puede afectar el chunk inicial del catálogo. Lazy de modales o de secciones pesadas (por ejemplo el grid de productos) podría ayudar si medís que el catálogo es lento.
+- `/register/start` no exige ni valida un bearer token.
+- Recibe `email`, `rpId`, `rpName` y `clientOrigin` desde el cliente.
+- El origen esperado se deriva de `clientOrigin` en lugar de una allowlist del
+  servidor.
+- CORS permite cualquier origen.
+- `/register/finish` busca una cuenta por el correo recibido, vincula la
+  credencial y puede crear un usuario confirmado si no existe.
+- El flujo genera una sesión mediante un enlace/OTP después de la vinculación.
 
----
+**Impacto:** un tercero podría registrar una credencial propia contra el correo
+de un operador y obtener acceso con sus privilegios. La auditoría no ejecutó el
+ataque completo.
 
-## 9. Resumen de acciones sugeridas (prioridad)
+**Remediación requerida:** desactivar passkeys hasta que el registro exija sesión,
+vincule el desafío a `auth.uid()`, use RP ID y orígenes definidos en servidor,
+impida la creación automática de usuarios y aplique desafíos de un solo uso con
+expiración y contexto de operación.
 
-1. **Alta:** Documentar `SUPABASE_SERVICE_ROLE_KEY` en README y en `.env.example` (aunque el valor no se copie).
-2. **Alta:** Resolver iconos PWA: crear `icon-192.png` / `icon-512.png` (y opcional `apple-touch-icon.png`) o apuntar el manifest a assets existentes.
-3. **Media:** Añadir `app/error.tsx` (y si querés, `global-error.tsx`) para manejo de errores en español.
-4. **Media:** Refactorizar `Catalogo.tsx` (hooks + componentes más chicos) para mantener el mismo comportamiento.
-5. **Baja:** Añadir `aria-label` al botón de cerrar del Toast y revisar a11y en catálogo (botones/filtros).
-6. **Baja:** Revisar en Supabase que RLS esté bien configurado en todas las tablas que usan `user_id` o equivalente.
+### SEC-02 — Exposición anónima de ventas y columnas internas
+
+- **Severidad:** crítica
+- **Estado:** confirmado contra producción mediante consultas de solo lectura.
+
+El rol `anon` devolvió al momento de la prueba:
+
+- 62 filas de `sales`.
+- 152 filas de `sale_items`.
+- Campos de ventas como nombre de cliente, notas, URL de comprobante, desglose
+  de pagos, total, fechas, estado y usuarios de auditoría.
+- Campos internos de productos como precio de compra, notas, stock mínimo y
+  campos de auditoría.
+- Los combos pueden ampliar la exposición porque el cliente solicita relaciones
+  con `products(*)`.
+
+El repositorio pretende restringir `sales` y `sale_items` a usuarios autenticados
+en `supabase/sql/supabase_rls_all.sql`, por lo que el resultado demuestra drift
+entre código y producción.
+
+RLS controla filas, no columnas. El catálogo utiliza `select('*')` en
+`hooks/useCatalogData.ts`, de modo que una política pública de lectura permite
+pedir también campos internos. La solución recomendada es una vista
+`security_invoker`, un RPC o una superficie pública equivalente con columnas
+explícitas, junto con grants mínimos y pruebas negativas para `anon`.
+
+**Impacto:** exposición de información comercial y potencialmente personal. Se
+debe tratar como un incidente hasta determinar, mediante logs, alcance temporal y
+acceso a comprobantes.
+
+### SEC-03 — Secretos y artefactos sensibles
+
+**Severidad:** alta; crítica si los artefactos fueron compartidos o publicados.
+
+Durante la auditoría se encontró un archivo `ilara-app.zip` de aproximadamente
+39 MB que contenía `.env.local`, `.git` y `passsupa.txt`. El ZIP ya no aparecía en
+el estado final del directorio, pero:
+
+- `passsupa.txt` existió en commits contenidos por `main` y `origin/main`.
+- `supabase/.temp/pooler-url` permanece sin versionar y no está ignorado.
+- El ZIP contenía nombres de variables de alto privilegio, incluyendo service
+  role de Supabase y credenciales de Vercel.
+
+No se mostraron ni copiaron los valores. Debe verificarse si esos artefactos
+fueron subidos o compartidos, rotar cualquier credencial potencialmente expuesta
+y purgar secretos reales del historial de forma coordinada.
+
+### SEC-04 — XSS persistente mediante JSON-LD
+
+**Severidad:** alta.
+
+`app/catalogo/p/[id]/page.tsx` inserta `JSON.stringify(jsonLd)` mediante
+`dangerouslySetInnerHTML`. El objeto incorpora nombre, notas y marca editables.
+Sin escapar `<`, una cadena `</script>` puede cerrar el bloque. El CSP actual
+permite scripts inline y aumenta el impacto.
+
+La corrección mínima es serializar con reemplazo de `<` por `\\u003c` y añadir
+una prueba con payload hostil. Después debe evaluarse un CSP con hashes, SRI o
+nonce según la estrategia de renderizado.
+
+### DATA-01 — Divergencia de precios entre POS y RPC
+
+**Severidad:** alta.
+
+`lib/posPricing.ts` establece que el POS use `sale_price` sin descuento de
+catálogo. `components/PuntoVenta/PuntoVenta.tsx` calcula y presenta ese total. La
+migración `20260328205000_sales_created_by_monthly_chart.sql`, en cambio, vuelve
+a calcular el producto aplicando `discount_percentage`.
+
+**Consecuencias:** el importe presentado o cobrado puede diferir del persistido;
+el desglose de pago puede no coincidir y el comprobante puede contener líneas a
+precio de lista con un total descontado.
+
+El RPC tiene controles valiosos que deben conservarse: transacción atómica,
+bloqueo de productos con `FOR UPDATE`, validación de cantidades y movimiento de
+stock. La regla comercial debe decidirse una vez, residir en el servidor y
+devolver líneas y total autoritativos al cliente.
+
+### DATA-02 — Esquema y políticas no reproducibles
+
+**Severidad:** alta.
+
+Una parte importante del esquema está en `supabase/sql` como scripts manuales,
+mientras `supabase/migrations` contiene cambios posteriores. Un entorno nuevo no
+puede reconstruirse confiablemente con un único flujo. El drift de RLS confirmado
+en producción demuestra el riesgo operativo.
+
+Toda modificación futura debe nacer como migración, probarse en un entorno
+aislado, pasar advisors, verificarse con `supabase migration list` y contener
+grants y RLS explícitos. Desde abril de 2026, proyectos nuevos pueden optar por no
+exponer automáticamente nuevas tablas a Data API; por ello se deben comprobar
+por separado exposición, `GRANT` y RLS.
+
+### DATA-03 — Operaciones no transaccionales
+
+**Severidad:** media.
+
+- La edición de combos actualiza el combo, elimina todos sus ítems y luego inserta
+  reemplazos mediante llamadas separadas. Un fallo intermedio deja datos vacíos o
+  parciales.
+- Algunos cambios masivos de inventario se ejecutan secuencialmente y pueden
+  quedar aplicados a medias.
+
+Estas operaciones deben moverse a RPC transaccionales o actualizaciones por lote
+con resultados explícitos por elemento.
+
+### STO-01 — Privacidad y ciclo de vida de archivos
+
+**Severidad:** alta hasta verificar producción.
+
+- El script base de gastos crea `receipts` como bucket público.
+- Una migración posterior documenta el cambio a privado, pero no ejecuta el
+  cambio automáticamente.
+- Como `sales` expone `receipt_url` anónimamente, un bucket público podría hacer
+  accesibles los archivos.
+- Subidas de productos y comprobantes no aplican de forma uniforme límites de
+  tamaño/MIME ni eliminan siempre objetos reemplazados o huérfanos.
+
+No se confirmó el flag efectivo del bucket por falta de acceso privilegiado. La
+verificación debe ser una tarea de contención y la configuración final debe quedar
+en una migración reproducible.
+
+### AUTH-01 — Autenticación sin autorización granular
+
+**Severidad:** media-alta.
+
+Las políticas versionadas conceden a cualquier usuario `authenticated` acceso
+amplio mediante `USING (true)` / `WITH CHECK (true)`. Eso puede ser aceptable para
+un único operador controlado, pero no escala a equipo ni protege ante creación
+accidental o maliciosa de cuentas. La presencia de más de un correo conocido en
+la interfaz muestra que ya conviene formalizar una allowlist o roles.
+
+Los roles deben residir en una tabla protegida o `app_metadata`, nunca en
+`user_metadata`, que el usuario puede modificar.
+
+### PWA-01 — PWA no publicada
+
+**Severidad:** alta para la promesa offline; no afecta el uso web básico.
+
+- `https://ilara.com.ar/sw.js` devuelve 404.
+- El HTML publicado no registra el service worker.
+- El build local no genera `public/sw.js`.
+- Serwist advierte que la integración actual no soporta Turbopack.
+- El icono declarado como 512 × 512 mide 308 × 117; otros tamaños declarados
+  tampoco coinciden con los archivos reales.
+
+Se debe elegir explícitamente la integración soportada de Serwist para Turbopack
+o compilar con Webpack y añadir una aserción posbuild/posdeploy sobre `/sw.js`.
+
+### PERF-01 — Revalidación del catálogo anulada
+
+**Severidad:** media.
+
+`app/catalogo/page.tsx` declara `revalidate = 60`, pero
+`lib/supabase/server.ts` llama a `cookies()`. Esto vuelve dinámica la ruta y la
+respuesta productiva usa cache privada con `no-store`.
+
+Debe existir un cliente público, sin cookies y con un DTO de catálogo reducido,
+para que ISR o cache por tags funcionen realmente.
+
+### ARCH-01 — Frontera de datos y mantenibilidad
+
+**Severidad:** media.
+
+- Gran parte de la lectura y mutación ocurre directamente desde Client
+  Components; RLS es la verdadera frontera de seguridad.
+- No hay una DAL marcada `server-only` para operaciones sensibles.
+- Los tipos de base son manuales y usan conversiones desde `unknown`, lo que
+  facilita drift.
+- Hay componentes de 600 a 850 líneas en inventario, tablero, catálogo, clientes,
+  detalle público e historial.
+
+La recomendación es introducir módulos verticales y una DAL de manera incremental,
+sin reescritura general.
+
+### TEST-01 — Cobertura insuficiente en las zonas de mayor riesgo
+
+**Severidad:** media.
+
+Las 29 pruebas unitarias pasan, pero no cubren Edge Functions, RLS, RPC de ventas,
+Storage ni autorización. E2E no se ejecuta en CI y el smoke test contiene una
+expectativa visual obsoleta.
+
+Los defectos críticos encontrados están precisamente fuera de la cobertura
+actual. Se requieren pruebas de integración sobre Supabase local o staging y
+Playwright en CI con navegador instalado.
+
+### A11Y-01 — Diálogos y controles inconsistentes
+
+**Severidad:** media-baja.
+
+Existe un hook de accesibilidad para diálogos, pero reconoce que no implementa un
+focus trap completo y no todos los modales lo utilizan. El modal de passkeys y
+otros diálogos carecen de una combinación consistente de `role="dialog"`,
+`aria-modal`, foco inicial, restauración de foco, fondo inerte y cierre con Escape.
+También existen tarjetas con `div onClick` y confirmaciones nativas.
+
+### OBS-01 — Observabilidad insuficiente
+
+**Severidad:** media.
+
+La aplicación tiene Vercel Analytics/Speed Insights y varios `console.error`,
+pero no hay integración efectiva de Sentry/OpenTelemetry, trazas de Edge
+Functions, alertas ni contexto estructurado. Algunas consultas fallidas terminan
+mostrando estados vacíos sin error ni reintento.
+
+### DOC-01 — Documentación contradictoria
+
+**Severidad:** baja con impacto operativo.
+
+Existen varias auditorías, roadmaps y checklists que describen estados ya
+resueltos o incorrectos. Por ejemplo, documentos anteriores indican que no hay
+error boundaries, que RLS no fue revisado o que el problema PWA era únicamente el
+matcher. También el README declara Node 18+, mientras Next instalado exige Node
+`>=20.9.0`.
+
+`AUDITORIA.md` y `PLAN.md` deben considerarse las fuentes vigentes; los demás
+documentos históricos deben marcarse como archivados o enlazar a estos.
+
+## 5. Fortalezas verificadas
+
+- Lint, TypeScript, tests unitarios y build de producción pasan.
+- El lockfile está versionado y `npm audit` no detectó vulnerabilidades conocidas.
+- El RPC de ventas usa transacciones y bloqueos apropiados para stock.
+- Las rutas privadas pasan por `proxy.ts` y la validación usa `getUser()`.
+- Existen error boundaries, estados de carga y carga diferida de módulos internos.
+- El catálogo tiene metadata, Open Graph, sitemap, robots y datos estructurados.
+- Producción envía CSP, HSTS, `X-Frame-Options`, `nosniff`, referrer policy y
+  permissions policy.
+- El catálogo actual es visualmente consistente, responsive y no mostró CLS en
+  la comprobación realizada.
+- Los modales pesados del catálogo ya se cargan de forma diferida.
+
+## 6. Riesgo residual y decisión de salida
+
+El estado recomendado es **NO-GO para considerar la plataforma asegurada** hasta
+cerrar `SEC-01` y `SEC-02`. La aplicación web puede seguir operando únicamente si
+se ejecuta primero la fase de contención definida en `PLAN.md`, se preservan los
+logs y se acepta explícitamente el riesgo residual durante el despliegue.
+
+La salida de contención requiere, como mínimo:
+
+- Passkeys desactivadas o corregidas.
+- Cero filas sensibles accesibles por `anon`.
+- Cero columnas internas de producto en la superficie pública.
+- Bucket de comprobantes privado y con políticas verificadas.
+- Secretos evaluados y rotados cuando corresponda.
+- JSON-LD escapado y cubierto por prueba.
+
+## 7. Referencias técnicas vigentes
+
+- [Supabase — Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- [Supabase — Column Level Security](https://supabase.com/docs/guides/database/postgres/column-level-security)
+- [Supabase — Securing your API](https://supabase.com/docs/guides/api/securing-your-api)
+- [Supabase — Storage access control](https://supabase.com/docs/guides/storage/security/access-control)
+- [Supabase — cambio de exposición automática de Data API](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically)
+- [Next.js — Data Security](https://nextjs.org/docs/app/guides/data-security)
+- [Next.js — JSON-LD](https://nextjs.org/docs/app/guides/json-ld)
+- [Next.js — Content Security Policy](https://nextjs.org/docs/app/guides/content-security-policy)
+- [Next.js — Progressive Web Apps](https://nextjs.org/docs/app/guides/progressive-web-apps)
+- [Serwist — Next.js](https://serwist.pages.dev/docs/next/getting-started)
+
+## 8. Control de cambios
+
+| Fecha | Cambio |
+|---|---|
+| 2026-08-09 | Auditoría completa basada en código, checks locales y verificaciones no destructivas de producción |
+| 2026-08-09 | **Etapa 0 en repositorio (no desplegada):** contención passkeys (UI + Edge Function), selects de catálogo sin columnas internas, migraciones versionadas para anon/sales/receipts, JSON-LD escapado, runbook de rotación. **Producción sigue vulnerable hasta aplicar migraciones, redeploy de función y deploy de app.** |
+| 2026-08-09 | Fix bloqueadores Etapa 0: REVOKE SELECT anon+PUBLIC en catálogo; receipts con límites fijos y SELECT estricto; inventario/procedimiento legacy; suite `test:integration`; orden de deploy actualizado en `docs/ETAPA0_ORDEN_DEPLOY.md`. |
+| 2026-08-10 | **Etapa 0 desplegada y verificada en producción** (proyecto qbbnvdmadgomfmrsfxlo + Vercel ilara.com.ar). Contención passkeys, cierre anon ventas, grants catálogo, receipts privado, smoke OK. |
+| 2026-08-10 | Forward-fix **preparado en repo, pendiente de aplicar en prod:** REVOKE EXECUTE de `stage0_inventory_legacy_receipt_urls()` a `authenticated` (solo `service_role`). Migración `*_stage0_revoke_authenticated_legacy_inventory.sql`. |
+| 2026-08-10 | Residual SEC-03: **rotación de secretos** sigue pendiente de decisión de incidente. Residual de producto: roles/precios/passkeys v2 → Etapa 1. |

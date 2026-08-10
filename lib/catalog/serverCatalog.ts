@@ -1,9 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Producto, Categoria, ComboConItems } from '@/lib/supabase'
+import {
+  CATALOG_CATEGORY_SELECT,
+  CATALOG_COMBO_SELECT,
+  CATALOG_PRODUCT_SELECT,
+} from '@/lib/catalog/publicCatalogSelect'
 
-/** Columnas necesarias para el catálogo público (sin purchase_price ni datos internos). */
-export const CATALOG_PRODUCT_SELECT =
-  'id, name, brand, color, sale_price, stock, min_stock, category_id, image_url, image_urls, discount_percentage, catalog_badge, visible_in_catalog, created_at, updated_at, notes, categories(name)'
+export { CATALOG_PRODUCT_SELECT } from '@/lib/catalog/publicCatalogSelect'
 
 export type CatalogQueryOk<T> = { ok: true; data: T }
 export type CatalogQueryErr = { ok: false }
@@ -23,7 +26,7 @@ export async function fetchCatalogProductsServer(
     console.error('[catalog server] products', error.message)
     return { ok: false }
   }
-  return { ok: true, data: (data ?? []) as unknown as Producto[] }
+  return { ok: true, data: normalizeCatalogProducts(data ?? []) }
 }
 
 export async function fetchCatalogCombosServer(
@@ -31,12 +34,7 @@ export async function fetchCatalogCombosServer(
 ): Promise<CatalogQueryResult<ComboConItems[]>> {
   const { data, error } = await supabase
     .from('combos')
-    .select(
-      `
-        *,
-        combo_items (id, product_id, quantity, products (*))
-      `
-    )
+    .select(CATALOG_COMBO_SELECT)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
 
@@ -44,19 +42,50 @@ export async function fetchCatalogCombosServer(
     console.error('[catalog server] combos', error.message)
     return { ok: false }
   }
-  return { ok: true, data: (data ?? []) as unknown as ComboConItems[] }
+  return { ok: true, data: normalizeCatalogCombos(data ?? []) }
 }
 
 export async function fetchCatalogCategoriesServer(
   supabase: SupabaseClient
 ): Promise<CatalogQueryResult<Categoria[]>> {
-  const { data, error } = await supabase.from('categories').select('*').order('name')
+  const { data, error } = await supabase
+    .from('categories')
+    .select(CATALOG_CATEGORY_SELECT)
+    .order('name')
 
   if (error) {
     console.error('[catalog server] categories', error.message)
     return { ok: false }
   }
-  return { ok: true, data: (data ?? []) as unknown as Categoria[] }
+  return { ok: true, data: (data ?? []) as Categoria[] }
+}
+
+/** Completa campos internos no expuestos al público con valores seguros por defecto. */
+function normalizeCatalogProduct(row: Record<string, unknown>): Producto {
+  return {
+    ...(row as object),
+    purchase_price: null,
+    min_stock: 0,
+    notes: null,
+    updated_at: typeof row.updated_at === 'string' ? row.updated_at : (row.created_at as string) || '',
+  } as Producto
+}
+
+function normalizeCatalogProducts(rows: unknown[]): Producto[] {
+  return rows.map((r) => normalizeCatalogProduct(r as Record<string, unknown>))
+}
+
+function normalizeCatalogCombos(rows: unknown[]): ComboConItems[] {
+  return rows.map((raw) => {
+    const r = raw as ComboConItems & { combo_items?: Array<{ products?: unknown }> }
+    const items = (r.combo_items ?? []).map((item) => ({
+      ...item,
+      products: item.products
+        ? normalizeCatalogProduct(item.products as Record<string, unknown>)
+        : undefined,
+    }))
+    return { ...r, combo_items: items, updated_at: r.updated_at ?? r.created_at }
+  })
 }
 
 export type CatalogProductByIdResult =
@@ -79,7 +108,7 @@ export async function fetchCatalogProductByIdServer(
     return { status: 'error' }
   }
   if (!data) return { status: 'not_found' }
-  const p = data as unknown as Producto
+  const p = normalizeCatalogProduct(data as Record<string, unknown>)
   if (p.stock < 0 || p.visible_in_catalog === false) return { status: 'not_found' }
   return { status: 'ok', product: p }
 }
@@ -97,7 +126,7 @@ export async function fetchCatalogRelatedProductsServer(
   const out: Producto[] = []
 
   const pushRows = (rows: unknown) => {
-    for (const row of (rows ?? []) as Producto[]) {
+    for (const row of normalizeCatalogProducts((rows ?? []) as unknown[])) {
       if (row.id === excludeId || seen.has(row.id)) continue
       seen.add(row.id)
       out.push(row)

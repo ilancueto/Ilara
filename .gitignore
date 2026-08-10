@@ -37,6 +37,14 @@ yarn-error.log*
 
 # credenciales / datos sensibles (no subir al repo)
 passsupa.txt
+*.zip
+**/ilara-app.zip
+backups/
+**/backups/**
+*.sql.gz
+*dump*.sql
+supabase/.temp/
+supabase/.temp/**
 
 # vercel
 .vercel
@@ -48,3 +56,6 @@ public/swe-worker*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*

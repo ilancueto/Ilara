@@ -2,6 +2,41 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, type Producto, type Categoria, type ComboConItems } from '@/lib/supabase'
+import {
+    CATALOG_CATEGORY_SELECT,
+    CATALOG_COMBO_SELECT,
+    CATALOG_PRODUCT_SELECT,
+} from '@/lib/catalog/publicCatalogSelect'
+
+/** Rellena campos internos no devueltos por el DTO público. */
+function asCatalogProducto(row: unknown): Producto {
+    const r = row as Producto
+    return {
+        ...r,
+        purchase_price: r.purchase_price ?? null,
+        min_stock: r.min_stock ?? 0,
+        notes: r.notes ?? null,
+        updated_at: r.updated_at ?? r.created_at,
+    }
+}
+
+function asCatalogProductos(rows: unknown[] | null | undefined): Producto[] {
+    return (rows ?? []).map(asCatalogProducto)
+}
+
+function asCatalogCombos(rows: unknown[] | null | undefined): ComboConItems[] {
+    return (rows ?? []).map((raw) => {
+        const r = raw as ComboConItems
+        return {
+            ...r,
+            updated_at: r.updated_at ?? r.created_at,
+            combo_items: (r.combo_items ?? []).map((item) => ({
+                ...item,
+                products: item.products ? asCatalogProducto(item.products) : undefined,
+            })),
+        }
+    })
+}
 
 export type CatalogInitialSnapshot = {
     productos: Producto[]
@@ -26,53 +61,50 @@ export function useCatalogData(ordenamiento: string, initial: CatalogInitialSnap
     const obtenerProductos = useCallback(async () => {
         const { data } = await supabase
             .from('products')
-            .select('*, categories(name)')
+            .select(CATALOG_PRODUCT_SELECT)
             .gte('stock', 0)
             .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
             .order('created_at', { ascending: false })
-        if (data) setProductos(data)
+        if (data) setProductos(asCatalogProductos(data))
     }, [])
 
     const obtenerCombos = useCallback(async () => {
         const { data } = await supabase
             .from('combos')
-            .select(`
-                *,
-                combo_items (id, product_id, quantity, products (*))
-            `)
+            .select(CATALOG_COMBO_SELECT)
             .eq('is_active', true)
             .order('created_at', { ascending: false })
-        if (data) setCombos(data as ComboConItems[])
+        if (data) setCombos(asCatalogCombos(data))
     }, [])
 
     const obtenerCategorias = useCallback(async () => {
-        const { data } = await supabase.from('categories').select('*').order('name')
-        if (data) setCategorias(data)
+        const { data } = await supabase.from('categories').select(CATALOG_CATEGORY_SELECT).order('name')
+        if (data) setCategorias(data as Categoria[])
     }, [])
 
     const cargarDesdeCliente = useCallback(async () => {
         const [pr, co, ca] = await Promise.all([
             supabase
                 .from('products')
-                .select('*, categories(name)')
+                .select(CATALOG_PRODUCT_SELECT)
                 .gte('stock', 0)
                 .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
                 .order('created_at', { ascending: false }),
             supabase
                 .from('combos')
-                .select(`*, combo_items (id, product_id, quantity, products (*))`)
+                .select(CATALOG_COMBO_SELECT)
                 .eq('is_active', true)
                 .order('created_at', { ascending: false }),
-            supabase.from('categories').select('*').order('name'),
+            supabase.from('categories').select(CATALOG_CATEGORY_SELECT).order('name'),
         ])
         if (pr.error || co.error || ca.error) {
             setCatalogLoadError(true)
             return false
         }
         setCatalogLoadError(false)
-        if (pr.data) setProductos(pr.data)
-        if (co.data) setCombos(co.data as ComboConItems[])
-        if (ca.data) setCategorias(ca.data)
+        if (pr.data) setProductos(asCatalogProductos(pr.data))
+        if (co.data) setCombos(asCatalogCombos(co.data))
+        if (ca.data) setCategorias(ca.data as Categoria[])
         return true
     }, [])
 
