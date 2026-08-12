@@ -12,52 +12,76 @@ import {
 import ExportarDatos from '@/components/ExportarDatos'
 
 import type { AppTab } from '@/lib/appTabs'
+import type { RoleCapabilities } from '@/lib/auth/roles'
 
 type Props = {
   onNavigate: (tab: AppTab) => void
+  /** Capacidades del rol (UX). La DB sigue siendo la autoridad. */
+  caps: RoleCapabilities
 }
 
-const tiles = [
+type Tile = {
+  id: string
+  title: string
+  description: string
+  go: string
+  icon: typeof TrendingUp
+  tone: 'emerald' | 'amber' | 'violet' | 'pink'
+  kind: 'tab' | 'link' | 'action'
+  href?: string
+  tab?: AppTab
+  /** Quién ve el tile (UX). */
+  visible: (caps: RoleCapabilities) => boolean
+}
+
+const tiles: Tile[] = [
   {
-    id: 'incomes' as const,
+    id: 'incomes',
     title: 'Ingresos',
     description: 'Historial de ventas, cuentas por cobrar y otros ingresos.',
     go: 'Abrir',
     icon: TrendingUp,
-    tone: 'emerald' as const,
-    kind: 'tab' as const,
+    tone: 'emerald',
+    kind: 'tab',
+    tab: 'incomes',
+    visible: (c) => c.isAdmin,
   },
   {
-    id: 'expenses' as const,
+    id: 'expenses',
     title: 'Gastos',
     description: 'Egresos por categoría, comprobantes y balance del mes.',
     go: 'Abrir',
     icon: Wallet,
-    tone: 'amber' as const,
-    kind: 'tab' as const,
+    tone: 'amber',
+    kind: 'tab',
+    tab: 'expenses',
+    visible: (c) => c.canManageFinance,
   },
   {
-    id: 'catalogo' as const,
+    id: 'catalogo',
     title: 'Catálogo público',
     description: 'Lo que ven tus clientas: productos, combos y WhatsApp.',
     go: 'Ver vitrina',
     icon: Store,
-    tone: 'violet' as const,
-    kind: 'link' as const,
+    tone: 'violet',
+    kind: 'link',
     href: '/catalogo',
+    visible: (c) => c.canUsePos || c.isAdmin,
   },
   {
-    id: 'export' as const,
+    id: 'export',
     title: 'Exportar datos',
     description: 'CSV / JSON de productos, ventas, clientes y gastos.',
     go: 'Exportar',
     icon: Download,
-    tone: 'pink' as const,
-    kind: 'action' as const,
+    tone: 'pink',
+    kind: 'action',
+    // Export puede incluir costos: solo admin (UX; API/RLS también limitan).
+    visible: (c) => c.isAdmin,
   },
 ]
 
-const toneClass: Record<(typeof tiles)[number]['tone'], string> = {
+const toneClass: Record<Tile['tone'], string> = {
   emerald:
     'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400',
   amber:
@@ -67,8 +91,9 @@ const toneClass: Record<(typeof tiles)[number]['tone'], string> = {
   pink: 'bg-pink-50 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400',
 }
 
-export default function NegocioHub({ onNavigate }: Props) {
+export default function NegocioHub({ onNavigate, caps }: Props) {
   const [mostrarExportar, setMostrarExportar] = useState(false)
+  const visibleTiles = tiles.filter((t) => t.visible(caps))
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 animate-fade-in pb-4 text-gray-800 dark:text-gray-100">
@@ -82,7 +107,7 @@ export default function NegocioHub({ onNavigate }: Props) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        {tiles.map((tile) => {
+        {visibleTiles.map((tile) => {
           const Icon = tile.icon
           const iconBox = (
             <span
@@ -113,12 +138,12 @@ export default function NegocioHub({ onNavigate }: Props) {
           const cardClass =
             'group flex flex-col items-start gap-4 text-left p-5 sm:p-6 min-h-[148px] rounded-[20px] border border-pink-100/70 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_24px_rgba(190,24,93,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.16)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:border-pink-200 dark:hover:border-pink-800/40 transition-all duration-200'
 
-          if (tile.kind === 'tab') {
+          if (tile.kind === 'tab' && tile.tab) {
             return (
               <button
                 key={tile.id}
                 type="button"
-                onClick={() => onNavigate(tile.id)}
+                onClick={() => onNavigate(tile.tab!)}
                 className={cardClass}
               >
                 {body}
@@ -126,9 +151,9 @@ export default function NegocioHub({ onNavigate }: Props) {
             )
           }
 
-          if (tile.kind === 'link') {
+          if (tile.kind === 'link' && tile.href) {
             return (
-              <Link key={tile.id} href={tile.href!} className={cardClass}>
+              <Link key={tile.id} href={tile.href} className={cardClass}>
                 {body}
               </Link>
             )
@@ -147,7 +172,7 @@ export default function NegocioHub({ onNavigate }: Props) {
         })}
       </div>
 
-      {mostrarExportar && (
+      {mostrarExportar && caps.isAdmin && (
         <ExportarDatos
           mostrar={true}
           cerrar={() => setMostrarExportar(false)}

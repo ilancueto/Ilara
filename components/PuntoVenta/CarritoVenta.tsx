@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
 import { ItemCarrito } from '@/lib/supabase'
-import { precioListaProducto } from '@/lib/posPricing'
+import { precioListaCombo, precioListaProducto } from '@/lib/posPricing'
 
 interface CarritoVentaProps {
     carrito: ItemCarrito[]
@@ -35,7 +35,9 @@ export default function CarritoVenta({ carrito, onUpdateQuantity, onUpdateQuanti
                         {carrito.map((item) => {
                             const esProducto = Boolean(item.producto)
                             const nombre = esProducto ? item.producto!.name : item.combo!.name
-                            const precio = esProducto ? precioListaProducto(item.producto!) : item.combo!.sale_price
+                            const precio = esProducto
+                                ? precioListaProducto(item.producto!)
+                                : precioListaCombo(item.combo!.sale_price)
                             const key = esProducto ? `p-${item.producto!.id}` : `c-${item.combo!.id}`
                             const maximo = esProducto ? item.producto!.stock : undefined
                             return (

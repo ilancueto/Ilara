@@ -179,7 +179,8 @@ tenga un resultado autoritativo y consistente.
 
 ### 5.1 Rediseñar passkeys — SEC-01
 
-- [ ] Mantener RP ID, nombre y orígenes en secretos/configuración de servidor.
+- [x] Diseño v2 documentado (`docs/PASSKEYS_V2.md`); contención sigue activa.
+- [ ] Mantener RP ID, nombre y orígenes en secretos/configuración de servidor. *(pendiente activación)*
 - [ ] Exigir bearer token y resolver la identidad con `getUser()` en registro.
 - [ ] Vincular cada challenge a `auth.uid()`, acción, RP ID, origen y expiración.
 - [ ] Consumir el challenge de manera atómica y rechazar reuso.
@@ -189,8 +190,9 @@ tenga un resultado autoritativo y consistente.
 - [ ] Fijar `search_path`, revocar `EXECUTE` de `PUBLIC` y conceder sólo a roles
   necesarios en funciones privilegiadas.
 - [ ] Registrar eventos de seguridad sin credential IDs completos ni PII.
+- [x] UI y endpoints **no activados** hasta checklist de activación.
 
-Pruebas obligatorias:
+Pruebas obligatorias (antes de quitar contención):
 
 - [ ] Registro sin sesión devuelve 401.
 - [ ] Usuario A no puede vincular una credencial a usuario B.
@@ -201,41 +203,39 @@ Pruebas obligatorias:
 
 ### 5.2 Formalizar autorización — AUTH-01
 
-- [ ] Definir con negocio los roles iniciales: administrador, vendedor y sólo
-  lectura, o una allowlist temporal si aún hay un único rol.
-- [ ] Guardar autorización en tabla protegida o `app_metadata`, nunca en
-  `user_metadata`.
-- [ ] Reemplazar políticas globales `USING (true)` por permisos por operación y
-  responsabilidad.
-- [ ] Añadir `USING` y `WITH CHECK` a updates y política SELECT asociada.
-- [ ] Indexar columnas utilizadas por RLS.
-- [ ] Probar usuario anónimo, cada rol y usuario deshabilitado.
+- [x] Roles: `admin`, `vendedor`, `none` (`docs/ETAPA1_ROLES_Y_PRECIOS.md`).
+- [x] Tabla `user_roles` + helpers DEFINER (`search_path=''`) + `set_user_role` (lock + last_admin).
+- [x] `bootstrap_first_admin(uuid)` solo **service_role**, lock 87201411, sin autoclaim en UI.
+- [x] RLS por rol; `user_roles_select_admin` reafirmada tras 21412; sin DELETE directo ventas.
+- [x] RPC POS DEFINER endurecido; payment_breakdown estricto; vendedor sin UPDATE products.
+- [x] Frontend UX por rol; **no** es fuente de autorización.
+- [x] Tests de secuencia de migraciones + integración (fail si STAGE1=1 incompleto; skip si off).
+- [x] Preflight 21412 preserva las policies anon del catálogo Stage 0; delete venta usa lock de fila.
+- [x] Decisión de negocio: no asignar `vendedor` en el corto/mediano plazo; el rol
+  queda dormido y la superficie POS reducida se difiere hasta que vaya a utilizarse.
+- [x] Migración 20260812002815 revoca grants heredados peligrosos, helpers internos
+  públicos y la policy amplia de actualización de recibos.
+- [x] Roles productivos: dos cuentas `admin`, cero `vendedor` (2026-08-12).
+- [x] Revisión de seguridad pre-deploy y advisors ejecutados tras migrar Supabase.
 
 ### 5.3 Unificar precios del POS — DATA-01
 
-Decisión requerida del negocio:
+Decisión de negocio (documentada en repo):
 
-- [ ] Opción A: el POS cobra precio de lista y el descuento web sólo aplica al
-  catálogo.
-- [ ] Opción B: el POS aplica el mismo descuento del catálogo.
-- [ ] Definir tratamiento de combos, cupones, redondeo, descuentos acumulables y
-  precio histórico.
-
-Implementación:
-
-- [ ] Convertir el RPC en única autoridad de precio, descuento y total.
-- [ ] Rechazar `line_type` inválido y productos inexistentes.
-- [ ] Validar estado, fecha, cantidades enteras y montos positivos.
-- [ ] Validar que `payment_breakdown` use métodos permitidos y sume exactamente el
-  total calculado.
-- [ ] Devolver desde el RPC las líneas, precios, descuentos y total persistidos.
-- [ ] Construir UI y comprobante únicamente con esa respuesta autoritativa.
+- [x] **Opción A:** POS cobra precio de lista; descuento web solo catálogo.
+- [x] Combos: `combos.sale_price`; histórico en `sale_items.unit_price/subtotal`.
+- [x] RPC recalcula total e ignora `unit_price`/`total`/`product_name`/descuentos del cliente.
+- [x] Valida status, payment_method, breakdown (mixto, suma, métodos, montos > 0).
+- [x] Devuelve `sale` + `lines` autoritativos; UI/comprobante usan respuesta RPC.
+- [x] Preview UI alineada (`totalCarritoPos` / `precioLista*`).
+- [x] Rechaza `line_type` inválido, precios catálogo ≤ 0, productos inexistentes; qty enteras > 0.
+- [ ] Smoke autenticado en producción después del deploy de la app.
 
 Criterio de aceptación:
 
-- [ ] Total presentado antes de confirmar, total persistido, suma de pagos y total
-  del comprobante son idénticos para producto, combo, cupón y descuento.
-- [ ] El stock se mueve una sola vez y una falla revierte toda la venta.
+- [x] Implementado en migraciones/app en repositorio.
+- [ ] **No** “listo para deploy automático”: falta revisión humana + smoke staging/prod.
+- [ ] Validado en entorno con roles reales post-deploy.
 
 ### 5.4 Transacciones de inventario — DATA-03
 
@@ -256,11 +256,14 @@ Criterio de aceptación:
 
 ### 5.6 Gate de salida de etapa 1
 
-- [ ] Suite de passkeys negativa y positiva verde.
-- [ ] Matriz de autorización aprobada por negocio y verificada.
+- [ ] Suite de passkeys negativa y positiva verde *(passkeys siguen contenidas; v2 no activado)*.
+- [x] Matriz de autorización definida en repo; pendiente aprobación negocio + smoke prod.
+- [x] Tests unitarios/estructurales de roles y precios en CI local.
+- [x] Matriz Stage 0 + Stage 1: 25/25 sobre instancia local restaurada desde el
+  esquema productivo, sin datos de usuarios.
 - [ ] Tests de ventas y stock verdes sobre base real de staging.
-- [ ] Prueba de rollback de combo verde.
-- [ ] Política de archivos y retención documentada.
+- [ ] Prueba de rollback de combo (DATA-03, fuera del núcleo de esta entrega).
+- [ ] Política de archivos y retención (STO-01 lifecycle, parcial en Etapa 0).
 
 ## 6. Etapa 2 — Gobierno y reproducibilidad de datos
 
@@ -471,21 +474,13 @@ Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 7. Pruebas integración anon/positivas/cross-user (`npm run test:integration`)
 8. Migración legacy receipts + bucket privado estricto (`stage0_receipts_private_bucket`)
 
-### 11.2 Forward-fix pendiente (repo, no aplicado en prod)
+### 11.2 Forward-fix Stage 0 (inventario legacy)
 
 | Migración | Estado | Acción |
 |---|---|---|
-| `stage0_revoke_authenticated_legacy_inventory` | **Solo en repo** | REVOKE EXECUTE de `stage0_inventory_legacy_receipt_urls()` a `authenticated`; dejar EXECUTE solo a `service_role` |
+| `stage0_revoke_authenticated_legacy_inventory` | **Aplicado y verificado en producción** | REVOKE EXECUTE de `stage0_inventory_legacy_receipt_urls()` a `authenticated`; EXECUTE solo `service_role` |
 
-**Orden de deploy de este forward-fix (cuando se autorice):**
-
-1. Backup de esquema (opcional, cambio mínimo de grants).
-2. Aplicar `supabase/migrations/*_stage0_revoke_authenticated_legacy_inventory.sql` en el proyecto remoto (`db query --linked -f …` o `db push` si el historial está al día).
-3. Verificar: rol `authenticated` no puede `EXECUTE` la función; `service_role` sí.
-4. Marcar migración como applied en historial remoto.
-5. Actualizar esta fila a `Desplegado` / `Verificado`.
-
-**No** reabrir anon ni alterar el cuerpo de la función.
+No reabrir EXECUTE a `authenticated`. No reabrir anon.
 
 ## 12. Checklist global de Definition of Done
 
@@ -524,8 +519,12 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-09 | 0 Contención | Implementación en repo (passkeys, DTO catálogo, migraciones, JSON-LD, runbooks) | En curso | Sin deploy/prod aún; gate 4.7 pendiente |
 | 2026-08-09 | 0 Contención | Fix bloqueadores: REVOKE PUBLIC, receipts límites explícitos, legacy documentado, tests integración, orden deploy | En curso | Ver docs/ETAPA0_ORDEN_DEPLOY.md |
 | 2026-08-10 | 0 Contención | **Aplicado y verificado en producción** (passkey EF, migraciones stage0, Vercel ilara.com.ar, receipts private, 2 legacy migrados) | Verificado | Smoke anon 401 ventas; passkey 403; catálogo 200; receipts public=false |
-| 2026-08-10 | 0 Contención | Forward-fix inventario legacy: REVOKE EXECUTE a authenticated (migración nueva en repo) | Pendiente | `*_stage0_revoke_authenticated_legacy_inventory.sql` — **no aplicado en prod** |
+| 2026-08-10 | 0 Contención | Forward-fix inventario legacy: REVOKE EXECUTE a authenticated | Verificado | Aplicado en prod (`*_stage0_revoke_authenticated_legacy_inventory.sql`) |
 | 2026-08-10 | 0 Contención | Rotación de secretos (SEC-03) | Pendiente | Decisión de incidente; ver `docs/RUNBOOK_ROTACION_SECRETOS.md` |
+| 2026-08-10 | 1 Seguridad e integridad | Roles + RLS + POS precios (Opción A) + passkeys v2 diseño | En curso | Primera versión en repo; **no desplegado** |
+| 2026-08-11 | 1 Seguridad e integridad | Corrección integral Etapa 1 (frontera POS, bootstrap, RLS, pagos, tests, docs) | En revisión | `docs/ETAPA1_RUNBOOK.md`; **no desplegado**; pendiente review humana |
+| 2026-08-11 | 1 Seguridad e integridad | Re-auditoría: user_roles policies post-21412, sin DELETE ventas, lock last_admin, breakdown estricto, tests secuencia | En revisión | Solo local; **no desplegado** |
+| 2026-08-11 | 1 Seguridad e integridad | Corrección post-review: catálogo anon preservado, delete concurrente serializado, breakdown presente solo mixto, fixtures de roles restaurables | En revisión | Solo local; **no desplegado** |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

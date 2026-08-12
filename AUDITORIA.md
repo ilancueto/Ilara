@@ -176,20 +176,14 @@ nonce según la estrategia de renderizado.
 ### DATA-01 — Divergencia de precios entre POS y RPC
 
 **Severidad:** alta.
-
-`lib/posPricing.ts` establece que el POS use `sale_price` sin descuento de
-catálogo. `components/PuntoVenta/PuntoVenta.tsx` calcula y presenta ese total. La
-migración `20260328205000_sales_created_by_monthly_chart.sql`, en cambio, vuelve
-a calcular el producto aplicando `discount_percentage`.
-
-**Consecuencias:** el importe presentado o cobrado puede diferir del persistido;
-el desglose de pago puede no coincidir y el comprobante puede contener líneas a
-precio de lista con un total descontado.
-
-El RPC tiene controles valiosos que deben conservarse: transacción atómica,
-bloqueo de productos con `FOR UPDATE`, validación de cantidades y movimiento de
-stock. La regla comercial debe decidirse una vez, residir en el servidor y
-devolver líneas y total autoritativos al cliente.
+**Estado (2026-08-11):** **Opción A en repo, reforzada** (migración
+`stage1_pos_authoritative_pricing` + UI). RPC `SECURITY DEFINER` endurecido:
+`auth.uid` + `can_use_pos`, precios lista `round(sale_price)`, ignora
+unit_price/total/nombre/descuentos del cliente; valida status, payment_method,
+breakdown (mixto obligatorio, suma, métodos internos); stock con `FOR UPDATE`.
+UI preview usa `precioListaProducto` / `precioListaCombo` / `totalCarritoPos`.
+**Pendiente:** aplicar migraciones stage1 en staging/prod y smoke con roles reales.
+**No** se declara aceptación de deploy hasta esa verificación.
 
 ### DATA-02 — Esquema y políticas no reproducibles
 
@@ -238,15 +232,25 @@ en una migración reproducible.
 ### AUTH-01 — Autenticación sin autorización granular
 
 **Severidad:** media-alta.
+**Estado (2026-08-12):** cuatro migraciones de Etapa 1 aplicadas en Supabase
+producción; dos cuentas `admin`, cero `vendedor`. App Vercel aún no desplegada.
+Modelo `admin` / `vendedor` / `none` en `public.user_roles`; helpers DEFINER con
+`search_path = ''`; policies `user_roles_select_own` + `user_roles_select_admin`
+reafirmadas al final de 21412; ventas: sin INSERT/DELETE Data API; borrado solo
+`delete_sale_and_restore_stock`; bootstrap solo service_role + lock 87201411;
+`set_user_role` serializa last_admin con el mismo lock.
 
-Las políticas versionadas conceden a cualquier usuario `authenticated` acceso
-amplio mediante `USING (true)` / `WITH CHECK (true)`. Eso puede ser aceptable para
-un único operador controlado, pero no escala a equipo ni protege ante creación
-accidental o maliciosa de cuentas. La presencia de más de un correo conocido en
-la interfaz muestra que ya conviene formalizar una allowlist o roles.
+La revisión de producción en modo lectura confirmó todas las versiones de Etapa 0
+y ninguna de Etapa 1. También detectó grants directos heredados demasiado amplios,
+ejecución pública de helpers internos y una policy amplia de Storage que RLS por
+rol no corregía por sí sola. La migración
+`20260812002815_stage1_harden_legacy_anon_grants.sql` versiona el cierre. El orden
+completo se aplicó sobre una copia local del esquema productivo y la matriz de
+integración Stage 0 + Stage 1 pasó 25/25, sin copiar datos de usuarios.
 
-Los roles deben residir en una tabla protegida o `app_metadata`, nunca en
-`user_metadata`, que el usuario puede modificar.
+Decisión de negocio: `vendedor` no se asignará en el corto/mediano plazo. Su SELECT
+completo sobre `products` queda como deuda dormida; antes de habilitar ese rol debe
+crearse una superficie POS de columnas mínimas.
 
 ### PWA-01 — PWA no publicada
 
@@ -383,5 +387,9 @@ La salida de contención requiere, como mínimo:
 | 2026-08-09 | **Etapa 0 en repositorio (no desplegada):** contención passkeys (UI + Edge Function), selects de catálogo sin columnas internas, migraciones versionadas para anon/sales/receipts, JSON-LD escapado, runbook de rotación. **Producción sigue vulnerable hasta aplicar migraciones, redeploy de función y deploy de app.** |
 | 2026-08-09 | Fix bloqueadores Etapa 0: REVOKE SELECT anon+PUBLIC en catálogo; receipts con límites fijos y SELECT estricto; inventario/procedimiento legacy; suite `test:integration`; orden de deploy actualizado en `docs/ETAPA0_ORDEN_DEPLOY.md`. |
 | 2026-08-10 | **Etapa 0 desplegada y verificada en producción** (proyecto qbbnvdmadgomfmrsfxlo + Vercel ilara.com.ar). Contención passkeys, cierre anon ventas, grants catálogo, receipts privado, smoke OK. |
-| 2026-08-10 | Forward-fix **preparado en repo, pendiente de aplicar en prod:** REVOKE EXECUTE de `stage0_inventory_legacy_receipt_urls()` a `authenticated` (solo `service_role`). Migración `*_stage0_revoke_authenticated_legacy_inventory.sql`. |
-| 2026-08-10 | Residual SEC-03: **rotación de secretos** sigue pendiente de decisión de incidente. Residual de producto: roles/precios/passkeys v2 → Etapa 1. |
+| 2026-08-10 | Forward-fix Stage 0: REVOKE EXECUTE de `stage0_inventory_legacy_receipt_urls()` a `authenticated` — **aplicado y verificado en producción** (`*_stage0_revoke_authenticated_legacy_inventory.sql`). |
+| 2026-08-10 | Residual SEC-03: **rotación de secretos** sigue pendiente de decisión de incidente. |
+| 2026-08-10 | **Etapa 1 en repo (no desplegada):** primera implementación roles+RLS+precios. |
+| 2026-08-11 | **Etapa 1 corregida en repo (no desplegada):** frontera POS DEFINER, sin bypass Data API vendedor, bootstrap seguro sin autoclaim, RLS sin recursión, pagos endurecidos, tests semánticos, runbook SQL vs service_role. Ver `docs/ETAPA1_RUNBOOK.md`. Pendiente revisión humana y deploy controlado. |
+| 2026-08-11 | **Etapa 1 re-auditoría local:** reafirma `user_roles_select_admin` tras 21412; sin DELETE directo sales/líneas; lock 87201411 en set_user_role; payment_breakdown estricto; DEFINER `search_path=''`; tests de secuencia de migraciones e integración sin pass silencioso. **No desplegado.** |
+| 2026-08-11 | **Etapa 1 post-review local:** preflight preserva policies anon del catálogo Stage 0; borrado de venta serializado con `FOR UPDATE`; JSON null y breakdown no-mixto rechazados; integración restaura roles previos y cubre doble borrado. **No desplegado.** |

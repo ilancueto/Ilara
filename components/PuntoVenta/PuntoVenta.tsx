@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase, Producto, ItemCarrito, Cliente, ComboConItems, type PagoDesglose } from '@/lib/supabase'
 import { imprimirComprobante } from '@/lib/comprobanteVenta'
+import { totalCarritoPos } from '@/lib/posPricing'
 import { useToast } from '@/context/ToastContext'
 import CatalogoPOS from './CatalogoPOS'
 import CarritoVenta from './CarritoVenta'
@@ -134,10 +135,8 @@ export default function PuntoVenta() {
         setCarrito(carrito.filter(item => item.producto?.id !== productoId))
     }
 
-    const total = carrito.reduce((sum, item) => {
-        const precio = item.producto ? item.producto.sale_price : (item.combo?.sale_price ?? 0)
-        return sum + precio * item.cantidad
-    }, 0)
+    // Preview UI alineado a RPC (round lista). Total autoritativo = respuesta DB.
+    const total = totalCarritoPos(carrito)
 
     const manejarVenta = async () => {
         if (carrito.length === 0) return
@@ -157,9 +156,9 @@ export default function PuntoVenta() {
 
             // Con "cobrar después" no se envía desglose de pago (es cuenta por cobrar)
             const tieneDesglose = !cobrarDespues && paymentBreakdown && paymentBreakdown.length > 0
+            // total/unit_price del cliente se envían solo como preview; el RPC los ignora (autoridad en DB).
             const salePayload: Record<string, unknown> = {
                 sale_date: new Date().toISOString(),
-                total,
                 payment_method: cobrarDespues ? 'credito' : (tieneDesglose ? 'mixto' : metodoPago),
                 customer_name: customerName || null,
                 customer_id: nombreClienteOtro.trim() !== '' ? null : clienteSeleccionado,
@@ -174,21 +173,13 @@ export default function PuntoVenta() {
                     lines.push({
                         line_type: 'product',
                         product_id: item.producto.id,
-                        product_name: item.producto.name,
                         quantity: item.cantidad,
-                        unit_price: item.producto.sale_price,
-                        subtotal: item.producto.sale_price * item.cantidad,
-                        discount_percentage: 0,
                     })
                 } else if (item.combo) {
                     lines.push({
                         line_type: 'combo',
                         combo_id: item.combo.id,
-                        product_name: item.combo.name,
                         quantity: item.cantidad,
-                        unit_price: item.combo.sale_price,
-                        subtotal: item.combo.sale_price * item.cantidad,
-                        discount_percentage: 0,
                     })
                 }
             }
@@ -207,6 +198,26 @@ export default function PuntoVenta() {
                     showError('Sesión expirada. Volvé a iniciar sesión.')
                     return
                 }
+                if (m.includes('not_authorized')) {
+                    showError('No tenés permiso para registrar ventas.')
+                    return
+                }
+                if (
+                    m.includes('payment_mismatch') ||
+                    m.includes('payment_breakdown_required') ||
+                    m.includes('payment_breakdown_not_allowed')
+                ) {
+                    showError('El desglose de pago no coincide con el total. Revisá los montos.')
+                    return
+                }
+                if (m.includes('invalid_payment') || m.includes('invalid_status')) {
+                    showError('Método de pago o estado inválido. Revisá el cobro e intentá de nuevo.')
+                    return
+                }
+                if (m.includes('invalid_catalog_price')) {
+                    showError('Hay productos o combos sin precio válido. Revisá el inventario.')
+                    return
+                }
                 if (m.includes('invalid_combo')) {
                     showError('Uno de los combos ya no es válido. Actualizá la página.')
                     return
@@ -222,7 +233,11 @@ export default function PuntoVenta() {
                 throw rpcError
             }
 
-            const venta = (rpcData as { sale?: Record<string, unknown> } | null)?.sale as
+            const payload = rpcData as {
+                sale?: Record<string, unknown>
+                lines?: Array<Record<string, unknown>>
+            } | null
+            const venta = payload?.sale as
                 | {
                       id: number
                       total: number
@@ -240,7 +255,9 @@ export default function PuntoVenta() {
                 return
             }
 
-            const itemsComprobante = lines.map((ln) => ({
+            // Comprobante solo con líneas y precios devueltos por la DB.
+            const persistedLines = Array.isArray(payload?.lines) ? payload!.lines! : []
+            const itemsComprobante = persistedLines.map((ln) => ({
                 product_name: String(ln.product_name ?? ''),
                 quantity: Number(ln.quantity),
                 unit_price: Number(ln.unit_price),

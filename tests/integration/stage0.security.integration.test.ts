@@ -119,6 +119,21 @@ describe.skipIf(!canRunBase)('Etapa 0 integración — anon y catálogo', () => 
       expect(row).not.toHaveProperty('receipt_url')
     }
   })
+
+  it('anon no conserva grants mutantes legacy sobre el catálogo', async () => {
+    // IDs imposibles: comprueba privilegios/policies sin modificar filas reales.
+    const update = await anon.from('products').update({ stock: 0 }).eq('id', -1)
+    expectPrivilegeError(update.error)
+
+    const remove = await anon.from('categories').delete().eq('id', -1)
+    expectPrivilegeError(remove.error)
+  })
+
+  it('anon no puede ejecutar el inventario privado de comprobantes', async () => {
+    const { data, error } = await anon.rpc('stage0_inventory_legacy_receipt_urls')
+    expectPrivilegeError(error)
+    expect(data == null || data.length === 0).toBe(true)
+  })
 })
 
 describe.skipIf(!canRunAuth)('Etapa 0 integración — usuario permitido', () => {

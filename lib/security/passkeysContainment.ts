@@ -1,6 +1,7 @@
 /**
- * Etapa 0 / SEC-01 — contención de passkeys.
- * Mantener desactivado hasta rediseño (Etapa 1). No reactivar sin fix de identidad.
+ * SEC-01 — contención de passkeys.
+ * Sigue en true durante Etapa 1 hasta que passkeys v2 esté completo, testeado y auditado.
+ * Ver docs/PASSKEYS_V2.md. No reactivar en UI ni Edge Function sin checklist de activación.
  */
 
 export const PASSKEYS_CONTAINED = true as const

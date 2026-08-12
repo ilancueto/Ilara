@@ -16,6 +16,10 @@ import {
 import { getUser, signOut } from '@/lib/supabase'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import type { AppTab } from '@/lib/appTabs'
+import {
+  loadRoleCapabilities,
+  type RoleCapabilities,
+} from '@/lib/auth/roles'
 
 const Tablero = dynamic(() => import('@/components/Tablero'), {
   loading: () => (
@@ -118,6 +122,7 @@ function HomeContent() {
   const [logoError, setLogoError] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [caps, setCaps] = useState<RoleCapabilities | null>(null)
 
   useEffect(() => {
     const AUTH_TIMEOUT_MS = 10_000
@@ -138,6 +143,13 @@ function HomeContent() {
         }
 
         setUserEmail(user.email || null)
+        const roleCaps = await loadRoleCapabilities()
+        setCaps(roleCaps)
+        if (!roleCaps.canUsePos && !roleCaps.isAdmin) {
+          setAuthError(
+            'Tu cuenta no tiene rol de panel (admin/vendedor). Pedile a un administrador que te asigne permisos.'
+          )
+        }
       } catch (e) {
         console.error('Auth check failed:', e)
         setAuthError('No se pudo verificar la sesión. Revisa tu conexión o intenta de nuevo.')
@@ -149,18 +161,39 @@ function HomeContent() {
     checkAuth()
   }, [router])
 
+  const tabAllowed = useCallback(
+    (tab: AppTab, c: RoleCapabilities): boolean => {
+      if (tab === 'inventory') return c.canManageInventory
+      if (tab === 'sales' || tab === 'customers' || tab === 'dashboard') return c.canUsePos
+      if (tab === 'expenses') return c.canManageFinance
+      if (tab === 'incomes') return c.isAdmin
+      if (tab === 'negocio') return c.canManageFinance || c.isAdmin
+      return false
+    },
+    []
+  )
+
   useEffect(() => {
     const tabParam = searchParams.get('tab')
     if (tabParam && VALID_TABS.has(tabParam as AppTab)) {
-      setActiveTab(tabParam as AppTab)
+      const next = tabParam as AppTab
+      if (caps && !tabAllowed(next, caps)) {
+        setActiveTab(caps.canUsePos ? 'sales' : 'dashboard')
+        return
+      }
+      setActiveTab(next)
     }
-  }, [searchParams])
+  }, [searchParams, caps, tabAllowed])
 
-  const handleTabChange = useCallback((tabId: AppTab) => {
-    setActiveTab(tabId)
-    setAccountOpen(false)
-    window.history.pushState({}, '', `?tab=${tabId}`)
-  }, [])
+  const handleTabChange = useCallback(
+    (tabId: AppTab) => {
+      if (caps && !tabAllowed(tabId, caps)) return
+      setActiveTab(tabId)
+      setAccountOpen(false)
+      window.history.pushState({}, '', `?tab=${tabId}`)
+    },
+    [caps, tabAllowed]
+  )
 
   const handleLogout = async () => {
     if (!confirm('¿Cerrar sesión?')) return
@@ -197,16 +230,33 @@ function HomeContent() {
             </button>
             <button
               type="button"
-              onClick={() => router.push('/login')}
+              onClick={handleLogout}
               className="px-5 py-2.5 rounded-xl border-2 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400 font-bold hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors"
             >
-              Ir a inicio de sesión
+              Cerrar sesión
             </button>
           </div>
         </div>
       </div>
     )
   }
+
+  const staffCaps = caps ?? {
+    role: 'none' as const,
+    canUsePos: false,
+    canManageInventory: false,
+    canManageFinance: false,
+    isAdmin: false,
+  }
+
+  const visibleDockTabs = DOCK_TABS.filter((tab) => {
+    if (tab.id === 'inventory') return staffCaps.canManageInventory
+    if (tab.id === 'sales') return staffCaps.canUsePos
+    if (tab.id === 'customers') return staffCaps.canUsePos
+    if (tab.id === 'negocio') return staffCaps.canManageFinance || staffCaps.isAdmin
+    if (tab.id === 'dashboard') return staffCaps.canUsePos || staffCaps.isAdmin
+    return false
+  })
 
   const highlight = dockHighlight(activeTab)
   const pageTitle = TAB_TITLES[activeTab]
@@ -273,6 +323,9 @@ function HomeContent() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-mono mt-0.5">
                         {userEmail}
                       </p>
+                      <p className="text-[11px] font-semibold text-pink-600 dark:text-pink-400 mt-1">
+                        Rol: {staffCaps.role}
+                      </p>
                     </div>
                     <button
                       type="button"
@@ -293,16 +346,16 @@ function HomeContent() {
       {/* Content */}
       <main className="app-main">
         <div className="app-main-inner">
-          {activeTab === 'dashboard' && (
+          {activeTab === 'dashboard' && staffCaps.canUsePos && (
             <Tablero onNavigate={handleTabChange} />
           )}
-          {activeTab === 'inventory' && <Inventory />}
-          {activeTab === 'sales' && <Ventas />}
-          {activeTab === 'expenses' && <Gastos />}
-          {activeTab === 'incomes' && <Ingresos />}
-          {activeTab === 'customers' && <Clientes />}
-          {activeTab === 'negocio' && (
-            <NegocioHub onNavigate={handleTabChange} />
+          {activeTab === 'inventory' && staffCaps.canManageInventory && <Inventory />}
+          {activeTab === 'sales' && staffCaps.canUsePos && <Ventas />}
+          {activeTab === 'expenses' && staffCaps.canManageFinance && <Gastos />}
+          {activeTab === 'incomes' && staffCaps.isAdmin && <Ingresos />}
+          {activeTab === 'customers' && staffCaps.canUsePos && <Clientes />}
+          {activeTab === 'negocio' && (staffCaps.canManageFinance || staffCaps.isAdmin) && (
+            <NegocioHub onNavigate={handleTabChange} caps={staffCaps} />
           )}
         </div>
       </main>
@@ -310,7 +363,7 @@ function HomeContent() {
       {/* Bottom dock */}
       <nav className="app-dock" aria-label="Navegación principal">
         <div className="app-dock-inner">
-          {DOCK_TABS.map((tab) => {
+          {visibleDockTabs.map((tab) => {
             const Icon = tab.icon
             const isActive = highlight === tab.id
             return (
