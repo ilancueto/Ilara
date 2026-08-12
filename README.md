@@ -79,7 +79,7 @@ npm run test:db-security
 
 Fuentes vigentes de auditoría y plan: [`AUDITORIA.md`](./AUDITORIA.md),
 [`PLAN.md`](./PLAN.md). Runbook Stage 2: [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md).
-Stage 4 (local): [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md).
+Stage 4 (desplegado y verificado): [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md).
 
 ## Documentación extra
 

@@ -20,9 +20,9 @@ de login, venta, stock, eliminación y receipt fue correcto.
 
 El riesgo residual principal ya no es una exposición crítica activa: es deuda
 arquitectónica (Stage 5), lifecycle de archivos, RPO/RTO de negocio y activación
-opcional de alertas externas. Stage 4 está **implementado en working tree local**
-(E2E/CI, a11y Dialog, observabilidad opt-in, runbooks): **sin** commit/push/deploy
-ni verificación de producción en esta entrega.
+opcional de alertas externas. Stage 4 está **desplegado y verificado en
+producción** (E2E/CI, a11y Dialog, observabilidad opt-in y runbooks); quedan
+como decisiones del owner las alertas externas, RPO/RTO y restore productivo.
 
 ### Dictamen por área
 
@@ -35,9 +35,9 @@ ni verificación de producción en esta entrega.
 | PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
 | Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
-| Accesibilidad | Mejorado Stage 4 (local) | Dialog + ConfirmDialog + BulkActionDialog (bulk Inventario/Gastos/Ventas/Clientes); axe/teclado E2E + mutantes confirm delete inventario/clientes; residual en formularios de edición legacy (no bulk) |
-| Observabilidad | Mejorado Stage 4 (local) | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |
-| CI / E2E | Mejorado Stage 4 (local) | CI con integración, E2E Playwright cacheado y smoke posdeploy |
+| Accesibilidad | Mejorado Stage 4 | Dialog + ConfirmDialog + BulkActionDialog desplegados; axe/teclado E2E + mutantes bulk; residual en formularios legacy no bulk |
+| Observabilidad | Mejorado Stage 4 | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |
+| CI / E2E | Cerrado Stage 4 | CI GitHub verde: integración, E2E Playwright local aislado y smoke |
 | Dependencias | Bueno | `@axe-core/playwright` dev-only; sin Sentry forzado |
 
 ## 2. Alcance y metodología
@@ -325,7 +325,7 @@ Playwright en CI con navegador instalado.
 
 **Severidad residual:** baja (formularios de edición legacy, no bulk).
 
-**Mitigado en Stage 4 (local, pendiente commit/CI/deploy):** `Dialog` +
+**Mitigado en Stage 4 (desplegado y verificado):** `Dialog` +
 `ConfirmDialog` + `useConfirm` + `BulkActionDialog` con focus trap, Escape LIFO,
 restore, inert, scroll lock. Bulk destructivos de Inventario / Gastos /
 HistorialVentas / Clientes migrados. E2E `bulk-a11y.spec.ts` cubre teclado, axe

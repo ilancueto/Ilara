@@ -1,6 +1,7 @@
 # Etapa 4 — Operación y recuperación
 
-- **Estado local:** procedimientos documentados + 404/error UI
+- **Estado (2026-08-12):** procedimientos documentados + 404/error UI desplegados;
+  Stage 4 smoke productivo GET-only 16/16 verificado.
 - **RPO/RTO:** **propuestas** pendientes de decisión de negocio
 - **Fecha:** 2026-08-12
 - **Vercel autorizado:** solo `ilara` (`prj_l1212uETlGghvn8jChfiXCp68SzN`)

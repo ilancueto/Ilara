@@ -1,18 +1,18 @@
 # Etapa 4 — Calidad operativa (runbook maestro)
 
-- **Estado:** implementado **localmente** en el working tree (2026-08-12+)
-- **NO cerrado en producción.** Pendiente: commit, push, CI verde en GitHub,
-  deploy al proyecto Vercel **`ilara`**, smoke posdeploy real.
-- **HEAD base:** `3bc14d2` o descendiente (sin commit de Stage 4 aún).
+- **Estado (2026-08-12):** desplegado y verificado en producción.
+- **Evidencia:** commit `775bc95`; CI GitHub verde (lint, unit, tipos, build,
+  DB/integración, E2E y smoke local); deploy único Vercel **`ilara`** y smoke
+  GET-only 16/16 sobre `https://ilara.com.ar`.
 
 ## Separación de estados
 
 | Capa | Estado |
 |---|---|
-| Código Stage 4 en repo local | Implementado |
-| Commit / push / CI remoto | **Pendiente** (humano) |
-| Deploy Vercel `ilara` | **Pendiente** |
-| Smoke `https://ilara.com.ar` | **Pendiente** |
+| Código Stage 4 en repo | Desplegado |
+| Commit / push / CI remoto | Verificado verde |
+| Deploy Vercel `ilara` | Ready, único destino |
+| Smoke `https://ilara.com.ar` | 16/16 GET-only verde |
 | Alertas / Sentry / RPO-RTO / PITR | **Pendiente decisión o config owner** |
 
 ## A. E2E + CI (TEST-01) — local

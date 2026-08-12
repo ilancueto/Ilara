@@ -377,14 +377,16 @@ Supabase/sesión, sin colas ni ventas offline. Ver
 
 ## 8. Etapa 4 — Calidad operativa
 
-**Estado: IMPLEMENTADO EN WORKING TREE LOCAL — NO cerrado, NO desplegado, NO
-commiteado.** Pendiente commit/push/CI remoto/deploy `ilara`/smoke prod.
+**Estado (2026-08-12): DESPLEGADO Y VERIFICADO EN PRODUCCIÓN.** Commit
+`775bc95`; CI GitHub verde (incluido E2E local aislado) y deployment único
+Vercel `ilara` con smoke GET-only 16/16 en `https://ilara.com.ar`.
 Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
 `docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`, `docs/ETAPA4_OPERACION_RUNBOOK.md`.
 
 ### 8.1 E2E y CI — TEST-01
 
-- [x] Workflow con Playwright Chromium + cache en repo. *(job `e2e`; CI remoto pendiente de corrida real)*
+- [x] Workflow con Playwright Chromium + cache en repo. *(job `e2e` verificado
+  verde en GitHub)*
 - [x] Smoke catálogo/login/headers/SW. *(`npm run test:smoke`, `SMOKE_BASE_URL` obligatorio)*
 - [x] E2E ampliados (auth, catálogo, PWA, POS API, a11y, mobile); mutaciones solo `E2E_*` local.
 - [x] Datos aislados + bloqueo prod; en CI fail-closed sin keys (no skip silencioso).
@@ -404,7 +406,7 @@ Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
 - [x] `Dialog` con trap, Escape (stack), restore, inert/aria-hidden, scroll lock.
 - [x] Confirmaciones unitarias vía `useConfirm` (logout, delete unitarios, etc.).
 - [x] Bulk destructivos/visibilidad/badge migrados a `BulkActionDialog` (Inventario,
-  Gastos, HistorialVentas, Clientes) — **local, pendiente commit/CI**.
+  Gastos, HistorialVentas, Clientes), desplegado y smoke verificado.
 - [x] Sin `window.confirm` en código de app.
 - [x] axe + teclado en E2E login/catálogo/mobile + bulk (e2e/bulk-a11y.spec.ts).
 - [x] E2E mutantes bulk: confirman delete de inventario y clientes (seed aislado,
@@ -421,7 +423,7 @@ Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
 
 ### 8.5 Gate de salida de etapa 4
 
-- [ ] CI remoto verde y obligatorio para merge *(pendiente push + branch protection)*.
+- [x] CI remoto verde. *(Branch protection/required checks sigue siendo decisión owner.)*
 - [ ] Alertas con error sintético *(pendiente)*.
 - [x] Teclado en flujos E2E cubiertos (local).
 - [ ] Restore productivo medido *(pendiente; no aplicar aquí)*.

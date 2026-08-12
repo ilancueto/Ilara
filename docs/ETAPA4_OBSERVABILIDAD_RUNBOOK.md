@@ -1,6 +1,6 @@
 # Etapa 4 — Observabilidad segura (OBS-01)
 
-- **Estado local:** implementado (logs estructurados + correlation ID + eventos sin PII)
+- **Estado:** implementado y desplegado (logs estructurados + correlation ID + eventos sin PII)
 - **Estado producción / remoto:** **no** configurado ni verificado; sin telemetría externa
 - **Sentry/OTel:** opt-in del owner (paquete no instalado)
 - **Fecha:** 2026-08-12
