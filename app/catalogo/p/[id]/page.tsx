@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabasePublicClient } from '@/lib/supabase/public'
 import {
     fetchCatalogProductByIdServer,
     fetchCatalogRelatedProductsServer,
@@ -17,6 +17,27 @@ import { serializeJsonLd } from '@/lib/security/serializeJsonLd'
 export const revalidate = 120
 
 type PageProps = { params: Promise<{ id: string }> }
+
+/**
+ * Prerenderiza las fichas hoy visibles y permite que Next las revalide.
+ * Las altas posteriores conservan `dynamicParams` por defecto y se generan en
+ * su primera visita; la consulta usa sólo la superficie anónima del catálogo.
+ */
+export async function generateStaticParams(): Promise<Array<{ id: string }>> {
+    const supabase = createSupabasePublicClient()
+    const { data, error } = await supabase
+        .from('products')
+        .select('id')
+        .gte('stock', 0)
+        .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
+
+    if (error) {
+        console.error('[catalog server] product ids for prerender', error.message)
+        return []
+    }
+
+    return (data ?? []).map(({ id }) => ({ id: String(id) }))
+}
 
 function absoluteFromSite(pathOrUrl: string, siteOrigin: string): string {
     const t = pathOrUrl.trim()
@@ -43,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const id = parseInt(raw, 10)
     if (!Number.isFinite(id)) return { title: 'Producto' }
 
-    const supabase = await createSupabaseServerClient()
+    const supabase = createSupabasePublicClient()
     const res = await fetchCatalogProductByIdServer(supabase, id)
     if (res.status === 'error') return { title: 'Producto' }
     if (res.status === 'not_found') return { title: 'Producto no encontrado' }
@@ -99,7 +120,7 @@ export default async function CatalogoProductoPage({ params }: PageProps) {
     const id = parseInt(raw, 10)
     if (!Number.isFinite(id)) notFound()
 
-    const supabase = await createSupabaseServerClient()
+    const supabase = createSupabasePublicClient()
     const res = await fetchCatalogProductByIdServer(supabase, id)
     if (res.status === 'error') {
         return <ProductoCatalogoRecover id={id} canonicalPath={`/catalogo/p/${id}`} />

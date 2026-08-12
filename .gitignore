@@ -49,8 +49,7 @@ supabase/.temp/**
 # vercel
 .vercel
 
-# Serwist
-public/sw*
+# Legacy Serwist build artifacts (no longer used). public/sw.js is committed.
 public/swe-worker*
 
 # typescript

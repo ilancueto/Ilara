@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "pwa-icons": "node scripts/copy-pwa-icons.js",
+    "pwa-icons": "node scripts/generate-pwa-icons.mjs",
+    "check:pwa-icons": "node scripts/check-pwa-icons.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run tests/integration --config vitest.integration.config.ts",
@@ -26,7 +27,6 @@
     "migrate:receipts:execute": "node --env-file=.env.local scripts/migrate-receipts-legacy-to-user-prefix.mjs --execute"
   },
   "dependencies": {
-    "@serwist/next": "^9.5.12",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.2",
     "@vercel/analytics": "^2.0.1",
@@ -38,7 +38,6 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
-    "serwist": "^9.5.12",
     "supakeys": "^0.1.7"
   },
   "devDependencies": {

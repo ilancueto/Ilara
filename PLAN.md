@@ -52,7 +52,7 @@ precios y la aceptación del riesgo residual deben pertenecer al negocio.
 | 0. Contención | 0–24 horas | Cerrar toma de cuentas y lectura anónima sensible | Sí |
 | 1. Seguridad e integridad | 3–5 días | Reconstruir auth, precios y transacciones | Sí |
 | 2. Gobierno de datos | 4–6 días | Base reproducible, tipada y verificable | Sí |
-| 3. PWA y rendimiento | 3–5 días | Offline real y catálogo cacheable | No |
+| 3. PWA y rendimiento | 3–5 días | PWA instalable online-only + catálogo ISR | No |
 | 4. Calidad operativa | 5–8 días | E2E, a11y, observabilidad y recuperación | No |
 | 5. Arquitectura incremental | 5–10 días | Reducir deuda sin reescritura | No |
 | 6. Producto | Roadmap posterior | Pedidos, stock, devoluciones y reportes | No |
@@ -277,16 +277,7 @@ estado oculto en el dashboard.
   triggers, grants, RLS, Storage y datos de referencia no sensibles.
   *(`20250101000000_baseline_core_schema.sql` completo para greenfield; no reescribe
   historial remoto ya aplicado)*
-- [x] Marcar scripts manuales históricos como archivados; no borrarlos hasta
-  validar el baseline. *(`supabase/sql/README.md`)*
-- [x] Crear una base vacía y ejecutar el flujo completo desde cero.
-  *(`supabase db reset --local` incluye Stage 0 + 1 + 2)*
-- [x] Comparar el resultado local con el remoto mediante schema diff.
-  *(no existe staging; se contrastó local→producción en solo lectura y quedó
-  documentado el residual bigint/serial y default privileges)*
-- [x] Ejecutar advisors y clasificar warnings de seguridad/performance.
-  *(local Stage 2: 0 security warn/error y 0 FKs sin índice; hosted conserva
-  warnings previos/intencionales de RPC DEFINER y protección de contraseñas filtradas)*
+- [�^��G����ƭy�intencionales de RPC DEFINER y protección de contraseñas filtradas)*
 - [x] Guardar evidencia de `migration list` local y remoto.
   *(ambos alineados hasta `20260812013913`)*
 
@@ -326,40 +317,54 @@ estado oculto en el dashboard.
 
 ## 7. Etapa 3 — PWA y rendimiento
 
+**Estado (local, 2026-08-11): IMPLEMENTADA EN REPO — pendiente deploy/smoke prod.**
+
+**Decisión de negocio definitiva:** PWA instalable (icono, standalone, app-like)
+**sin** funcionamiento offline. Sin precache, sin runtime cache de páginas/API/
+Supabase/sesión, sin colas ni ventas offline. Ver
+[`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](./docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md).
+
 ### 7.1 Reparar PWA — PWA-01
 
-- [ ] Elegir Serwist con integración Turbopack soportada/configurador o build con
-  Webpack; registrar la decisión en un ADR breve.
-- [ ] Generar iconos cuadrados reales de 192 × 192, 512 × 512 y 180 × 180.
-- [ ] Definir icono maskable y colores de theme/background coherentes.
-- [ ] Asegurar que el build genera el service worker esperado.
-- [ ] Verificar `/sw.js` con status 200, JavaScript MIME, `no-cache`/`no-store` y
-  CSP restringida para service worker.
-- [ ] Definir qué funciona offline y evitar cachear respuestas privadas o datos de
-  sesión.
-- [ ] Añadir aserción posbuild y smoke test posdeploy.
+- [x] Retirar Serwist (`@serwist/next`, `serwist`, `app/sw.ts`, wrapper en
+  `next.config.ts`) — incompatibilidad Turbopack y offline no deseado.
+- [x] Service worker estático mínimo `public/sw.js`: install/activate, limpieza de
+  CacheStorage legacy, fetch listener **sin** `respondWith` (network-only).
+- [x] Registro cliente `components/PwaRegister.tsx` en layout raíz.
+- [x] Iconos reales: 192×192, 512×512, maskable 512, apple-touch 180
+  (`npm run pwa-icons` / `check:pwa-icons`).
+- [x] Manifest `display: standalone`, theme `#ff6eb4`, scope `/`, start_url `/`.
+- [x] Headers `Cache-Control: no-cache` para `/sw.js`.
+- [x] Tests unitarios + E2E PWA; script `check:pwa-icons`.
+- [ ] Smoke posdeploy: `/sw.js` 200, registro SW, sin `Production – ilara-app` en
+  Vercel, sin caches Serwist en clientes existentes tras visita.
 
 ### 7.2 Recuperar cache del catálogo — PERF-01
 
-- [ ] Crear cliente de Supabase público y server-only que no invoque `cookies()`.
-- [ ] Consultar sólo el DTO público definido en etapa 0.
-- [ ] Aplicar ISR, cache tags o revalidación explícita según frecuencia de cambios.
-- [ ] Invalidar cache después de cambios de catálogo relevantes.
-- [ ] Medir TTFB, cache hit y carga de imágenes antes/después.
+- [x] Cliente público `lib/supabase/public.ts` **sin** `cookies()`.
+- [x] Catálogo listado y PDP usan DTO público (`CATALOG_*_SELECT`) vía cliente
+  público.
+- [x] `revalidate` de catálogo/PDP deja de anularse por cookies; las fichas
+  visibles se prerenderizan con `generateStaticParams` (ISR viable).
+- [ ] Invalidación on-demand por tags al mutar productos (backlog opcional Stage 4+).
+- [x] Medición local documentada en runbook Stage 3 (antes/después sanitizado).
 
 ### 7.3 Optimización medida
 
-- [ ] Corregir advertencia ESM de configuración de Vitest.
-- [ ] Revisar `content-visibility` en impresión, scroll rápido y screenshots.
-- [ ] Ejecutar análisis de bundle y optimizar sólo chunks con impacto medido.
-- [ ] Revisar tamaños/dimensiones de assets y `sizes` de imágenes.
+- [x] `display: "swap"` en fuentes Outfit/Fraunces (LCP texto).
+- [x] Iconos PWA reducidos de decenas de KB incorrectos a PNG dimensionados.
+- [x] Eliminación de Serwist del bundle de build (menos deps y sin warning Turbopack).
+- [ ] `content-visibility` / bundle analyzer profundo → backlog Stage 4–5 si hay
+  evidencia de regresión.
+- [ ] Vitest ESM warning residual → no bloqueante Stage 3.
 
 ### 7.4 Gate de salida de etapa 3
 
-- [ ] PWA instalable en Chrome/Android y comportamiento offline documentado.
-- [ ] `/sw.js` verificado automáticamente después del deploy.
-- [ ] Catálogo público cacheable sin exponer cookies ni campos internos.
-- [ ] No se cachean respuestas autenticadas o comprobantes.
+- [x] Criterios locales: instalable (manifest+SW+iconos), sin offline de negocio,
+  sin cache app/Supabase en SW, build sin Serwist/Turbopack warning PWA.
+- [ ] Deploy a Vercel proyecto **`ilara`** únicamente + smoke prod.
+- [x] Catálogo público sin `cookies()` en fetch de datos.
+- [x] SW no cachea autenticado ni comprobantes (no cachea nada de app).
 
 ## 8. Etapa 4 — Calidad operativa
 

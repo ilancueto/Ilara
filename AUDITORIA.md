@@ -30,7 +30,7 @@ de archivos, observabilidad, accesibilidad y cobertura CI.
 | Privacidad de datos | Cerrado | Ventas/campos internos 401 para `anon`; receipts privados |
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
-| PWA / offline | Alto | `/sw.js` devuelve 404 y los iconos no cumplen el manifest |
+| PWA / offline | Mitigado en repo (pendiente deploy) | SW online-only + iconos reales; sin offline de negocio |
 | Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
 | Accesibilidad | Mejorable | Diálogos y controles interactivos no siguen un patrón completo |
@@ -69,16 +69,17 @@ pueden cambiar con la actividad normal del negocio.
 | `npm run lint` | Correcto | Sin errores |
 | `tsc --noEmit --incremental false` | Correcto | TypeScript estricto sin errores |
 | `npm run test` | Correcto | 5 archivos, 29 pruebas |
-| `npm run build` | Correcto con advertencia | Serwist no soporta la ruta Turbopack actual |
-| `npm audit --json` | Correcto | 0 vulnerabilidades conocidas |
-| `npm run test:e2e` | No ejecutable | Chromium de Playwright no está instalado |
-| Smoke tests reproducidos en producción | 5 de 6 | El sexto espera un encabezado antiguo del catálogo |
-| Service worker en producción | Fallido | `/sw.js` devuelve 404 |
-| Catálogo desktop/mobile | Correcto | Responsive, 15 tarjetas y CLS observado igual a 0 |
+| `npm run build` | Ver Stage 3 local | Serwist retirado; sin warning Turbopack PWA en implementación local |
+| `npm audit --json` | Correcto | 0 vulnerabilidades conocidas (post-retiro Serwist) |
+| `npm run test:e2e` | Ver corrida Stage 3 local | Incluye `e2e/pwa.spec.ts` |
+| Smoke tests reproducidos en producción | 5 de 6 (histórico) | Re-smoke posdeploy Stage 3 pendiente |
+| Service worker en producción | Pendiente deploy | Repo: `public/sw.js` online-only versionado |
+| Catálogo desktop/mobile | Correcto | Responsive; ISR desbloqueado en repo vía cliente público |
 
-El build clasifica `/catalogo`, `/catalogo/p/[id]` y `/sitemap-xml` como rutas
-dinámicas. Aunque el catálogo declara revalidación, su cliente de Supabase usa
-`cookies()` y producción responde con cache privada y `no-store`.
+**Stage 3 (local):** catálogo/PDP usan `createSupabasePublicClient()` sin
+`cookies()`, de modo que `revalidate` puede materializarse como ISR en el
+runtime de Next. Verificación de headers de cache en **producción** queda para
+el smoke posdeploy.
 
 ## 4. Hallazgos
 
@@ -262,28 +263,33 @@ crearse una superficie POS de columnas mínimas.
 
 ### PWA-01 — PWA no publicada
 
-**Severidad:** alta para la promesa offline; no afecta el uso web básico.
+**Severidad original:** alta para la promesa offline / instalación.
 
-- `https://ilara.com.ar/sw.js` devuelve 404.
-- El HTML publicado no registra el service worker.
-- El build local no genera `public/sw.js`.
-- Serwist advierte que la integración actual no soporta Turbopack.
-- El icono declarado como 512 × 512 mide 308 × 117; otros tamaños declarados
-  tampoco coinciden con los archivos reales.
+**Estado (2026-08-11, local): MITIGADO EN REPO — pendiente deploy prod.**
 
-Se debe elegir explícitamente la integración soportada de Serwist para Turbopack
-o compilar con Webpack y añadir una aserción posbuild/posdeploy sobre `/sw.js`.
+Decisión de negocio actualizada: **instalable sin offline**. Se retiró Serwist
+(precache, runtime cache de Supabase, fallback `/~offline`). Sustituido por:
+
+- `public/sw.js` mínimo (install/activate, borra CacheStorage, fetch sin
+  `respondWith`).
+- `components/PwaRegister.tsx`.
+- Iconos con dimensiones reales 192 / 512 / maskable 512 / apple 180.
+- Manifest `standalone` + theme alineado.
+
+Producción histórica (`/sw.js` 404) se corrige al desplegar el commit Stage 3
+en el proyecto Vercel **`ilara`** únicamente.
 
 ### PERF-01 — Revalidación del catálogo anulada
 
-**Severidad:** media.
+**Severidad original:** media.
 
-`app/catalogo/page.tsx` declara `revalidate = 60`, pero
-`lib/supabase/server.ts` llama a `cookies()`. Esto vuelve dinámica la ruta y la
-respuesta productiva usa cache privada con `no-store`.
+**Estado (2026-08-11, local): MITIGADO EN REPO — pendiente verificación prod.**
 
-Debe existir un cliente público, sin cookies y con un DTO de catálogo reducido,
-para que ISR o cache por tags funcionen realmente.
+`app/catalogo/page.tsx` y PDP usan `createSupabasePublicClient()`
+(`lib/supabase/public.ts`) **sin** `cookies()`. El DTO público
+(`CATALOG_*_SELECT`) se mantiene. `revalidate` deja de anularse por sesión y
+las fichas visibles se prerenderizan con `generateStaticParams`. Invalidación
+on-demand por tags queda como mejora posterior.
 
 ### ARCH-01 — Frontera de datos y mantenibilidad
 

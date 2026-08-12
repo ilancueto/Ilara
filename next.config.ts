@@ -1,16 +1,5 @@
 import type { NextConfig } from "next";
-import { spawnSync } from 'node:child_process';
-import withSerwistInit from '@serwist/next';
 import bundleAnalyzer from '@next/bundle-analyzer';
-
-const revision = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' }).stdout?.trim() ?? 'offline';
-
-const withSerwist = withSerwistInit({
-  additionalPrecacheEntries: [{ url: '/~offline', revision }],
-  swSrc: 'app/sw.ts',
-  swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV === 'development',
-});
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -53,7 +42,6 @@ function buildContentSecurityPolicy(): string {
 }
 
 const nextConfig: NextConfig = {
-  /* config options here */
   experimental: {
     /** Menos JS en el bundle inicial (iconos, gráficos, fechas). */
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
@@ -71,6 +59,22 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: buildContentSecurityPolicy(),
           },
+        ],
+      },
+      {
+        // SW siempre fresco: evita clientes con worker viejo indefinidamente.
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600' },
+          { key: 'Content-Type', value: 'application/manifest+json; charset=utf-8' },
         ],
       },
     ];
@@ -109,4 +113,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBundleAnalyzer(withSerwist(nextConfig));
+export default withBundleAnalyzer(nextConfig);

@@ -30,6 +30,9 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit --incremental false
 
+      - name: PWA icons / manifest / online-only SW
+        run: npm run check:pwa-icons
+
       - name: Build
         run: npm run build
         env:

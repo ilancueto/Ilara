@@ -9,7 +9,7 @@ Sistema de gestión para negocio de belleza: inventario, ventas, gastos, cliente
 - **Supabase** (auth, base de datos, storage)
 - **Tailwind CSS v4**
 - **Recharts** (gráficos)
-- **PWA** (instalable en móvil)
+- **PWA** (instalable en móvil/escritorio, **online-only** — sin modo offline)
 
 ## Requisitos
 
@@ -61,7 +61,8 @@ Obtener valores en: Supabase Dashboard → Settings → API. Ver **`.env.example
 | `npm run test:db-insecure-control` | Control negativo de policy anónima (local) |
 | `npm run db:types` / `db:types:check` | Generar / verificar tipos desde esquema local |
 | `npm run db:reset` | `supabase db reset --local` |
-| `npm run pwa-icons` | Copiar `logo_icon.png` a iconos PWA |
+| `npm run pwa-icons` | Generar iconos PWA con dimensiones reales |
+| `npm run check:pwa-icons` | Verificar iconos, manifest y SW online-only |
 | `npm run analyze` | Bundle analyzer (`ANALYZE=true`) |
 
 ## Supabase local (Stage 2)
@@ -95,10 +96,16 @@ Fuentes vigentes de auditoría y plan: [`AUDITORIA.md`](./AUDITORIA.md),
 
 **Build → Commit → Push:** antes de subir cambios importantes: `npm run build` tiene que pasar, luego `git commit` y `git push`. En equipo, conviene que **CI** (GitHub Actions) ejecute lint + test + build en cada PR (`.github/workflows/ci.yml`).
 
-## PWA y offline
+## PWA (instalable, sin offline)
 
-- Service Worker (Serwist) en **producción**; en desarrollo suele estar desactivado.
-- Ruta **`/~offline`**: página si no hay red después de cargar la app instalada. El catálogo en sí necesita conexión para leer Supabase.
+- **Decisión:** la app se puede instalar (icono, `display: standalone`), pero
+  **requiere internet**. No hay precache, ni cache de páginas/API/Supabase, ni
+  ventas offline.
+- Service worker mínimo: `public/sw.js` (registrado por `PwaRegister`).
+- Manifest: `public/manifest.json`.
+- Iconos: `npm run pwa-icons` (dimensiones reales) y `npm run check:pwa-icons`.
+- Ruta `/~offline`: solo mensaje informativo online; el SW no redirige ahí.
+- Runbook: [`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md).
 
 ## Estructura del proyecto
 
@@ -125,7 +132,10 @@ Fuentes vigentes de auditoría y plan: [`AUDITORIA.md`](./AUDITORIA.md),
 
 ## Iconos PWA
 
-El `manifest.json` espera en `public/` los archivos `icon-192.png`, `icon-512.png` y `apple-touch-icon.png`. Si tenés `logo_icon.png`, ejecutá `npm run pwa-icons` para copiarlo con esos nombres (o generá tamaños exactos con [realfavicongenerator.net](https://realfavicongenerator.net/)). Sin esos archivos la PWA puede dar 404 al instalar.
+En `public/`: `icon-192.png` (192×192), `icon-512.png` (512×512),
+`icon-512-maskable.png` (512×512), `apple-touch-icon.png` (180×180). Generar
+desde `app/icon.png` con `npm run pwa-icons` (usa `sharp`; no copiar el mismo
+archivo renombrado). Verificar: `npm run check:pwa-icons`.
 
 ## Backup y exportación
 

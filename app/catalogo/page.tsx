@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Catalogo from '@/components/Catalogo'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabasePublicClient } from '@/lib/supabase/public'
 import {
     fetchCatalogProductsServer,
     fetchCatalogCombosServer,
@@ -56,7 +56,8 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default async function CatalogoPage() {
-    const supabase = await createSupabaseServerClient()
+    // Cliente público sin cookies → permite ISR (revalidate) real en catálogo.
+    const supabase = createSupabasePublicClient()
     const [pr, co, ca] = await Promise.all([
         fetchCatalogProductsServer(supabase),
         fetchCatalogCombosServer(supabase),
