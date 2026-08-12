@@ -233,7 +233,8 @@ en una migración reproducible.
 
 **Severidad:** media-alta.
 **Estado (2026-08-12):** cuatro migraciones de Etapa 1 aplicadas en Supabase
-producción; dos cuentas `admin`, cero `vendedor`. App Vercel aún no desplegada.
+producción; dos cuentas `admin`, cero `vendedor`; app Vercel desplegada y smoke
+público correcto. Pendiente smoke autenticado manual con las cuentas reales.
 Modelo `admin` / `vendedor` / `none` en `public.user_roles`; helpers DEFINER con
 `search_path = ''`; policies `user_roles_select_own` + `user_roles_select_admin`
 reafirmadas al final de 21412; ventas: sin INSERT/DELETE Data API; borrado solo

@@ -2,7 +2,8 @@
 
 **Estado (2026-08-12):** migraciones aplicadas en Supabase producción después de
 backup recuperable. Dos cuentas activas asignadas `admin`; cero `vendedor`.
-Deploy de aplicación Vercel pendiente de autorización.
+Aplicación desplegada en Vercel producción; smoke público correcto. Pendiente
+únicamente smoke autenticado manual con las cuentas reales.
 **Verificación de esta entrega:** migraciones aplicadas en Docker sobre un dump
 `--schema public` de producción; matriz Etapa 0 + Etapa 1: **25/25**.
 
@@ -60,7 +61,8 @@ SELECT
 
 ## Orden de deploy
 
-Los pasos 1–6 se completaron el 2026-08-12. Quedan app y smoke autenticado.
+Los pasos 1–8 se completaron el 2026-08-12 para la superficie pública. Queda el
+smoke autenticado manual con las cuentas reales.
 
 1. Backup esquema.
 2. `20260810221411_stage1_app_roles`

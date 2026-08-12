@@ -1,8 +1,8 @@
 # Etapa 1 — Roles y precios (decisión documentada)
 
 **Estado (2026-08-12):** las cuatro migraciones están aplicadas en Supabase
-producción; las dos cuentas activas son `admin` y hay cero `vendedor`. La app de
-Vercel todavía **no fue desplegada**.
+producción; las dos cuentas activas son `admin` y hay cero `vendedor`. La app está
+desplegada en Vercel producción desde el commit `48dd39a`.
 Verificaciones: lint, TypeScript, unit, build y E2E locales; además, matriz de
 integración Stage 0 + Stage 1 **25/25** sobre una instancia local restaurada desde
 el esquema productivo (sin copiar datos de usuarios).
