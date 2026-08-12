@@ -13,7 +13,8 @@ Sistema de gestión para negocio de belleza: inventario, ventas, gastos, cliente
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js `>=20.9.0` (Next.js 16)
+- Docker Desktop (para Supabase local / Stage 2)
 - Cuenta de [Supabase](https://supabase.com)
 
 ## Instalación
@@ -55,24 +56,40 @@ Obtener valores en: Supabase Dashboard → Settings → API. Ver **`.env.example
 | `npm run test` | Tests unitarios (Vitest) |
 | `npm run test:watch` | Tests en modo watch |
 | `npm run test:e2e` | Tests E2E (Playwright; arranca el servidor si hace falta) |
+| `npm run test:db-security` | Matriz anon/service sobre Supabase local |
+| `npm run test:db-rls` | RLS habilitado en tablas `public` |
+| `npm run test:db-insecure-control` | Control negativo de policy anónima (local) |
+| `npm run db:types` / `db:types:check` | Generar / verificar tipos desde esquema local |
+| `npm run db:reset` | `supabase db reset --local` |
 | `npm run pwa-icons` | Copiar `logo_icon.png` a iconos PWA |
 | `npm run analyze` | Bundle analyzer (`ANALYZE=true`) |
+
+## Supabase local (Stage 2)
+
+```bash
+npx supabase start
+npx supabase db reset --local
+npm run db:types
+npm run test:db-rls
+# exportar API_URL / ANON_KEY / SERVICE_ROLE_KEY desde: npx supabase status -o env
+npm run test:db-security
+```
+
+Fuentes vigentes de auditoría y plan: [`AUDITORIA.md`](./AUDITORIA.md),
+[`PLAN.md`](./PLAN.md). Runbook Stage 2: [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md).
 
 ## Documentación extra
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`docs/AUDITORIA_APLICACION_COMPLETA.md`](docs/AUDITORIA_APLICACION_COMPLETA.md) | Auditoría de app, riesgos y roadmap |
-| [`docs/PLANIFICACION_IMPLEMENTACION_MASTER.md`](docs/PLANIFICACION_IMPLEMENTACION_MASTER.md) | Plan maestro por ítems (A–G) |
-| [`docs/EXPLICACION_A_y_B_CRIOOLLO.md`](docs/EXPLICACION_A_y_B_CRIOOLLO.md) | Supabase y seguridad explicados “en criollo” |
-| [`docs/F8_F9_EXPLICACION_NEGOCIO.md`](docs/F8_F9_EXPLICACION_NEGOCIO.md) | B2B y pagos online (alcance antes de codear) |
+| [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | **Fuentes vigentes** de riesgo y ejecución |
+| [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md) | Reconstrucción, diff, tipos, CI Stage 2 |
+| [`docs/STAGE2_INVENTORY.md`](docs/STAGE2_INVENTORY.md) | Inventario sanitizado de objetos |
+| [`docs/ETAPA1_RUNBOOK.md`](docs/ETAPA1_RUNBOOK.md) | Roles y deploy Stage 1 (cerrado) |
+| [`docs/MIGRACIONES_SUPABASE.md`](docs/MIGRACIONES_SUPABASE.md) | Convención de migraciones |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Convenciones y checklist de PR |
 | [`docs/COMPONENTES_UI.md`](docs/COMPONENTES_UI.md) | Patrones UI |
-| [`docs/OBSERVABILIDAD_SENTRY.md`](docs/OBSERVABILIDAD_SENTRY.md) | Sentry opcional |
-| [`docs/CHECKLIST_PRODUCCION_SUPABASE.md`](docs/CHECKLIST_PRODUCCION_SUPABASE.md) | Migraciones en producción (A1) |
-| [`docs/MIGRACIONES_SUPABASE.md`](docs/MIGRACIONES_SUPABASE.md) | Convención de migraciones (A5) |
-| [`docs/RLS_VERIFICACION.md`](docs/RLS_VERIFICACION.md) | Cómo verificar RLS (A2) |
-| [`docs/SEGURIDAD_DEPENDENCIAS_Y_CSP.md`](docs/SEGURIDAD_DEPENDENCIAS_Y_CSP.md) | Audit, Serwist, CSP, passkeys (B) |
+| Documentos en `docs/` con prefijos PLAN_/AUDITORIA_ históricos | Archivados / no vigentes |
 
 ## BCyP (release rápido)
 
@@ -117,4 +134,7 @@ El `manifest.json` espera en `public/` los archivos `icon-192.png`, `icon-512.pn
 
 ## Deploy
 
-Compatible con [Vercel](https://vercel.com). Configurar las variables de entorno en el dashboard del proyecto.
+Compatible con [Vercel](https://vercel.com). **Único proyecto autorizado:** `ilara`
+(`prj_l1212uETlGghvn8jChfiXCp68SzN`) → https://ilara.com.ar. El nombre `ilara-app`
+es solo del package npm y de Supabase, no un destino Vercel. Ver
+[`docs/VERCEL_PROYECTO_AUTORIZADO.md`](docs/VERCEL_PROYECTO_AUTORIZADO.md).

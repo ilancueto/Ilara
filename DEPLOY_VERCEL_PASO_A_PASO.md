@@ -2,13 +2,19 @@
 
 Guía para subir tu proyecto Ilara a internet usando Vercel, sin experiencia previa.
 
+> **Regla crítica (2026-08):** el único proyecto Vercel autorizado es **`ilara`**
+> (`prj_l1212uETlGghvn8jChfiXCp68SzN`) → https://ilara.com.ar.
+> **`ilara-app` no es un proyecto Vercel** (es el nombre del repo/package/Supabase).
+> No crear, importar ni re-enlazar un Vercel llamado `ilara-app`.
+> Fuente vigente: [`docs/VERCEL_PROYECTO_AUTORIZADO.md`](./docs/VERCEL_PROYECTO_AUTORIZADO.md).
+
 ---
 
 ## Qué vas a necesitar
 
-- Tu proyecto **ilara-app** (ya lo tenés).
+- El código del monorepo local (carpeta del repo; el package npm se llama `ilara-app`).
 - Cuenta en **GitHub** (gratis) – para guardar el código en la nube.
-- Cuenta en **Vercel** (gratis) – para publicar la app.
+- Cuenta en **Vercel** del equipo **Ilara**, proyecto ya existente **`ilara`** (no crear otro).
 - Las variables de **Supabase**: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` (las tenés en tu `.env.local`).
 
 ---
@@ -121,29 +127,27 @@ Si todo va bien, al final vas a ver que “pushed” a `main`. Refrescá la pág
 
 ## Parte 2: Deploy en Vercel
 
-### 2.1 Crear cuenta en Vercel
+### 2.1 Cuenta y proyecto autorizado
 
-1. Entrá a [https://vercel.com](https://vercel.com).
-2. Clic en **Sign Up**.
-3. Elegí **Continue with GitHub** (así Vercel se conecta a tu cuenta de GitHub).
-4. Autorizá a Vercel para acceder a tus repositorios (podés dar acceso solo a “ilara-app” si querés).
+1. Entrá a [https://vercel.com](https://vercel.com) con el equipo **Ilara**.
+2. Abrí el proyecto **`ilara`** (Project ID `prj_l1212uETlGghvn8jChfiXCp68SzN`).
+3. **No** crees un proyecto nuevo ni importes el repo como `ilara-app`.
+4. Producción esperada: https://ilara.com.ar — un solo deployment **Production – ilara**.
 
-### 2.2 Crear un proyecto nuevo
+Ver preflight en [`docs/VERCEL_PROYECTO_AUTORIZADO.md`](./docs/VERCEL_PROYECTO_AUTORIZADO.md).
 
-1. En el dashboard de Vercel, clic en **Add New…** → **Project**.
-2. En la lista de repositorios, buscá **ilara-app** (o el nombre que hayas puesto).
-3. Clic en **Import** al lado de ese repo.
+### 2.2 No re-importar el repositorio
 
-### 2.3 Configurar el proyecto
+Si el GitHub ya está conectado a **`ilara`**, no uses **Add New… → Project**.
+Un segundo proyecto (`ilara-app`) genera deploys paralelos y errores.
 
-En la pantalla de configuración:
+### 2.3 Configuración del proyecto existente
 
-- **Framework Preset:** debería decir **Next.js** (Vercel lo detecta solo). No lo cambies.
-- **Root Directory:** dejalo vacío (por defecto usa la raíz del repo).
-- **Build Command:** `npm run build` (ya viene así).
-- **Output Directory:** vacío (Next.js lo maneja solo).
+En **ilara** → Settings / Deployments:
 
-No hagas clic en Deploy todavía.
+- **Framework:** Next.js
+- **Root Directory:** raíz del repo
+- **Build Command:** `npm run build`
 
 ### 2.4 Agregar las variables de entorno
 
@@ -209,12 +213,12 @@ git push
 
 | Paso | Dónde | Qué hacer |
 |------|--------|-----------|
-| 1 | GitHub | Crear cuenta y crear repo “ilara-app”. |
-| 2 | PC (terminal) | `git init`, `git add .`, `git commit`, `git remote add origin ...`, `git push`. |
-| 3 | Vercel | Cuenta con GitHub → Add Project → Import “ilara-app”. |
-| 4 | Vercel | Agregar `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. |
-| 5 | Vercel | Deploy. Copiar la URL y probar login. |
-| 6 | Futuro | Cambios: `git add .` → `git commit` → `git push` y Vercel redeploya solo. |
+| 1 | GitHub | Repo del código (puede llamarse `ilara-app`; eso no es Vercel). |
+| 2 | PC (terminal) | Commits y push a `main` del remote correcto. |
+| 3 | Vercel | Solo proyecto **`ilara`** / `prj_l1212uETlGghvn8jChfiXCp68SzN`. Nunca `ilara-app`. |
+| 4 | Vercel | Variables `NEXT_PUBLIC_SUPABASE_*` en el proyecto **ilara**. |
+| 5 | Vercel | Producción https://ilara.com.ar — deployment **Production – ilara**. |
+| 6 | Post-push | Verificar en GitHub que no aparezca **Production – ilara-app**. |
 
 ---
 

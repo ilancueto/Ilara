@@ -27,8 +27,129 @@ jobs:
       - name: Unit tests
         run: npm run test
 
+      - name: Typecheck
+        run: npx tsc --noEmit --incremental false
+
       - name: Build
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder
+
+  db-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.113.0
+
+      - name: Start Supabase (migrations from zero)
+        # La matriz usa Auth + PostgREST; `supabase db start` levanta solo Postgres.
+        run: supabase start
+
+      - name: Migration list (local)
+        run: supabase migration list --local
+
+      - name: Security advisors (fail on warn+)
+        run: supabase db advisors --local --type security --level warn --fail-on warn
+
+      - name: Performance advisors (report only)
+        run: supabase db advisors --local --type performance --level info
+
+      - name: Export local API keys (no print secrets)
+        id: keys
+        run: |
+          eval "$(supabase status -o env)"
+          echo "::add-mask::${ANON_KEY}"
+          echo "::add-mask::${SERVICE_ROLE_KEY}"
+          {
+            echo "API_URL=${API_URL}"
+            echo "ANON_KEY=${ANON_KEY}"
+            echo "SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
+          } >> "$GITHUB_ENV"
+
+      - name: RLS coverage on public tables
+        run: npm run test:db-rls
+
+      - name: Security matrix anon/service
+        run: npm run test:db-security
+        env:
+          STAGE2_SUPABASE_URL: ${{ env.API_URL }}
+          STAGE2_ANON_KEY: ${{ env.ANON_KEY }}
+          STAGE2_SERVICE_ROLE_KEY: ${{ env.SERVICE_ROLE_KEY }}
+
+      - name: Control negativo policy anónima (cleanup garantizado)
+        run: npm run test:db-insecure-control
+        env:
+          STAGE2_SUPABASE_URL: ${{ env.API_URL }}
+          STAGE2_ANON_KEY: ${{ env.ANON_KEY }}
+          ANON_KEY: ${{ env.ANON_KEY }}
+
+      - name: Check generated types drift
+        # No regenerar antes: hacerlo convertiría el control en un falso positivo.
+        run: npm run db:types:check
+
+      - name: Integration Stage 0 + Stage 1
+        run: |
+          eval "$(supabase status -o env)"
+          export STAGE0_INTEGRATION=1
+          export STAGE1_INTEGRATION=1
+          export STAGE0_SUPABASE_URL="$API_URL"
+          export STAGE0_ANON_KEY="$ANON_KEY"
+          export STAGE0_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          export STAGE1_SUPABASE_URL="$API_URL"
+          export STAGE1_ANON_KEY="$ANON_KEY"
+          export STAGE1_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          # Usuarios de prueba locales (sin PII real)
+          # La suite falla si STAGE1=1 y faltan users; se crean vía Admin API
+          node <<'NODE'
+          const { createClient } = require('@supabase/supabase-js')
+          const url = process.env.STAGE0_SUPABASE_URL
+          const service = createClient(url, process.env.STAGE0_SERVICE_ROLE_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          })
+          async function ensureUser(email, password) {
+            const list = await service.auth.admin.listUsers({ page: 1, perPage: 200 })
+            if (list.error) throw list.error
+            const existing = (list.data?.users || []).find((u) => u.email === email)
+            if (existing) return existing.id
+            const created = await service.auth.admin.createUser({
+              email,
+              password,
+              email_confirm: true,
+            })
+            if (created.error) throw created.error
+            return created.data.user.id
+          }
+          ;(async () => {
+            const a = await ensureUser('stage0-a@example.com', 'Stage0-Test-Pass-A1!')
+            const b = await ensureUser('stage0-b@example.com', 'Stage0-Test-Pass-B1!')
+            const bootstrap = await service.rpc('bootstrap_first_admin', { p_user_id: a })
+            if (bootstrap.error) throw bootstrap.error
+            console.log('users ready')
+          })().catch((e) => {
+            console.error('user bootstrap failed', e?.message || e)
+            process.exit(1)
+          })
+          NODE
+          export STAGE0_USER_A_EMAIL=stage0-a@example.com
+          export STAGE0_USER_A_PASSWORD='Stage0-Test-Pass-A1!'
+          export STAGE0_USER_B_EMAIL=stage0-b@example.com
+          export STAGE0_USER_B_PASSWORD='Stage0-Test-Pass-B1!'
+          export STAGE1_USER_A_EMAIL="$STAGE0_USER_A_EMAIL"
+          export STAGE1_USER_A_PASSWORD="$STAGE0_USER_A_PASSWORD"
+          export STAGE1_USER_B_EMAIL="$STAGE0_USER_B_EMAIL"
+          export STAGE1_USER_B_PASSWORD="$STAGE0_USER_B_PASSWORD"
+          npm run test:integration

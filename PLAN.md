@@ -263,45 +263,64 @@ Criterio de aceptación:
 
 ## 6. Etapa 2 — Gobierno y reproducibilidad de datos
 
+**Estado (2026-08-12): IMPLEMENTADO EN REPOSITORIO — pendiente revisión humana y
+deploy de la migración forward-only.** Stage 0/1 no se reabren.
+
 **Objetivo:** poder crear, auditar y recuperar el entorno sin scripts manuales ni
 estado oculto en el dashboard.
 
 ### 6.1 Consolidar migraciones — DATA-02
 
-- [ ] Inventariar objetos de `supabase/sql`, `supabase/migrations` y producción.
-- [ ] Elegir un baseline que reconstruya tablas, constraints, índices, funciones,
+- [x] Inventariar objetos de `supabase/sql`, `supabase/migrations` y producción.
+  *(`docs/STAGE2_INVENTORY.md`)*
+- [x] Elegir un baseline que reconstruya tablas, constraints, índices, funciones,
   triggers, grants, RLS, Storage y datos de referencia no sensibles.
-- [ ] Marcar scripts manuales históricos como archivados; no borrarlos hasta
-  validar el baseline.
-- [ ] Crear una base vacía y ejecutar el flujo completo desde cero.
+  *(`20250101000000_baseline_core_schema.sql` completo para greenfield; no reescribe
+  historial remoto ya aplicado)*
+- [x] Marcar scripts manuales históricos como archivados; no borrarlos hasta
+  validar el baseline. *(`supabase/sql/README.md`)*
+- [x] Crear una base vacía y ejecutar el flujo completo desde cero.
+  *(`supabase db reset --local` incluye Stage 0 + 1 + 2)*
 - [ ] Comparar el resultado con staging mediante schema diff.
-- [ ] Ejecutar advisors y corregir warnings de seguridad/performance.
-- [ ] Guardar evidencia de `migration list` local y remoto.
+  *(no existe staging; se contrastó local→producción en solo lectura y quedó
+  documentado el residual bigint/serial y default privileges)*
+- [x] Ejecutar advisors y corregir warnings de seguridad/performance.
+  *(security WARN/ERROR: 0; índices FK en forward-only; passkeys INFO intencional)*
+- [x] Guardar evidencia de `migration list` local y remoto.
+  *(runbook; remoto pendiente solo de `20260812013913` hasta deploy)*
 
 ### 6.2 Tipos y validación
 
-- [ ] Generar tipos TypeScript desde el esquema versionado.
+- [x] Generar tipos TypeScript desde el esquema versionado.
+  *(`types/database.generated.ts`, `npm run db:types`)*
 - [ ] Eliminar gradualmente tipos manuales duplicados y casts desde `unknown`.
+  *(inventariados; refactor masivo fuera de alcance Stage 2)*
 - [ ] Añadir validación de payloads en Server Actions, Route Handlers y límites de
-  RPC; no confiar sólo en tipos de compilación.
-- [ ] Versionar el comando de regeneración y comprobar diff en CI.
+  RPC; no confiar sólo en tipos de compilación. *(diferido a calidad/arquitectura)*
+- [x] Versionar el comando de regeneración y comprobar diff en CI.
+  *(`db:types`, `db:types:check`, job `db-security`)*
 
 ### 6.3 Pruebas de seguridad de base en CI
 
-- [ ] Levantar Supabase local o un staging efímero.
-- [ ] Aplicar todas las migraciones desde cero.
-- [ ] Ejecutar matriz de acceso `anon` / roles autenticados / service role.
-- [ ] Probar columnas públicas, ventas, clientes, gastos, comprobantes y RPC.
-- [ ] Fallar CI si una tabla expuesta carece de RLS o grants declarados.
-- [ ] Ejecutar advisors y conservar un reporte sanitizado.
+- [x] Levantar Supabase local o un staging efímero.
+- [x] Aplicar todas las migraciones desde cero.
+- [x] Ejecutar matriz de acceso `anon` / roles autenticados / service role.
+  *(`scripts/db-security-matrix.mjs`; roles auth vía suite Stage 1)*
+- [x] Probar columnas públicas, ventas, clientes, gastos, comprobantes y RPC.
+- [x] Fallar CI si una tabla expuesta carece de RLS o grants declarados.
+  *(`scripts/check-rls-coverage.mjs`)*
+- [x] Ejecutar advisors y conservar un reporte sanitizado.
+  *(`docs/ETAPA2_RUNBOOK.md` + clasificación advisors)*
 
 ### 6.4 Gate de salida de etapa 2
 
-- [ ] `supabase db reset` o flujo equivalente reconstruye el entorno.
-- [ ] No quedan cambios de esquema aplicados sólo desde dashboard.
-- [ ] Tipos generados coinciden con el esquema.
-- [ ] CI detecta una política anónima permisiva introducida deliberadamente en una
-  prueba de control.
+- [x] `supabase db reset` o flujo equivalente reconstruye el entorno. *(local)*
+- [x] No quedan cambios de esquema aplicados sólo desde dashboard.
+  *(nuevos cambios versionados; residual histórico documentado)*
+- [x] Tipos generados coinciden con el esquema. *(check local)*
+- [x] CI detecta una política anónima permisiva introducida deliberadamente en una
+  prueba de control. *(`npm run test:db-insecure-control`)*
+- [ ] Deploy de `20260812013913` en producción + smoke no mutante. **Pendiente autorización.**
 
 ## 7. Etapa 3 — PWA y rendimiento
 
@@ -522,6 +541,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-11 | 1 Seguridad e integridad | Re-auditoría: user_roles policies post-21412, sin DELETE ventas, lock last_admin, breakdown estricto, tests secuencia | En revisión | Solo local; **no desplegado** |
 | 2026-08-11 | 1 Seguridad e integridad | Corrección post-review: catálogo anon preservado, delete concurrente serializado, breakdown presente solo mixto, fixtures de roles restaurables | En revisión | Solo local; **no desplegado** |
 | 2026-08-12 | 0–1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificación productiva 2026-08-12 |
+| 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos generados, CI db-security, inventario y runbook | En revisión | Local `db reset` OK; **no deploy**; ver `docs/ETAPA2_RUNBOOK.md` |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.
