@@ -68,8 +68,8 @@ proyecto hosted.
 - Tipos `bigint` + `nextval` en PKs core (local usa `serial`/`integer`):
   compatibilidad funcional, pero no paridad estructural completa
 - `DEFAULT PRIVILEGES` más amplios hacia `anon`/`authenticated` (legacy)
-- Índices Stage 2 hasta aplicar forward-only en remoto
-- Posibles policies passkey legacy hasta aplicar Stage 2
+- Migración Stage 2 aplicada: índices forward-only presentes en remoto
+- Policies passkey legacy eliminadas; RLS on, 0 policies y 0 grants anon/auth
 - Datos, estadísticas, índices “unused” no comparables
 
 ## Objetos duplicados / contradictorios

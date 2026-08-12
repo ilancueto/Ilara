@@ -1,7 +1,7 @@
 # Runbook — Etapa 2 (Gobierno y reproducibilidad de datos)
 
-**Estado:** implementado en repositorio; **no desplegado** en producción hasta
-autorización explícita. Stage 0 y Stage 1 permanecen cerrados.
+**Estado (2026-08-12): COMPLETADO, DESPLEGADO Y VERIFICADO.** Stage 0 y Stage 1
+permanecen cerrados.
 
 ## Objetivo
 
@@ -94,20 +94,20 @@ de Stage 2 (solo inventario).
 | `multiple_permissive_policies` en `user_roles` | WARN (performance) | **Intencional/documentado** — `select_own` + `select_admin` Stage 1 |
 | Security WARN/ERROR | — | **Ninguno** en local post-reset |
 | Índices “unused” | — | **No eliminar** en entorno fresco |
+| RPC `SECURITY DEFINER` ejecutables | WARN hosted | **Previo/intencional Stage 0/1**: catálogo público y RPC autenticadas con autorización interna |
+| Leaked password protection | WARN hosted | **Deuda Auth separada**; no introducida por Stage 2 |
 
-## Orden de un futuro deploy (producción)
-
-Solo tras autorización explícita.
+## Deploy productivo ejecutado (2026-08-12)
 
 ### Supabase
 
-1. Backup estructural: `supabase db dump --linked --schema public -f backups/pre-stage2-YYYYMMDD.sql`
-2. Revisar `supabase migration list --linked` (Stage 2 debe figurar solo en Local)
-3. Aplicar **solo** `20260812013913_stage2_schema_governance_markers` (`supabase db push` o SQL Editor con el archivo)
-4. `migration list` remoto = local
-5. Advisors security en linked (solo lectura)
-6. Smoke no mutante: catálogo 200, sales anon 401, passkeys 403
-7. No redeploy de app obligatorio (sin cambios de runtime de negocio)
+1. Backup estructural: `backups/pre-stage2-20260812.sql` (local, ignorado por Git).
+2. Dry-run confirmó una sola migración pendiente.
+3. Aplicada `20260812013913_stage2_schema_governance_markers` con `db push`.
+4. `migration list` remoto = local.
+5. Advisors consultados y clasificados.
+6. Smoke: sitio/catálogo/RPC 200; sales y `purchase_price` anon 401; passkeys 403.
+7. CI GitHub verde y único deployment Vercel `ilara` READY.
 
 ### Vercel (si hubiera push de app)
 
@@ -135,6 +135,7 @@ https://ilara.com.ar. Ver [`docs/VERCEL_PROYECTO_AUTORIZADO.md`](./VERCEL_PROYEC
 | Tipos generados | `types/database.generated.ts` + check |
 | CI detecta policy anónima permisiva | `test:db-insecure-control` |
 | Stage 0/1 intactos | Sin editar migraciones aplicadas |
+| Migración productiva | `20260812013913` en historial remoto |
+| Smoke productivo | Catálogo 200; superficie interna 401; passkeys 403 |
 
-Marcar Stage 2 **Completado** en `PLAN.md` solo después de deploy + smoke
-productivo autorizados.
+Stage 2 quedó marcado **Completado** después del deploy y smoke autorizados.

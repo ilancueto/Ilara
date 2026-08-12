@@ -29,7 +29,7 @@ de archivos, observabilidad, accesibilidad y cobertura CI.
 | Seguridad de identidad | Cerrado | Passkeys retiradas; función responde 403 fijo |
 | Privacidad de datos | Cerrado | Ventas/campos internos 401 para `anon`; receipts privados |
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
-| Gobierno de base de datos | Medio (en revisión) | Baseline greenfield + CI local; residual bigint/serial y deploy Stage 2 pendiente |
+| Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
 | PWA / offline | Alto | `/sw.js` devuelve 404 y los iconos no cumplen el manifest |
 | Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
@@ -188,13 +188,13 @@ Smoke con cuenta real confirmó venta, total autoritativo, stock y eliminación.
 ### DATA-02 — Esquema y políticas no reproducibles
 
 **Severidad residual:** media.
-**Estado (2026-08-12): MITIGADO EN REPOSITORIO (Stage 2 en revisión).**
+**Estado (2026-08-12): STAGE 2 CERRADO Y VERIFICADO EN PRODUCCIÓN.**
 `supabase db reset --local` reconstruye la cadena completa (baseline + Stage 0/1/2),
 con compatibilidad funcional pero sin paridad estructural total por el residual
 `integer`/`bigint`.
 Scripts en `supabase/sql` quedan como histórico documentado. Forward-only
 `20260812013913_stage2_schema_governance_markers` alinea índices FK y contención
-passkey; **pendiente aplicar en producción con autorización**. Drift residual
+passkey; fue aplicado y verificado en producción. Drift residual
 documentado: PKs `serial` local vs `bigint` prod; `DEFAULT PRIVILEGES` legacy en
 prod. Ver `docs/ETAPA2_RUNBOOK.md` y `docs/STAGE2_INVENTORY.md`.
 
@@ -360,12 +360,10 @@ documentos históricos deben marcarse como archivados o enlazar a estos.
 
 ## 6. Riesgo residual y decisión de salida
 
-El estado al 2026-08-12 es **GO para el cierre de Etapas 0 y 1**. `SEC-01`,
+El estado al 2026-08-12 es **GO con Etapas 0, 1 y 2 cerradas**. `SEC-01`,
 `SEC-02`, `SEC-04`, `DATA-01` y `AUTH-01` fueron remediados, desplegados y
-verificados. Etapa 2 está **implementada en repo y verificada en local**
-(reproducción desde cero, tipos, advisors security, matriz y control negativo);
-el gate de cierre productivo de Etapa 2 espera deploy autorizado de la migración
-forward-only y smoke no mutante.
+verificados. Etapa 2 reconstruye desde cero, valida tipos y seguridad en CI, y la
+migración forward-only quedó aplicada con smoke productivo no mutante verde.
 
 La salida de contención requiere, como mínimo:
 
@@ -404,4 +402,4 @@ La salida de contención requiere, como mínimo:
 | 2026-08-11 | **Etapa 1 re-auditoría local:** reafirma `user_roles_select_admin` tras 21412; sin DELETE directo sales/líneas; lock 87201411 en set_user_role; payment_breakdown estricto; DEFINER `search_path=''`; tests de secuencia de migraciones e integración sin pass silencioso. **No desplegado.** |
 | 2026-08-11 | **Etapa 1 post-review local:** preflight preserva policies anon del catálogo Stage 0; borrado de venta serializado con `FOR UPDATE`; JSON null y breakdown no-mixto rechazados; integración restaura roles previos y cubre doble borrado. **No desplegado.** |
 | 2026-08-12 | **Etapas 0 y 1 cerradas:** Supabase y Vercel desplegados; dos admins; smoke real de login, venta, stock, eliminación y receipt; anon sales/internal 401; catálogo 200; passkeys 403 y descartadas; secretos confirmados privados, sin rotación requerida. |
-| 2026-08-12 | **Etapa 2 en repo (no desplegada):** baseline greenfield, forward-only governance, tipos generados, CI `db-security`, inventario y runbook. `db reset` local OK; residual bigint/serial documentado. |
+| 2026-08-12 | **Etapa 2 cerrada:** commit `47b470d`, CI verde, único deploy Vercel `ilara` READY, migración `20260812013913` aplicada; sitio/catálogo/RPC 200, anon interno 401 y passkeys 403. |

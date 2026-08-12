@@ -263,8 +263,8 @@ Criterio de aceptación:
 
 ## 6. Etapa 2 — Gobierno y reproducibilidad de datos
 
-**Estado (2026-08-12): IMPLEMENTADO EN REPOSITORIO — pendiente revisión humana y
-deploy de la migración forward-only.** Stage 0/1 no se reabren.
+**Estado (2026-08-12): COMPLETADO, DESPLEGADO Y VERIFICADO.** Stage 0/1 no se
+reabrieron.
 
 **Objetivo:** poder crear, auditar y recuperar el entorno sin scripts manuales ni
 estado oculto en el dashboard.
@@ -281,13 +281,14 @@ estado oculto en el dashboard.
   validar el baseline. *(`supabase/sql/README.md`)*
 - [x] Crear una base vacía y ejecutar el flujo completo desde cero.
   *(`supabase db reset --local` incluye Stage 0 + 1 + 2)*
-- [ ] Comparar el resultado con staging mediante schema diff.
+- [x] Comparar el resultado local con el remoto mediante schema diff.
   *(no existe staging; se contrastó local→producción en solo lectura y quedó
   documentado el residual bigint/serial y default privileges)*
-- [x] Ejecutar advisors y corregir warnings de seguridad/performance.
-  *(security WARN/ERROR: 0; índices FK en forward-only; passkeys INFO intencional)*
+- [x] Ejecutar advisors y clasificar warnings de seguridad/performance.
+  *(local Stage 2: 0 security warn/error y 0 FKs sin índice; hosted conserva
+  warnings previos/intencionales de RPC DEFINER y protección de contraseñas filtradas)*
 - [x] Guardar evidencia de `migration list` local y remoto.
-  *(runbook; remoto pendiente solo de `20260812013913` hasta deploy)*
+  *(ambos alineados hasta `20260812013913`)*
 
 ### 6.2 Tipos y validación
 
@@ -320,7 +321,8 @@ estado oculto en el dashboard.
 - [x] Tipos generados coinciden con el esquema. *(check local)*
 - [x] CI detecta una política anónima permisiva introducida deliberadamente en una
   prueba de control. *(`npm run test:db-insecure-control`)*
-- [ ] Deploy de `20260812013913` en producción + smoke no mutante. **Pendiente autorización.**
+- [x] Deploy de `20260812013913` en producción + smoke no mutante.
+  *(sitio/catálogo 200; ventas/campos internos anon 401; passkeys 403)*
 
 ## 7. Etapa 3 — PWA y rendimiento
 
@@ -541,7 +543,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-11 | 1 Seguridad e integridad | Re-auditoría: user_roles policies post-21412, sin DELETE ventas, lock last_admin, breakdown estricto, tests secuencia | En revisión | Solo local; **no desplegado** |
 | 2026-08-11 | 1 Seguridad e integridad | Corrección post-review: catálogo anon preservado, delete concurrente serializado, breakdown presente solo mixto, fixtures de roles restaurables | En revisión | Solo local; **no desplegado** |
 | 2026-08-12 | 0–1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificación productiva 2026-08-12 |
-| 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos generados, CI db-security, inventario y runbook | En revisión | Local `db reset` OK; **no deploy**; ver `docs/ETAPA2_RUNBOOK.md` |
+| 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.
