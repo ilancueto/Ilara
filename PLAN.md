@@ -281,98 +281,283 @@ estado oculto en el dashboard.
   validar el baseline. *(`supabase/sql/README.md`)*
 - [x] Crear una base vac√≠a y ejecutar el flujo completo desde cero.
   *(`supabase db reset --local` incluye Stage 0 + 1 + 2)*
-- [x] Comparar el resulta€€hëÈÏ∂ªßq´^t[8°§úõŸXÿ⁄pÏ€à[à€€»X›\òHH]YY0Ï¬àÿ›[Y[ùY»[ô\⁄YX[öY⁄[ù‹Ÿ\öX[HYò][ö]ö[YŸ\ JÇãHﬁHZôX›]\àYö\€‹ú»H€\⁄YöXÿ\àÿ\õö[ô‹»HŸY›\öYY‹\ôõ‹õX[òŸKÇà
-äÿÿ[›YŸHéàŸX›\ö]Hÿ\õãŸ\úõ‹àHí‹»⁄[à0Î[ôXŸN»‹›Y€€úŸ\ùòBàÿ\õö[ô‹»ô]ö[‹À⁄[ù[ò⁄[€ò[\»Hî»QíSëTàHõ›Xÿ⁄pÏ€àH€€ùò\ŸpÏX\»ö[òY\ JÇãHﬁH›X\ô\à]öY[ò⁄XHHZY‹ò][€à\›ÿÿ[Hô[[›ÀÇà
-ä[Xõ‹»[[ôXY‹»\›HåçåLåLŒLLÿ
-JÇÇà»»»ãåà\‹»Hò[YX⁄pÏ€ÇÇãHﬁHŸ[ô\ò\à\‹»\Tÿ‹ö\\ŸH[\‹]Y[XHô\ú⁄[€òYÀÇà
-ä\\ÀŸ]Xò\ŸKôŸ[ô\ò]YùÿúHù[àéù\\ÿ
-JÇãH»H[[Z[ò\à‹òYX[Y[ùH\‹»X[ùX[\»\XÿY‹»Hÿ\›»\ŸH[ö€õ›€òÇà
-ä[ùô[ù\öXY‹Œ»ôYòX›‹àX\⁄]õ»ùY\òHH[ÿ[òŸH›YŸHäJÇãH»HpÏXY\àò[YX⁄pÏ€àH^[ÿY»[àŸ\ùô\àX›[€úÀõ›]H[ô\ú»H0Î[Z]\»BàîŒ»õ»€€ôöX\àÏ€»[à\‹»H€€\[X⁄pÏ€ãà
-äYô\öY»Hÿ[YYÿ\ú]Z]X›\òJJÇãHﬁHô\ú⁄[€ò\à[€€X[ô»HôYŸ[ô\òX⁄pÏ€àH€€\õÿò\àYôà[à“KÇà
-äéù\\ÿéù\\Œò⁄X⁄ÿõÿàã\ŸX›\ö]X
-JÇÇà»»»ãå»ùYXò\»HŸY›\öYYHò\ŸH[à“BÇãHﬁH]ò[ù\à›\Xò\ŸHÿÿ[»[à›Y⁄[ô»Y∞Î[Y\õÀÇãHﬁH\Xÿ\àŸ\»\»ZY‹òX⁄[€ô\»\ŸHŸ\õÀÇãHﬁHZôX›]\àX]ö^àHXÿŸ\€»[õ€ò»õ€\»]][ùXÿY‹»»Ÿ\ùöXŸHõ€KÇà
-äÿ‹ö\ÀŸã\ŸX›\ö]K[X]ö^õZúÿ»õ€\»]]∞ÎXH›Z]H›YŸHJJÇãHﬁHõÿò\à€€[[ò\»0ÓòõXÿ\Àô[ù\À€Y[ù\Àÿ\›‹À€€\õÿò[ù\»HîÀÇãHﬁHò[\à“H⁄H[òHXõH^Y\›Hÿ\ôXŸHHì»»‹ò[ù»X€\òY‹ÀÇà
-äÿ‹ö\Àÿ⁄X⁄À\õÀX€›ô\òYŸKõZúÿ
-JÇãHﬁHZôX›]\àYö\€‹ú»H€€úŸ\ùò\à[àô\‹ùHÿ[ö]^òYÀÇà
-äÿ‹À—UTLó‘ïSêì”“ÀõY
-»€\⁄YöXÿX⁄pÏ€àYö\€‹ú JÇÇà»»»ãçÿ]HHÿ[YHH]\HÇÇãHﬁH›\Xò\ŸHàô\Ÿ]»õZõ»\]Z]ò[[ùHôX€€ú›ù^YH[[ù‹õõÀà
-äÿÿ[
-JÇãHﬁHõ»]YY[àÿ[Xö[‹»H\‹]Y[XH\XÿY‹»Ï€»\ŸH\⁄õÿ\ôÇà
-äùY]õ‹»ÿ[Xö[‹»ô\ú⁄[€òY‹Œ»ô\⁄YX[\›0Ï‹öX€»ÿ›[Y[ùY JÇãHﬁH\‹»Ÿ[ô\òY‹»€⁄[ò⁄Y[à€€à[\‹]Y[XKà
-ä⁄X⁄»ÿÿ[
-JÇãHﬁH“H]X›H[òH€0Î]XÿH[∞Ï€ö[XH\õZ\⁄]òH[ùõŸX⁄YH[Xô\òY[Y[ùH[à[òBàùYXòHH€€ùõ€à
-äúHù[à\›ôãZ[úŸX›\ôKX€€ùõ€
-JÇãHﬁH\ﬁHHåçåLåLŒLLÿ[àõŸXÿ⁄pÏ€à
-»€[⁄ŸHõ»]][ùKÇà
-ä⁄][Àÿÿ]0Ë[Ÿ€»å»ô[ù\Àÿÿ[\‹»[ù\õõ‹»[õ€àN»\‹⁄Ÿ^\» JÇÇà»»Àà]\H»8†%–HHô[ô[ZY[ù¬Çääë\›Y»
-ÿÿ[åçãLLLJNàSTSQSïQHSàëT»8†%[ôY[ùH\ﬁK‹€[⁄ŸHõŸääÇÇääëX⁄\⁄pÏ€àHôY€ÿ⁄[»Yö[ö]]òNääà–H[ú›[XõH
-X€€õÀ›[ô[€ôK\[ZŸJBääú⁄[ääàù[ò⁄[€ò[ZY[ù»Ÿôõ[ôKà⁄[àôXÿX⁄K⁄[àù[ù[YHÿX⁄HH0ËY⁄[ò\À–TK¬î›\Xò\ŸK‹Ÿ\⁄pÏ€ã⁄[à€€\»öHô[ù\»Ÿôõ[ôKàô\Çñÿÿ‹À—UTL◊‘–W‘ëSëSRQSï◊‘ïSêì”“ÀõYJãŸÿ‹À—UTL◊‘–W‘ëSëSRQSï◊‘ïSêì”“ÀõY
-KÇÇà»»»ÀåHô\\ò\à–H8†%–KLBÇãHﬁHô]\ò\àŸ\ù⁄\›
-Ÿ\ù⁄\›€ô^Ÿ\ù⁄\›\‹›Àùÿ‹ò\\à[Çàô^ò€€ôöYÀùÿ
-H8†%[ò€€\]Xö[YY\òõ‹X⁄»HŸôõ[ôHõ»\ŸXYÀÇãHﬁHŸ\ùöXŸH€‹öŸ\à\›0Ë]X€»pÎ[ö[[»XõXÀ‹›Àöúÿà[ú›[ÿX›]ò]K[\Y^òHBàÿX⁄T›‹òYŸHYÿXﬁKô]⁄\›[ô\à
-äú⁄[ääàô\‹€ô⁄]
-ô]€‹öÀ[€õJKÇãHﬁHôY⁄\›õ»€Y[ùH€€\€ô[ùÀ‘ÿTôY⁄\›\ãùﬁ[à^[›]òpÎ^ãÇãHﬁHX€€õ‹»ôX[\ŒàNL∞ÂÃNLãLL∞ÂÕLLãX\⁄ÿXõHLLã\K]›X⁄Nà
-úHù[àÿKZX€€úÿ»⁄X⁄ŒúÿKZX€€úÿ
-KÇãHﬁHX[öYô\›\‹^Nà›[ô[€ôX[YHŸôçôXçÿ€‹Hÿ›\ù›\õÿÇãHﬁHXY\ú»ÿX⁄KP€€ùõ€àõÀXÿX⁄X\òH‹›ÀöúÿÇãHﬁH\›»[ö]\ö[‹»
-»LëH–N»ÿ‹ö\⁄X⁄ŒúÿKZX€€úÿÇãH»H€[⁄ŸH‹Ÿ\ﬁNà‹›ÀöúÿåôY⁄\›õ»’À⁄[àõŸX›[€à8†$»[\òKX\[Çàô\òŸ[⁄[àÿX⁄\»Ÿ\ù⁄\›[à€Y[ù\»^\›[ù\»ò\»ö\⁄]KÇÇà»»»ÀåàôX›\\ò\àÿX⁄H[ÿ]0Ë[Ÿ€»8†%TëãLBÇãHﬁH€Y[ùH0ÓòõX€»Xã‹›\Xò\ŸK‹XõXÀùÿ
-äú⁄[ääà€€⁄⁄Y\ 
-XÇãHﬁHÿ]0Ë[Ÿ€»\›Y»H\ÿ[à»0ÓòõX€»
-–US—◊ ó‘—SP’
-H∞ÎXH€Y[ùBà0ÓòõX€ÀÇãHﬁHô]ò[Y]XHÿ]0Ë[Ÿ€À‘ZòHH[ù[\úŸH‹à€€⁄⁄Y\Œ»\»öX⁄\¬àö\⁄Xõ\»ŸHô\ô[ô\ö^ò[à€€àŸ[ô\ò]T›]X‘\ò[\ÿ
-T‘àöXXõJKÇãH»H[ùò[YX⁄pÏ€à€ãY[X[ô‹àY‹»[]]\àõŸX›‹»
-òX⁄€Ÿ»‹⁄[€ò[›YŸH
- KÇãHﬁHYYX⁄pÏ€àÿÿ[ÿ›[Y[ùYH[àù[òõ€⁄»›YŸH»
-[ù\ÀŸ\‹pÍ\»ÿ[ö]^òY KÇÇà»»»Àå»‹[Z^òX⁄pÏ€àYYYBÇãHﬁH\‹^Nàú›ÿ\ò[àùY[ù\»›]ö]—úò][òŸ\»
-‘^ KÇãHﬁHX€€õ‹»–HôYX⁄Y‹»HXŸ[ò\»H–à[ò€‹úôX›‹»Hë»[Y[ú⁄[€òY‹ÀÇãHﬁH[[Z[òX⁄pÏ€àHŸ\ù⁄\›[ù[ôHHùZ[
-Y[õ‹»\»H⁄[àÿ\õö[ô»\òõ‹X⁄ KÇãH»H€€ù[ù]ö\⁄Xö[]X»ù[ôH[ò[^ô\àõŸù[ô»8°§àòX⁄€Ÿ»›YŸH8†$ÕH⁄H^Bà]öY[ò⁄XHHôY‹ô\⁄pÏ€ãÇãH»Hö]\›T”Hÿ\õö[ô»ô\⁄YX[8°§àõ»õ‹]YX[ùH›YŸHÀÇÇà»»»Àçÿ]HHÿ[YHH]\H¬ÇãHﬁH‹ö]\ö[‹»ÿÿ[\Œà[ú›[XõH
-X[öYô\›
-‘’ ⁄X€€õ‹ K⁄[àŸôõ[ôHHôY€ÿ⁄[Àà⁄[àÿX⁄H\‘›\Xò\ŸH[à’ÀùZ[⁄[àŸ\ù⁄\›’\òõ‹X⁄»ÿ\õö[ô»–KÇãH»H\ﬁHHô\òŸ[õﬁYX›»
-äò[\òX
-äà0ÓõöXÿ[Y[ùH
-»€[⁄ŸHõŸÇãHﬁHÿ]0Ë[Ÿ€»0ÓòõX€»⁄[à€€⁄⁄Y\ 
-X[àô]⁄H]‹ÀÇãHﬁH’»õ»ÿX⁄XH]][ùXÿY»öH€€\õÿò[ù\»
-õ»ÿX⁄XHòYHH\
-KÇÇà»»à]\H8†%ÿ[YY‹\ò]]òBÇà»»»åHLëHH“H8†%T’LBÇãH»H[ú›[\àò]ôYÿY‹ô\»^]‹öY⁄[à“H€€àÿX⁄H€€\]XõKÇãH»HX›X[^ò\à[€[⁄ŸH\›[[òÿXô^òY»[ÿ]0Ë[Ÿ€ÀÇãH»H›Xúö\àŸ⁄[ã]]‹ö^òX⁄pÏ€ãô[ùK›ÿ⁄À€€Xõ‹Àÿ\›‹À€€\õÿò[ù\Ààÿ\úö]À›\0Ï€ã⁄]–\–HH[ÿö[KÇãH»H\ÿ\à]‹»HùYXòHZ\€Y‹»H[\Y^òH]\õZ[ö\›KÇãH»HZôX›]\à[ù\‹À[ö]\ö[‹À[ùY‹òX⁄pÏ€ãLëHHùZ[[àÿYHãÇãH»HpÏXY\à€[⁄ŸH\›»‹Ÿ\ﬁH\òHÿ]0Ë[Ÿ€ÀŸ⁄[ãXY\ú»HŸ\ùöXŸH€‹öŸ\ãÇÇà»»»åàÿúŸ\ùòXö[YY8†%–îÀLBÇãH»H[ùY‹ò\àŸ[ùûK‹[ï[[Y]ûH»\]Z]ò[[ùH[à€Y[ùKŸ\ùöY‹àHYŸBàù[ò›[€úÀÇãH»HYö[ö\àÿ[ö]^òX⁄pÏ€àHRHHŸX‹ô]‹»[ù\»H[ùöX\à]ô[ù‹ÀÇãH»HpÏXY\à€‹úô[][€ã‹ô\]Y\›QH\úõ‹ô\»\›ùX›\òY‹ÀÇãH»H‹ôX\à[\ù\»\òHò[‹»HŸ⁄[ãî»Hô[ùK›‹òYŸHH\úõ‹ô\»^ÇãH»HôY⁄\›ò\àpÍ]öXÿ\»HôY€ÿ⁄[»0ÍX€öXÿ\»⁄[à]‹»\ú€€ò[\Œàô[ù\»ò[Y\Àà€€ôõX›‹»H›ÿ⁄À][ò⁄XHH\ÿHH\úõ‹ãÇãH»Hÿ›[Y[ù\àù[òõ€⁄‹»\òHÿYH[\ùKÇÇà»»»å»XÿŸ\⁄Xö[YY8†%LLVKLBÇãH»H‹ôX\à[à€€\€ô[ùHX[Ÿ»0ÓõöX€»€€àõÿ›\»ò\\ÿÿ\Kô\›]\òX⁄pÏ€àBàõÿ€Àõ€ô»[ô\ùKÿ‹õ€ÿ⁄»HXô[ÀÇãH»HZY‹ò\à\‹⁄Ÿ^\Àÿ\›‹À[ùô[ù\ö[Àô[ù\»H€€ôö\õXX⁄[€ô\ÀÇãH»H›\›]Z\à]à€ê€X⁄ÿ‹àõ›€ô\ÀŸ[õXŸ\»Ÿ[pË[ùX€‹ÀÇãH»H›\›]Z\à€€ôö\õJ
-X‹àpË[Ÿ€»XÿŸ\⁄XõHH\›XXõKÇãH»HZôX›]\à^HHôX€‹úöY»Ï€»€€àX€Y»[à\⁄›‹€[ÿö[KÇÇà»»»çôX›\\òX⁄pÏ€àH‹\òX⁄pÏ€ÇÇãH»HYö[ö\àî»Hï»€€àôY€ÿ⁄[ÀÇãH»H]]€X]^ò\àòX⁄›\YX⁄[€ò[⁄H[[àH›\Xò\ŸH»ô\]ZY\ôKÇãH»HZôX›]\à[òHô\›]\òX⁄pÏ€à€€\]H[à[ù‹õõ»Z\€YÀÇãH»Hÿ›[Y[ù\à\ﬁKõ€òX⁄Àõ›X⁄pÏ€àHŸX‹ô]‹»Hô\‹Y\›HH[ò⁄Y[ù\ÀÇãH»HpÏXY\à0ËY⁄[òHH\›Y‹»[öYõ‹õY\»H\úõ‹ã‹ôZ[ù[ùÀÇÇà»»»çHÿ]HHÿ[YHH]\HÇãH»H“H€€\]»ô\ôHHÿõYÿ]‹ö[»\òHY\ôŸKÇãH»H[\ù\»õÿòY\»YYX[ùH[à\úõ‹à⁄[ù0Í]X€ÀÇãH»HõZõ‹»ö[ò⁄\[\»€€\]Xõ\»Ï€»€€àX€YÀÇãH»Hô\›]\òX⁄pÏ€àZôX›]YHHY[\»YYYÀÇÇà»»Kà]\HH8†%\ú]Z]X›\òH[ò‹ô[Y[ù[Çääìÿöô]]õŒääàôYX⁄\à]YH⁄[à[òHôY\ÿ‹ö]\òH]YH€ôÿH[àöY\Ÿ€»H‹\òX⁄pÏ€ãÇÇãH»H‹ôX\à[òHSŸ\ùô\ã[€õX\òH‹\òX⁄[€ô\»Ÿ[ú⁄Xõ\»H]]‹ö^òX⁄pÏ€àŸ\òÿBàHHùY[ùHH]‹ÀÇãH»HŸ\\ò\à€Y[ùH0ÓòõX€»Hÿ]0Ë[Ÿ€À€Y[ùHúõ›‹Ÿ\à]][ùXÿY»H€Y[ùBàŸ\ùô\ã\⁄YKÇãH»H‹ôÿ[ö^ò\à‹àpÏŸ[‹»ô\ùXÿ[\Œàô[ù\À[ùô[ù\ö[À€Y[ù\Àÿ\›‹»Bàÿ]0Ë[Ÿ€ÀÇãH»H^òY\àö[Y\õ»0ÏŸ⁄XÿH\òHHŸ\ùöX⁄[‹»H‹»€€\€ô[ù\»X^[‹ô\»Håà0Î[ôX\Œ»X[ù[ô\àú»\]YpÏ[‹ÀÇãH»HYö[ö\à€€ùò]‹À—»H]ö]\à[ùYY\»Hò\ŸH€€\]\»[àHRKÇãH»HŸ[ùò[^ò\àX[ôZõ»H\úõ‹ô\ÀÿY[ôÀõ‹õ][\ö[‹»H€€ôö\õXX⁄[€ô\ÀÇãH»HpÏXY\àŸ\ùô\ã[€õXHpÏŸ[‹»]YH][XŸ[àŸX‹ô]‹»»]‹»[ù\õõ‹ÀÇãH»HX›X[^ò\àëPQQHHõŸHèLåéKåH[õ^ò\àÏ€»\›H]Y]‹∞ÎXHH\›H[Çà€€[»ùY[ù\»öYŸ[ù\ÀÇãH»HX\òÿ\àõÿYX\»\›0Ï‹öX€‹»€€[»\ò⁄]òY‹»\òH[[Z[ò\à€€ùòYXÿ⁄[€ô\ÀÇÇê‹ö]\ö[»Hÿ[YNÇÇãH»Hö[ôÓõàŸX‹ô]»»Ÿ\ùöXŸHõ€HYYH[ùò\à[à[àù[ôHH€Y[ùKÇãH»H‹»€€\€ô[ù\»ö[ò⁄\[\»]YY[à‹àXòZõ»H[à[XpÏ[»X€‹ôY»»Y[ô[Çàô\‹€úÿXö[YY\»€\ò[Y[ùHŸ\\òY\ÀÇãH»HÿYHpÏŸ[»Y[ôH[Y[õ‹»ùYXò\»H›H0ÏŸ⁄XÿH‹∞Î]XÿKÇÇà»»Là]\Hà8†%õÿYX\HõŸX›¬Çë\›H]\H€€ZY[ûòHÏ€»\‹pÍ\»HŸ\úò\à\»]\\»8†$Ããà[‹ô[àö[ò[\[ôBôHò[‹à€€Y\ò⁄X[Hÿ\X⁄YY‹\ò]]òKÇÇåKà
-äîYY‹»\ŸHÿ]0Ë[Ÿ€Œääà€€ùô\ù\à[ÿ\úö]À’⁄]–\[à[òH‹ô[à€€Çà\›Y‹Àò^òXö[YYHò[YX⁄pÏ€àH›ÿ⁄ÀÇåãà
-äê[\ù\»Hô\‹⁄X⁄pÏ€éääà›ÿ⁄»Y[õ‹à»Y›X[HpÎ[ö[[À›YŸ\ô[ò⁄XHH€€\òHBàô\‹€úÿXõHHô\€€X⁄pÏ€ãÇåÀà
-äë]õ€X⁄[€ô\»Hõ›\»H‹∞ÍY]Œääàô]ô\ú⁄pÏ€àò^òXõHHY€‹»H›ÿ⁄»⁄[ÇàY]\àô[ù\»\›0Ï‹öXÿ\ÀÇçà
-äîô\‹ù\»HX\ôŸ[éääà\ÿ\àôX⁄[»H€€\òH\›0Ï‹öX€À\ÿ›Y[ù‹»H€‹›‹Ààõ»Ï€»òX›\òX⁄pÏ€ãÇçKà
-äê‘ìHpÎ[ö[[Œääà\›‹öX[]\]Y]\»H€€úŸ[ù[ZY[ù»\òHÿ[\pÏX\ÀÇçãà
-äê›Y[ù\»‹à€ÿúò\ã‹Yÿ\àH€€ò⁄[XX⁄pÏ€éääàÿ[‹Àô[ò⁄[ZY[ù‹»H\›Y‹ÀÇçÀà
-äêåêãY€‹»€õ[ôH»][\›X›\úÿ[ääà]ò[X\àÏ€»›X[ô»H‹\òX⁄pÏ€àX›X[à[ôÿH]]‹ö^òX⁄pÏ€à‹ò[ù[\àHÿúŸ\ùòXö[YYÇÇêÿYHôX]\ôHXôH[ò€Z\à[ù\»H\ÿ\úõ€ŒÇÇãH\0Ï›\⁄\»HpÍ]öXÿHH0Í^]Œ¬ãH[Ÿ[»H\õZ\€‹Œ¬ãH[\X›»[à›ÿ⁄ÀôX⁄[‹»H]Y]‹∞ÎXN¬ãHZY‹òX⁄pÏ€àô]ô\ú⁄XõKŸõ‹ùÿ\ôYö^¬ãHùYXò\»Hù[òõ€⁄»‹\ò]]õÀÇÇà»»LKà]ö\⁄pÏ€à›YŸ\öYH[àÿ[Xö[‹À‘ÇÇü‹ô[àÿ[Xö[»€€ù[öY»üKKNüKK_KK_üH—PÀX€€ù[ò⁄[€ã\\‹⁄Ÿ^\ÀZú€€õõ‹]Y[»H\‹⁄Ÿ^\»H\ÿÿ\Hî””ãSüàãX⁄Y\úôKX[õ€ò‹ò[ùÀ‘ì»Hô[ù\»Hÿ]0Ë[Ÿ€»0ÓòõX€»pÎ[ö[[»ü»’‘êQ—K\ôXŸZ\À\ö]ò]XùX⁄Ÿ]ö]òYÀ€0Î]Xÿ\»HTì»ö\õXY\»ü—PÀ\\‹⁄Ÿ^\À]åòôY\ŸpÏ[»€€\]»H\›»HŸY›\öYYüHïTÀ\‹ÀX]]‹ö]]]ôK\öX⁄[ôÿôY€HHôX⁄[‹»Hî»]]‹ö]]]õ»üàãX]€ZXÀZ[ùô[ù‹ûX€€Xõ»H‹\òX⁄[€ô\»X\⁄]ò\»ò[úÿXÿ⁄[€ò[\»ü»ã[ZY‹ò][€ãXò\Ÿ[[ôXô\õŸX⁄Xö[YY\‹»H\›»Hì»ü–K\Ÿ\ù⁄\›Ÿ\ùöXŸH€‹öŸ\ãX€€õ‹»H€[⁄ŸH‹Ÿ\ﬁHüHTëã\XõXÀXÿ][ŸÀXÿX⁄X€Y[ùH0ÓòõX€»⁄[à€€⁄⁄Y\»HT‘ãÿÿX⁄HüL‘ÀYLôK[ÿúŸ\ùòXö[]KXLL^X“KòX⁄[ôÀX[Ÿ‹»HôX›\\òX⁄pÏ€àÇìõ»Y‹ù\\àÿ[Xö[‹»x†$Õà[à[à0ÓõöX€»éàô\]ZY\ô[àõ€òX⁄»Hò[YX⁄pÏ€Çö[ô\[ôY[ù\ÀÇÇà»»»LKåH‹ô[àH\ﬁHH€€ù[ò⁄pÏ€à
-]\H
-BÇëùY[ùHöYŸ[ùNàÿÿ‹À—UTL”‘ëSó—T÷KõYJãŸÿ‹À—UTL”‘ëSó—T÷KõY
-KÇÇåKàòX⁄›\Hô\Ÿ\ùòX⁄pÏ€àHŸ‹¬åãà\ﬁHYŸHù[ò›[€à\‹⁄Ÿ^KX]]õ‹]YXYBåÀàî»Y‹ôYÿY»
-›YŸL⁄\ô[óÿÿ][Ÿ◊‹ÿ[\◊‹úÿ
-Bçà⁄Y\úôH[õ€àÿ[\À‹ÿ[W⁄][\»
-›YŸLÿ€‹ŸWÿ[õ€ó‹ÿ[\ÿ
-BçKà\ﬁH\
-»0ÓòõX€ÀRKî””ãS
-Bçãà‹ò[ù»ÿ]0Ë[Ÿ€»€€[[ã[]ô[
-›YŸL‹XõX◊ÿÿ][Ÿ◊ÿ€€[[óŸ‹ò[ùÿëUì“—H[õ€ä‘PìP BçÀàùYXò\»[ùY‹òX⁄pÏ€à[õ€ã‹‹⁄]]ò\Àÿ‹õ‹‹À]\Ÿ\à
-úHù[à\›ö[ùY‹ò][€ò
-BéàZY‹òX⁄pÏ€àYÿXﬁHôXŸZ\»
-»ùX⁄Ÿ]ö]òY»\›öX›»
-›YŸL‹ôXŸZ\◊‹ö]ò]WÿùX⁄Ÿ]
-BÇà»»»LKåàõ‹ùÿ\ôYö^›YŸH
-[ùô[ù\ö[»YÿXﬁJBÇüZY‹òX⁄pÏ€à\›Y»Xÿ⁄pÏ€àüKK_KK_KK_ü›YŸL‹ô]õ⁄ŸWÿ]][ùXÿ]Y€YÿXﬁW⁄[ùô[ù‹ûX
-äê\XÿY»Hô\öYöXÿY»[àõŸXÿ⁄pÏ€ääàëUì“—HVP’UHH›YŸL⁄[ùô[ù‹ûW€YÿXﬁW‹ôXŸZ\›\õ 
-XH]][ùXÿ]Y»VP’UH€€»Ÿ\ùöXŸW‹õ€XÇìõ»ôXXúö\àVP’UHH]][ùXÿ]Yàõ»ôXXúö\à[õ€ãÇÇà»»Lãà⁄X⁄€\›€ÿò[HYö[ö][€àŸà€ôBÇï[à0Î][HÏ€»YYHX\òÿ\úŸH\õZ[òY»⁄NÇÇãH»HY[ôHÏŸY€À€ZY‹òX⁄pÏ€àHÿ›[Y[ùX⁄pÏ€àô\ú⁄[€òY‹ÀÇãH»H[ò€^YHùYXò\»‹⁄]]ò\»HôYÿ]]ò\»õ‹‹ò⁄[€ò[\»[öY\Ÿ€ÀÇãH»H[ù\‹À[ö]\ö[‹»HùZ[\›0Ë[àô\ô\ÀÇãH»H[ùY‹òX⁄pÏ€ã—LëHô[]ò[ùH\›0ËHô\ôKÇãH»HŸHô\öYöXÏ»[à›Y⁄[ô»€€àõ€\»ôX[\ÀÇãH»HY[ôH[àH\‹YY›YHHôX›\\òX⁄pÏ€ãŸõ‹ùÿ\ôYö^ÇãH»Hõ»ôY⁄\›òHRHöHŸX‹ô]‹ÀÇãH»H‹»‹ö]\ö[‹»HXŸ\X⁄pÏ€àùY\õ€àò[YY‹»‹àPK‹ô]ö\€‹ãÇãH»HŸH\‹YÏ»H\Ï»€[⁄ŸH\›‹Ÿ\ﬁKÇãH»HUQU‘íPKõYH\›H[àŸHX›X[^ò\õ€à⁄Hÿ[XöpÏ»[öY\Ÿ€»ô\⁄YX[ÇÇà»»LÀàpÍ]öXÿ\»H⁄Y\úôBÇüpÍ]öXÿHÿöô]]õ»üKK_KKNüüö[\»Ÿ[ú⁄Xõ\»XÿŸ\⁄Xõ\»‹à[õ€òü€€[[ò\»[ù\õò\»XÿŸ\⁄Xõ\»\ŸHÿ]0Ë[Ÿ€»üôY⁄\›õ»\‹⁄Ÿ^H⁄[àŸ\⁄pÏ€àXŸ\Y»üYô\ô[ò⁄XHRH»ò\ŸH»€€\õÿò[ùH	üZY‹òX⁄[€ô\»ô\õŸX⁄Xõ\»\ŸHŸ\õ»L	HüLëH‹∞Î]X€‹»ZôX›]Y‹»[à“HL	Hü‹›Àöúÿ\‹pÍ\»H\ﬁHåü\úõ‹ô\»^⁄[àò^òKÿ€‹úô[][€àQüô\›]\òX⁄[€ô\»[úÿ^XY\»[Y[õ‹»H‹àö[Y\›ôHÇà»»MàôY⁄\›õ»H]ò[òŸBÇüôX⁄H]\Hÿ[Xö[»\›Y»]öY[ò⁄XH»àüKK_KK_KK_KK_KK_üåçãLLH[öYöXÿX⁄pÏ€à‹ôXX⁄pÏ€àH]Y]‹∞ÎXHH[àöYŸ[ùH€€\]Y»UQU‘íPKõYSãõYüåçãLLH€€ù[ò⁄pÏ€à[\[Y[ùX⁄pÏ€à[àô\»
-\‹⁄Ÿ^\À»ÿ]0Ë[Ÿ€ÀZY‹òX⁄[€ô\Àî””ãSù[òõ€⁄‹ H[à›\ú€»⁄[à\ﬁK‹õŸpÓõé»ÿ]Hç»[ôY[ùHüåçãLLH€€ù[ò⁄pÏ€àö^õ‹]YXY‹ô\ŒàëUì“—HPìPÀôXŸZ\»0Î[Z]\»^0ÎX⁄]‹ÀYÿXﬁHÿ›[Y[ùYÀ\›»[ùY‹òX⁄pÏ€ã‹ô[à\ﬁH[à›\ú€»ô\àÿ‹À—UTL”‘ëSó—T÷KõYüåçãLLL€€ù[ò⁄pÏ€à
-äê\XÿY»Hô\öYöXÿY»[àõŸXÿ⁄pÏ€ääà
-\‹⁄Ÿ^HQãZY‹òX⁄[€ô\»›YŸLô\òŸ[[\òKò€€Kò\ãôXŸZ\»ö]ò]KàYÿXﬁHZY‹òY‹ Hô\öYöXÿY»€[⁄ŸH[õ€àHô[ù\Œ»\‹⁄Ÿ^HŒ»ÿ]0Ë[Ÿ€»å»ôXŸZ\»XõXœYò[ŸHüåçãLLL€€ù[ò⁄pÏ€àõ‹ùÿ\ôYö^[ùô[ù\ö[»YÿXﬁNàëUì“—HVP’UHH]][ùXÿ]Yô\öYöXÿY»\XÿY»[àõŸ
-
-ó‹›YŸL‹ô]õ⁄ŸWÿ]][ùXÿ]Y€YÿXﬁW⁄[ùô[ù‹ûKú‹[
-HüåçãLLL€€ù[ò⁄pÏ€à]ò[XX⁄pÏ€àHŸX‹ô]‹»
-—PÀL H€€\]Y»õ‹Y]\ö[»€€ôö\õXH]YHù[òÿHÿ[Y\õ€à[\]Z\Œ»õ›X⁄pÏ€àõ»ô\]Y\öYHüåçãLLLHŸY›\öYYH[ùY‹öYYõ€\»
-»ì»
-»‘»ôX⁄[‹»
-‹⁄pÏ€àJH
-»\‹⁄Ÿ^\»åà\ŸpÏ[»[à›\ú€»ö[Y\òHô\ú⁄pÏ€à[àô\Œ»
-äõõ»\‹YÿY äàüåçãLLLHHŸY›\öYYH[ùY‹öYY€‹úôXÿ⁄pÏ€à[ùY‹ò[]\HH
-úõ€ù\òH‘Àõ€››ò\ìÀY€‹À\›Àÿ‹ H[àô]ö\⁄pÏ€àÿ‹À—UTLW‘ïSêì”“ÀõY»
-äõõ»\‹YÿY äé»[ôY[ùHô]öY]»[X[òHüåçãLLLHHŸY›\öYYH[ùY‹öYYôKX]Y]‹∞ÎXNà\Ÿ\ó‹õ€\»€X⁄Y\»‹›LåMLã⁄[àSUHô[ù\Àÿ⁄»\›ÿYZ[ãúôXZŸ›€à\›öX›À\›»ŸX›Y[ò⁄XH[àô]ö\⁄pÏ€à€€»ÿÿ[»
-äõõ»\‹YÿY äàüåçãLLLHHŸY›\öYYH[ùY‹öYY€‹úôXÿ⁄pÏ€à‹›\ô]öY]Œàÿ]0Ë[Ÿ€»[õ€àô\Ÿ\ùòYÀ[]H€€ò›\úô[ùHŸ\öX[^òYÀúôXZŸ›€àô\Ÿ[ùH€€»Z^Àö^\ô\»Hõ€\»ô\›]\òXõ\»[àô]ö\⁄pÏ€à€€»ÿÿ[»
-äõõ»\‹YÿY äàüåçãLLLà8†$ÃH⁄Y\úôH›\Xò\ŸH
-»ô\òŸ[\‹YÿY‹Œ»‹»YZ[úŒ»€[⁄ŸHŸ⁄[ã›ô[ùK‹›ÿ⁄À‹ôXŸZ\»õÿô\»[õ€àH\‹⁄Ÿ^Hô\ô\Œ»\‹⁄Ÿ^\»\ÿÿ\ùY\»€€\]Y»€€[Z]»ŒXXMÃXX»ô\öYöXÿX⁄pÏ€àõŸX›]òHåçãLLLàüåçãLLLàà€ÿöY\õõ»H]‹»ò\Ÿ[[ôH‹ôY[ôöY[õ‹ùÿ\ô[€õH›YŸHã\‹À“Hã\ŸX›\ö]K[ùô[ù\ö[»Hù[òõ€⁄»€€\]Y»€€[Z]ÿçÃ»“Hô\ôN»ZY‹òX⁄pÏ€àåçåLåLŒLLÿH€[⁄ŸHõŸX›]õ»“»Çë\›Y‹»\õZ]Y‹Œà[ôY[ùX[à›\ú€ÿõ‹]YXYÿ[àô]ö\⁄pÏ€òò\‹YÿYÿô\öYöXÿYÿH€€\]YÿÇ
+- [x] Comparar el resultado local con el remoto mediante schema diff.
+  *(no existe staging; se contrast√≥ local‚Üíproducci√≥n en solo lectura y qued√≥
+  documentado el residual bigint/serial y default privileges)*
+- [x] Ejecutar advisors y clasificar warnings de seguridad/performance.
+  *(local Stage 2: 0 security warn/error y 0 FKs sin √≠ndice; hosted conserva
+  warnings previos/intencionales de RPC DEFINER y protecci√≥n de contrase√±as filtradas)*
+- [x] Guardar evidencia de `migration list` local y remoto.
+  *(ambos alineados hasta `20260812013913`)*
+
+### 6.2 Tipos y validaci√≥n
+
+- [x] Generar tipos TypeScript desde el esquema versionado.
+  *(`types/database.generated.ts`, `npm run db:types`)*
+- [ ] Eliminar gradualmente tipos manuales duplicados y casts desde `unknown`.
+  *(inventariados; refactor masivo fuera de alcance Stage 2)*
+- [ ] A√±adir validaci√≥n de payloads en Server Actions, Route Handlers y l√≠mites de
+  RPC; no confiar s√≥lo en tipos de compilaci√≥n. *(diferido a calidad/arquitectura)*
+- [x] Versionar el comando de regeneraci√≥n y comprobar diff en CI.
+  *(`db:types`, `db:types:check`, job `db-security`)*
+
+### 6.3 Pruebas de seguridad de base en CI
+
+- [x] Levantar Supabase local o un staging ef√≠mero.
+- [x] Aplicar todas las migraciones desde cero.
+- [x] Ejecutar matriz de acceso `anon` / roles autenticados / service role.
+  *(`scripts/db-security-matrix.mjs`; roles auth v√≠a suite Stage 1)*
+- [x] Probar columnas p√∫blicas, ventas, clientes, gastos, comprobantes y RPC.
+- [x] Fallar CI si una tabla expuesta carece de RLS o grants declarados.
+  *(`scripts/check-rls-coverage.mjs`)*
+- [x] Ejecutar advisors y conservar un reporte sanitizado.
+  *(`docs/ETAPA2_RUNBOOK.md` + clasificaci√≥n advisors)*
+
+### 6.4 Gate de salida de etapa 2
+
+- [x] `supabase db reset` o flujo equivalente reconstruye el entorno. *(local)*
+- [x] No quedan cambios de esquema aplicados s√≥lo desde dashboard.
+  *(nuevos cambios versionados; residual hist√≥rico documentado)*
+- [x] Tipos generados coinciden con el esquema. *(check local)*
+- [x] CI detecta una pol√≠tica an√≥nima permisiva introducida deliberadamente en una
+  prueba de control. *(`npm run test:db-insecure-control`)*
+- [x] Deploy de `20260812013913` en producci√≥n + smoke no mutante.
+  *(sitio/cat√°logo 200; ventas/campos internos anon 401; passkeys 403)*
+
+## 7. Etapa 3 ‚Äî PWA y rendimiento
+
+**Estado (local, 2026-08-11): IMPLEMENTADA EN REPO ‚Äî pendiente deploy/smoke prod.**
+
+**Decisi√≥n de negocio definitiva:** PWA instalable (icono, standalone, app-like)
+**sin** funcionamiento offline. Sin precache, sin runtime cache de p√°ginas/API/
+Supabase/sesi√≥n, sin colas ni ventas offline. Ver
+[`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](./docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md).
+
+### 7.1 Reparar PWA ‚Äî PWA-01
+
+- [x] Retirar Serwist (`@serwist/next`, `serwist`, `app/sw.ts`, wrapper en
+  `next.config.ts`) ‚Äî incompatibilidad Turbopack y offline no deseado.
+- [x] Service worker est√°tico m√≠nimo `public/sw.js`: install/activate, limpieza de
+  CacheStorage legacy, fetch listener **sin** `respondWith` (network-only).
+- [x] Registro cliente `components/PwaRegister.tsx` en layout ra√≠z.
+- [x] Iconos reales: 192√ó192, 512√ó512, maskable 512, apple-touch 180
+  (`npm run pwa-icons` / `check:pwa-icons`).
+- [x] Manifest `display: standalone`, theme `#ff6eb4`, scope `/`, start_url `/`.
+- [x] Headers `Cache-Control: no-cache` para `/sw.js`.
+- [x] Tests unitarios + E2E PWA; script `check:pwa-icons`.
+- [ ] Smoke posdeploy: `/sw.js` 200, registro SW, sin `Production ‚Äì ilara-app` en
+  Vercel, sin caches Serwist en clientes existentes tras visita.
+
+### 7.2 Recuperar cache del cat√°logo ‚Äî PERF-01
+
+- [x] Cliente p√∫blico `lib/supabase/public.ts` **sin** `cookies()`.
+- [x] Cat√°logo listado y PDP usan DTO p√∫blico (`CATALOG_*_SELECT`) v√≠a cliente
+  p√∫blico.
+- [x] `revalidate` de cat√°logo/PDP deja de anularse por cookies; las fichas
+  visibles se prerenderizan con `generateStaticParams` (ISR viable).
+- [ ] Invalidaci√≥n on-demand por tags al mutar productos (backlog opcional Stage 4+).
+- [x] Medici√≥n local documentada en runbook Stage 3 (antes/despu√©s sanitizado).
+
+### 7.3 Optimizaci√≥n medida
+
+- [x] `display: "swap"` en fuentes Outfit/Fraunces (LCP texto).
+- [x] Iconos PWA reducidos de decenas de KB incorrectos a PNG dimensionados.
+- [x] Eliminaci√≥n de Serwist del bundle de build (menos deps y sin warning Turbopack).
+- [ ] `content-visibility` / bundle analyzer profundo ‚Üí backlog Stage 4‚Äì5 si hay
+  evidencia de regresi√≥n.
+- [ ] Vitest ESM warning residual ‚Üí no bloqueante Stage 3.
+
+### 7.4 Gate de salida de etapa 3
+
+- [x] Criterios locales: instalable (manifest+SW+iconos), sin offline de negocio,
+  sin cache app/Supabase en SW, build sin Serwist/Turbopack warning PWA.
+- [ ] Deploy a Vercel proyecto **`ilara`** √∫nicamente + smoke prod.
+- [x] Cat√°logo p√∫blico sin `cookies()` en fetch de datos.
+- [x] SW no cachea autenticado ni comprobantes (no cachea nada de app).
+
+## 8. Etapa 4 ‚Äî Calidad operativa
+
+### 8.1 E2E y CI ‚Äî TEST-01
+
+- [ ] Instalar navegadores Playwright en CI con cache compatible.
+- [ ] Actualizar el smoke test del encabezado del cat√°logo.
+- [ ] Cubrir login, autorizaci√≥n, venta, stock, combos, gastos, comprobantes,
+  carrito, cup√≥n, WhatsApp, PWA y mobile.
+- [ ] Usar datos de prueba aislados y limpieza determinista.
+- [ ] Ejecutar lint, tipos, unitarios, integraci√≥n, E2E y build en cada PR.
+- [ ] A√±adir smoke tests posdeploy para cat√°logo, login, headers y service worker.
+
+### 8.2 Observabilidad ‚Äî OBS-01
+
+- [ ] Integrar Sentry, OpenTelemetry o equivalente en cliente, servidor y Edge
+  Functions.
+- [ ] Definir sanitizaci√≥n de PII y secretos antes de enviar eventos.
+- [ ] A√±adir correlation/request ID y errores estructurados.
+- [ ] Crear alertas para fallos de login, RPC de venta, Storage y errores 5xx.
+- [ ] Registrar m√©tricas de negocio t√©cnicas sin datos personales: ventas fallidas,
+  conflictos de stock, latencia y tasa de error.
+- [ ] Documentar runbooks para cada alerta.
+
+### 8.3 Accesibilidad ‚Äî A11Y-01
+
+- [ ] Crear un componente Dialog √∫nico con focus trap, Escape, restauraci√≥n de
+  foco, fondo inerte, scroll lock y labels.
+- [ ] Migrar passkeys, gastos, inventario, ventas y confirmaciones.
+- [ ] Sustituir `div onClick` por botones/enlaces sem√°nticos.
+- [ ] Sustituir `confirm()` por di√°logo accesible y testeable.
+- [ ] Ejecutar axe y recorrido s√≥lo con teclado en desktop/mobile.
+
+### 8.4 Recuperaci√≥n y operaci√≥n
+
+- [ ] Definir RPO y RTO con negocio.
+- [ ] Automatizar backup adicional si el plan de Supabase lo requiere.
+- [ ] Ejecutar una restauraci√≥n completa en entorno aislado.
+- [ ] Documentar deploy, rollback, rotaci√≥n de secretos y respuesta a incidentes.
+- [ ] A√±adir p√°gina 404 y estados uniformes de error/reintento.
+
+### 8.5 Gate de salida de etapa 4
+
+- [ ] CI completo verde y obligatorio para merge.
+- [ ] Alertas probadas mediante un error sint√©tico.
+- [ ] Flujos principales completables s√≥lo con teclado.
+- [ ] Restauraci√≥n ejecutada y tiempo medido.
+
+## 9. Etapa 5 ‚Äî Arquitectura incremental
+
+**Objetivo:** reducir deuda sin una reescritura que ponga en riesgo la operaci√≥n.
+
+- [ ] Crear una DAL `server-only` para operaciones sensibles y autorizaci√≥n cerca
+  de la fuente de datos.
+- [ ] Separar cliente p√∫blico de cat√°logo, cliente browser autenticado y cliente
+  server-side.
+- [ ] Organizar por m√≥dulos verticales: ventas, inventario, clientes, gastos y
+  cat√°logo.
+- [ ] Extraer primero l√≥gica pura y servicios de los componentes mayores de 600
+  l√≠neas; mantener PRs peque√±os.
+- [ ] Definir contratos/DTO y evitar entidades de base completas en la UI.
+- [ ] Centralizar manejo de errores, loading, formularios y confirmaciones.
+- [ ] A√±adir `server-only` a m√≥dulos que utilicen secretos o datos internos.
+- [ ] Actualizar README a Node `>=20.9.0` y enlazar s√≥lo esta auditor√≠a y este plan
+  como fuentes vigentes.
+- [ ] Marcar roadmaps hist√≥ricos como archivados para eliminar contradicciones.
+
+Criterio de salida:
+
+- [ ] Ning√∫n secreto o service role puede entrar en un bundle de cliente.
+- [ ] Los componentes principales quedan por debajo de un tama√±o acordado o tienen
+  responsabilidades claramente separadas.
+- [ ] Cada m√≥dulo tiene al menos pruebas de su l√≥gica cr√≠tica.
+
+## 10. Etapa 6 ‚Äî Roadmap de producto
+
+Esta etapa comienza s√≥lo despu√©s de cerrar las etapas 0‚Äì2. El orden final depende
+de valor comercial y capacidad operativa.
+
+1. **Pedidos desde cat√°logo:** convertir el carrito/WhatsApp en una orden con
+   estados, trazabilidad y validaci√≥n de stock.
+2. **Alertas de reposici√≥n:** stock menor o igual a m√≠nimo, sugerencia de compra y
+   responsable de resoluci√≥n.
+3. **Devoluciones y notas de cr√©dito:** reversi√≥n trazable de pagos y stock sin
+   editar ventas hist√≥ricas.
+4. **Reportes de margen:** usar precio de compra hist√≥rico, descuentos y costos,
+   no s√≥lo facturaci√≥n.
+5. **CRM m√≠nimo:** historial, etiquetas y consentimiento para campa√±as.
+6. **Cuentas por cobrar/pagar y conciliaci√≥n:** saldos, vencimientos y estados.
+7. **B2B, pagos online o multisucursal:** evaluar s√≥lo cuando la operaci√≥n actual
+   tenga autorizaci√≥n granular y observabilidad.
+
+Cada feature debe incluir antes de desarrollo:
+
+- hip√≥tesis y m√©trica de √©xito;
+- modelo de permisos;
+- impacto en stock, precios y auditor√≠a;
+- migraci√≥n reversible/forward-fix;
+- pruebas y runbook operativo.
+
+## 11. Divisi√≥n sugerida en cambios/PR
+
+| Orden | Cambio | Contenido |
+|---:|---|---|
+| 1 | `SEC-contencion-passkeys-jsonld` | Bloqueo de passkeys y escape JSON-LD |
+| 2 | `DB-cierre-anon` | Grants/RLS de ventas y cat√°logo p√∫blico m√≠nimo |
+| 3 | `STORAGE-receipts-private` | Bucket privado, pol√≠ticas y URLs firmadas |
+| 4 | `SEC-passkeys-v2` | Redise√±o completo y tests de seguridad |
+| 5 | `BUS-pos-authoritative-pricing` | Regla de precios y RPC autoritativo |
+| 6 | `DB-atomic-inventory` | Combo y operaciones masivas transaccionales |
+| 7 | `DB-migration-baseline` | Reproducibilidad, tipos y tests de RLS |
+| 8 | `PWA-serwist` | Service worker, iconos y smoke posdeploy |
+| 9 | `PERF-public-catalog-cache` | Cliente p√∫blico sin cookies e ISR/cache |
+| 10 | `OPS-e2e-observability-a11y` | CI, tracing, dialogs y recuperaci√≥n |
+
+No agrupar cambios 1‚Äì6 en un √∫nico PR: requieren rollback y validaci√≥n
+independientes.
+
+### 11.1 Orden de deploy de contenci√≥n (Etapa 0)
+
+Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
+
+1. Backup y preservaci√≥n de logs
+2. Deploy Edge Function `passkey-auth` bloqueada
+3. RPC agregado (`stage0_harden_catalog_sales_rpc`)
+4. Cierre anon sales/sale_items (`stage0_close_anon_sales`)
+5. Deploy app (DTO p√∫blico, UI, JSON-LD)
+6. Grants cat√°logo column-level (`stage0_public_catalog_column_grants`, REVOKE anon+PUBLIC)
+7. Pruebas integraci√≥n anon/positivas/cross-user (`npm run test:integration`)
+8. Migraci√≥n legacy receipts + bucket privado estricto (`stage0_receipts_private_bucket`)
+
+### 11.2 Forward-fix Stage 0 (inventario legacy)
+
+| Migraci√≥n | Estado | Acci√≥n |
+|---|---|---|
+| `stage0_revoke_authenticated_legacy_inventory` | **Aplicado y verificado en producci√≥n** | REVOKE EXECUTE de `stage0_inventory_legacy_receipt_urls()` a `authenticated`; EXECUTE solo `service_role` |
+
+No reabrir EXECUTE a `authenticated`. No reabrir anon.
+
+## 12. Checklist global de Definition of Done
+
+Un √≠tem s√≥lo puede marcarse terminado si:
+
+- [ ] Tiene c√≥digo/migraci√≥n y documentaci√≥n versionados.
+- [ ] Incluye pruebas positivas y negativas proporcionales al riesgo.
+- [ ] Lint, tipos, unitarios y build est√°n verdes.
+- [ ] Integraci√≥n/E2E relevante est√° verde.
+- [ ] Se verific√≥ en staging con roles reales.
+- [ ] Tiene plan de despliegue y recuperaci√≥n/forward-fix.
+- [ ] No registra PII ni secretos.
+- [ ] Los criterios de aceptaci√≥n fueron validados por QA/revisor.
+- [ ] Se despleg√≥ y pas√≥ smoke test posdeploy.
+- [ ] `AUDITORIA.md` y este plan se actualizaron si cambi√≥ el riesgo residual.
+
+## 13. M√©tricas de cierre
+
+| M√©trica | Objetivo |
+|---|---:|
+| Filas sensibles accesibles por `anon` | 0 |
+| Columnas internas accesibles desde cat√°logo | 0 |
+| Registro passkey sin sesi√≥n aceptado | 0 |
+| Diferencia UI / base / comprobante | $0 |
+| Migraciones reproducibles desde cero | 100 % |
+| E2E cr√≠ticos ejecutados en CI | 100 % |
+| `/sw.js` despu√©s de deploy | HTTP 200 |
+| Errores 5xx sin traza/correlation ID | 0 |
+| Restauraciones ensayadas | al menos 1 por trimestre |
+
+## 14. Registro de avance
+
+| Fecha | Etapa | Cambio | Estado | Evidencia / PR |
+|---|---|---|---|---|
+| 2026-08-09 | Planificaci√≥n | Creaci√≥n de auditor√≠a y plan vigente | Completado | `AUDITORIA.md`, `PLAN.md` |
+| 2026-08-09 | 0 Contenci√≥n | Implementaci√≥n en repo (passkeys, DTO cat√°logo, migraciones, JSON-LD, runbooks) | En curso | Sin deploy/prod a√∫n; gate 4.7 pendiente |
+| 2026-08-09 | 0 Contenci√≥n | Fix bloqueadores: REVOKE PUBLIC, receipts l√≠mites expl√≠citos, legacy documentado, tests integraci√≥n, orden deploy | En curso | Ver docs/ETAPA0_ORDEN_DEPLOY.md |
+| 2026-08-10 | 0 Contenci√≥n | **Aplicado y verificado en producci√≥n** (passkey EF, migraciones stage0, Vercel ilara.com.ar, receipts private, 2 legacy migrados) | Verificado | Smoke anon 401 ventas; passkey 403; cat√°logo 200; receipts public=false |
+| 2026-08-10 | 0 Contenci√≥n | Forward-fix inventario legacy: REVOKE EXECUTE a authenticated | Verificado | Aplicado en prod (`*_stage0_revoke_authenticated_legacy_inventory.sql`) |
+| 2026-08-10 | 0 Contenci√≥n | Evaluaci√≥n de secretos (SEC-03) | Completado | Propietario confirma que nunca salieron del equipo; rotaci√≥n no requerida |
+| 2026-08-10 | 1 Seguridad e integridad | Roles + RLS + POS precios (Opci√≥n A) + passkeys v2 dise√±o | En curso | Primera versi√≥n en repo; **no desplegado** |
+| 2026-08-11 | 1 Seguridad e integridad | Correcci√≥n integral Etapa 1 (frontera POS, bootstrap, RLS, pagos, tests, docs) | En revisi√≥n | `docs/ETAPA1_RUNBOOK.md`; **no desplegado**; pendiente review humana |
+| 2026-08-11 | 1 Seguridad e integridad | Re-auditor√≠a: user_roles policies post-21412, sin DELETE ventas, lock last_admin, breakdown estricto, tests secuencia | En revisi√≥n | Solo local; **no desplegado** |
+| 2026-08-11 | 1 Seguridad e integridad | Correcci√≥n post-review: cat√°logo anon preservado, delete concurrente serializado, breakdown presente solo mixto, fixtures de roles restaurables | En revisi√≥n | Solo local; **no desplegado** |
+| 2026-08-12 | 0‚Äì1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificaci√≥n productiva 2026-08-12 |
+| 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migraci√≥n `20260812013913` y smoke productivo OK |
+
+Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisi√≥n`,
+`Desplegado`, `Verificado` y `Completado`.
