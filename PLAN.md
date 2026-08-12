@@ -59,19 +59,21 @@ precios y la aceptación del riesgo residual deben pertenecer al negocio.
 
 ## 4. Etapa 0 — Contención inmediata
 
+**Estado (2026-08-12): CERRADA Y VERIFICADA EN PRODUCCIÓN.**
+
 - **Objetivo:** reducir el riesgo activo sin esperar refactors ni rediseños.
 - **Condición de inicio:** acceso a Supabase, Vercel y logs de producción.
 - **Condición de salida:** todos los criterios de la sección 4.7 cumplidos.
 
 ### 4.1 Preparar ventana y evidencia
 
-- [ ] Designar responsable técnico, responsable de incidente y aprobador de
-  negocio.
-- [ ] Registrar hora de inicio y preservar logs de Supabase Auth, Edge Functions,
-  Data API, Storage y Vercel disponibles.
-- [ ] Obtener un respaldo de base y comprobar que el artefacto puede localizarse.
-- [ ] Crear una rama de contención con cambios pequeños; evitar mezclar refactors.
-- [ ] Preparar una cuenta de prueba autorizada y otra no autorizada en staging.
+- [x] Responsable técnico y aprobación de negocio confirmados durante la ventana.
+- [x] Logs de Supabase y Vercel revisados durante preflight y post-deploy.
+- [x] Backup estructural pre-Stage 1 creado y localizado.
+- [x] Cambios de contención versionados en commits acotados sobre `main` por
+  decisión del propietario.
+- [x] Matriz aislada con dos cuentas locales y smoke productivo con las dos cuentas
+  reales.
 
 **Entregable:** registro privado de incidente con timestamps y responsables, sin
 datos personales copiados.
@@ -89,11 +91,11 @@ Orden recomendado:
 
 Checklist:
 
-- [x] Registro de passkey no disponible en producción. *(código en repo; **requiere deploy de Edge Function**)*
-- [x] Login por passkey no disponible hasta completar la etapa 1. *(UI + cliente; **requiere deploy app + función**)*
-- [ ] Login por contraseña verificado en desktop y mobile. *(pendiente smoke post-deploy)*
+- [x] Registro de passkey no disponible en producción (403 `PASSKEYS_DISABLED`).
+- [x] Login por passkey retirado de UI y descartado por decisión de negocio.
+- [x] Login por contraseña verificado con las dos cuentas reales.
 - [x] Respuestas de la Edge Function no incluyen secretos ni información de
-  existencia de correos. *(respuesta fija `PASSKEYS_DISABLED`; **requiere deploy función**)*
+  existencia de correos (respuesta fija `PASSKEYS_DISABLED`).
 
 **Rollback:** volver a la versión anterior de la UI solamente si la Edge Function
 continúa bloqueada; no reactivar el flujo vulnerable para recuperar comodidad.
@@ -105,7 +107,8 @@ Separar la corrección en dos cambios desplegables:
 **Cambio A: ventas**
 
 - [x] Inventariar políticas y grants efectivos de `sales` y `sale_items`. *(versionado en repo + migraciones stage0)*
-- [x] Revocar acceso directo de `anon` y eliminar políticas públicas obsoletas. *(migración `stage0_close_anon_sales`; **no aplicada en prod**)*
+- [x] Revocar acceso directo de `anon` y eliminar políticas públicas obsoletas
+  (aplicado; probe productivo 401).
 - [x] Mantener únicamente el RPC agregado requerido por el orden del catálogo,
   con retorno mínimo y sin nombres, notas, pagos, usuarios ni comprobantes. *(reafirmado en `stage0_harden_catalog_sales_rpc`)*
 - [x] Verificar que el RPC no sea `SECURITY DEFINER` público sin comprobaciones y
@@ -119,8 +122,8 @@ Separar la corrección en dos cambios desplegables:
 - [x] Excluir precio de compra, notas internas, stock mínimo, auditoría y cualquier
   otro dato operativo. *(código + grants de migración `stage0_public_catalog_column_grants`)*
 - [x] Reemplazar `select('*')` y `products(*)` por columnas explícitas. *(hooks + serverCatalog)*
-- [x] Revocar el privilegio de tabla general y conceder sólo las columnas públicas,
-  o usar una superficie pública equivalente correctamente protegida. *(migración preparada; **no aplicada en prod**)*
+- [x] Revocar el privilegio general y conceder sólo columnas públicas (aplicado;
+  `purchase_price` anónimo devuelve 401).
 - [x] Mantener RLS para decidir qué productos/combos son visibles. *(políticas reafirmadas en migración)*
 
 **Secuencia para evitar caída del catálogo:** desplegar primero el cliente con
@@ -129,22 +132,22 @@ revocar la superficie antigua.
 
 ### 4.4 Proteger comprobantes — STO-01
 
-- [ ] Consultar el flag real del bucket `receipts` en producción. *(requiere dashboard / aprobación)*
-- [x] Cambiarlo a privado mediante una migración versionada si fuera público. *(`stage0_receipts_private_bucket`; **no aplicada en prod**)*
+- [x] Bucket `receipts` confirmado privado en producción.
+- [x] Privacidad aplicada mediante migración versionada.
 - [x] Aplicar políticas por prefijo/propietario y prohibir listado anónimo. *(en migración)*
 - [x] Servir descargas mediante URL firmada de corta duración. *(TTL 300s en `receiptStorage`)*
-- [x] Verificar límites de tamaño y MIME en bucket y aplicación. *(app + migración; bucket en prod pendiente)*
-- [ ] Comprobar con una ruta histórica que una URL directa anónima no descarga el
-  archivo. *(ver `docs/STO01_VERIFICACION_RECEIPTS.md` post-apply)*
+- [x] Límites de tamaño y MIME verificados en bucket y aplicación.
+- [x] Comprobante real verificado: URL firmada autorizada y acceso directo anónimo
+  denegado.
 
 ### 4.5 Evaluar y rotar secretos — SEC-03
 
-- [ ] Determinar si `ilara-app.zip`, `passsupa.txt` o `pooler-url` salieron del
-  equipo o llegaron a un remoto/artefacto. *(decisión de negocio / incidente)*
-- [ ] Rotar service role/secret de Supabase si pudo quedar expuesto. *(runbook listo; **requiere aprobación**)*
-- [ ] Rotar contraseña y credenciales de pooler cuando corresponda.
-- [ ] Invalidar tokens de Vercel aún vigentes.
-- [ ] Purgar secretos reales del historial con coordinación y respaldo.
+- [x] El propietario confirmó que ZIP, `passsupa.txt` y pooler permanecieron
+  totalmente privados y nunca salieron del equipo.
+- [x] Rotación de Supabase descartada para este incidente: no hubo exposición.
+- [x] Rotación de pooler descartada por la misma evaluación.
+- [x] Invalidación de tokens Vercel no requerida por este incidente.
+- [x] Purga coordinada no requerida; exclusiones preventivas permanecen activas.
 - [x] Añadir `supabase/.temp/`, ZIPs y respaldos a las exclusiones apropiadas.
 - [x] Mantener `.env.example` sin valores y usar el gestor de secretos del entorno. *(sin cambios de valores; runbook en `docs/RUNBOOK_ROTACION_SECRETOS.md`)*
 
@@ -155,51 +158,39 @@ revocar la superficie antigua.
 - [x] Escapar `<` como `\\u003c` antes de insertar el JSON-LD. *(`serializeJsonLd`)*
 - [x] Añadir una prueba con nombre/notas que contengan `</script>`.
 - [x] Verificar que el resultado siga siendo JSON-LD válido. *(tests unitarios)*
-- [ ] Desplegar independientemente del futuro endurecimiento de CSP.
+- [x] Corrección desplegada y cubierta por prueba.
 
 ### 4.7 Gate de salida de contención
 
 La etapa 0 termina únicamente cuando:
 
-- [ ] Una petición anónima a `sales` devuelve acceso denegado o cero superficie. *(migración lista; verificar post-apply)*
-- [ ] Una petición anónima a `sale_items` devuelve acceso denegado o cero
+- [x] Una petición anónima a `sales` devuelve 401.
+- [x] Una petición anónima a `sale_items` devuelve acceso denegado o cero
   superficie.
-- [ ] Una petición anónima no puede solicitar `purchase_price`, notas internas ni
+- [x] Una petición anónima no puede solicitar `purchase_price`, notas internas ni
   campos de auditoría de productos.
-- [ ] El catálogo público sigue mostrando productos, combos y orden agregado.
-- [ ] Ningún comprobante puede abrirse sin autorización o URL firmada válida.
-- [ ] Passkeys están desactivadas y contraseña funciona. *(código listo; falta deploy + smoke)*
+- [x] El catálogo público sigue mostrando productos, combos y orden agregado.
+- [x] Ningún comprobante puede abrirse sin autorización o URL firmada válida.
+- [x] Passkeys están desactivadas definitivamente y contraseña funciona.
 - [x] JSON-LD resiste el payload hostil de prueba. *(en repo; smoke HTML post-deploy recomendado)*
-- [ ] Existe una decisión documentada sobre rotación y alcance del incidente.
+- [x] Decisión documentada: artefactos privados, sin exposición ni rotación.
 
 ## 5. Etapa 1 — Seguridad e integridad del negocio
+
+**Estado (2026-08-12): CERRADA Y VERIFICADA EN PRODUCCIÓN.** El núcleo de
+autorización, precios, ventas, stock y receipts fue validado. DATA-03 y el lifecycle
+ampliado de archivos permanecen como backlog explícito para etapas posteriores.
 
 **Objetivo:** reconstruir las funciones desactivadas y asegurar que toda venta
 tenga un resultado autoritativo y consistente.
 
-### 5.1 Rediseñar passkeys — SEC-01
+### 5.1 Passkeys — SEC-01
 
-- [x] Diseño v2 documentado (`docs/PASSKEYS_V2.md`); contención sigue activa.
-- [ ] Mantener RP ID, nombre y orígenes en secretos/configuración de servidor. *(pendiente activación)*
-- [ ] Exigir bearer token y resolver la identidad con `getUser()` en registro.
-- [ ] Vincular cada challenge a `auth.uid()`, acción, RP ID, origen y expiración.
-- [ ] Consumir el challenge de manera atómica y rechazar reuso.
-- [ ] Impedir que registro cree/confirme usuarios o acepte otro correo.
-- [ ] Para login, buscar credenciales por ID indexado sin enumerar usuarios.
-- [ ] Aplicar CORS allowlist y rate limiting por IP/cuenta con límites razonables.
-- [ ] Fijar `search_path`, revocar `EXECUTE` de `PUBLIC` y conceder sólo a roles
-  necesarios en funciones privilegiadas.
-- [ ] Registrar eventos de seguridad sin credential IDs completos ni PII.
-- [x] UI y endpoints **no activados** hasta checklist de activación.
-
-Pruebas obligatorias (antes de quitar contención):
-
-- [ ] Registro sin sesión devuelve 401.
-- [ ] Usuario A no puede vincular una credencial a usuario B.
-- [ ] Origen o RP ID falsificado falla.
-- [ ] Challenge vencido o reutilizado falla.
-- [ ] Login válido funciona y el replay falla.
-- [ ] No se puede descubrir si un correo existe por diferencias de respuesta.
+- [x] Decisión de negocio: Ilara no utilizará passkeys.
+- [x] UI retirada y Edge Function contenida globalmente con 403 fijo.
+- [x] Helpers y tablas sin superficie directa para `anon`/`authenticated`.
+- [x] Diseño v2 conservado únicamente como referencia histórica; no forma parte
+  del roadmap activo ni del gate de cierre.
 
 ### 5.2 Formalizar autorización — AUTH-01
 
@@ -229,15 +220,18 @@ Decisión de negocio (documentada en repo):
 - [x] Devuelve `sale` + `lines` autoritativos; UI/comprobante usan respuesta RPC.
 - [x] Preview UI alineada (`totalCarritoPos` / `precioLista*`).
 - [x] Rechaza `line_type` inválido, precios catálogo ≤ 0, productos inexistentes; qty enteras > 0.
-- [ ] Smoke autenticado en producción después del deploy de la app.
+- [x] Smoke autenticado en producción con las dos cuentas admin: login, venta,
+  precio, stock, eliminación y comprobante correctos.
 
 Criterio de aceptación:
 
 - [x] Implementado en migraciones/app en repositorio.
-- [ ] **No** “listo para deploy automático”: falta revisión humana + smoke staging/prod.
-- [ ] Validado en entorno con roles reales post-deploy.
+- [x] Revisión humana y smoke productivo completados.
+- [x] Validado con las dos cuentas reales post-deploy.
 
 ### 5.4 Transacciones de inventario — DATA-03
+
+**Backlog no bloqueante del cierre Stage 1; trasladado a arquitectura/calidad.**
 
 - [ ] Crear RPC transaccional para actualizar combo y todos sus ítems.
 - [ ] Validar componentes existentes, cantidades positivas y combo no vacío.
@@ -248,6 +242,8 @@ Criterio de aceptación:
 
 ### 5.5 Ciclo de vida de archivos — STO-01
 
+**Privacidad cerrada; lifecycle ampliado trasladado a calidad operativa.**
+
 - [ ] Centralizar validación de MIME, extensión y tamaño.
 - [ ] Usar nombres no predecibles y rutas por propietario/entidad.
 - [ ] Eliminar el objeto nuevo si falla la persistencia de su entidad.
@@ -256,14 +252,14 @@ Criterio de aceptación:
 
 ### 5.6 Gate de salida de etapa 1
 
-- [ ] Suite de passkeys negativa y positiva verde *(passkeys siguen contenidas; v2 no activado)*.
-- [x] Matriz de autorización definida en repo; pendiente aprobación negocio + smoke prod.
+- [x] Passkeys fuera de alcance por decisión de negocio; contención 403 verificada.
+- [x] Matriz de autorización aprobada y smoke productivo completado.
 - [x] Tests unitarios/estructurales de roles y precios en CI local.
 - [x] Matriz Stage 0 + Stage 1: 25/25 sobre instancia local restaurada desde el
   esquema productivo, sin datos de usuarios.
-- [ ] Tests de ventas y stock verdes sobre base real de staging.
-- [ ] Prueba de rollback de combo (DATA-03, fuera del núcleo de esta entrega).
-- [ ] Política de archivos y retención (STO-01 lifecycle, parcial en Etapa 0).
+- [x] Venta, stock, eliminación y receipt verificados con cuentas reales en producción.
+- [x] DATA-03 transferido explícitamente al backlog; no pertenece al núcleo cerrado.
+- [x] Privacidad STO-01 verificada; lifecycle ampliado transferido a Stage 4/5.
 
 ## 6. Etapa 2 — Gobierno y reproducibilidad de datos
 
@@ -520,11 +516,12 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-09 | 0 Contención | Fix bloqueadores: REVOKE PUBLIC, receipts límites explícitos, legacy documentado, tests integración, orden deploy | En curso | Ver docs/ETAPA0_ORDEN_DEPLOY.md |
 | 2026-08-10 | 0 Contención | **Aplicado y verificado en producción** (passkey EF, migraciones stage0, Vercel ilara.com.ar, receipts private, 2 legacy migrados) | Verificado | Smoke anon 401 ventas; passkey 403; catálogo 200; receipts public=false |
 | 2026-08-10 | 0 Contención | Forward-fix inventario legacy: REVOKE EXECUTE a authenticated | Verificado | Aplicado en prod (`*_stage0_revoke_authenticated_legacy_inventory.sql`) |
-| 2026-08-10 | 0 Contención | Rotación de secretos (SEC-03) | Pendiente | Decisión de incidente; ver `docs/RUNBOOK_ROTACION_SECRETOS.md` |
+| 2026-08-10 | 0 Contención | Evaluación de secretos (SEC-03) | Completado | Propietario confirma que nunca salieron del equipo; rotación no requerida |
 | 2026-08-10 | 1 Seguridad e integridad | Roles + RLS + POS precios (Opción A) + passkeys v2 diseño | En curso | Primera versión en repo; **no desplegado** |
 | 2026-08-11 | 1 Seguridad e integridad | Corrección integral Etapa 1 (frontera POS, bootstrap, RLS, pagos, tests, docs) | En revisión | `docs/ETAPA1_RUNBOOK.md`; **no desplegado**; pendiente review humana |
 | 2026-08-11 | 1 Seguridad e integridad | Re-auditoría: user_roles policies post-21412, sin DELETE ventas, lock last_admin, breakdown estricto, tests secuencia | En revisión | Solo local; **no desplegado** |
 | 2026-08-11 | 1 Seguridad e integridad | Corrección post-review: catálogo anon preservado, delete concurrente serializado, breakdown presente solo mixto, fixtures de roles restaurables | En revisión | Solo local; **no desplegado** |
+| 2026-08-12 | 0–1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificación productiva 2026-08-12 |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

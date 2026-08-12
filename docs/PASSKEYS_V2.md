@@ -1,7 +1,9 @@
-# Passkeys v2 — diseño y plan de activación
+# Passkeys v2 — diseño archivado (no activar)
 
-**Estado:** diseño listo · implementación de contención activa · **UI y endpoints deshabilitados**
-(`PASSKEYS_CONTAINED = true` en app y Edge Function).
+**Estado (2026-08-12): DESCARTADO POR DECISIÓN DE NEGOCIO.** Ilara no utilizará
+passkeys. La UI permanece retirada y todas las rutas responden 403 con
+`PASSKEYS_CONTAINED = true`. Este documento se conserva sólo como evidencia
+histórica; no es roadmap activo.
 
 ## Objetivos de seguridad
 

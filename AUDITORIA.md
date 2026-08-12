@@ -12,28 +12,23 @@
 
 ## 1. Resumen ejecutivo
 
-Ilara tiene una base funcional y visual sólida: el proyecto compila, pasa lint y
-tipos, sus pruebas unitarias están verdes y el catálogo público funciona bien en
-desktop y mobile. No obstante, **no debe considerarse segura para producción**
-hasta resolver dos vulnerabilidades críticas verificadas:
+Ilara cerró y verificó en producción las vulnerabilidades críticas de identidad y
+exposición anónima, y la divergencia monetaria del POS. Passkeys fueron retiradas
+por decisión de negocio; ventas y columnas internas responden 401 a `anon`; el
+bucket de comprobantes es privado; dos cuentas reales operan como admin y el smoke
+de login, venta, stock, eliminación y receipt fue correcto.
 
-1. El flujo de registro de passkeys no vincula la credencial a una sesión
-   autenticada y confía en correo, RP ID y origen aportados por el cliente.
-2. La API de producción permite leer anónimamente ventas, líneas de venta y
-   columnas internas de productos.
-
-También existe una inconsistencia de precios entre el POS y el RPC que persiste
-la venta, una PWA que no publica su service worker, drift entre las políticas de
-base versionadas y producción, y deuda operativa en migraciones, observabilidad
-y pruebas de integración.
+El riesgo residual principal ya no es una exposición crítica activa: es gobierno
+de datos (baseline no reproducible), PWA, operaciones de combos/batches, lifecycle
+de archivos, observabilidad, accesibilidad y cobertura CI.
 
 ### Dictamen por área
 
 | Área | Estado | Motivo principal |
 |---|---|---|
-| Seguridad de identidad | Crítico | Registro de passkeys susceptible de vinculación a otra cuenta |
-| Privacidad de datos | Crítico | Ventas y campos internos accesibles con el rol `anon` |
-| Integridad monetaria | Alto | POS y base aplican reglas de precio distintas |
+| Seguridad de identidad | Cerrado | Passkeys retiradas; función responde 403 fijo |
+| Privacidad de datos | Cerrado | Ventas/campos internos 401 para `anon`; receipts privados |
+| Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Alto | Drift confirmado y esquema no completamente reproducible |
 | PWA / offline | Alto | `/sw.js` devuelve 404 y los iconos no cumplen el manifest |
 | Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
@@ -90,8 +85,8 @@ dinámicas. Aunque el catálogo declara revalidación, su cliente de Supabase us
 ### SEC-01 — Registro de passkeys sin identidad autenticada
 
 - **Severidad:** crítica
-- **Estado:** confirmado por revisión de código; función desplegada comprobada de
-forma no destructiva.
+- **Estado (2026-08-12): CERRADO POR CONTENCIÓN PERMANENTE.** Passkeys no forman
+  parte del producto; UI retirada, función 403 y helpers internos revocados.
 
 `supabase/functions/passkey-auth/index.ts` presenta los siguientes problemas:
 
@@ -116,7 +111,8 @@ expiración y contexto de operación.
 ### SEC-02 — Exposición anónima de ventas y columnas internas
 
 - **Severidad:** crítica
-- **Estado:** confirmado contra producción mediante consultas de solo lectura.
+- **Estado (2026-08-12): REMEDIADO Y VERIFICADO.** `sales`, `sale_items` y
+  `purchase_price` están cerrados a `anon`; catálogo mínimo continúa en 200.
 
 El rol `anon` devolvió al momento de la prueba:
 
@@ -160,9 +156,14 @@ No se mostraron ni copiaron los valores. Debe verificarse si esos artefactos
 fueron subidos o compartidos, rotar cualquier credencial potencialmente expuesta
 y purgar secretos reales del historial de forma coordinada.
 
+**Decisión de cierre (2026-08-12):** el propietario confirmó que permanecieron
+totalmente privados y nunca salieron del equipo. No se requiere rotación por este
+incidente; se mantienen las exclusiones preventivas.
+
 ### SEC-04 — XSS persistente mediante JSON-LD
 
 **Severidad:** alta.
+**Estado (2026-08-12): REMEDIADO Y DESPLEGADO**, con prueba de payload hostil.
 
 `app/catalogo/p/[id]/page.tsx` inserta `JSON.stringify(jsonLd)` mediante
 `dangerouslySetInnerHTML`. El objeto incorpora nombre, notas y marca editables.
@@ -176,14 +177,13 @@ nonce según la estrategia de renderizado.
 ### DATA-01 — Divergencia de precios entre POS y RPC
 
 **Severidad:** alta.
-**Estado (2026-08-11):** **Opción A en repo, reforzada** (migración
+**Estado (2026-08-12): REMEDIADO Y VERIFICADO EN PRODUCCIÓN.** Opción A (migración
 `stage1_pos_authoritative_pricing` + UI). RPC `SECURITY DEFINER` endurecido:
 `auth.uid` + `can_use_pos`, precios lista `round(sale_price)`, ignora
 unit_price/total/nombre/descuentos del cliente; valida status, payment_method,
 breakdown (mixto obligatorio, suma, métodos internos); stock con `FOR UPDATE`.
 UI preview usa `precioListaProducto` / `precioListaCombo` / `totalCarritoPos`.
-**Pendiente:** aplicar migraciones stage1 en staging/prod y smoke con roles reales.
-**No** se declara aceptación de deploy hasta esa verificación.
+Smoke con cuenta real confirmó venta, total autoritativo, stock y eliminación.
 
 ### DATA-02 — Esquema y políticas no reproducibles
 
@@ -215,7 +215,10 @@ con resultados explícitos por elemento.
 
 ### STO-01 — Privacidad y ciclo de vida de archivos
 
-**Severidad:** alta hasta verificar producción.
+**Severidad residual:** media por lifecycle; privacidad cerrada.
+**Estado (2026-08-12):** bucket privado, acceso anónimo denegado, URL firmada y
+comprobante real verificados. Limpieza de objetos reemplazados/huérfanos queda en
+backlog operativo.
 
 - El script base de gastos crea `receipts` como bucket público.
 - Una migración posterior documenta el cambio a privado, pero no ejecuta el
@@ -234,15 +237,15 @@ en una migración reproducible.
 **Severidad:** media-alta.
 **Estado (2026-08-12):** cuatro migraciones de Etapa 1 aplicadas en Supabase
 producción; dos cuentas `admin`, cero `vendedor`; app Vercel desplegada y smoke
-público correcto. Pendiente smoke autenticado manual con las cuentas reales.
+autenticado con ambas cuentas correcto.
 Modelo `admin` / `vendedor` / `none` en `public.user_roles`; helpers DEFINER con
 `search_path = ''`; policies `user_roles_select_own` + `user_roles_select_admin`
 reafirmadas al final de 21412; ventas: sin INSERT/DELETE Data API; borrado solo
 `delete_sale_and_restore_stock`; bootstrap solo service_role + lock 87201411;
 `set_user_role` serializa last_admin con el mismo lock.
 
-La revisión de producción en modo lectura confirmó todas las versiones de Etapa 0
-y ninguna de Etapa 1. También detectó grants directos heredados demasiado amplios,
+La revisión inicial confirmó todas las versiones de Etapa 0 y ninguna de Etapa 1.
+También detectó grants directos heredados demasiado amplios,
 ejecución pública de helpers internos y una policy amplia de Storage que RLS por
 rol no corregía por sí sola. La migración
 `20260812002815_stage1_harden_legacy_anon_grants.sql` versiona el cierre. El orden
@@ -353,10 +356,10 @@ documentos históricos deben marcarse como archivados o enlazar a estos.
 
 ## 6. Riesgo residual y decisión de salida
 
-El estado recomendado es **NO-GO para considerar la plataforma asegurada** hasta
-cerrar `SEC-01` y `SEC-02`. La aplicación web puede seguir operando únicamente si
-se ejecuta primero la fase de contención definida en `PLAN.md`, se preservan los
-logs y se acepta explícitamente el riesgo residual durante el despliegue.
+El estado al 2026-08-12 es **GO para el cierre de Etapas 0 y 1**. `SEC-01`,
+`SEC-02`, `SEC-04`, `DATA-01` y `AUTH-01` fueron remediados, desplegados y
+verificados. El siguiente gate obligatorio es Etapa 2: reproducibilidad del
+esquema y CI de seguridad de base.
 
 La salida de contención requiere, como mínimo:
 
@@ -394,3 +397,4 @@ La salida de contención requiere, como mínimo:
 | 2026-08-11 | **Etapa 1 corregida en repo (no desplegada):** frontera POS DEFINER, sin bypass Data API vendedor, bootstrap seguro sin autoclaim, RLS sin recursión, pagos endurecidos, tests semánticos, runbook SQL vs service_role. Ver `docs/ETAPA1_RUNBOOK.md`. Pendiente revisión humana y deploy controlado. |
 | 2026-08-11 | **Etapa 1 re-auditoría local:** reafirma `user_roles_select_admin` tras 21412; sin DELETE directo sales/líneas; lock 87201411 en set_user_role; payment_breakdown estricto; DEFINER `search_path=''`; tests de secuencia de migraciones e integración sin pass silencioso. **No desplegado.** |
 | 2026-08-11 | **Etapa 1 post-review local:** preflight preserva policies anon del catálogo Stage 0; borrado de venta serializado con `FOR UPDATE`; JSON null y breakdown no-mixto rechazados; integración restaura roles previos y cubre doble borrado. **No desplegado.** |
+| 2026-08-12 | **Etapas 0 y 1 cerradas:** Supabase y Vercel desplegados; dos admins; smoke real de login, venta, stock, eliminación y receipt; anon sales/internal 401; catálogo 200; passkeys 403 y descartadas; secretos confirmados privados, sin rotación requerida. |

@@ -1,9 +1,9 @@
-# Runbook — Etapa 1 (roles, precios POS, passkeys v2)
+# Runbook — Etapa 1 (roles y precios POS)
 
 **Estado (2026-08-12):** migraciones aplicadas en Supabase producción después de
 backup recuperable. Dos cuentas activas asignadas `admin`; cero `vendedor`.
-Aplicación desplegada en Vercel producción; smoke público correcto. Pendiente
-únicamente smoke autenticado manual con las cuentas reales.
+Aplicación desplegada en Vercel producción; smoke público y autenticado correcto
+con las dos cuentas reales. Etapa cerrada.
 **Verificación de esta entrega:** migraciones aplicadas en Docker sobre un dump
 `--schema public` de producción; matriz Etapa 0 + Etapa 1: **25/25**.
 
@@ -61,15 +61,14 @@ SELECT
 
 ## Orden de deploy
 
-Los pasos 1–8 se completaron el 2026-08-12 para la superficie pública. Queda el
-smoke autenticado manual con las cuentas reales.
+Los pasos 1–9 se completaron el 2026-08-12.
 
 1. Backup esquema.
 2. `20260810221411_stage1_app_roles`
 3. `20260810221412_stage1_rls_by_role`
 4. `20260810221413_stage1_pos_authoritative_pricing`
 5. `20260812002815_stage1_harden_legacy_anon_grants`
-6. **Asignar sólo el primer admin**; verificar `vendedor = 0`.
+6. Asignar las dos cuentas reales como admin; verificar `vendedor = 0`.
 7. Deploy app Vercel.
 8. Smoke.
 9. Passkeys: **no activar**.
@@ -167,5 +166,5 @@ npm run build
   por drift anterior. Etapa 1 se validó contra un dump estructural de producción;
   conservar ese dump como artefacto de backup antes del despliegue.
 - DATA-03 combos atómicos fuera de núcleo.
-- Passkeys v2 no implementadas.
-- Asignación de roles en prod pendiente de operación humana.
+- Passkeys descartadas por decisión de negocio; la contención 403 permanece.
+- Dos cuentas admin asignadas y verificadas; cero vendedores.
