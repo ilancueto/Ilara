@@ -32,8 +32,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — plantilla pública versionada; secretos reales nunca
 .env*
+!.env.example
 
 # credenciales / datos sensibles (no subir al repo)
 passsupa.txt
@@ -57,7 +58,6 @@ public/swe-worker*
 next-env.d.ts
 
 .vercel
-.env*
 
 # Supabase CLI local branch metadata
 supabase/.branches/

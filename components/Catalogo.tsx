@@ -558,7 +558,11 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                                         loading={esPrioridadLcp ? 'eager' : undefined}
                                                     />
                                                 ) : (
-                                                    <div className={styles.mediaPlaceholder} aria-label={`${producto.name}, sin imagen`} />
+                                                    <div
+                                                        className={styles.mediaPlaceholder}
+                                                        role="img"
+                                                        aria-label={`${producto.name}, sin imagen`}
+                                                    />
                                                 )}
 
                                                 {images.length > 1 && (

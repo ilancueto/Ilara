@@ -5,6 +5,8 @@ import { supabase, Cupon } from '@/lib/supabase'
 import { X, Plus, Trash2, Tag } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 interface Props {
     mostrar: boolean
@@ -13,6 +15,7 @@ interface Props {
 
 export default function GestionCupones({ mostrar, cerrar }: Props) {
     const { showSuccess, showError } = useToast()
+    const { confirm, confirmProps } = useConfirm()
     const [cupones, setCupones] = useState<Cupon[]>([])
     const [codigo, setCodigo] = useState('')
     const [porcentaje, setPorcentaje] = useState('')
@@ -80,7 +83,12 @@ export default function GestionCupones({ mostrar, cerrar }: Props) {
     }
 
     const handleEliminar = async (id: number) => {
-        if (!confirm('¿Eliminar este cupón?')) return
+        const ok = await confirm({
+            title: '¿Eliminar este cupón?',
+            confirmLabel: 'Eliminar',
+            danger: true,
+        })
+        if (!ok) return
         setCargando(true)
         const { error } = await supabase.from('coupons').delete().eq('id', id)
         if (!error) {
@@ -177,6 +185,7 @@ export default function GestionCupones({ mostrar, cerrar }: Props) {
                     </div>
                 </div>
             </PastelCard>
+            <ConfirmDialog {...confirmProps} testId="confirm-cupon" />
         </>
     )
 }

@@ -10,6 +10,9 @@ import { format, subDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
 
 type ClienteStats = {
     totalVentas: number
@@ -19,6 +22,7 @@ type ClienteStats = {
 
 export default function Clientes() {
     const { showSuccess, showError } = useToast()
+    const { confirm: confirmDialog, confirmProps } = useConfirm()
     const [clientes, setClientes] = useState<Cliente[]>([])
     const [clientesStats, setClientesStats] = useState<Map<number, ClienteStats>>(new Map())
     const [cargando, setCargando] = useState(true)
@@ -29,6 +33,7 @@ export default function Clientes() {
     const [mostrarEliminarClientesModal, setMostrarEliminarClientesModal] = useState(false)
     const [clientesSeleccionados, setClientesSeleccionados] = useState<Set<number>>(new Set())
     const [eliminandoClientes, setEliminandoClientes] = useState(false)
+    const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
     const [clientePerfil, setClientePerfil] = useState<Cliente | null>(null)
     const [ventasCliente, setVentasCliente] = useState<Pick<Venta, 'id' | 'sale_date' | 'total' | 'payment_method' | 'status' | 'created_at'>[]>([])
     const [cargandoPerfil, setCargandoPerfil] = useState(false)
@@ -36,7 +41,6 @@ export default function Clientes() {
     const [itemsPorVenta, setItemsPorVenta] = useState<Map<number, ItemVenta[]>>(new Map())
 
     const refModalCliente = useRef<HTMLDivElement>(null)
-    const refModalEliminar = useRef<HTMLDivElement>(null)
     const refModalPerfil = useRef<HTMLDivElement>(null)
 
     const [formData, setFormData] = useState({
@@ -184,7 +188,13 @@ export default function Clientes() {
     }
 
     const handleEliminar = async (id: number) => {
-        if (!confirm('¿Eliminar este cliente? Las ventas asociadas quedarán sin cliente.')) return
+        const okDel = await confirmDialog({
+            title: '¿Eliminar este cliente?',
+            description: 'Las ventas asociadas quedarán sin cliente.',
+            confirmLabel: 'Eliminar',
+            danger: true,
+        })
+        if (!okDel) return
 
         const { error } = await supabase
             .from('customers')
@@ -218,10 +228,11 @@ export default function Clientes() {
 
     const handleEliminarClientesSeleccionados = async () => {
         if (clientesSeleccionados.size === 0) {
-            showError('Seleccioná al menos un cliente.')
+            setBulkDeleteError('Seleccioná al menos un cliente.')
             return
         }
-        if (!confirm(`¿Eliminar ${clientesSeleccionados.size} cliente(s)? Las ventas asociadas quedarán sin cliente.`)) return
+        if (eliminandoClientes) return
+        setBulkDeleteError(null)
         setEliminandoClientes(true)
         try {
             const ids = Array.from(clientesSeleccionados)
@@ -231,9 +242,10 @@ export default function Clientes() {
             setClientesSeleccionados(new Set())
             setMostrarEliminarClientesModal(false)
             showSuccess('Clientes eliminados correctamente.')
-        } catch (err) {
-            console.error('Error al eliminar clientes:', err)
-            showError('Error al eliminar algunos clientes.')
+        } catch {
+            const msg = 'Error al eliminar algunos clientes. Podés reintentar.'
+            setBulkDeleteError(msg)
+            showError(msg)
         } finally {
             setEliminandoClientes(false)
         }
@@ -267,7 +279,6 @@ export default function Clientes() {
     }
 
     useDialogA11y(mostrarModal, cerrarModal, refModalCliente)
-    useDialogA11y(mostrarEliminarClientesModal, () => setMostrarEliminarClientesModal(false), refModalEliminar)
     useDialogA11y(!!clientePerfil, cerrarPerfil, refModalPerfil)
 
     const toggleDetalleVenta = async (saleId: number) => {
@@ -377,7 +388,11 @@ export default function Clientes() {
                 {clientes.length > 0 && (
                     <button
                         type="button"
-                        onClick={() => { setMostrarEliminarClientesModal(true); setClientesSeleccionados(new Set()); }}
+                        onClick={() => {
+                            setMostrarEliminarClientesModal(true)
+                            setClientesSeleccionados(new Set())
+                            setBulkDeleteError(null)
+                        }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shrink-0"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -479,52 +494,64 @@ export default function Clientes() {
                 />
             )}
 
-            {/* Modal Eliminar clientes — portal fijo en viewport */}
-            {mostrarEliminarClientesModal && typeof document !== 'undefined' && createPortal(
-                <>
-                    <div className="fixed inset-0 bg-black/55 dark:bg-black/65 z-[200]" onClick={() => !eliminandoClientes && setMostrarEliminarClientesModal(false)} aria-hidden />
-                    <div className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none">
-                        <div
-                            ref={refModalEliminar}
-                            role="dialog"
-                            aria-modal="true"
-                            aria-labelledby="clientes-eliminar-titulo"
-                            className="pointer-events-auto w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden outline-none"
+            <BulkActionDialog
+                open={mostrarEliminarClientesModal}
+                onClose={() => {
+                    if (eliminandoClientes) return
+                    setMostrarEliminarClientesModal(false)
+                    setBulkDeleteError(null)
+                }}
+                title="Eliminar clientes"
+                description={`Seleccioná los clientes a eliminar (${clientesSeleccionados.size} seleccionado(s)). Las ventas asociadas quedarán sin cliente.`}
+                loading={eliminandoClientes}
+                error={bulkDeleteError}
+                testId="bulk-delete-clientes"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (eliminandoClientes) return
+                                setMostrarEliminarClientesModal(false)
+                                setBulkDeleteError(null)
+                            }}
+                            disabled={eliminandoClientes}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
+                            data-testid="bulk-delete-clientes-cancel"
                         >
-                            <div className="flex-shrink-0 p-6 border-b border-gray-100 dark:border-gray-700">
-                                <h3 id="clientes-eliminar-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar clientes</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los clientes a eliminar. Las ventas asociadas quedarán sin cliente.</p>
-                            </div>
-                            <div className="flex-1 min-h-0 overflow-y-auto p-4">
-                                <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
-                                    <input type="checkbox" checked={clientes.length > 0 && clientesSeleccionados.size === clientes.length} onChange={seleccionarTodosClientes} className="rounded border-pink-300 text-pink-600 focus:ring-pink-500" />
-                                    <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todos</span>
-                                </label>
-                                <div className="space-y-2">
-                                    {clientes.length === 0 ? (
-                                        <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay clientes.</p>
-                                    ) : (
-                                        clientes.map(cliente => (
-                                            <label key={cliente.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer border border-transparent hover:border-pink-100 dark:hover:border-gray-600">
-                                                <input type="checkbox" checked={clientesSeleccionados.has(cliente.id)} onChange={() => toggleSeleccionCliente(cliente.id)} className="rounded border-pink-300 text-pink-600 focus:ring-pink-500" />
-                                                <span className="flex-1 text-sm text-gray-800 dark:text-gray-100 truncate">{cliente.first_name} {cliente.last_name}</span>
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">{format(new Date(cliente.created_at), 'MMM yyyy', { locale: es })}</span>
-                                            </label>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex-shrink-0 p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3 justify-end bg-gray-50/50 dark:bg-gray-800/80">
-                                <button type="button" onClick={() => setMostrarEliminarClientesModal(false)} disabled={eliminandoClientes} className="btn-ghost">Cancelar</button>
-                                <button type="button" onClick={handleEliminarClientesSeleccionados} disabled={eliminandoClientes || clientesSeleccionados.size === 0} className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {eliminandoClientes ? 'Eliminando...' : `Eliminar ${clientesSeleccionados.size} cliente(s)`}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </>,
-                document.body
-            )}
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void handleEliminarClientesSeleccionados()}
+                            disabled={eliminandoClientes || clientesSeleccionados.size === 0}
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            data-testid="bulk-delete-clientes-confirm"
+                        >
+                            {eliminandoClientes
+                                ? 'Eliminando…'
+                                : `Eliminar ${clientesSeleccionados.size} cliente(s)`}
+                        </button>
+                    </>
+                }
+            >
+                <BulkSelectList
+                    testId="bulk-delete-clientes-list"
+                    allSelected={
+                        clientes.length > 0 &&
+                        clientesSeleccionados.size === clientes.length
+                    }
+                    onToggleAll={seleccionarTodosClientes}
+                    emptyMessage="No hay clientes."
+                    items={clientes.map((cliente) => ({
+                        id: cliente.id,
+                        label: `${cliente.first_name} ${cliente.last_name}`.trim() || `Cliente #${cliente.id}`,
+                        meta: format(new Date(cliente.created_at), 'MMM yyyy', { locale: es }),
+                        selected: clientesSeleccionados.has(cliente.id),
+                        onToggle: () => toggleSeleccionCliente(cliente.id),
+                    }))}
+                />
+            </BulkActionDialog>
 
             {/* Modal Nuevo / Editar Cliente */}
             {mostrarModal && typeof document !== 'undefined' && createPortal(
@@ -704,6 +731,7 @@ export default function Clientes() {
                 </>,
                 document.body
             )}
+            <ConfirmDialog {...confirmProps} testId="confirm-cliente" />
         </div>
     )
 }

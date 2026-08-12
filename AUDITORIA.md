@@ -18,9 +18,11 @@ por decisión de negocio; ventas y columnas internas responden 401 a `anon`; el
 bucket de comprobantes es privado; dos cuentas reales operan como admin y el smoke
 de login, venta, stock, eliminación y receipt fue correcto.
 
-El riesgo residual principal ya no es una exposición crítica activa: es gobierno
-de datos (baseline no reproducible), PWA, operaciones de combos/batches, lifecycle
-de archivos, observabilidad, accesibilidad y cobertura CI.
+El riesgo residual principal ya no es una exposición crítica activa: es deuda
+arquitectónica (Stage 5), lifecycle de archivos, RPO/RTO de negocio y activación
+opcional de alertas externas. Stage 4 está **implementado en working tree local**
+(E2E/CI, a11y Dialog, observabilidad opt-in, runbooks): **sin** commit/push/deploy
+ni verificación de producción en esta entrega.
 
 ### Dictamen por área
 
@@ -33,9 +35,10 @@ de archivos, observabilidad, accesibilidad y cobertura CI.
 | PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
 | Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
-| Accesibilidad | Mejorable | Diálogos y controles interactivos no siguen un patrón completo |
-| Observabilidad | Bajo | Sin trazas de errores, alertas ni diagnóstico centralizado |
-| Dependencias | Bueno | Sin vulnerabilidades conocidas en `npm audit` al corte |
+| Accesibilidad | Mejorado Stage 4 (local) | Dialog + ConfirmDialog + BulkActionDialog (bulk Inventario/Gastos/Ventas/Clientes); axe/teclado E2E + mutantes confirm delete inventario/clientes; residual en formularios de edición legacy (no bulk) |
+| Observabilidad | Mejorado Stage 4 (local) | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |
+| CI / E2E | Mejorado Stage 4 (local) | CI con integración, E2E Playwright cacheado y smoke posdeploy |
+| Dependencias | Bueno | `@axe-core/playwright` dev-only; sin Sentry forzado |
 
 ## 2. Alcance y metodología
 
@@ -320,13 +323,15 @@ Playwright en CI con navegador instalado.
 
 ### A11Y-01 — Diálogos y controles inconsistentes
 
-**Severidad:** media-baja.
+**Severidad residual:** baja (formularios de edición legacy, no bulk).
 
-Existe un hook de accesibilidad para diálogos, pero reconoce que no implementa un
-focus trap completo y no todos los modales lo utilizan. El modal de passkeys y
-otros diálogos carecen de una combinación consistente de `role="dialog"`,
-`aria-modal`, foco inicial, restauración de foco, fondo inerte y cierre con Escape.
-También existen tarjetas con `div onClick` y confirmaciones nativas.
+**Mitigado en Stage 4 (local, pendiente commit/CI/deploy):** `Dialog` +
+`ConfirmDialog` + `useConfirm` + `BulkActionDialog` con focus trap, Escape LIFO,
+restore, inert, scroll lock. Bulk destructivos de Inventario / Gastos /
+HistorialVentas / Clientes migrados. E2E `bulk-a11y.spec.ts` cubre teclado, axe
+sobre diálogo abierto y **confirmación mutante** (delete inventario + clientes)
+contra Supabase loopback. Residual: portales de formularios de edición/perfil
+fuera del alcance de confirmaciones bulk.
 
 ### OBS-01 — Observabilidad insuficiente
 

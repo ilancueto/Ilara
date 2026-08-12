@@ -56,6 +56,7 @@ Obtener valores en: Supabase Dashboard → Settings → API. Ver **`.env.example
 | `npm run test` | Tests unitarios (Vitest) |
 | `npm run test:watch` | Tests en modo watch |
 | `npm run test:e2e` | Tests E2E (Playwright; arranca el servidor si hace falta) |
+| `npm run test:smoke` | Smoke posdeploy de solo lectura (catálogo, login, headers, SW) |
 | `npm run test:db-security` | Matriz anon/service sobre Supabase local |
 | `npm run test:db-rls` | RLS habilitado en tablas `public` |
 | `npm run test:db-insecure-control` | Control negativo de policy anónima (local) |
@@ -78,15 +79,21 @@ npm run test:db-security
 
 Fuentes vigentes de auditoría y plan: [`AUDITORIA.md`](./AUDITORIA.md),
 [`PLAN.md`](./PLAN.md). Runbook Stage 2: [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md).
+Stage 4 (local): [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md).
 
 ## Documentación extra
 
 | Documento | Contenido |
 |-----------|-----------|
 | [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | **Fuentes vigentes** de riesgo y ejecución |
+| [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md) | Stage 4: E2E/CI, a11y, checklist |
+| [`docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`](docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md) | Logs, eventos, Sentry opt-in |
+| [`docs/ETAPA4_OPERACION_RUNBOOK.md`](docs/ETAPA4_OPERACION_RUNBOOK.md) | Backup, rollback, RPO/RTO propuestas |
+| [`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md) | PWA online-only (cerrado) |
 | [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md) | Reconstrucción, diff, tipos, CI Stage 2 |
 | [`docs/STAGE2_INVENTORY.md`](docs/STAGE2_INVENTORY.md) | Inventario sanitizado de objetos |
 | [`docs/ETAPA1_RUNBOOK.md`](docs/ETAPA1_RUNBOOK.md) | Roles y deploy Stage 1 (cerrado) |
+| [`docs/VERCEL_PROYECTO_AUTORIZADO.md`](docs/VERCEL_PROYECTO_AUTORIZADO.md) | Solo Vercel `ilara` |
 | [`docs/MIGRACIONES_SUPABASE.md`](docs/MIGRACIONES_SUPABASE.md) | Convención de migraciones |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Convenciones y checklist de PR |
 | [`docs/COMPONENTES_UI.md`](docs/COMPONENTES_UI.md) | Patrones UI |

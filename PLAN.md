@@ -377,50 +377,54 @@ Supabase/sesión, sin colas ni ventas offline. Ver
 
 ## 8. Etapa 4 — Calidad operativa
 
+**Estado: IMPLEMENTADO EN WORKING TREE LOCAL — NO cerrado, NO desplegado, NO
+commiteado.** Pendiente commit/push/CI remoto/deploy `ilara`/smoke prod.
+Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
+`docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`, `docs/ETAPA4_OPERACION_RUNBOOK.md`.
+
 ### 8.1 E2E y CI — TEST-01
 
-- [ ] Instalar navegadores Playwright en CI con cache compatible.
-- [ ] Actualizar el smoke test del encabezado del catálogo.
-- [ ] Cubrir login, autorización, venta, stock, combos, gastos, comprobantes,
-  carrito, cupón, WhatsApp, PWA y mobile.
-- [ ] Usar datos de prueba aislados y limpieza determinista.
-- [ ] Ejecutar lint, tipos, unitarios, integración, E2E y build en cada PR.
-- [ ] Añadir smoke tests posdeploy para catálogo, login, headers y service worker.
+- [x] Workflow con Playwright Chromium + cache en repo. *(job `e2e`; CI remoto pendiente de corrida real)*
+- [x] Smoke catálogo/login/headers/SW. *(`npm run test:smoke`, `SMOKE_BASE_URL` obligatorio)*
+- [x] E2E ampliados (auth, catálogo, PWA, POS API, a11y, mobile); mutaciones solo `E2E_*` local.
+- [x] Datos aislados + bloqueo prod; en CI fail-closed sin keys (no skip silencioso).
+- [x] Lint/tipos/unit/integración/E2E/build en `ci.yml` (gate de merge = owner/GitHub).
+- [x] Smoke posdeploy read-only GET-only documentado.
 
 ### 8.2 Observabilidad — OBS-01
 
-- [ ] Integrar Sentry, OpenTelemetry o equivalente en cliente, servidor y Edge
-  Functions.
-- [ ] Definir sanitización de PII y secretos antes de enviar eventos.
-- [ ] Añadir correlation/request ID y errores estructurados.
-- [ ] Crear alertas para fallos de login, RPC de venta, Storage y errores 5xx.
-- [ ] Registrar métricas de negocio técnicas sin datos personales: ventas fallidas,
-  conflictos de stock, latencia y tasa de error.
-- [ ] Documentar runbooks para cada alerta.
+- [x] Capa opt-in local (logs JSON sanitizados); **sin** Sentry instalado/forzado.
+- [x] Sanitización PII/secretos + request ID validado.
+- [ ] Alertas en proveedor externo *(pendiente owner)*.
+- [x] Eventos técnicos sin PII documentados.
+- [x] Runbooks de respuesta documentados.
 
 ### 8.3 Accesibilidad — A11Y-01
 
-- [ ] Crear un componente Dialog único con focus trap, Escape, restauración de
-  foco, fondo inerte, scroll lock y labels.
-- [ ] Migrar passkeys, gastos, inventario, ventas y confirmaciones.
-- [ ] Sustituir `div onClick` por botones/enlaces semánticos.
-- [ ] Sustituir `confirm()` por diálogo accesible y testeable.
-- [ ] Ejecutar axe y recorrido sólo con teclado en desktop/mobile.
+- [x] `Dialog` con trap, Escape (stack), restore, inert/aria-hidden, scroll lock.
+- [x] Confirmaciones unitarias vía `useConfirm` (logout, delete unitarios, etc.).
+- [x] Bulk destructivos/visibilidad/badge migrados a `BulkActionDialog` (Inventario,
+  Gastos, HistorialVentas, Clientes) — **local, pendiente commit/CI**.
+- [x] Sin `window.confirm` en código de app.
+- [x] axe + teclado en E2E login/catálogo/mobile + bulk (e2e/bulk-a11y.spec.ts).
+- [x] E2E mutantes bulk: confirman delete de inventario y clientes (seed aislado,
+  UI + Supabase local, cleanup en `finally`, loading sin Escape/backdrop,
+  axe sobre diálogo abierto). **Solo** `E2E_*` loopback.
 
 ### 8.4 Recuperación y operación
 
-- [ ] Definir RPO y RTO con negocio.
-- [ ] Automatizar backup adicional si el plan de Supabase lo requiere.
-- [ ] Ejecutar una restauración completa en entorno aislado.
-- [ ] Documentar deploy, rollback, rotación de secretos y respuesta a incidentes.
-- [ ] Añadir página 404 y estados uniformes de error/reintento.
+- [ ] RPO/RTO con negocio *(propuestas en runbook; no decisión)*.
+- [ ] Backup adicional / PITR *(owner)*.
+- [x] Restore **local** documentado (`db reset`); **no** restore productivo.
+- [x] Deploy/rollback/secretos/incidente documentados.
+- [x] 404 + error/reintento uniformes.
 
 ### 8.5 Gate de salida de etapa 4
 
-- [ ] CI completo verde y obligatorio para merge.
-- [ ] Alertas probadas mediante un error sintético.
-- [ ] Flujos principales completables sólo con teclado.
-- [ ] Restauración ejecutada y tiempo medido.
+- [ ] CI remoto verde y obligatorio para merge *(pendiente push + branch protection)*.
+- [ ] Alertas con error sintético *(pendiente)*.
+- [x] Teclado en flujos E2E cubiertos (local).
+- [ ] Restore productivo medido *(pendiente; no aplicar aquí)*.
 
 ## 9. Etapa 5 — Arquitectura incremental
 

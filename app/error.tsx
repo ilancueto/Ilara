@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { trackError, ObservabilityEvent } from '@/lib/observability'
 
 export default function Error({
   error,
@@ -10,25 +12,20 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    trackError(error, {
+      event: ObservabilityEvent.CLIENT_ERROR,
+      code: error.digest,
+      meta: { boundary: 'app/error' },
+    })
   }, [error])
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20">
-      <div className="max-w-md w-full text-center">
-        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
-          Algo salió mal
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Ocurrió un error inesperado. Podés intentar de nuevo.
-        </p>
-        <button
-          onClick={() => reset()}
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold shadow-lg shadow-pink-200/50 hover:shadow-xl hover:shadow-pink-200/60 transition-all"
-        >
-          Reintentar
-        </button>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <ErrorState
+        title="Algo salió mal"
+        message="Ocurrió un error inesperado. Podés intentar de nuevo."
+        onRetry={() => reset()}
+      />
     </div>
   )
 }

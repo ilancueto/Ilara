@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { supabase, getUser, Venta, ItemVenta, Cliente } from '@/lib/supabase'
 import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, CheckCircle } from 'lucide-react'
 import { format, startOfDay, startOfWeek, startOfMonth } from 'date-fns'
@@ -14,6 +13,7 @@ import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/context/ToastContext'
+import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
 
 export default function HistorialVentas() {
     const { showSuccess, showError } = useToast()
@@ -29,6 +29,7 @@ export default function HistorialVentas() {
     const [mostrarEliminarModal, setMostrarEliminarModal] = useState(false)
     const [ventasSeleccionadas, setVentasSeleccionadas] = useState<Set<number>>(new Set())
     const [eliminando, setEliminando] = useState(false)
+    const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
 
     const obtenerVentas = useCallback(async () => {
         setCargando(true)
@@ -195,10 +196,11 @@ export default function HistorialVentas() {
 
     const handleEliminarSeleccionadas = async () => {
         if (ventasSeleccionadas.size === 0) {
-            showError('Seleccioná al menos una venta.')
+            setBulkDeleteError('Seleccioná al menos una venta.')
             return
         }
-        if (!confirm(`¿Eliminar ${ventasSeleccionadas.size} venta(s)? Los productos volverán al stock.`)) return
+        if (eliminando) return
+        setBulkDeleteError(null)
         setEliminando(true)
         try {
             for (const id of ventasSeleccionadas) {
@@ -208,9 +210,10 @@ export default function HistorialVentas() {
             setVentasSeleccionadas(new Set())
             setMostrarEliminarModal(false)
             showSuccess('Ventas eliminadas. Stock actualizado.')
-        } catch (err) {
-            console.error('Error al eliminar ventas:', err)
-            showError('No se pudieron eliminar algunas ventas.')
+        } catch {
+            const msg = 'No se pudieron eliminar algunas ventas. Podés reintentar.'
+            setBulkDeleteError(msg)
+            showError(msg)
         } finally {
             setEliminando(false)
         }
@@ -505,7 +508,11 @@ export default function HistorialVentas() {
             <div className="flex justify-end mt-10 pt-6 border-t border-gray-100 dark:border-gray-800">
                 <button
                     type="button"
-                    onClick={() => { setMostrarEliminarModal(true); setVentasSeleccionadas(new Set()); }}
+                    onClick={() => {
+                        setMostrarEliminarModal(true)
+                        setVentasSeleccionadas(new Set())
+                        setBulkDeleteError(null)
+                    }}
                     className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 font-bold text-sm transition-colors"
                 >
                     <Trash2 className="w-4 h-4" />
@@ -533,78 +540,65 @@ export default function HistorialVentas() {
                 />
             )}
 
-            {mostrarEliminarModal && typeof document !== 'undefined' && createPortal(
-                <>
-                    <div
-                        className="fixed inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm z-[200] animate-fade-in"
-                        onClick={() => !eliminando && setMostrarEliminarModal(false)}
-                        aria-hidden
-                    />
-                    <div className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none">
-                        <div className="pointer-events-auto w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden">
-                            <div className="flex-shrink-0 p-6 border-b border-gray-100 dark:border-gray-700">
-                                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar ventas</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná las ventas a eliminar. El stock de los productos volverá a estar disponible.</p>
-                            </div>
-                            <div className="flex-1 min-h-0 overflow-y-auto p-4">
-                                <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={ventasFiltradas.length > 0 && ventasSeleccionadas.size === ventasFiltradas.length}
-                                        onChange={seleccionarTodas}
-                                        className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
-                                    />
-                                    <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todas</span>
-                                </label>
-                                <div className="space-y-2">
-                                    {ventasFiltradas.length === 0 ? (
-                                        <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay ventas en este período.</p>
-                                    ) : (
-                                        ventasFiltradas.map(venta => (
-                                            <label
-                                                key={venta.id}
-                                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer border border-transparent hover:border-pink-100 dark:hover:border-gray-600"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={ventasSeleccionadas.has(venta.id)}
-                                                    onChange={() => toggleSeleccionVenta(venta.id)}
-                                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
-                                                />
-                                                <span className="flex-1 text-sm text-gray-800 dark:text-gray-100 min-w-0 truncate">
-                                                    #{venta.id} · {venta.customer_name || 'Consumidor final'} · ${venta.total.toLocaleString()}
-                                                </span>
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-                                                    {format(new Date(venta.created_at), 'd MMM, HH:mm', { locale: es })}
-                                                </span>
-                                            </label>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex-shrink-0 p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3 justify-end bg-gray-50/50 dark:bg-gray-800/80">
-                                <button
-                                    type="button"
-                                    onClick={() => setMostrarEliminarModal(false)}
-                                    disabled={eliminando}
-                                    className="btn-ghost"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleEliminarSeleccionadas}
-                                    disabled={eliminando || ventasSeleccionadas.size === 0}
-                                    className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {eliminando ? 'Eliminando...' : `Eliminar ${ventasSeleccionadas.size} venta(s)`}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </>,
-                document.body
-            )}
+            <BulkActionDialog
+                open={mostrarEliminarModal}
+                onClose={() => {
+                    if (eliminando) return
+                    setMostrarEliminarModal(false)
+                    setBulkDeleteError(null)
+                }}
+                title="Eliminar ventas"
+                description={`Seleccioná las ventas a eliminar (${ventasSeleccionadas.size} seleccionada(s)). El stock de los productos volverá a estar disponible.`}
+                loading={eliminando}
+                error={bulkDeleteError}
+                testId="bulk-delete-ventas"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (eliminando) return
+                                setMostrarEliminarModal(false)
+                                setBulkDeleteError(null)
+                            }}
+                            disabled={eliminando}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
+                            data-testid="bulk-delete-ventas-cancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void handleEliminarSeleccionadas()}
+                            disabled={eliminando || ventasSeleccionadas.size === 0}
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            data-testid="bulk-delete-ventas-confirm"
+                        >
+                            {eliminando
+                                ? 'Eliminando…'
+                                : `Eliminar ${ventasSeleccionadas.size} venta(s)`}
+                        </button>
+                    </>
+                }
+            >
+                <BulkSelectList
+                    testId="bulk-delete-ventas-list"
+                    selectAllLabel="Seleccionar todas"
+                    allSelected={
+                        ventasFiltradas.length > 0 &&
+                        ventasSeleccionadas.size === ventasFiltradas.length
+                    }
+                    onToggleAll={seleccionarTodas}
+                    emptyMessage="No hay ventas en este período."
+                    items={ventasFiltradas.map((venta) => ({
+                        id: venta.id,
+                        label: `#${venta.id} · ${venta.customer_name || 'Consumidor final'} · $${venta.total.toLocaleString()}`,
+                        meta: format(new Date(venta.created_at), 'd MMM, HH:mm', { locale: es }),
+                        selected: ventasSeleccionadas.has(venta.id),
+                        onToggle: () => toggleSeleccionVenta(venta.id),
+                    }))}
+                />
+            </BulkActionDialog>
         </div>
     )
 }

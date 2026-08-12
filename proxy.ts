@@ -2,12 +2,15 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getEnv } from '@/lib/env';
+import { createRequestId } from '@/lib/observability';
 
 /** Rutas públicas exactas: no requieren sesión y no deben redirigir a /login. */
 const PUBLIC_EXACT_ROUTES = new Set(['/login', '/sitemap.xml', '/sitemap-xml', '/robots.txt']);
 
 /** Rutas públicas por prefijo: el catálogo público incluye subrutas como /catalogo/p/[id]. */
 const PUBLIC_PREFIX_ROUTES = ['/catalogo'];
+
+const REQUEST_ID_HEADER = 'x-request-id';
 
 function matchesRoutePrefix(pathname: string, route: string) {
     return pathname === route || pathname.startsWith(`${route}/`);
@@ -21,8 +24,25 @@ function isPublicRoute(pathname: string) {
     return PUBLIC_PREFIX_ROUTES.some((route) => matchesRoutePrefix(pathname, route));
 }
 
+function resolveRequestId(request: NextRequest): string {
+    const incoming =
+        request.headers.get(REQUEST_ID_HEADER) ||
+        request.headers.get('x-correlation-id');
+    if (incoming && incoming.length <= 128 && /^[\w\-.:]+$/.test(incoming)) {
+        return incoming;
+    }
+    return createRequestId();
+}
+
+function attachRequestId(response: NextResponse, requestId: string): NextResponse {
+    response.headers.set(REQUEST_ID_HEADER, requestId);
+    return response;
+}
+
 export async function proxy(request: NextRequest) {
+    const requestId = resolveRequestId(request);
     let response = NextResponse.next({ request });
+    attachRequestId(response, requestId);
 
     const supabase = createServerClient(
         getEnv('NEXT_PUBLIC_SUPABASE_URL'),
@@ -38,6 +58,7 @@ export async function proxy(request: NextRequest) {
                     });
 
                     response = NextResponse.next({ request });
+                    attachRequestId(response, requestId);
 
                     cookiesToSet.forEach(({ name, value, options }) => {
                         response.cookies.set(name, value, options);
@@ -54,15 +75,18 @@ export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
     if (!user && pathname === '/') {
-        return NextResponse.redirect(new URL('/catalogo', request.url));
+        const redirect = NextResponse.redirect(new URL('/catalogo', request.url));
+        return attachRequestId(redirect, requestId);
     }
 
     if (!user && !isPublicRoute(pathname)) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        const redirect = NextResponse.redirect(new URL('/login', request.url));
+        return attachRequestId(redirect, requestId);
     }
 
     if (user && pathname === '/login') {
-        return NextResponse.redirect(new URL('/', request.url));
+        const redirect = NextResponse.redirect(new URL('/', request.url));
+        return attachRequestId(redirect, requestId);
     }
 
     return response;

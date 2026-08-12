@@ -20,6 +20,8 @@ import {
   loadRoleCapabilities,
   type RoleCapabilities,
 } from '@/lib/auth/roles'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 const Tablero = dynamic(() => import('@/components/Tablero'), {
   loading: () => (
@@ -195,8 +197,17 @@ function HomeContent() {
     [caps, tabAllowed]
   )
 
+  const { confirm, confirmProps } = useConfirm()
+
   const handleLogout = async () => {
-    if (!confirm('¿Cerrar sesión?')) return
+    const ok = await confirm({
+      title: '¿Cerrar sesión?',
+      description: 'Vas a salir del panel de Ilara.',
+      confirmLabel: 'Cerrar sesión',
+      cancelLabel: 'Cancelar',
+      danger: false,
+    })
+    if (!ok) return
     await signOut()
     router.push('/login')
     router.refresh()
@@ -237,6 +248,7 @@ function HomeContent() {
             </button>
           </div>
         </div>
+        <ConfirmDialog {...confirmProps} testId="confirm-logout" />
       </div>
     )
   }
@@ -386,6 +398,7 @@ function HomeContent() {
           })}
         </div>
       </nav>
+      <ConfirmDialog {...confirmProps} testId="confirm-logout" />
     </div>
   )
 }

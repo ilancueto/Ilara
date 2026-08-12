@@ -12,6 +12,16 @@ const supabaseImageHost =
 
 const isDev = process.env.NODE_ENV === 'development';
 
+/**
+ * Supabase local (CLI) — necesario para E2E con `next start` en CI.
+ * Se habilita solo si la URL pública apunta a loopback; en producción
+ * (https://*.supabase.co) no se añaden orígenes locales al CSP.
+ */
+const publicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || '';
+const isLocalSupabaseTarget = /^(https?:\/\/)?(127\.0\.0\.1|localhost)(:\d+)?/i.test(
+  publicSupabaseUrl
+);
+
 /** P3: sin unsafe-eval en prod; fuentes vía next/font (sin fonts.googleapis.com en runtime). */
 function buildContentSecurityPolicy(): string {
   const scriptParts = [
@@ -20,6 +30,16 @@ function buildContentSecurityPolicy(): string {
     'https://va.vercel-scripts.com',
     ...(isDev ? (["'unsafe-eval'"] as const) : []),
   ];
+  // Loopback sólo si el target Supabase es local (dev o build E2E). Nunca en prod real.
+  const localSupabaseConnect =
+    isDev || isLocalSupabaseTarget
+      ? [
+          'http://127.0.0.1:54321',
+          'http://localhost:54321',
+          'ws://127.0.0.1:54321',
+          'ws://localhost:54321',
+        ]
+      : [];
   return [
     "default-src 'self'",
     [
@@ -30,6 +50,7 @@ function buildContentSecurityPolicy(): string {
       'https://*.vercel-insights.com',
       'https://vitals.vercel-insights.com',
       'https://va.vercel-scripts.com',
+      ...localSupabaseConnect,
     ].join(' '),
     "img-src 'self' data: blob: https:",
     `script-src ${scriptParts.join(' ')}`,

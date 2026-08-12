@@ -16,11 +16,15 @@ import Loader from './Loader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Plus, Download, Wallet, BarChart3, Trash2, Filter } from 'lucide-react';
 import { ExpenseStats as ExpenseStatsType } from '@/lib/types';
-import { PastelCard } from '@/components/ui/PastelCard';
 import { useToast } from '@/context/ToastContext';
+import { useConfirm } from '@/hooks/useConfirm';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog';
+import { trackError, ObservabilityEvent } from '@/lib/observability';
 
 export default function Gastos() {
     const { showSuccess, showError } = useToast();
+    const { confirm, confirmProps } = useConfirm();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [stats, setStats] = useState<ExpenseStatsType | null>(null);
     const [filters, setFilters] = useState<ExpenseFilters>({});
@@ -31,6 +35,7 @@ export default function Gastos() {
     const [mostrarEliminarGastosModal, setMostrarEliminarGastosModal] = useState(false);
     const [gastosSeleccionados, setGastosSeleccionados] = useState<Set<string>>(new Set());
     const [eliminandoGastos, setEliminandoGastos] = useState(false);
+    const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const [receiptPreviewForForm, setReceiptPreviewForForm] = useState<string | null>(null);
@@ -101,14 +106,20 @@ export default function Gastos() {
 
     // Manejar eliminación (uno solo, desde la tarjeta)
     const handleDelete = async (id: string) => {
-        if (!confirm('¿Estás seguro de eliminar este gasto?')) return;
+        const ok = await confirm({
+            title: '¿Eliminar este gasto?',
+            description: 'Esta acción no se puede deshacer.',
+            confirmLabel: 'Eliminar',
+            danger: true,
+        });
+        if (!ok) return;
         try {
             await deleteExpense(id);
             showSuccess('Gasto eliminado correctamente');
             loadExpenses();
             loadStats();
         } catch (error) {
-            console.error('Error deleting expense:', error);
+            trackError(error, { event: ObservabilityEvent.SERVER_ERROR, route: '/gastos' });
             showError('Error al eliminar gasto');
         }
     };
@@ -132,10 +143,11 @@ export default function Gastos() {
 
     const handleEliminarGastosSeleccionados = async () => {
         if (gastosSeleccionados.size === 0) {
-            showError('Seleccioná al menos un gasto.');
+            setBulkDeleteError('Seleccioná al menos un gasto.');
             return;
         }
-        if (!confirm(`¿Eliminar ${gastosSeleccionados.size} gasto(s)? Esta acción no se puede deshacer.`)) return;
+        if (eliminandoGastos) return;
+        setBulkDeleteError(null);
         setEliminandoGastos(true);
         try {
             for (const id of gastosSeleccionados) {
@@ -147,8 +159,10 @@ export default function Gastos() {
             loadStats();
             showSuccess('Gastos eliminados correctamente.');
         } catch (error) {
-            console.error('Error al eliminar gastos:', error);
-            showError('Error al eliminar algunos gastos.');
+            trackError(error, { event: ObservabilityEvent.SERVER_ERROR, route: '/gastos' });
+            const msg = 'Error al eliminar algunos gastos. Podés reintentar.';
+            setBulkDeleteError(msg);
+            showError(msg);
         } finally {
             setEliminandoGastos(false);
         }
@@ -226,7 +240,11 @@ export default function Gastos() {
                             {expenses.length > 0 && (
                                 <button
                                     type="button"
-                                    onClick={() => { setMostrarEliminarGastosModal(true); setGastosSeleccionados(new Set()); }}
+                                    onClick={() => {
+                                        setMostrarEliminarGastosModal(true);
+                                        setGastosSeleccionados(new Set());
+                                        setBulkDeleteError(null);
+                                    }}
                                     className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 font-semibold text-sm transition-colors"
                                 >
                                     <Trash2 size={16} />
@@ -312,71 +330,63 @@ export default function Gastos() {
                 />
             )}
 
-            {/* Modal Eliminar gastos (como historial de ventas / inventario) */}
-            {mostrarEliminarGastosModal && (
-                <>
-                    <div className="modal-backdrop" onClick={() => !eliminandoGastos && setMostrarEliminarGastosModal(false)} />
-                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
-                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar gastos</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los gastos a eliminar. Esta acción no se puede deshacer.</p>
-                        </div>
-                        <div className="p-4 overflow-y-auto flex-1 min-h-0">
-                            <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
-                                <input
-                                    type="checkbox"
-                                    checked={expenses.length > 0 && gastosSeleccionados.size === expenses.length}
-                                    onChange={seleccionarTodosGastos}
-                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
-                                />
-                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todos</span>
-                            </label>
-                            <div className="space-y-2">
-                                {expenses.length === 0 ? (
-                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay gastos con los filtros actuales.</p>
-                                ) : (
-                                    expenses.map(expense => (
-                                        <label
-                                            key={expense.id}
-                                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer border border-transparent hover:border-pink-100 dark:hover:border-gray-600"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={gastosSeleccionados.has(expense.id)}
-                                                onChange={() => toggleSeleccionGasto(expense.id)}
-                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500"
-                                            />
-                                            <span className="flex-1 text-sm text-gray-800 dark:text-gray-100 truncate">{expense.description}</span>
-                                            <span className="text-xs text-gray-400 dark:text-gray-400 flex-shrink-0">
-                                                {expense.date} · ${expense.amount.toLocaleString()}
-                                            </span>
-                                        </label>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                        <div className="p-6 border-t border-pink-100 dark:border-gray-700 flex gap-3 justify-end">
-                            <button
-                                type="button"
-                                onClick={() => setMostrarEliminarGastosModal(false)}
-                                disabled={eliminandoGastos}
-                                className="btn-ghost"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleEliminarGastosSeleccionados}
-                                disabled={eliminandoGastos || gastosSeleccionados.size === 0}
-                                className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {eliminandoGastos ? 'Eliminando...' : `Eliminar ${gastosSeleccionados.size} gasto(s)`}
-                            </button>
-                        </div>
-                    </PastelCard>
-                </>
-            )}
+            <BulkActionDialog
+                open={mostrarEliminarGastosModal}
+                onClose={() => {
+                    if (eliminandoGastos) return;
+                    setMostrarEliminarGastosModal(false);
+                    setBulkDeleteError(null);
+                }}
+                title="Eliminar gastos"
+                description={`Seleccioná los gastos a eliminar (${gastosSeleccionados.size} seleccionado(s)). Esta acción no se puede deshacer.`}
+                loading={eliminandoGastos}
+                error={bulkDeleteError}
+                testId="bulk-delete-gastos"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (eliminandoGastos) return;
+                                setMostrarEliminarGastosModal(false);
+                                setBulkDeleteError(null);
+                            }}
+                            disabled={eliminandoGastos}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
+                            data-testid="bulk-delete-gastos-cancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void handleEliminarGastosSeleccionados()}
+                            disabled={eliminandoGastos || gastosSeleccionados.size === 0}
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            data-testid="bulk-delete-gastos-confirm"
+                        >
+                            {eliminandoGastos
+                                ? 'Eliminando…'
+                                : `Eliminar ${gastosSeleccionados.size} gasto(s)`}
+                        </button>
+                    </>
+                }
+            >
+                <BulkSelectList
+                    testId="bulk-delete-gastos-list"
+                    allSelected={expenses.length > 0 && gastosSeleccionados.size === expenses.length}
+                    onToggleAll={seleccionarTodosGastos}
+                    emptyMessage="No hay gastos con los filtros actuales."
+                    items={expenses.map((expense) => ({
+                        id: expense.id,
+                        label: expense.description || 'Sin descripción',
+                        meta: `${expense.date} · $${expense.amount.toLocaleString()}`,
+                        selected: gastosSeleccionados.has(expense.id),
+                        onToggle: () => toggleSeleccionGasto(expense.id),
+                    }))}
+                />
+            </BulkActionDialog>
 
+            <ConfirmDialog {...confirmProps} testId="confirm-gasto" />
         </div>
     );
 }

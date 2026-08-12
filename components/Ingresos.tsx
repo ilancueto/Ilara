@@ -8,6 +8,8 @@ import { Plus, TrendingUp, Pencil, Trash2, X, Filter, History, Wallet } from 'lu
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useToast } from '@/context/ToastContext'
 import HistorialVentas from '@/components/HistorialVentas'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 const TYPE_ICONS: Record<IncomeType, string> = {
   regalo: '🎁',
@@ -33,6 +35,7 @@ function formatCurrency(amount: number) {
 
 export default function Ingresos() {
   const { showSuccess, showError } = useToast()
+  const { confirm, confirmProps } = useConfirm()
   const [vistaActiva, setVistaActiva] = useState<'otros' | 'historial'>('historial')
   const [incomes, setIncomes] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
@@ -119,7 +122,12 @@ export default function Ingresos() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este ingreso?')) return
+    const ok = await confirm({
+      title: '¿Eliminar este ingreso?',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    })
+    if (!ok) return
     try {
       await deleteIncome(id)
       showSuccess('Ingreso eliminado')
@@ -408,6 +416,7 @@ export default function Ingresos() {
         </>,
         document.body
       )}
+      <ConfirmDialog {...confirmProps} testId="confirm-ingreso" />
     </div>
   )
 }

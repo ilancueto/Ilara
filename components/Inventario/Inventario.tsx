@@ -14,9 +14,13 @@ import TablaCombos from './TablaCombos'
 import FormularioProducto from './FormularioProducto'
 import FormularioCombo from './FormularioCombo'
 import DetalleProducto from './DetalleProducto'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
 
 export default function Inventario() {
     const { showSuccess, showError } = useToast()
+    const { confirm, confirmProps } = useConfirm()
     const [productos, setProductos] = useState<Producto[]>([])
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [combos, setCombos] = useState<ComboConItems[]>([])
@@ -57,6 +61,9 @@ export default function Inventario() {
     const [mostrarEliminarProductosModal, setMostrarEliminarProductosModal] = useState(false)
     const [productosSeleccionados, setProductosSeleccionados] = useState<Set<number>>(new Set())
     const [eliminandoProductos, setEliminandoProductos] = useState(false)
+    const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
+    const [bulkVisError, setBulkVisError] = useState<string | null>(null)
+    const [bulkBadgeError, setBulkBadgeError] = useState<string | null>(null)
 
     // Ocultar / mostrar en catálogo (modal múltiple)
     const [mostrarVisibilidadModal, setMostrarVisibilidadModal] = useState(false)
@@ -109,26 +116,36 @@ export default function Inventario() {
     }
 
     const handleEliminarCombo = async (id: number) => {
-        if (confirm('¿Eliminar este combo?')) {
-            const { error } = await supabase.from('combos').delete().eq('id', id)
-            if (!error) {
-                showSuccess('Combo eliminado')
-                obtenerCombos()
-            } else {
-                showError('Error al eliminar el combo')
-            }
+        const ok = await confirm({
+            title: '¿Eliminar este combo?',
+            description: 'No se puede deshacer.',
+            confirmLabel: 'Eliminar',
+            danger: true,
+        })
+        if (!ok) return
+        const { error } = await supabase.from('combos').delete().eq('id', id)
+        if (!error) {
+            showSuccess('Combo eliminado')
+            obtenerCombos()
+        } else {
+            showError('Error al eliminar el combo')
         }
     }
 
     const handleEliminar = async (id: number) => {
-        if (confirm('¿Estás seguro de eliminar este producto?')) {
-            const { error } = await supabase.from('products').delete().eq('id', id)
-            if (!error) {
-                showSuccess('Producto eliminado correctamente')
-                obtenerProductos()
-            } else {
-                showError('Error al eliminar el producto')
-            }
+        const ok = await confirm({
+            title: '¿Eliminar este producto?',
+            description: 'Si tiene ventas asociadas, la base puede rechazar la eliminación.',
+            confirmLabel: 'Eliminar',
+            danger: true,
+        })
+        if (!ok) return
+        const { error } = await supabase.from('products').delete().eq('id', id)
+        if (!error) {
+            showSuccess('Producto eliminado correctamente')
+            obtenerProductos()
+        } else {
+            showError('Error al eliminar el producto')
         }
     }
 
@@ -151,10 +168,11 @@ export default function Inventario() {
 
     const handleEliminarProductosSeleccionados = async () => {
         if (productosSeleccionados.size === 0) {
-            showError('Seleccioná al menos un producto.')
+            setBulkDeleteError('Seleccioná al menos un producto.')
             return
         }
-        if (!confirm(`¿Eliminar ${productosSeleccionados.size} producto(s)? Los que tengan ventas asociadas no se eliminarán.`)) return
+        if (eliminandoProductos) return
+        setBulkDeleteError(null)
         setEliminandoProductos(true)
         try {
             const ids = Array.from(productosSeleccionados)
@@ -180,12 +198,16 @@ export default function Inventario() {
                 showSuccess('Productos eliminados correctamente.')
             else if (eliminados > 0)
                 showSuccess(`${eliminados} eliminado(s). ${noEliminados.length} no se pudieron eliminar (tienen ventas asociadas).`)
-            else
-                showError('Ninguno se pudo eliminar: todos tienen ventas asociadas.')
+            else {
+                const msg = 'Ninguno se pudo eliminar: todos tienen ventas asociadas.'
+                setBulkDeleteError(msg)
+                showError(msg)
+            }
         } catch (err: unknown) {
             const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Error desconocido'
-            console.error('Error al eliminar productos:', msg, err)
-            showError(msg || 'No se pudieron eliminar algunos productos.')
+            const userMsg = msg || 'No se pudieron eliminar algunos productos. Podés reintentar.'
+            setBulkDeleteError(userMsg)
+            showError(userMsg)
         } finally {
             setEliminandoProductos(false)
         }
@@ -193,9 +215,11 @@ export default function Inventario() {
 
     const actualizarVisibilidadSeleccionados = async (visible: boolean) => {
         if (productosSeleccionados.size === 0) {
-            showError('Seleccioná al menos un producto.')
+            setBulkVisError('Seleccioná al menos un producto.')
             return
         }
+        if (actualizandoVisibilidad) return
+        setBulkVisError(null)
         setActualizandoVisibilidad(true)
         try {
             const ids = Array.from(productosSeleccionados)
@@ -212,6 +236,7 @@ export default function Inventario() {
             showSuccess(visible ? 'Productos visibles en el catálogo.' : 'Productos ocultos del catálogo.')
         } catch (err: unknown) {
             const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Error al actualizar'
+            setBulkVisError(msg)
             showError(msg)
         } finally {
             setActualizandoVisibilidad(false)
@@ -220,9 +245,11 @@ export default function Inventario() {
 
     const aplicarBadgeSeleccionados = async () => {
         if (productosSeleccionados.size === 0) {
-            showError('Seleccioná al menos un producto.')
+            setBulkBadgeError('Seleccioná al menos un producto.')
             return
         }
+        if (actualizandoBadge) return
+        setBulkBadgeError(null)
         setActualizandoBadge(true)
         const valorDb: CatalogBadgeKey | null = badgeLoteElegido === 'auto' ? null : badgeLoteElegido
         try {
@@ -247,6 +274,7 @@ export default function Inventario() {
                 err && typeof err === 'object' && 'message' in err
                     ? String((err as { message: string }).message)
                     : 'Error al actualizar'
+            setBulkBadgeError(msg)
             showError(msg)
         } finally {
             setActualizandoBadge(false)
@@ -379,6 +407,7 @@ export default function Inventario() {
                             onClick={() => {
                                 setMostrarVisibilidadModal(true)
                                 setProductosSeleccionados(new Set())
+                                setBulkVisError(null)
                             }}
                             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-pink-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-700 font-bold text-sm transition-colors"
                         >
@@ -391,6 +420,7 @@ export default function Inventario() {
                                 setMostrarBadgeModal(true)
                                 setProductosSeleccionados(new Set())
                                 setBadgeLoteElegido('auto')
+                                setBulkBadgeError(null)
                             }}
                             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 border border-violet-200 dark:border-violet-700 font-bold text-sm transition-colors"
                         >
@@ -399,7 +429,11 @@ export default function Inventario() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => { setMostrarEliminarProductosModal(true); setProductosSeleccionados(new Set()); }}
+                            onClick={() => {
+                                setMostrarEliminarProductosModal(true)
+                                setProductosSeleccionados(new Set())
+                                setBulkDeleteError(null)
+                            }}
                             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 font-bold text-sm transition-colors"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -592,264 +626,220 @@ export default function Inventario() {
                 cerrar={() => setGestionCuponesAbierto(false)}
             />
 
-            {/* Modal Eliminar productos (como historial de ventas) */}
-            {mostrarEliminarProductosModal && (
-                <>
-                    <div className="modal-backdrop" onClick={() => !eliminandoProductos && setMostrarEliminarProductosModal(false)} />
-                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
-                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">Eliminar productos</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los productos a eliminar. Esta acción no se puede deshacer.</p>
-                        </div>
-                        <div className="px-4 py-3 overflow-y-auto flex-1 min-h-0">
-                            <label className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
-                                <input
-                                    type="checkbox"
-                                    checked={productosFiltrados.length > 0 && productosSeleccionados.size === productosFiltrados.length}
-                                    onChange={seleccionarTodosProductos}
-                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
-                                />
-                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todos</span>
-                            </label>
-                            <div className="space-y-1.5">
-                                {productosFiltrados.length === 0 ? (
-                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay productos con los filtros actuales.</p>
-                                ) : (
-                                    productosFiltrados.map(producto => (
-                                        <label
-                                            key={producto.id}
-                                            className={`flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl cursor-pointer border transition-colors ${productosSeleccionados.has(producto.id) ? 'bg-pink-50/70 dark:bg-pink-900/25 border-pink-100/80 dark:border-pink-800/40' : 'bg-transparent border-transparent hover:bg-pink-50/50 dark:hover:bg-gray-700/50 hover:border-pink-100 dark:hover:border-gray-600'}`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={productosSeleccionados.has(producto.id)}
-                                                onChange={() => toggleSeleccionProducto(producto.id)}
-                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
-                                            />
-                                            <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">{producto.name}</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 tabular-nums">
-                                                {producto.categories?.name ?? 'Sin categoría'} · ${producto.sale_price.toLocaleString()}
-                                            </span>
-                                        </label>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                        <div className="p-5 sm:p-6 border-t border-pink-100 dark:border-gray-700 flex gap-3 justify-end">
-                            <button
-                                type="button"
-                                onClick={() => setMostrarEliminarProductosModal(false)}
-                                disabled={eliminandoProductos}
-                                className="btn-ghost"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleEliminarProductosSeleccionados}
-                                disabled={eliminandoProductos || productosSeleccionados.size === 0}
-                                className="px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {eliminandoProductos ? 'Eliminando...' : `Eliminar ${productosSeleccionados.size} producto(s)`}
-                            </button>
-                        </div>
-                    </PastelCard>
-                </>
-            )}
+            <BulkActionDialog
+                open={mostrarEliminarProductosModal}
+                onClose={() => {
+                    if (eliminandoProductos) return
+                    setMostrarEliminarProductosModal(false)
+                    setBulkDeleteError(null)
+                }}
+                title="Eliminar productos"
+                description={`Seleccioná los productos a eliminar (${productosSeleccionados.size} seleccionado(s)). Esta acción no se puede deshacer.`}
+                loading={eliminandoProductos}
+                error={bulkDeleteError}
+                testId="bulk-delete-productos"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (eliminandoProductos) return
+                                setMostrarEliminarProductosModal(false)
+                                setBulkDeleteError(null)
+                            }}
+                            disabled={eliminandoProductos}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
+                            data-testid="bulk-delete-productos-cancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void handleEliminarProductosSeleccionados()}
+                            disabled={eliminandoProductos || productosSeleccionados.size === 0}
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800 disabled:opacity-50"
+                            data-testid="bulk-delete-productos-confirm"
+                        >
+                            {eliminandoProductos
+                                ? 'Eliminando…'
+                                : `Eliminar ${productosSeleccionados.size} producto(s)`}
+                        </button>
+                    </>
+                }
+            >
+                <BulkSelectList
+                    testId="bulk-delete-productos-list"
+                    allSelected={
+                        productosFiltrados.length > 0 &&
+                        productosSeleccionados.size === productosFiltrados.length
+                    }
+                    onToggleAll={seleccionarTodosProductos}
+                    emptyMessage="No hay productos con los filtros actuales."
+                    items={productosFiltrados.map((producto) => ({
+                        id: producto.id,
+                        label: producto.name,
+                        meta: `${producto.categories?.name ?? 'Sin categoría'} · $${producto.sale_price.toLocaleString()}`,
+                        selected: productosSeleccionados.has(producto.id),
+                        onToggle: () => toggleSeleccionProducto(producto.id),
+                    }))}
+                />
+            </BulkActionDialog>
 
-            {/* Modal Ocultar / Mostrar en catálogo */}
-            {/* Modal badges catálogo (lote) */}
-            {mostrarBadgeModal && (
-                <>
-                    <div
-                        className="modal-backdrop"
-                        onClick={() => !actualizandoBadge && setMostrarBadgeModal(false)}
-                    />
-                    <PastelCard
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700"
-                        noHover
+            <BulkActionDialog
+                open={mostrarBadgeModal}
+                onClose={() => {
+                    if (actualizandoBadge) return
+                    setMostrarBadgeModal(false)
+                    setBulkBadgeError(null)
+                }}
+                title="Badges del catálogo"
+                description={`Elegí el badge y los productos (${productosSeleccionados.size} seleccionado(s)). "Automático" quita el badge fijo.`}
+                loading={actualizandoBadge}
+                error={bulkBadgeError}
+                testId="bulk-badge-productos"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (actualizandoBadge) return
+                                setMostrarBadgeModal(false)
+                                setBulkBadgeError(null)
+                            }}
+                            disabled={actualizandoBadge}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
+                            data-testid="bulk-badge-productos-cancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void aplicarBadgeSeleccionados()}
+                            disabled={actualizandoBadge || productosSeleccionados.size === 0}
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-600 dark:text-white border border-violet-200 disabled:opacity-50"
+                            data-testid="bulk-badge-productos-confirm"
+                        >
+                            {actualizandoBadge
+                                ? 'Guardando…'
+                                : `Aplicar a ${productosSeleccionados.size} producto(s)`}
+                        </button>
+                    </>
+                }
+            >
+                <div className="mb-4">
+                    <label
+                        htmlFor="bulk-badge-select"
+                        className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5"
                     >
-                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-violet-500 dark:text-violet-400" />
-                                Badges del catálogo
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Elegí el badge y los productos. &quot;Automático&quot; quita el badge fijo y vuelve a
-                                novedad por fecha + descuento.
-                            </p>
-                            <div className="mt-4">
-                                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
-                                    Badge a aplicar
-                                </label>
-                                <select
-                                    value={badgeLoteElegido}
-                                    onChange={(e) =>
-                                        setBadgeLoteElegido(e.target.value as CatalogBadgeKey | 'auto')
-                                    }
-                                    className="w-full rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100"
-                                >
-                                    {CATALOG_BADGE_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                            {opt.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                                    {
-                                        CATALOG_BADGE_OPTIONS.find((o) => o.value === badgeLoteElegido)
-                                            ?.hint
-                                    }
-                                </p>
-                            </div>
-                        </div>
-                        <div className="px-4 py-3 overflow-y-auto flex-1 min-h-0">
-                            <label className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        productosFiltrados.length > 0 &&
-                                        productosSeleccionados.size === productosFiltrados.length
-                                    }
-                                    onChange={seleccionarTodosProductos}
-                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
-                                />
-                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">
-                                    Seleccionar todos
-                                </span>
-                            </label>
-                            <div className="space-y-1.5">
-                                {productosFiltrados.length === 0 ? (
-                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">
-                                        No hay productos con los filtros actuales.
-                                    </p>
-                                ) : (
-                                    productosFiltrados.map((producto) => (
-                                        <label
-                                            key={producto.id}
-                                            className={`flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl cursor-pointer border transition-colors ${
-                                                productosSeleccionados.has(producto.id)
-                                                    ? 'bg-violet-50/70 dark:bg-violet-900/25 border-violet-100/80 dark:border-violet-800/40'
-                                                    : 'bg-transparent border-transparent hover:bg-violet-50/50 dark:hover:bg-gray-700/50 hover:border-violet-100 dark:hover:border-gray-600'
-                                            }`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={productosSeleccionados.has(producto.id)}
-                                                onChange={() => toggleSeleccionProducto(producto.id)}
-                                                className="rounded border-violet-300 text-violet-600 focus:ring-violet-500 shrink-0"
-                                            />
-                                            <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">
-                                                {producto.name}
-                                            </span>
-                                            <span className="text-[10px] flex-shrink-0 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 max-w-[120px] truncate">
-                                                {etiquetaBadgeCatalogo(producto.catalog_badge)}
-                                            </span>
-                                        </label>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                        <div className="p-5 sm:p-6 border-t border-pink-100 dark:border-gray-700 flex flex-wrap gap-3 justify-end">
-                            <button
-                                type="button"
-                                onClick={() => setMostrarBadgeModal(false)}
-                                disabled={actualizandoBadge}
-                                className="btn-ghost"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={aplicarBadgeSeleccionados}
-                                disabled={actualizandoBadge || productosSeleccionados.size === 0}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-600 dark:text-white dark:hover:bg-violet-500 border border-violet-200 dark:border-violet-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {actualizandoBadge
-                                    ? 'Guardando...'
-                                    : `Aplicar a ${productosSeleccionados.size} producto(s)`}
-                            </button>
-                        </div>
-                    </PastelCard>
-                </>
-            )}
+                        Badge a aplicar
+                    </label>
+                    <select
+                        id="bulk-badge-select"
+                        value={badgeLoteElegido}
+                        onChange={(e) =>
+                            setBadgeLoteElegido(e.target.value as CatalogBadgeKey | 'auto')
+                        }
+                        disabled={actualizandoBadge}
+                        className="w-full rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100"
+                        data-dialog-initial-focus
+                    >
+                        {CATALOG_BADGE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                        {CATALOG_BADGE_OPTIONS.find((o) => o.value === badgeLoteElegido)?.hint}
+                    </p>
+                </div>
+                <BulkSelectList
+                    testId="bulk-badge-productos-list"
+                    accent="violet"
+                    allSelected={
+                        productosFiltrados.length > 0 &&
+                        productosSeleccionados.size === productosFiltrados.length
+                    }
+                    onToggleAll={seleccionarTodosProductos}
+                    emptyMessage="No hay productos con los filtros actuales."
+                    items={productosFiltrados.map((producto) => ({
+                        id: producto.id,
+                        label: producto.name,
+                        meta: etiquetaBadgeCatalogo(producto.catalog_badge),
+                        selected: productosSeleccionados.has(producto.id),
+                        onToggle: () => toggleSeleccionProducto(producto.id),
+                    }))}
+                />
+            </BulkActionDialog>
 
-            {mostrarVisibilidadModal && (
-                <>
-                    <div className="modal-backdrop" onClick={() => !actualizandoVisibilidad && setMostrarVisibilidadModal(false)} />
-                    <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
-                        <div className="p-6 border-b border-pink-100 dark:border-gray-700">
-                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                                <Eye className="w-5 h-5 text-pink-500 dark:text-pink-400" />
-                                Visibilidad en catálogo
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Seleccioná los productos y elegí si ocultarlos o mostrarlos en el catálogo público.</p>
-                        </div>
-                        <div className="px-4 py-3 overflow-y-auto flex-1 min-h-0">
-                            <label className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl hover:bg-pink-50/50 dark:hover:bg-gray-700/50 cursor-pointer mb-2">
-                                <input
-                                    type="checkbox"
-                                    checked={productosFiltrados.length > 0 && productosSeleccionados.size === productosFiltrados.length}
-                                    onChange={seleccionarTodosProductos}
-                                    className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
-                                />
-                                <span className="font-bold text-sm text-gray-700 dark:text-gray-200">Seleccionar todos</span>
-                            </label>
-                            <div className="space-y-1.5">
-                                {productosFiltrados.length === 0 ? (
-                                    <p className="text-gray-400 dark:text-gray-500 text-sm py-4">No hay productos con los filtros actuales.</p>
-                                ) : (
-                                    productosFiltrados.map(producto => (
-                                        <label
-                                            key={producto.id}
-                                            className={`flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-xl cursor-pointer border transition-colors ${productosSeleccionados.has(producto.id) ? 'bg-pink-50/70 dark:bg-pink-900/25 border-pink-100/80 dark:border-pink-800/40' : 'bg-transparent border-transparent hover:bg-pink-50/50 dark:hover:bg-gray-700/50 hover:border-pink-100 dark:hover:border-gray-600'}`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={productosSeleccionados.has(producto.id)}
-                                                onChange={() => toggleSeleccionProducto(producto.id)}
-                                                className="rounded border-pink-300 text-pink-600 focus:ring-pink-500 shrink-0"
-                                            />
-                                            <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">{producto.name}</span>
-                                            <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full font-medium ${producto.visible_in_catalog === false ? 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-200' : 'bg-pink-100 text-pink-600 dark:bg-pink-900/50 dark:text-pink-300'}`}>
-                                                {producto.visible_in_catalog === false ? 'Oculto' : 'Visible'}
-                                            </span>
-                                        </label>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                        <div className="p-5 sm:p-6 border-t border-pink-100 dark:border-gray-700 flex flex-wrap gap-3 justify-end">
-                            <button
-                                type="button"
-                                onClick={() => setMostrarVisibilidadModal(false)}
-                                disabled={actualizandoVisibilidad}
-                                className="btn-ghost"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => actualizarVisibilidadSeleccionados(false)}
-                                disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <EyeOff className="w-4 h-4" />
-                                Ocultar ({productosSeleccionados.size})
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => actualizarVisibilidadSeleccionados(true)}
-                                disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-pink-50 text-pink-600 hover:bg-pink-100 dark:bg-pink-600 dark:text-white dark:hover:bg-pink-500 border border-pink-200 dark:border-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <Eye className="w-4 h-4" />
-                                Mostrar ({productosSeleccionados.size})
-                            </button>
-                        </div>
-                    </PastelCard>
-                </>
-            )}
+            <BulkActionDialog
+                open={mostrarVisibilidadModal}
+                onClose={() => {
+                    if (actualizandoVisibilidad) return
+                    setMostrarVisibilidadModal(false)
+                    setBulkVisError(null)
+                }}
+                title="Visibilidad en catálogo"
+                description={`Seleccioná productos (${productosSeleccionados.size} seleccionado(s)) y elegí ocultar o mostrar en el catálogo público.`}
+                loading={actualizandoVisibilidad}
+                error={bulkVisError}
+                testId="bulk-visibilidad-productos"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (actualizandoVisibilidad) return
+                                setMostrarVisibilidadModal(false)
+                                setBulkVisError(null)
+                            }}
+                            disabled={actualizandoVisibilidad}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
+                            data-testid="bulk-visibilidad-productos-cancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void actualizarVisibilidadSeleccionados(false)}
+                            disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
+                            className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 disabled:opacity-50"
+                            data-testid="bulk-visibilidad-productos-hide"
+                        >
+                            <EyeOff className="w-4 h-4" aria-hidden />
+                            Ocultar ({productosSeleccionados.size})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => void actualizarVisibilidadSeleccionados(true)}
+                            disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
+                            className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-pink-50 text-pink-600 dark:bg-pink-600 dark:text-white border border-pink-200 disabled:opacity-50"
+                            data-testid="bulk-visibilidad-productos-show"
+                        >
+                            <Eye className="w-4 h-4" aria-hidden />
+                            Mostrar ({productosSeleccionados.size})
+                        </button>
+                    </>
+                }
+            >
+                <BulkSelectList
+                    testId="bulk-visibilidad-productos-list"
+                    allSelected={
+                        productosFiltrados.length > 0 &&
+                        productosSeleccionados.size === productosFiltrados.length
+                    }
+                    onToggleAll={seleccionarTodosProductos}
+                    emptyMessage="No hay productos con los filtros actuales."
+                    items={productosFiltrados.map((producto) => ({
+                        id: producto.id,
+                        label: producto.name,
+                        meta: producto.visible_in_catalog === false ? 'Oculto' : 'Visible',
+                        selected: productosSeleccionados.has(producto.id),
+                        onToggle: () => toggleSeleccionProducto(producto.id),
+                    }))}
+                />
+            </BulkActionDialog>
+            <ConfirmDialog {...confirmProps} testId="confirm-inventario" />
         </div>
     )
 }

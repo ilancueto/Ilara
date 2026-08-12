@@ -5,6 +5,8 @@ import { supabase, Categoria } from '@/lib/supabase'
 import { X, Plus, SquarePen, Trash2, FolderOpen } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 interface Props {
     mostrar: boolean
@@ -14,6 +16,7 @@ interface Props {
 
 export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Props) {
     const { showSuccess, showError } = useToast()
+    const { confirm, confirmProps } = useConfirm()
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null)
     const [nombre, setNombre] = useState('')
@@ -77,7 +80,13 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
 
     const handleEliminar = async () => {
         if (!categoriaSeleccionada) return
-        if (!confirm('¿Eliminar esta categoría?')) return
+        const ok = await confirm({
+            title: '¿Eliminar esta categoría?',
+            description: 'No se puede si tiene productos asociados.',
+            confirmLabel: 'Eliminar',
+            danger: true,
+        })
+        if (!ok) return
 
         setCargando(true)
         const { error } = await supabase
@@ -219,6 +228,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                     </p>
                 </div>
             </PastelCard>
+            <ConfirmDialog {...confirmProps} testId="confirm-categoria" />
         </div>
     )
 }

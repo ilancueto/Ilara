@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { trackError, ObservabilityEvent } from '@/lib/observability'
 
 export default function GlobalError({
   error,
@@ -10,7 +11,11 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    trackError(error, {
+      event: ObservabilityEvent.CLIENT_ERROR,
+      code: error.digest,
+      meta: { boundary: 'app/global-error' },
+    })
   }, [error])
 
   return (
@@ -24,12 +29,12 @@ export default function GlobalError({
           alignItems: 'center',
           justifyContent: 'center',
           padding: 24,
-          fontFamily: 'var(--font-outfit), system-ui, sans-serif',
+          fontFamily: 'system-ui, sans-serif',
           background: 'linear-gradient(180deg, #fdf2f8 0%, #fff 50%, #fdf2f8 100%)',
           color: '#1f2937',
         }}
       >
-        <div style={{ maxWidth: 400, textAlign: 'center' }}>
+        <div style={{ maxWidth: 400, textAlign: 'center' }} role="alert">
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 8 }}>
             Algo salió mal
           </h1>

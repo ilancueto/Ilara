@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { signIn } from '@/lib/supabase'
 import { Eye, EyeOff } from 'lucide-react'
 import ThemeSwitch from '@/components/ThemeSwitch'
+import { trackLoginFailure, trackEvent, ObservabilityEvent } from '@/lib/observability'
 
 function goHome(router: ReturnType<typeof useRouter>) {
     router.push('/')
@@ -29,6 +30,10 @@ export default function Login() {
         const { user, error: authError } = await signIn(email, password)
 
         if (authError) {
+            // Sin email/password en telemetría (OBS-01).
+            trackLoginFailure(
+                authError === 'Invalid login credentials' ? 'invalid_credentials' : 'auth_error'
+            )
             setError(authError === 'Invalid login credentials'
                 ? 'Email o contraseña incorrectos'
                 : authError)
@@ -37,10 +42,16 @@ export default function Login() {
         }
 
         if (!user) {
+            trackLoginFailure('no_user')
             setCargando(false)
             return
         }
 
+        trackEvent({
+            event: ObservabilityEvent.LOGIN_SUCCESS,
+            level: 'info',
+            message: 'Login ok',
+        })
         goHome(router)
         setCargando(false)
     }

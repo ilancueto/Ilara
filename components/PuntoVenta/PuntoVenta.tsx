@@ -5,6 +5,7 @@ import { supabase, Producto, ItemCarrito, Cliente, ComboConItems, type PagoDesgl
 import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { totalCarritoPos } from '@/lib/posPricing'
 import { useToast } from '@/context/ToastContext'
+import { trackError, ObservabilityEvent } from '@/lib/observability'
 import CatalogoPOS from './CatalogoPOS'
 import CarritoVenta from './CarritoVenta'
 import PanelPago from './PanelPago'
@@ -190,10 +191,21 @@ export default function PuntoVenta() {
 
             if (rpcError) {
                 const m = rpcError.message || ''
+                // Telemetría sin payload de venta ni PII (OBS-01).
                 if (m.includes('insufficient_stock')) {
+                    trackError(rpcError, {
+                        event: ObservabilityEvent.STOCK_CONFLICT,
+                        code: 'insufficient_stock',
+                        route: 'pos',
+                    })
                     showError('No hay stock suficiente para esta venta. Actualizá el catálogo e intentá de nuevo.')
                     return
                 }
+                trackError(rpcError, {
+                    event: ObservabilityEvent.SALE_RPC_ERROR,
+                    code: m.split(/[:\s]/)[0]?.slice(0, 64) || 'rpc_error',
+                    route: 'pos',
+                })
                 if (m.includes('not_authenticated')) {
                     showError('Sesión expirada. Volvé a iniciar sesión.')
                     return
