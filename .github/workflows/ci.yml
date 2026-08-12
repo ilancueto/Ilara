@@ -255,7 +255,10 @@ jobs:
         run: npx playwright install chromium
 
       - name: Build app for E2E
-        run: npm run build
+        # Webpack evita el fallo intermitente de Turbopack al resolver fuentes
+        # de Google en runners efímeros; sigue siendo un build de producción
+        # que luego se ejecuta con `next start`.
+        run: npm run build -- --webpack
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
