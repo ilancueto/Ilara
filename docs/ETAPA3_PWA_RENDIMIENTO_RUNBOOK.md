@@ -1,8 +1,8 @@
 # Etapa 3 — PWA instalable online-only y rendimiento
 
-- **Alcance:** implementación local en repo `ilara-app`
+- **Alcance:** implementación y cierre de Stage 3 en repo `ilara-app`
 - **Fecha de implementación local:** 2026-08-11
-- **Producción:** **no** verificada en este runbook (sin deploy en esta tarea)
+- **Producción:** verificada el 2026-08-12 (deploy `ilara-g2flo80yg-ilara.vercel.app`)
 - **Vercel autorizado:** solo proyecto `ilara` (`prj_l1212uETlGghvn8jChfiXCp68SzN`)
 
 ## 1. Estrategia elegida
@@ -16,7 +16,7 @@
 | Service worker | `public/sw.js` estático mínimo, versionado en git |
 | Registro | `components/PwaRegister.tsx` en el layout raíz |
 | Offline | **No soportado** a propósito |
-| Caché SW | **Ninguna** (activate borra todo CacheStorage) |
+| Caché SW | **Ninguna**; sólo limpia nombres legacy de Ilara/Serwist/Workbox |
 | Build PWA | Sin Serwist / Workbox / webpack plugin |
 
 ### Por qué permite instalación sin offline
@@ -60,9 +60,9 @@
 
 ### Limpieza de caches legacy
 
-En `activate`, el SW ejecuta `caches.keys()` + `caches.delete` de **todas** las
-claves. Eso elimina residuos de Serwist/Workbox/`ilara-supabase-catalog` en
-clientes que ya tenían un SW antiguo, en la primera visita post-deploy.
+En `activate`, el SW ejecuta `caches.keys()` y elimina sólo claves legacy de
+Ilara/Serwist/Workbox, incluido `ilara-supabase-catalog`. Así remueve residuos
+del worker anterior sin borrar CacheStorage ajeno del mismo origen.
 
 ### Sin conexión
 
@@ -128,6 +128,15 @@ Checks HTTP esperados (local o prod tras deploy):
 | `/sw.js` | 200, JavaScript, sin `respondWith` / `caches.open` |
 | `/icon-192.png` etc. | 200, `image/png`, dimensiones correctas |
 
+## 4.1 Cierre productivo (2026-08-12)
+
+- Vercel: deployment **Ready** en el único proyecto autorizado `ilara`, con
+  alias `https://ilara.com.ar`.
+- Smoke HTTP productivo: `/`, `/catalogo`, `/sw.js`, `/manifest.json` y los cuatro
+  iconos responden 200; `/sw.js` usa JavaScript y `Cache-Control: no-store`.
+- Playwright contra `https://ilara.com.ar`: 6/6 PWA verdes, incluido registro del
+  worker, ausencia de respuestas offline desde cache y simulación sin conexión.
+
 ## 5. Rollback
 
 1. Revertir el commit Stage 3 (restaura Serwist solo si se revirtiera el árbol
@@ -158,5 +167,4 @@ Checks HTTP esperados (local o prod tras deploy):
 - Offline, Background Sync, colas, IndexedDB de mutaciones.
 - Cache de Supabase, sesión, panel, POS o comprobantes en el SW.
 - Cambios de RLS/SQL/Auth/Storage.
-- Deploy, commit o push (fuera del alcance de la sesión de implementación si así
-  se acordó).
+- Cambios de datos productivos: Stage 3 no ejecutó SQL ni modificó Supabase.

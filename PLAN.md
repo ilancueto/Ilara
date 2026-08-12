@@ -326,7 +326,7 @@ estado oculto en el dashboard.
 
 ## 7. Etapa 3 — PWA y rendimiento
 
-**Estado (local, 2026-08-11): IMPLEMENTADA EN REPO — pendiente deploy/smoke prod.**
+**Estado (2026-08-12): COMPLETADA, DESPLEGADA Y VERIFICADA EN PRODUCCIÓN.**
 
 **Decisión de negocio definitiva:** PWA instalable (icono, standalone, app-like)
 **sin** funcionamiento offline. Sin precache, sin runtime cache de páginas/API/
@@ -345,8 +345,8 @@ Supabase/sesión, sin colas ni ventas offline. Ver
 - [x] Manifest `display: standalone`, theme `#ff6eb4`, scope `/`, start_url `/`.
 - [x] Headers `Cache-Control: no-cache` para `/sw.js`.
 - [x] Tests unitarios + E2E PWA; script `check:pwa-icons`.
-- [ ] Smoke posdeploy: `/sw.js` 200, registro SW, sin `Production – ilara-app` en
-  Vercel, sin caches Serwist en clientes existentes tras visita.
+- [x] Smoke posdeploy: `/sw.js` 200, registro SW y 6/6 Playwright PWA contra
+  `ilara.com.ar`; deploy sólo en Vercel `ilara`.
 
 ### 7.2 Recuperar cache del catálogo — PERF-01
 
@@ -371,7 +371,7 @@ Supabase/sesión, sin colas ni ventas offline. Ver
 
 - [x] Criterios locales: instalable (manifest+SW+iconos), sin offline de negocio,
   sin cache app/Supabase en SW, build sin Serwist/Turbopack warning PWA.
-- [ ] Deploy a Vercel proyecto **`ilara`** únicamente + smoke prod.
+- [x] Deploy a Vercel proyecto **`ilara`** únicamente + smoke prod.
 - [x] Catálogo público sin `cookies()` en fetch de datos.
 - [x] SW no cachea autenticado ni comprobantes (no cachea nada de app).
 

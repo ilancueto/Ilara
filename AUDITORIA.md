@@ -30,7 +30,7 @@ de archivos, observabilidad, accesibilidad y cobertura CI.
 | Privacidad de datos | Cerrado | Ventas/campos internos 401 para `anon`; receipts privados |
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
-| PWA / offline | Mitigado en repo (pendiente deploy) | SW online-only + iconos reales; sin offline de negocio |
+| PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
 | Calidad de código | Bueno con deuda | Checks verdes, pero componentes grandes y lógica distribuida |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
 | Accesibilidad | Mejorable | Diálogos y controles interactivos no siguen un patrón completo |
@@ -69,14 +69,14 @@ pueden cambiar con la actividad normal del negocio.
 | `npm run lint` | Correcto | Sin errores |
 | `tsc --noEmit --incremental false` | Correcto | TypeScript estricto sin errores |
 | `npm run test` | Correcto | 5 archivos, 29 pruebas |
-| `npm run build` | Ver Stage 3 local | Serwist retirado; sin warning Turbopack PWA en implementación local |
+| `npm run build` | Correcto Stage 3 | Serwist retirado; catálogo ISR y fichas prerenderizadas |
 | `npm audit --json` | Correcto | 0 vulnerabilidades conocidas (post-retiro Serwist) |
-| `npm run test:e2e` | Ver corrida Stage 3 local | Incluye `e2e/pwa.spec.ts` |
-| Smoke tests reproducidos en producción | 5 de 6 (histórico) | Re-smoke posdeploy Stage 3 pendiente |
-| Service worker en producción | Pendiente deploy | Repo: `public/sw.js` online-only versionado |
+| `npm run test:e2e` | Correcto Stage 3 | 13/13 local; PWA 6/6 contra producción |
+| Smoke tests reproducidos en producción | Correcto Stage 3 | `/`, catálogo, manifest, SW e iconos 200; PWA real verificada |
+| Service worker en producción | Correcto | `/sw.js` 200, JavaScript, no-store y sin cache de negocio |
 | Catálogo desktop/mobile | Correcto | Responsive; ISR desbloqueado en repo vía cliente público |
 
-**Stage 3 (local):** catálogo/PDP usan `createSupabasePublicClient()` sin
+**Stage 3 (cerrado):** catálogo/PDP usan `createSupabasePublicClient()` sin
 `cookies()`, de modo que `revalidate` puede materializarse como ISR en el
 runtime de Next. Verificación de headers de cache en **producción** queda para
 el smoke posdeploy.
@@ -265,7 +265,7 @@ crearse una superficie POS de columnas mínimas.
 
 **Severidad original:** alta para la promesa offline / instalación.
 
-**Estado (2026-08-11, local): MITIGADO EN REPO — pendiente deploy prod.**
+**Estado (2026-08-12): CERRADO Y VERIFICADO EN PRODUCCIÓN.**
 
 Decisión de negocio actualizada: **instalable sin offline**. Se retiró Serwist
 (precache, runtime cache de Supabase, fallback `/~offline`). Sustituido por:
@@ -276,8 +276,8 @@ Decisión de negocio actualizada: **instalable sin offline**. Se retiró Serwist
 - Iconos con dimensiones reales 192 / 512 / maskable 512 / apple 180.
 - Manifest `standalone` + theme alineado.
 
-Producción histórica (`/sw.js` 404) se corrige al desplegar el commit Stage 3
-en el proyecto Vercel **`ilara`** únicamente.
+El deployment Stage 3 publicó `/sw.js` 200 en Vercel **`ilara`** únicamente;
+manifest, iconos y 6/6 pruebas PWA contra producción quedaron verdes.
 
 ### PERF-01 — Revalidación del catálogo anulada
 
