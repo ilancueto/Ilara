@@ -519,22 +519,27 @@ Cada feature debe incluir antes de desarrollo:
 
 ## 11. Etapa 7 — Envíos y logística
 
-Esta etapa comienza después de diseñar el flujo de pedidos de Etapa 6. No hay un
-transportista seleccionado ni una integración autorizada todavía.
+Esta etapa comienza después de diseñar el flujo de pedidos de Etapa 6.
+**Decisión de negocio (2026-08-13): Envia.com es la plataforma logística elegida.**
+No se desarrollarán integraciones directas con Correo Argentino, OCA ni Andreani;
+los servicios disponibles se consumirán exclusivamente a través de Envia.com.
 
 Alcance previsto:
 
-1. Comparar alternativas directas y agregadores disponibles en Argentina.
-2. Evaluar cobertura, tarifas, modalidades domicilio/sucursal, credenciales,
-   soporte, ambientes de prueba, etiquetas, tracking y condiciones comerciales.
-3. Diseñar una interfaz interna independiente del proveedor para cotización,
-   sucursales, creación de envío, etiquetas y seguimiento.
-4. Incorporar primero cotización por código postal con timeout, caché breve y
-   fallback manual; avanzar a alta de envío únicamente después de validarla.
+1. Validar la cuenta, credenciales, ambiente de prueba, cobertura y contrato de
+   la API de Envia.com para Argentina.
+2. Diseñar un adaptador interno `ShippingProvider` para que checkout y pedidos no
+   dependan del formato de Envia.com.
+3. Implementar primero cotización por código postal: origen fijo `8300`, un bulto,
+   timeout, caché breve, observabilidad y fallback manual.
+4. Mostrar servicios/tarifas devueltos por Envia.com sin inventar disponibilidad
+   ni precios cuando la API falle.
 5. Guardar en el pedido un snapshot de la opción logística elegida, sin confiar
    en importes enviados por el navegador.
+6. En una segunda entrega del Stage 7, evaluar/implementar alta del envío,
+   etiqueta y tracking usando la misma integración.
 
-Supuesto operativo inicial para comparar tarifas, todavía no implementado:
+Supuesto operativo inicial para cotizar en Envia.com, todavía no implementado:
 
 - origen: Neuquén Capital, código postal `8300`;
 - un solo bulto tipo bolsa;
@@ -544,15 +549,15 @@ Supuesto operativo inicial para comparar tarifas, todavía no implementado:
 
 Gate previo a desarrollo:
 
-- [ ] Proveedor o agregador elegido por negocio.
+- [x] Plataforma logística elegida por negocio: **Envia.com**.
 - [ ] Cuenta comercial, tarifas y credenciales de prueba disponibles.
 - [ ] Medidas reales de la bolsa confirmadas.
 - [ ] Política ante diferencias de peso/medidas y caída del proveedor definida.
 - [ ] Privacidad, secretos, rate limiting y observabilidad diseñados.
 - [ ] Plan de pruebas, deploy, rollback/forward-fix y soporte operativo aprobado.
 
-Hasta cumplir este gate, Etapa 7 permanece en investigación y no debe introducir
-código, migraciones, secretos ni afirmaciones de tarifas reales.
+Hasta cumplir el resto del gate, Etapa 7 permanece en preparación y no debe
+introducir código productivo, migraciones, secretos ni afirmaciones de tarifas reales.
 
 ## 12. División sugerida en cambios/PR
 
@@ -640,6 +645,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
 | 2026-08-12 | 5 Arquitectura incremental | DAL/DTOs, clientes Supabase separados, dominios críticos y lógica POS testeada; sin SQL remoto adicional | Completado | Commit `a8f4a8e`; CI verde; deploy Vercel `ilara` READY; smoke productivo read-only 16/16 OK |
 | 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística | Completado | Commits `66507b8`, `89ac418`, `485ed14`; migración `20260813205545`; CI `31745190425`; Vercel `ilara` READY; smoke 16/16 y pedido controlado limpio |
+| 2026-08-13 | 7 Envíos y logística | Selección de plataforma | Pendiente | Envia.com elegido; integración directa con transportistas descartada; faltan credenciales y gate técnico |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

@@ -24,9 +24,9 @@ en la confirmación administrativa.
 ## 3. Fuera de alcance (explícito)
 
 - Stage 6.2–6.7 (reposición, devoluciones, margen, CRM, CxC/CxP, B2B).
-- **Stage 7 completo:** transportistas, Correo Argentino, OCA, Andreani,
-  agregadores, cotización por CP, tarifas, sucursales, etiquetas, tracking,
-  alta de envíos, credenciales logísticas, campos de envío en el pedido.
+- **Stage 7 completo:** integración con Envia.com, cotización por CP, tarifas,
+  modalidades, etiquetas, tracking, alta de envíos, credenciales logísticas y
+  campos de envío en el pedido.
 - Tracking público por token (pospuesto; confirmación inmediata alcanza).
 - CAPTCHA externo (rate limit por teléfono en RPC + límites de payload).
 - Conversión automática de pedido a venta POS.
