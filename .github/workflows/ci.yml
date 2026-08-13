@@ -212,6 +212,7 @@ jobs:
       - name: Bootstrap E2E admin (local only)
         run: |
           node <<'NODE'
+          const fs = require('node:fs')
           const { createClient } = require('@supabase/supabase-js')
           const url = process.env.E2E_SUPABASE_URL
           const service = createClient(url, process.env.E2E_SERVICE_ROLE_KEY, {
@@ -243,7 +244,48 @@ jobs:
                 process.exit(1)
               }
             }
-            console.log('e2e admin ready')
+
+            // El catálogo se prerenderiza en el build de producción. Sembrar antes
+            // del build permite que orders-catalog pruebe esa salida estática.
+            const { data: existingCategory, error: categoryReadError } = await service
+              .from('categories')
+              .select('id')
+              .limit(1)
+              .maybeSingle()
+            if (categoryReadError) throw categoryReadError
+            let categoryId = existingCategory?.id
+            if (!categoryId) {
+              const createdCategory = await service
+                .from('categories')
+                .insert({ name: 'E2E Cat' })
+                .select('id')
+                .single()
+              if (createdCategory.error) throw createdCategory.error
+              categoryId = createdCategory.data.id
+            }
+            const catalogProductName = `E2E Catalog Order ${Date.now()}`
+            const catalogProduct = await service
+              .from('products')
+              .insert({
+                name: catalogProductName,
+                category_id: categoryId,
+                brand: 'E2E',
+                sale_price: 2500,
+                purchase_price: 1000,
+                stock: 20,
+                min_stock: 1,
+                visible_in_catalog: true,
+                discount_percentage: 0,
+              })
+              .select('id, name')
+              .single()
+            if (catalogProduct.error) throw catalogProduct.error
+            fs.appendFileSync(
+              process.env.GITHUB_ENV,
+              `E2E_CATALOG_PRODUCT_ID=${catalogProduct.data.id}\n` +
+                `E2E_CATALOG_PRODUCT_NAME=${catalogProduct.data.name}\n`
+            )
+            console.log('e2e admin and prebuild catalog product ready')
           })().catch((e) => {
             console.error(e?.message || e)
             process.exit(1)
@@ -293,6 +335,8 @@ jobs:
           E2E_SERVICE_ROLE_KEY: ${{ env.E2E_SERVICE_ROLE_KEY }}
           E2E_USER_EMAIL: ${{ env.E2E_USER_EMAIL }}
           E2E_USER_PASSWORD: ${{ env.E2E_USER_PASSWORD }}
+          E2E_CATALOG_PRODUCT_ID: ${{ env.E2E_CATALOG_PRODUCT_ID }}
+          E2E_CATALOG_PRODUCT_NAME: ${{ env.E2E_CATALOG_PRODUCT_NAME }}
 
       - name: Postdeploy smoke against local server (read-only, fail-closed)
         run: |

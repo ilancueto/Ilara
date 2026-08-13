@@ -20,13 +20,22 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
 
   let productId: number | null = null
   let productName = ''
+  let ownsProduct = false
 
   test.beforeAll(async () => {
     if (!process.env.E2E_SUPABASE_URL) return
     requireE2E()
+    const prebuiltProductId = Number(process.env.E2E_CATALOG_PRODUCT_ID || '')
+    const prebuiltProductName = (process.env.E2E_CATALOG_PRODUCT_NAME || '').trim()
+    if (Number.isSafeInteger(prebuiltProductId) && prebuiltProductId > 0 && prebuiltProductName) {
+      productId = prebuiltProductId
+      productName = prebuiltProductName
+      return
+    }
     const p = await seedCatalogProduct()
     productId = p.id
     productName = p.name
+    ownsProduct = true
   })
 
   test.afterAll(async () => {
@@ -53,7 +62,9 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
     } catch {
       /* ignore cleanup errors */
     }
-    if (productId) await cleanupProduct(productId)
+    // El producto prebuild de CI debe sobrevivir reintentos en workers nuevos.
+    // Supabase es efímero y se descarta al terminar el job.
+    if (productId && ownsProduct) await cleanupProduct(productId)
   })
 
   test('crear pedido desde catálogo y verlo en panel', async ({ page }) => {
