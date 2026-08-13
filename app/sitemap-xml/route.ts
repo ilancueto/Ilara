@@ -1,7 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { fetchCatalogProductsServer } from '@/lib/catalog/serverCatalog'
-import { getEnv } from '@/lib/env'
+import { createSupabasePublicClient } from '@/lib/supabase/public'
 import { getSiteUrl } from '@/lib/site'
 
 function escapeXml(text: string): string {
@@ -24,17 +23,14 @@ export async function GET() {
     ]
 
     try {
-        const supabase = createClient(
-            getEnv('NEXT_PUBLIC_SUPABASE_URL'),
-            getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
-        )
+        const supabase = createSupabasePublicClient()
         const pr = await fetchCatalogProductsServer(supabase)
         if (pr.ok) {
             for (const p of pr.data) {
                 entries.push({
                     loc: `${base}/catalogo/p/${p.id}`,
-                    lastmod: p.updated_at
-                        ? new Date(p.updated_at).toISOString().split('T')[0]
+                    lastmod: p.created_at
+                        ? new Date(p.created_at).toISOString().split('T')[0]
                         : today,
                     changefreq: 'weekly',
                     priority: '0.75',

@@ -1,13 +1,14 @@
 'use client'
 
 import { useRef } from 'react'
-import { ComboConItems, Producto, getProductImages } from '@/lib/supabase'
+import { getProductImages } from '@/lib/supabase'
+import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import Image from 'next/image'
 import { X, Package, Sparkles } from 'lucide-react'
 
 interface ModalDetalleComboProps {
-  combo: ComboConItems
+  combo: PublicCatalogCombo
   onClose: () => void
   onAgregar: () => void
   disponible: boolean
@@ -51,7 +52,7 @@ export function ModalDetalleCombo({ combo, onClose, onAgregar, disponible }: Mod
           </h3>
           <div className="space-y-2.5">
             {items.map((ci, idx) => {
-              const prod = ci.products as Producto | undefined
+              const prod = ci.products as PublicCatalogProduct | undefined
               const nombre = prod?.name ?? `Producto #${ci.product_id}`
               const img = prod ? getProductImages(prod)[0] : undefined
               return (

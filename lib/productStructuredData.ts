@@ -1,4 +1,5 @@
-import { getProductImages, type Producto } from '@/lib/supabase'
+import { getProductImages } from '@/lib/domain/images'
+import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 
 /** Marca en schema cuando el producto no tiene marca en DB (identificador para Google). */
 export const SCHEMA_FALLBACK_BRAND = 'Ilara Beauty'
@@ -65,7 +66,7 @@ function offerShippingDetailsArgentina(): object {
 }
 
 export function buildProductJsonLd(
-    p: Producto,
+    p: PublicCatalogProduct,
     canonical: string,
     siteOrigin: string,
     precioFinal: number

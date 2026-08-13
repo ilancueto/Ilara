@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getBrowserSupabase } from '@/lib/supabase/browser'
 
 const BUCKET = 'receipts'
 /** URLs firmadas de corta duración (Etapa 0 / STO-01). */
@@ -93,7 +93,7 @@ export async function uploadReceiptFile(file: File, kind: 'sale' | 'expense'): P
   const validation = validateReceiptFile(file)
   if (!validation.ok) throw new Error(validation.message)
 
-  const { data: authData, error: authErr } = await supabase.auth.getUser()
+  const { data: authData, error: authErr } = await getBrowserSupabase().auth.getUser()
   if (authErr || !authData.user?.id) {
     throw new Error('Debés iniciar sesión para subir comprobantes.')
   }
@@ -104,7 +104,7 @@ export async function uploadReceiptFile(file: File, kind: 'sale' | 'expense'): P
   const fileName = `${prefix}-${crypto.randomUUID?.() ?? `${Math.random().toString(36).slice(2)}-${Date.now()}`}.${validation.ext}`
   const path = `${uid}/${fileName}`
 
-  const { error } = await supabase.storage
+  const { error } = await getBrowserSupabase().storage
     .from(BUCKET)
     .upload(path, file, {
       contentType: validation.contentType,
@@ -125,7 +125,7 @@ export async function getReceiptSignedUrl(
   if (!path) return null
 
   const ttl = Math.min(Math.max(expiresSec, 60), 900)
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, ttl)
+  const { data, error } = await getBrowserSupabase().storage.from(BUCKET).createSignedUrl(path, ttl)
   if (error || !data?.signedUrl) {
     console.warn('[receipts] createSignedUrl failed')
     return null
@@ -136,6 +136,6 @@ export async function getReceiptSignedUrl(
 export async function deleteReceiptObject(stored: string | null | undefined): Promise<void> {
   const path = receiptPathFromStored(stored)
   if (!path) return
-  const { error } = await supabase.storage.from(BUCKET).remove([path])
+  const { error } = await getBrowserSupabase().storage.from(BUCKET).remove([path])
   if (error) console.warn('[receipts] remove:', error.message)
 }

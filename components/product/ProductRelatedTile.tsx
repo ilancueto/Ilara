@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Sparkles } from 'lucide-react'
-import { getProductImages, type Producto } from '@/lib/supabase'
+import { getProductImages } from '@/lib/supabase'
+import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 
 type Props = {
-  product: Producto
+  product: PublicCatalogProduct
   /** Precio final ya con descuento de catálogo */
   displayPrice: number
 }

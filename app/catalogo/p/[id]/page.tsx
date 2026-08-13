@@ -8,7 +8,8 @@ import {
 import { ProductPublicDetailClient } from '@/components/product/ProductPublicDetailClient'
 import { ProductoCatalogoRecover } from '@/components/Catalogo/ProductoCatalogoRecover'
 import { getSiteUrl } from '@/lib/site'
-import { getProductImages, type Producto } from '@/lib/supabase'
+import { getProductImages } from '@/lib/domain/images'
+import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { priceWithProductDiscount } from '@/lib/catalogPricing'
 import { buildProductJsonLd } from '@/lib/productStructuredData'
 import { formatPesoAR } from '@/lib/formatPesoAR'
@@ -46,7 +47,7 @@ function absoluteFromSite(pathOrUrl: string, siteOrigin: string): string {
     return new URL(t.replace(/^\//, ''), `${siteOrigin.replace(/\/$/, '')}/`).href
 }
 
-function buildProductDescription(p: Producto, precioFinal: number): string {
+function buildProductDescription(p: PublicCatalogProduct, precioFinal: number): string {
     const parts: string[] = []
     const brand = p.brand?.trim()
     if (brand) parts.push(`${p.name} · ${brand}`)

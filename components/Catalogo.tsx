@@ -16,7 +16,8 @@ import {
     SlidersHorizontal,
     Sparkles,
 } from 'lucide-react'
-import { ComboConItems, Producto, getProductImages } from '@/lib/supabase'
+import { getProductImages } from '@/lib/supabase'
+import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { getShareAbsoluteUrl } from '@/lib/site'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import { cartSubtotal, couponDiscountFromPercent, totalAfterCoupon } from '@/lib/catalogPricing'
@@ -97,7 +98,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
     const [indiceImagenPorProducto, setIndiceImagenPorProducto] = useState<Record<number, number>>({})
     const touchSwipeRef = useRef<{ productId: number; x: number; count: number } | null>(null)
     const searchRef = useRef<HTMLInputElement>(null)
-    const [comboSeleccionado, setComboSeleccionado] = useState<ComboConItems | null>(null)
+    const [comboSeleccionado, setComboSeleccionado] = useState<PublicCatalogCombo | null>(null)
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [ordenSelectOpen, setOrdenSelectOpen] = useState(false)
     const ordenSelectRef = useRef<HTMLDivElement>(null)
@@ -211,7 +212,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         openWhatsApp(lines.join('\n'), false)
     }
 
-    const compartirProducto = (producto: Producto) => {
+    const compartirProducto = (producto: PublicCatalogProduct) => {
         const productUrl = getShareAbsoluteUrl(`/catalogo/p/${producto.id}`)
         openWhatsApp([
             '¡Mirá este producto!',
@@ -225,7 +226,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         ].join('\n'), false)
     }
 
-    const compartirCombo = (combo: ComboConItems) => {
+    const compartirCombo = (combo: PublicCatalogCombo) => {
         openWhatsApp([
             '¡Mirá este combo!',
             '',
@@ -460,7 +461,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                     const esCombo = 'combo_items' in item
 
                                     if (esCombo) {
-                                        const combo = item as ComboConItems
+                                        const combo = item as PublicCatalogCombo
                                         const disponible = comboDisponible(combo)
                                         return (
                                             <article key={`combo-${combo.id}`} className={`${styles.productCard} group content-visibility-auto`}>
@@ -512,7 +513,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                         )
                                     }
 
-                                    const producto = item as Producto
+                                    const producto = item as PublicCatalogProduct
                                     const badges = getCatalogBadgesForProduct(producto)
                                     const images = getProductImages(producto)
                                     const idx = indiceImagenPorProducto[producto.id] ?? 0

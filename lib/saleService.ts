@@ -1,6 +1,6 @@
 // Servicio para actualizar ventas (historial) y subir comprobantes
-import { supabase, getUser } from '@/lib/supabase'
-import { Venta } from '@/lib/supabase'
+import { getBrowserSupabase, getUser } from '@/lib/supabase/browser'
+import type { Venta } from '@/lib/domain/types'
 import { deleteReceiptObject, getReceiptSignedUrl, uploadReceiptFile } from '@/lib/receiptStorage'
 
 export type SaleUpdateData = {
@@ -42,6 +42,7 @@ export async function updateSale(id: number, data: SaleUpdateData): Promise<Vent
   const user = await getUser()
   if (user?.id) updatePayload.updated_by = user.id
 
+  const supabase = getBrowserSupabase()
   const { data: updated, error } = await supabase
     .from('sales')
     .update(updatePayload)
@@ -93,7 +94,7 @@ type DeleteSaleRpcResult = {
 
 /** Elimina una venta y devuelve el stock (atómico en DB vía RPC). Limpia el archivo de comprobante si existe. */
 export async function deleteSale(saleId: number): Promise<void> {
-  const { data, error } = await supabase.rpc('delete_sale_and_restore_stock', {
+  const { data, error } = await getBrowserSupabase().rpc('delete_sale_and_restore_stock', {
     p_sale_id: saleId,
   })
 

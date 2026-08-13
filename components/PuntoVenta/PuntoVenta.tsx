@@ -6,6 +6,12 @@ import { imprimirComprobante } from '@/lib/comprobanteVenta'
 import { totalCarritoPos } from '@/lib/posPricing'
 import { useToast } from '@/context/ToastContext'
 import { trackError, ObservabilityEvent } from '@/lib/observability'
+import { createSaleWithItems } from '@/lib/domain/sales/browserSales'
+import {
+  ADMIN_COMBO_WITH_ITEMS_SELECT,
+  ADMIN_POS_PRODUCT_SELECT,
+} from '@/lib/domain/inventory/adminSelect'
+import { CUSTOMER_LIST_SELECT } from '@/lib/domain/customers/browserCustomers'
 import CatalogoPOS from './CatalogoPOS'
 import CarritoVenta from './CarritoVenta'
 import PanelPago from './PanelPago'
@@ -38,26 +44,26 @@ export default function PuntoVenta() {
     const obtenerCombos = async () => {
         const { data } = await supabase
             .from('combos')
-            .select('*, combo_items(id, product_id, quantity, products(*))')
+            .select(ADMIN_COMBO_WITH_ITEMS_SELECT)
             .eq('is_active', true)
-        if (data) setCombos(data as ComboConItems[])
+        if (data) setCombos(data as unknown as ComboConItems[])
     }
 
     const obtenerProductos = async () => {
         const { data } = await supabase
             .from('products')
-            .select('*, categories(name)')
+            .select(ADMIN_POS_PRODUCT_SELECT)
             .gt('stock', 0)
             .order('name')
-        if (data) setProductos(data)
+        if (data) setProductos(data as unknown as Producto[])
     }
 
     const obtenerClientes = async () => {
         const { data } = await supabase
             .from('customers')
-            .select('*')
+            .select(CUSTOMER_LIST_SELECT)
             .order('first_name')
-        if (data) setClientes(data)
+        if (data) setClientes(data as Cliente[])
     }
 
     const agregarAlCarrito = (producto: Producto) => {
@@ -146,155 +152,60 @@ export default function PuntoVenta() {
 
         setCargando(true)
         try {
-            // Get customer name: cliente de lista o "Otro (nombre)"
-            let customerName = ''
-            if (nombreClienteOtro.trim() !== '') {
-                customerName = nombreClienteOtro.trim()
-            } else if (clienteSeleccionado) {
-                const cliente = clientes.find(c => c.id === clienteSeleccionado)
-                if (cliente) customerName = `${cliente.first_name} ${cliente.last_name}`
-            }
-
-            // Con "cobrar después" no se envía desglose de pago (es cuenta por cobrar)
-            const tieneDesglose = !cobrarDespues && paymentBreakdown && paymentBreakdown.length > 0
-            // total/unit_price del cliente se envían solo como preview; el RPC los ignora (autoridad en DB).
-            const salePayload: Record<string, unknown> = {
-                sale_date: new Date().toISOString(),
-                payment_method: cobrarDespues ? 'credito' : (tieneDesglose ? 'mixto' : metodoPago),
-                customer_name: customerName || null,
-                customer_id: nombreClienteOtro.trim() !== '' ? null : clienteSeleccionado,
-                notes: notas || null,
-                status: cobrarDespues ? 'pending_payment' : 'completed'
-            }
-            if (tieneDesglose && paymentBreakdown) salePayload.payment_breakdown = paymentBreakdown
-
-            const lines: Array<Record<string, unknown>> = []
-            for (const item of carrito) {
-                if (item.producto) {
-                    lines.push({
-                        line_type: 'product',
-                        product_id: item.producto.id,
-                        quantity: item.cantidad,
-                    })
-                } else if (item.combo) {
-                    lines.push({
-                        line_type: 'combo',
-                        combo_id: item.combo.id,
-                        quantity: item.cantidad,
-                    })
-                }
-            }
-
-            const { data: rpcData, error: rpcError } = await supabase.rpc('create_sale_with_items', {
-                p_payload: { sale: salePayload, lines },
+            const outcome = await createSaleWithItems({
+                carrito,
+                clienteSeleccionado,
+                nombreClienteOtro,
+                clientes,
+                metodoPago,
+                paymentBreakdown,
+                cobrarDespues,
+                notas,
             })
 
-            if (rpcError) {
-                const m = rpcError.message || ''
+            if (!outcome.ok) {
+                const err = outcome.error
                 // Telemetría sin payload de venta ni PII (OBS-01).
-                if (m.includes('insufficient_stock')) {
-                    trackError(rpcError, {
-                        event: ObservabilityEvent.STOCK_CONFLICT,
-                        code: 'insufficient_stock',
-                        route: 'pos',
-                    })
-                    showError('No hay stock suficiente para esta venta. Actualizá el catálogo e intentá de nuevo.')
-                    return
-                }
-                trackError(rpcError, {
-                    event: ObservabilityEvent.SALE_RPC_ERROR,
-                    code: m.split(/[:\s]/)[0]?.slice(0, 64) || 'rpc_error',
+                trackError(err, {
+                    event:
+                        err.code === 'stock'
+                            ? ObservabilityEvent.STOCK_CONFLICT
+                            : ObservabilityEvent.SALE_RPC_ERROR,
+                    code: err.message?.slice(0, 64) || err.code,
                     route: 'pos',
                 })
-                if (m.includes('not_authenticated')) {
-                    showError('Sesión expirada. Volvé a iniciar sesión.')
-                    return
-                }
-                if (m.includes('not_authorized')) {
-                    showError('No tenés permiso para registrar ventas.')
-                    return
-                }
-                if (
-                    m.includes('payment_mismatch') ||
-                    m.includes('payment_breakdown_required') ||
-                    m.includes('payment_breakdown_not_allowed')
-                ) {
-                    showError('El desglose de pago no coincide con el total. Revisá los montos.')
-                    return
-                }
-                if (m.includes('invalid_payment') || m.includes('invalid_status')) {
-                    showError('Método de pago o estado inválido. Revisá el cobro e intentá de nuevo.')
-                    return
-                }
-                if (m.includes('invalid_catalog_price')) {
-                    showError('Hay productos o combos sin precio válido. Revisá el inventario.')
-                    return
-                }
-                if (m.includes('invalid_combo')) {
-                    showError('Uno de los combos ya no es válido. Actualizá la página.')
-                    return
-                }
-                if (m.includes('empty_combo')) {
-                    showError('Uno de los combos no tiene productos configurados.')
-                    return
-                }
-                if (m.includes('invalid_quantity')) {
-                    showError('Cantidades inválidas en el carrito. Revisá las cantidades e intentá de nuevo.')
-                    return
-                }
-                throw rpcError
-            }
-
-            const payload = rpcData as {
-                sale?: Record<string, unknown>
-                lines?: Array<Record<string, unknown>>
-            } | null
-            const venta = payload?.sale as
-                | {
-                      id: number
-                      total: number
-                      customer_name: string | null
-                      payment_method: string | null
-                      payment_breakdown?: unknown
-                      notes: string | null
-                      sale_date: string
-                      created_at: string
-                  }
-                | undefined
-
-            if (!venta?.id) {
-                showError('La venta no se pudo registrar correctamente.')
+                showError(err.userMessage)
                 return
             }
 
-            // Comprobante solo con líneas y precios devueltos por la DB.
-            const persistedLines = Array.isArray(payload?.lines) ? payload!.lines! : []
+            const { sale: venta, lines: persistedLines } = outcome.result
+            // Comprobante solo con líneas y precios devueltos por la DB (autoritativos).
             const itemsComprobante = persistedLines.map((ln) => ({
-                product_name: String(ln.product_name ?? ''),
-                quantity: Number(ln.quantity),
-                unit_price: Number(ln.unit_price),
-                subtotal: Number(ln.subtotal),
+                product_name: ln.product_name,
+                quantity: ln.quantity,
+                unit_price: ln.unit_price,
+                subtotal: ln.subtotal,
             }))
 
             const desglose =
-              Array.isArray(venta.payment_breakdown) ? (venta.payment_breakdown as PagoDesglose[]) : null
+                Array.isArray(venta.payment_breakdown) ? (venta.payment_breakdown as PagoDesglose[]) : null
 
             showSuccess(cobrarDespues ? 'Venta registrada como cuenta por cobrar' : '¡Venta completada! Stock actualizado')
             const abrio = imprimirComprobante(
-              {
-                id: venta.id,
-                total: Number(venta.total),
-                customer_name: venta.customer_name ?? null,
-                payment_method: venta.payment_method ?? null,
-                payment_breakdown: desglose,
-                notes: venta.notes ?? null,
-                sale_date: venta.sale_date,
-                created_at: venta.created_at,
-              },
-              itemsComprobante
+                {
+                    id: venta.id,
+                    total: Number(venta.total),
+                    customer_name: venta.customer_name ?? null,
+                    payment_method: venta.payment_method ?? null,
+                    payment_breakdown: desglose,
+                    notes: venta.notes ?? null,
+                    sale_date: venta.sale_date,
+                    created_at: venta.created_at,
+                },
+                itemsComprobante
             )
             if (!abrio) {
-              showError('Permití ventanas emergentes para imprimir el comprobante para el cliente.')
+                showError('Permití ventanas emergentes para imprimir el comprobante para el cliente.')
             }
             setCarrito([])
             setClienteSeleccionado(null)

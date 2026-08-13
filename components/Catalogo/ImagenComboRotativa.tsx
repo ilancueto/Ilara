@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { ComboConItems, Producto, getProductImages } from '@/lib/supabase'
+import { getProductImages } from '@/lib/supabase'
+import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { Sparkles } from 'lucide-react'
 
 const ROTACION_MS = 5000
 
 interface ImagenComboRotativaProps {
-    combo: ComboConItems
+    combo: PublicCatalogCombo
     fill?: boolean
     className?: string
     sizes?: string
@@ -24,7 +25,7 @@ export function ImagenComboRotativa({ combo, fill, className = '', sizes, onClic
     const containerRef = useRef<HTMLDivElement>(null)
 
     const imagenes = (combo.combo_items || [])
-        .map(ci => getProductImages((ci.products as Producto) ?? {} as Producto)[0])
+        .map(ci => getProductImages((ci.products as PublicCatalogProduct) ?? { image_url: null })[0])
         .filter((url): url is string => !!url)
 
     const imagenCombo = combo.image_url

@@ -63,6 +63,9 @@ function buildContentSecurityPolicy(): string {
 }
 
 const nextConfig: NextConfig = {
+  // Playwright local E2E uses loopback explicitly; allow Next dev assets from
+  // both localhost variants without widening production origins.
+  allowedDevOrigins: ['127.0.0.1', 'localhost'],
   experimental: {
     /** Menos JS en el bundle inicial (iconos, gráficos, fechas). */
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],

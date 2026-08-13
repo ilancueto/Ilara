@@ -5,36 +5,19 @@
  * Bootstrap del primer admin: NO se hace desde el cliente.
  * Ver docs/ETAPA1_RUNBOOK.md (service_role / SQL privilegiado).
  */
-import { supabase } from '@/lib/supabase'
+import { getBrowserSupabase } from '@/lib/supabase/browser'
+import {
+  capabilitiesForRole,
+  parseAppRole,
+  type AppRole,
+  type RoleCapabilities,
+} from '@/lib/auth/roleModel'
 
-export type AppRole = 'admin' | 'vendedor' | 'none'
-
-export type RoleCapabilities = {
-  role: AppRole
-  canUsePos: boolean
-  canManageInventory: boolean
-  canManageFinance: boolean
-  isAdmin: boolean
-}
-
-export function capabilitiesForRole(role: AppRole): RoleCapabilities {
-  return {
-    role,
-    canUsePos: role === 'admin' || role === 'vendedor',
-    canManageInventory: role === 'admin',
-    canManageFinance: role === 'admin' || role === 'vendedor',
-    isAdmin: role === 'admin',
-  }
-}
-
-export function parseAppRole(value: unknown): AppRole {
-  const r = String(value ?? '')
-  if (r === 'admin' || r === 'vendedor' || r === 'none') return r
-  return 'none'
-}
+export type { AppRole, RoleCapabilities }
+export { capabilitiesForRole, parseAppRole }
 
 export async function fetchCurrentAppRole(): Promise<AppRole> {
-  const { data, error } = await supabase.rpc('current_app_role')
+  const { data, error } = await getBrowserSupabase().rpc('current_app_role')
   if (error || data == null) return 'none'
   return parseAppRole(data)
 }

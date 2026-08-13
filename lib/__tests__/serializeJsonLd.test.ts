@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { serializeJsonLd } from '../security/serializeJsonLd'
 import { buildProductJsonLd } from '../productStructuredData'
-import type { Producto } from '../supabase'
+import type { PublicCatalogProduct } from '../domain/catalog/publicDto'
 
 describe('serializeJsonLd (Etapa 0 / SEC-04)', () => {
   it('escapa < como \\u003c y resiste </script>', () => {
@@ -21,21 +21,17 @@ describe('serializeJsonLd (Etapa 0 / SEC-04)', () => {
   })
 
   it('JSON-LD de producto de catálogo no incluye notes internas hostiles como campo notes', () => {
-    const p = {
+    const p: PublicCatalogProduct = {
       id: 1,
       name: 'Base </script>',
       brand: 'Marca',
       color: null,
-      purchase_price: null,
       sale_price: 1000,
       stock: 5,
-      min_stock: 1,
       image_url: null,
-      notes: '</script><script>alert(1)</script>',
       created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-01-01T00:00:00Z',
       category_id: null,
-    } as Producto
+    }
     const ld = buildProductJsonLd(p, 'https://example.com/p/1', 'https://example.com', 900)
     const html = serializeJsonLd(ld)
     expect(html).not.toMatch(/<\/script>/i)

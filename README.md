@@ -77,16 +77,21 @@ npm run test:db-rls
 npm run test:db-security
 ```
 
-Fuentes vigentes de auditoría y plan: [`AUDITORIA.md`](./AUDITORIA.md),
-[`PLAN.md`](./PLAN.md). Runbook Stage 2: [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md).
-Stage 4 (desplegado y verificado): [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md).
+**Fuentes vigentes** (únicas para estado de riesgo y ejecución):
+[`AUDITORIA.md`](./AUDITORIA.md), [`PLAN.md`](./PLAN.md).
+
+Runbooks por etapa: Stage 2 [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md);
+Stage 3 PWA; Stage 4 [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md)
+(desplegado); Stage 5 arquitectura **local**
+[`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md).
 
 ## Documentación extra
 
 | Documento | Contenido |
 |-----------|-----------|
 | [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | **Fuentes vigentes** de riesgo y ejecución |
-| [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md) | Stage 4: E2E/CI, a11y, checklist |
+| [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md) | Stage 5: clientes, DAL, DTOs, dominios (**local**) |
+| [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md) | Stage 4: E2E/CI, a11y |
 | [`docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`](docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md) | Logs, eventos, Sentry opt-in |
 | [`docs/ETAPA4_OPERACION_RUNBOOK.md`](docs/ETAPA4_OPERACION_RUNBOOK.md) | Backup, rollback, RPO/RTO propuestas |
 | [`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md) | PWA online-only (cerrado) |
@@ -97,7 +102,7 @@ Stage 4 (desplegado y verificado): [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](
 | [`docs/MIGRACIONES_SUPABASE.md`](docs/MIGRACIONES_SUPABASE.md) | Convención de migraciones |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Convenciones y checklist de PR |
 | [`docs/COMPONENTES_UI.md`](docs/COMPONENTES_UI.md) | Patrones UI |
-| Documentos en `docs/` con prefijos PLAN_/AUDITORIA_ históricos | Archivados / no vigentes |
+| `docs/PLAN_*`, `docs/AUDITORIA_*`, roadmaps históricos | **Archivados / no vigentes** |
 
 ## BCyP (release rápido)
 

@@ -28,9 +28,9 @@ export function ProductoCatalogoRecover({ id, canonicalPath }: Props) {
         </div>
       </header>
       <main className="w-full max-w-lg mx-auto px-4 sm:px-6 py-16 text-center">
-        <p className="text-gray-800 dark:text-gray-100 font-semibold mb-2">
-          No pudimos cargar este producto
-        </p>
+          <h1 className="text-gray-800 dark:text-gray-100 font-semibold mb-2">
+            Producto no encontrado
+          </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
           Puede ser un fallo temporal del servidor. Podés reintentar o volver al catálogo.
         </p>

@@ -2,7 +2,7 @@
 // SERVICIO DE GASTOS - SUPABASE
 // ============================================
 
-import { supabase } from '@/lib/supabase';
+import { getBrowserSupabase } from '@/lib/supabase/browser';
 import { deleteReceiptObject, getReceiptSignedUrl, uploadReceiptFile } from '@/lib/receiptStorage';
 import {
     Expense,
@@ -12,13 +12,13 @@ import {
     ExpenseCategory
 } from './types';
 import { calculatePercentageChange, getMonthName } from './expenseUtils';
+import { EXPENSE_LIST_COLUMNS } from '@/lib/domain/expenses/columns';
 
 // Obtener gastos con filtros
 export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> {
-
-    let query = supabase
+    let query = getBrowserSupabase()
         .from('expenses')
-        .select('*')
+        .select(EXPENSE_LIST_COLUMNS)
         .order('date', { ascending: false });
 
     // Aplicar filtros
@@ -66,7 +66,7 @@ export async function createExpense(formData: ExpenseFormData): Promise<Expense>
     }
 
     // Obtener user_id
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getBrowserSupabase().auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     const expenseData = {
@@ -80,7 +80,7 @@ export async function createExpense(formData: ExpenseFormData): Promise<Expense>
         user_id: user.id,
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await getBrowserSupabase()
         .from('expenses')
         .insert(expenseData)
         .select()
@@ -107,7 +107,7 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
         receiptUrl = await uploadReceiptFile(formData.receipt, 'expense');
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getBrowserSupabase().auth.getUser();
     const updateData: Record<string, unknown> = {
         ...(formData.date && { date: formData.date }),
         ...(formData.category && { category: formData.category }),
@@ -119,7 +119,7 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
     };
     if (user?.id) updateData.updated_by = user.id;
 
-    const { data, error } = await supabase
+    const { data, error } = await getBrowserSupabase()
         .from('expenses')
         .update(updateData as Record<string, never>)
         .eq('id', id)
@@ -142,14 +142,14 @@ export async function updateExpense(id: string, formData: Partial<ExpenseFormDat
 export async function deleteExpense(id: string): Promise<void> {
 
     // Primero obtener el gasto para eliminar el comprobante
-    const { data: expense } = await supabase
+    const { data: expense } = await getBrowserSupabase()
         .from('expenses')
         .select('receipt_url')
         .eq('id', id)
         .single();
 
     // Eliminar el gasto
-    const { error } = await supabase
+    const { error } = await getBrowserSupabase()
         .from('expenses')
         .delete()
         .eq('id', id);
@@ -186,7 +186,7 @@ export async function getExpenseStats(): Promise<ExpenseStats> {
     const lastDayPrevMonth = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0];
 
     // Gastos del mes actual
-    const { data: currentMonthExpenses } = await supabase
+    const { data: currentMonthExpenses } = await getBrowserSupabase()
         .from('expenses')
         .select('amount')
         .gte('date', firstDayCurrentMonth);
@@ -194,7 +194,7 @@ export async function getExpenseStats(): Promise<ExpenseStats> {
     const totalMonth = currentMonthExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
 
     // Gastos del mes anterior
-    const { data: prevMonthExpenses } = await supabase
+    const { data: prevMonthExpenses } = await getBrowserSupabase()
         .from('expenses')
         .select('amount')
         .gte('date', firstDayPrevMonth)
@@ -207,7 +207,7 @@ export async function getExpenseStats(): Promise<ExpenseStats> {
 
     // Gastos por categoría (últimos 30 días)
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const { data: recentExpenses } = await supabase
+    const { data: recentExpenses } = await getBrowserSupabase()
         .from('expenses')
         .select('category, amount')
         .gte('date', thirtyDaysAgo);
@@ -240,7 +240,7 @@ export async function getExpenseStats(): Promise<ExpenseStats> {
         const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).toISOString().split('T')[0];
         const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).toISOString().split('T')[0];
 
-        const { data: monthExpenses } = await supabase
+        const { data: monthExpenses } = await getBrowserSupabase()
             .from('expenses')
             .select('amount')
             .gte('date', firstDay)

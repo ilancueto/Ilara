@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
+import { CUSTOMER_LIST_SELECT } from '@/lib/domain/customers/browserCustomers'
 
 type ClienteStats = {
     totalVentas: number
@@ -54,7 +55,7 @@ export default function Clientes() {
         setCargando(true)
         const { data, error } = await supabase
             .from('customers')
-            .select('*')
+            .select(CUSTOMER_LIST_SELECT)
             .order('created_at', { ascending: false })
 
         if (!error && data) {
@@ -236,8 +237,8 @@ export default function Clientes() {
         setEliminandoClientes(true)
         try {
             const ids = Array.from(clientesSeleccionados)
-            const { error } = await supabase.from('customers').delete().in('id', ids)
-            if (error) throw error
+            const { deleteCustomersByIds } = await import('@/lib/domain/customers/browserCustomers')
+            await deleteCustomersByIds(ids)
             setClientes(clientes.filter(c => !clientesSeleccionados.has(c.id)))
             setClientesSeleccionados(new Set())
             setMostrarEliminarClientesModal(false)

@@ -4,16 +4,17 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { ArrowUpRight, MessageCircle, Minus, Plus, ShoppingBag, Sparkles, X } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
-import type { ItemCarrito, Producto } from '@/lib/supabase'
 import { getProductImages } from '@/lib/supabase'
+import type { CatalogCartItem } from '@/hooks/useCarrito'
+import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 import styles from '@/components/Catalogo/ModalCarrito.module.css'
 
 interface ModalCarritoProps {
     open: boolean
     onClose: () => void
-    carrito: ItemCarrito[]
-    getPrecioConDescuento: (producto: Producto) => number
+    carrito: CatalogCartItem[]
+    getPrecioConDescuento: (producto: PublicCatalogProduct) => number
     quitarDelCarrito: (productoId: number) => void
     quitarComboDelCarrito?: (comboId: number) => void
     actualizarCantidad: (productoId: number, cambio: number) => void

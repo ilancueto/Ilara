@@ -432,27 +432,36 @@ Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
 
 **Objetivo:** reducir deuda sin una reescritura que ponga en riesgo la operación.
 
-- [ ] Crear una DAL `server-only` para operaciones sensibles y autorización cerca
-  de la fuente de datos.
-- [ ] Separar cliente público de catálogo, cliente browser autenticado y cliente
-  server-side.
-- [ ] Organizar por módulos verticales: ventas, inventario, clientes, gastos y
-  catálogo.
-- [ ] Extraer primero lógica pura y servicios de los componentes mayores de 600
-  líneas; mantener PRs pequeños.
-- [ ] Definir contratos/DTO y evitar entidades de base completas en la UI.
-- [ ] Centralizar manejo de errores, loading, formularios y confirmaciones.
-- [ ] Añadir `server-only` a módulos que utilicen secretos o datos internos.
-- [ ] Actualizar README a Node `>=20.9.0` y enlazar sólo esta auditoría y este plan
-  como fuentes vigentes.
-- [ ] Marcar roadmaps históricos como archivados para eliminar contradicciones.
+**Estado:** implementado **localmente** en working tree (base `0a1931a`).
+**No** commiteado, pusheado ni desplegado. Sin SQL/migraciones remotas.
+Runbook: [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](./docs/ETAPA5_ARQUITECTURA_RUNBOOK.md).
+
+- [x] DAL `server-only` incremental: `lib/dal/auth.ts`, `lib/dal/catalog.ts` +
+  `lib/catalog/serverCatalog.ts` (autorización/sesión cerca de la fuente en servidor).
+- [x] Clientes separados: `lib/supabase/browser.ts`, `public.ts` (server-only),
+  `server.ts` (server-only). Barril `lib/supabase.ts` solo browser+tipos panel.
+- [x] Módulos verticales en `lib/domain/`: catalog, sales, customers, expenses,
+  inventory (+ errors/images/types).
+- [x] Extracción de lógica crítica: `createSale` (payload/errores/parse), mappers
+  catálogo público, selects admin/gastos/clientes; POS/Clientes cableados.
+  Componentes grandes no reescritos por estética.
+- [x] DTOs públicos `PublicCatalogProduct/Combo` sin `purchase_price` ni internos;
+  panel conserva `Producto` admin.
+- [x] Taxonomía mínima `AppError` + mapeo RPC; confirmaciones Stage 4 intactas.
+- [x] `server-only` en módulos de servidor/públicos/DAL; dependencia `server-only`
+  instalada. Service role **no** en app (tests Stage 5).
+- [x] README Node `>=20.9.0` y fuentes vigentes auditoría/plan (ya alineado; docs
+  históricos marcados archivados).
+- [x] Runbook Stage 5 + tests `lib/__tests__/stage5Architecture.test.ts`.
 
 Criterio de salida:
 
-- [ ] Ningún secreto o service role puede entrar en un bundle de cliente.
-- [ ] Los componentes principales quedan por debajo de un tamaño acordado o tienen
-  responsabilidades claramente separadas.
-- [ ] Cada módulo tiene al menos pruebas de su lógica crítica.
+- [x] Ningún secreto o service role en código de app/cliente (verificado por test
+  de frontera local).
+- [x] Responsabilidades separadas en dominios críticos (catálogo público, ventas
+  POS, clientes bulk); UI grande residual documentada.
+- [x] Lógica crítica de Stage 5 con pruebas unitarias.
+- [ ] Commit / push / CI remoto / deploy `ilara` / smoke prod *(pendiente humano)*.
 
 ## 10. Etapa 6 — Roadmap de producto
 

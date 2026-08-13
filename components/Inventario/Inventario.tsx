@@ -17,6 +17,10 @@ import DetalleProducto from './DetalleProducto'
 import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
+import {
+    ADMIN_COMBO_WITH_ITEMS_SELECT,
+    ADMIN_INVENTORY_PRODUCT_SELECT,
+} from '@/lib/domain/inventory/adminSelect'
 
 export default function Inventario() {
     const { showSuccess, showError } = useToast()
@@ -88,29 +92,23 @@ export default function Inventario() {
     const obtenerCombos = async () => {
         const { data, error } = await supabase
             .from('combos')
-            .select(`
-                *,
-                combo_items (
-                    id, combo_id, product_id, quantity,
-                    products (*, categories(name))
-                )
-            `)
+            .select(ADMIN_COMBO_WITH_ITEMS_SELECT)
             .order('created_at', { ascending: false })
-        if (!error && data) setCombos(data as ComboConItems[])
+        if (!error && data) setCombos(data as unknown as ComboConItems[])
     }
 
     const obtenerProductos = async () => {
         const { data, error } = await supabase
             .from('products')
-            .select('*, categories(name)')
+            .select(ADMIN_INVENTORY_PRODUCT_SELECT)
             .order('created_at', { ascending: false })
-        if (!error && data) setProductos(data)
+        if (!error && data) setProductos(data as unknown as Producto[])
     }
 
     const obtenerCategorias = async () => {
         const { data, error } = await supabase
             .from('categories')
-            .select('*')
+            .select('id, name')
             .order('name')
         if (!error && data) setCategorias(data)
     }

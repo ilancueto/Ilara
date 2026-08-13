@@ -8,12 +8,15 @@
  * - Redondeo: `Math.round` / PostgreSQL `round(x, 0)` (enteros ARS).
  */
 import { priceWithProductDiscount } from '@/lib/catalogPricing'
-import type { ItemCarrito, Producto } from '@/lib/supabase'
+import type { ItemCarrito } from '@/lib/domain/types'
 
 export const POS_PRICING_POLICY = 'pos_list_price_no_catalog_discount' as const
 
 /** Precio unitario mostrado en el catálogo público (incluye % de descuento del producto). */
-export function precioCatalogoProducto(producto: Producto): number {
+export function precioCatalogoProducto(producto: {
+  sale_price: number
+  discount_percentage?: number | null
+}): number {
   return priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
 }
 
@@ -21,7 +24,7 @@ export function precioCatalogoProducto(producto: Producto): number {
  * Precio unitario en POS (preview UI). Debe coincidir con el RPC:
  * `round(sale_price::numeric, 0)` sin descuento de catálogo.
  */
-export function precioListaProducto(producto: Pick<Producto, 'sale_price'>): number {
+export function precioListaProducto(producto: { sale_price: number }): number {
   const n = Math.round(Number(producto.sale_price) || 0)
   return n > 0 ? n : 0
 }
@@ -33,7 +36,7 @@ export function precioListaCombo(salePrice: number): number {
 
 /** Subtotal de línea producto (misma fórmula que el RPC). */
 export function subtotalListaProducto(
-  producto: Pick<Producto, 'sale_price'>,
+  producto: { sale_price: number },
   quantity: number
 ): number {
   return precioListaProducto(producto) * Math.max(0, Math.floor(Number(quantity) || 0))

@@ -1,5 +1,10 @@
 'use server'
 
+/**
+ * Server Action de catálogo (Stage 5).
+ * Usa cliente server con cookies; no service role.
+ * Validación de cupón es lectura pública acotada (sin secrets).
+ */
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export type ValidarCuponResult =
@@ -22,7 +27,10 @@ export async function validarCuponCatalogo(code: string): Promise<ValidarCuponRe
         .eq('is_active', true)
         .maybeSingle()
 
-    if (error) return { ok: false, error: error.message }
+    if (error) {
+        console.error('[catalog coupon validation failed]', error)
+        return { ok: false, error: 'No se pudo validar el cupón' }
+    }
     if (!data) return { ok: false, error: 'Cupón inválido o inactivo' }
     return { ok: true, discount_percentage: data.discount_percentage }
 }

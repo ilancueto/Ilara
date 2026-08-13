@@ -4,7 +4,8 @@ import { useCallback, useContext, useState, startTransition } from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Producto, getProductImages } from '@/lib/supabase'
+import { getProductImages } from '@/lib/supabase'
+import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import {
   cartSubtotal,
   couponDiscountFromPercent,
@@ -47,9 +48,9 @@ const ModalConfirmacionVaciar = dynamic(
 const PDP_LG_TWO_COL = 'lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 xl:gap-14'
 
 type Props = {
-  producto: Producto
+  producto: PublicCatalogProduct
   canonicalPath: string
-  relatedProducts?: Producto[]
+  relatedProducts?: PublicCatalogProduct[]
 }
 
 export function ProductPublicDetailClient({ producto, canonicalPath, relatedProducts = [] }: Props) {
@@ -82,7 +83,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   } | null>(null)
 
   const getPrecioConDescuento = useCallback(
-    (p: Producto) => priceWithProductDiscount(p.sale_price, p.discount_percentage),
+    (p: PublicCatalogProduct) => priceWithProductDiscount(p.sale_price, p.discount_percentage),
     []
   )
 
@@ -182,7 +183,8 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   }
 
   const stockAgotado = producto.stock <= 0
-  const stockBajo = !stockAgotado && producto.stock <= producto.min_stock
+  // Sin min_stock en DTO público: umbral UX fijo (no filtra datos internos).
+  const stockBajo = !stockAgotado && producto.stock <= 3
 
   const goThumb = (delta: number) => {
     if (images.length === 0) return
@@ -440,17 +442,6 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
                         : `En stock · ${producto.stock} disponibles`}
                   </div>
                 </header>
-
-                {producto.notes && (
-                  <div className="flex flex-col gap-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400">
-                      Descripción
-                    </p>
-                    <p className="text-base leading-relaxed text-gray-700 dark:text-zinc-300 whitespace-pre-wrap">
-                      {producto.notes}
-                    </p>
-                  </div>
-                )}
 
                 {/* Precio + acciones: unidad comercial compacta */}
                 <div className="flex flex-col gap-5 sm:gap-6">

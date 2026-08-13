@@ -1,10 +1,24 @@
+import 'server-only'
+
+/**
+ * Lectura de catálogo público en servidor (ISR / RSC).
+ * Usa select mínimo Stage 0 y DTO público Stage 5 (sin purchase_price).
+ */
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Producto, Categoria, ComboConItems } from '@/lib/supabase'
 import {
   CATALOG_CATEGORY_SELECT,
   CATALOG_COMBO_SELECT,
   CATALOG_PRODUCT_SELECT,
 } from '@/lib/catalog/publicCatalogSelect'
+import {
+  mapPublicCatalogCategories,
+  mapPublicCatalogCombos,
+  mapPublicCatalogProduct,
+  mapPublicCatalogProducts,
+  type PublicCatalogCategory,
+  type PublicCatalogCombo,
+  type PublicCatalogProduct,
+} from '@/lib/domain/catalog/publicDto'
 
 export { CATALOG_PRODUCT_SELECT } from '@/lib/catalog/publicCatalogSelect'
 
@@ -14,7 +28,7 @@ export type CatalogQueryResult<T> = CatalogQueryOk<T> | CatalogQueryErr
 
 export async function fetchCatalogProductsServer(
   supabase: SupabaseClient
-): Promise<CatalogQueryResult<Producto[]>> {
+): Promise<CatalogQueryResult<PublicCatalogProduct[]>> {
   const { data, error } = await supabase
     .from('products')
     .select(CATALOG_PRODUCT_SELECT)
@@ -26,12 +40,12 @@ export async function fetchCatalogProductsServer(
     console.error('[catalog server] products', error.message)
     return { ok: false }
   }
-  return { ok: true, data: normalizeCatalogProducts(data ?? []) }
+  return { ok: true, data: mapPublicCatalogProducts(data ?? []) }
 }
 
 export async function fetchCatalogCombosServer(
   supabase: SupabaseClient
-): Promise<CatalogQueryResult<ComboConItems[]>> {
+): Promise<CatalogQueryResult<PublicCatalogCombo[]>> {
   const { data, error } = await supabase
     .from('combos')
     .select(CATALOG_COMBO_SELECT)
@@ -42,12 +56,12 @@ export async function fetchCatalogCombosServer(
     console.error('[catalog server] combos', error.message)
     return { ok: false }
   }
-  return { ok: true, data: normalizeCatalogCombos(data ?? []) }
+  return { ok: true, data: mapPublicCatalogCombos(data ?? []) }
 }
 
 export async function fetchCatalogCategoriesServer(
   supabase: SupabaseClient
-): Promise<CatalogQueryResult<Categoria[]>> {
+): Promise<CatalogQueryResult<PublicCatalogCategory[]>> {
   const { data, error } = await supabase
     .from('categories')
     .select(CATALOG_CATEGORY_SELECT)
@@ -57,39 +71,11 @@ export async function fetchCatalogCategoriesServer(
     console.error('[catalog server] categories', error.message)
     return { ok: false }
   }
-  return { ok: true, data: (data ?? []) as Categoria[] }
-}
-
-/** Completa campos internos no expuestos al público con valores seguros por defecto. */
-function normalizeCatalogProduct(row: Record<string, unknown>): Producto {
-  return {
-    ...(row as object),
-    purchase_price: null,
-    min_stock: 0,
-    notes: null,
-    updated_at: typeof row.updated_at === 'string' ? row.updated_at : (row.created_at as string) || '',
-  } as Producto
-}
-
-function normalizeCatalogProducts(rows: unknown[]): Producto[] {
-  return rows.map((r) => normalizeCatalogProduct(r as Record<string, unknown>))
-}
-
-function normalizeCatalogCombos(rows: unknown[]): ComboConItems[] {
-  return rows.map((raw) => {
-    const r = raw as ComboConItems & { combo_items?: Array<{ products?: unknown }> }
-    const items = (r.combo_items ?? []).map((item) => ({
-      ...item,
-      products: item.products
-        ? normalizeCatalogProduct(item.products as Record<string, unknown>)
-        : undefined,
-    }))
-    return { ...r, combo_items: items, updated_at: r.updated_at ?? r.created_at }
-  })
+  return { ok: true, data: mapPublicCatalogCategories(data ?? []) }
 }
 
 export type CatalogProductByIdResult =
-  | { status: 'ok'; product: Producto }
+  | { status: 'ok'; product: PublicCatalogProduct }
   | { status: 'not_found' }
   | { status: 'error' }
 
@@ -108,25 +94,25 @@ export async function fetchCatalogProductByIdServer(
     return { status: 'error' }
   }
   if (!data) return { status: 'not_found' }
-  const p = normalizeCatalogProduct(data as Record<string, unknown>)
+  const p = mapPublicCatalogProduct(data)
   if (p.stock < 0 || p.visible_in_catalog === false) return { status: 'not_found' }
   return { status: 'ok', product: p }
 }
 
 /**
- * Productos relacionados para la ficha: prioriza la misma categoría y completa hasta `limit` con el resto del catálogo.
+ * Productos relacionados para la ficha: prioriza la misma categoría y completa hasta `limit`.
  */
 export async function fetchCatalogRelatedProductsServer(
   supabase: SupabaseClient,
   excludeId: number,
   categoryId: number | null,
   limit = 8
-): Promise<Producto[]> {
+): Promise<PublicCatalogProduct[]> {
   const seen = new Set<number>()
-  const out: Producto[] = []
+  const out: PublicCatalogProduct[] = []
 
   const pushRows = (rows: unknown) => {
-    for (const row of normalizeCatalogProducts((rows ?? []) as unknown[])) {
+    for (const row of mapPublicCatalogProducts((rows ?? []) as unknown[])) {
       if (row.id === excludeId || seen.has(row.id)) continue
       seen.add(row.id)
       out.push(row)
