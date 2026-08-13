@@ -9,6 +9,7 @@ import {
   Download,
   ArrowRight,
   ClipboardList,
+  AlertTriangle,
 } from 'lucide-react'
 import ExportarDatos from '@/components/ExportarDatos'
 
@@ -67,6 +68,17 @@ const tiles: Tile[] = [
     tone: 'sky',
     kind: 'tab',
     tab: 'orders',
+    visible: (c) => c.isAdmin,
+  },
+  {
+    id: 'stock_alerts',
+    title: 'Alertas de stock',
+    description: 'Reposición: productos bajo el mínimo, estado e historial.',
+    go: 'Abrir',
+    icon: AlertTriangle,
+    tone: 'amber',
+    kind: 'tab',
+    tab: 'stock_alerts',
     visible: (c) => c.isAdmin,
   },
   {

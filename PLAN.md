@@ -2,8 +2,8 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 y Stage 6.1 cerrados en producción; 6.2–6.7 y Etapa 7
-  permanecen como roadmap
+- **Estado:** Etapas 0–5 y Stage 6.1 cerrados en producción; Stage 6.2
+  implementado localmente (pendiente release); 6.3–6.7 y Etapa 7 en roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -491,11 +491,23 @@ pedido controlado verificado y limpiado.
 - [x] Commit / push / CI remoto
 - [x] Migración productiva + deploy Vercel `ilara` + smoke
 
-### 10.2 Resto del roadmap de producto (pendiente)
+### 10.2 Stage 6.2 — Alertas de reposición
+
+**Estado:** implementado y validado **localmente**. **No** cerrado en producción.
+
+Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md).
+
+- [x] Trigger Postgres en `products` + tablas `stock_alerts` / `stock_alert_events`
+- [x] Una alerta activa por producto; auto-cierre y nuevo ciclo
+- [x] Cantidad sugerida determinista + panel admin + RPC transición
+- [x] Tests unitarios, integración, E2E, suite DB/CI
+- [ ] Commit / push / CI remoto
+- [ ] Migración productiva + deploy Vercel `ilara` + smoke
+
+### 10.3 Resto del roadmap de producto (pendiente)
 
 1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (cerrado en producción)
-2. **Alertas de reposición:** stock menor o igual a mínimo, sugerencia de compra y
-   responsable de resolución.
+2. ~~**Alertas de reposición**~~ → ver 10.2 (local)
 3. **Devoluciones y notas de crédito:** reversión trazable de pagos y stock sin
    editar ventas históricas.
 4. **Reportes de margen:** usar precio de compra histórico, descuentos y costos,
@@ -504,6 +516,9 @@ pedido controlado verificado y limpiado.
 6. **Cuentas por cobrar/pagar y conciliación:** saldos, vencimientos y estados.
 7. **B2B, pagos online o multisucursal:** evaluar sólo cuando la operación actual
    tenga autorización granular y observabilidad.
+
+*(La numeración 4–7 de este bloque corresponde a las iniciativas 6.4–6.7 del
+roadmap de producto.)*
 
 **Fuera de alcance de Etapa 6:** cotización, transportistas, sucursales de correo,
 etiquetas, tracking y cualquier otra integración logística. Esos temas pertenecen
@@ -645,6 +660,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
 | 2026-08-12 | 5 Arquitectura incremental | DAL/DTOs, clientes Supabase separados, dominios críticos y lógica POS testeada; sin SQL remoto adicional | Completado | Commit `a8f4a8e`; CI verde; deploy Vercel `ilara` READY; smoke productivo read-only 16/16 OK |
 | 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística | Completado | Commits `66507b8`, `89ac418`, `485ed14`; migración `20260813205545`; CI `31745190425`; Vercel `ilara` READY; smoke 16/16 y pedido controlado limpio |
+| 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | En revisión | Migración `20260814090000`; runbook `docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`; **no desplegado** |
 | 2026-08-13 | 7 Envíos y logística | Selección de plataforma | Pendiente | Envia.com elegido; integración directa con transportistas descartada; faltan credenciales y gate técnico |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,

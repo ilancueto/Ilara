@@ -74,6 +74,9 @@ const sensitiveTables = [
   'orders',
   'order_items',
   'order_status_events',
+  // Stage 6.2 — alertas de stock: sin lectura anónima
+  'stock_alerts',
+  'stock_alert_events',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)

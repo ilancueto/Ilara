@@ -27,9 +27,16 @@ remoto adicional.
 
 **Stage 6.1 (pedidos desde catálogo)** está **cerrado, desplegado y verificado en
 producción** (migración `20260813205545`, RPC, checkout, panel, CI, smoke 16/16 y
-pedido controlado limpiado). Stage 7 (envíos/logística) permanece fuera de
-alcance y sin código; Envia.com quedó elegido como plataforma para su futura
-integración, sin integraciones directas con transportistas.
+pedido controlado limpiado).
+
+**Stage 6.2 (alertas de reposición)** está **implementado y validado en local**
+(trigger en `products`, tablas `stock_alerts`/`stock_alert_events`, panel admin,
+RPC de transición). **No** está desplegado ni cerrado en producción al momento
+de este corte documental.
+
+Stage 7 (envíos/logística) permanece fuera de alcance y sin código; Envia.com
+quedó elegido como plataforma para su futura integración, sin integraciones
+directas con transportistas.
 
 ### Dictamen por área
 
@@ -40,9 +47,10 @@ integración, sin integraciones directas con transportistas.
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
 | PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
-| Calidad de código | Stage 5 y 6.1 cerrados | Dominios/DTOs/DAL + dominio `orders`; componentes grandes residuales |
-| Arquitectura datos | Stage 5 y 6.1 cerrados | Browser / public / server; pedidos vía RPC DEFINER; sin service role en app |
+| Calidad de código | Stage 5 y 6.1 cerrados; 6.2 local | Dominios orders + stockAlerts; componentes grandes residuales |
+| Arquitectura datos | Stage 5 y 6.1 cerrados; 6.2 local | Trigger stock alerts + RPC; sin service role en app |
 | Pedidos catálogo | Stage 6.1 cerrado | Persistencia + estados + stock en confirm; desplegado y verificado |
+| Alertas reposición | Stage 6.2 local | stock ≤ min; panel admin; **pendiente release** |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
 | Accesibilidad | Mejorado Stage 4 | Dialog + ConfirmDialog + BulkActionDialog desplegados; axe/teclado E2E + mutantes bulk; residual en formularios legacy no bulk |
 | Observabilidad | Mejorado Stage 4 | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |

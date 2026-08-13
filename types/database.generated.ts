@@ -761,6 +761,115 @@ export type Database = {
           },
         ]
       }
+      stock_alert_events: {
+        Row: {
+          actor_kind: string
+          actor_user_id: string | null
+          alert_id: string
+          created_at: string
+          from_status: string | null
+          id: number
+          meta: Json
+          reason: string | null
+          to_status: string
+        }
+        Insert: {
+          actor_kind?: string
+          actor_user_id?: string | null
+          alert_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: number
+          meta?: Json
+          reason?: string | null
+          to_status: string
+        }
+        Update: {
+          actor_kind?: string
+          actor_user_id?: string | null
+          alert_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: number
+          meta?: Json
+          reason?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alert_events_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "stock_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_alerts: {
+        Row: {
+          assigned_to: string | null
+          deficit: number
+          dismissed_at: string | null
+          id: string
+          min_stock_at_open: number
+          min_stock_current: number
+          note: string | null
+          opened_at: string
+          product_id: number
+          resolution_kind: string | null
+          resolved_at: string | null
+          status: string
+          stock_at_open: number
+          stock_current: number
+          suggested_qty: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          deficit?: number
+          dismissed_at?: string | null
+          id?: string
+          min_stock_at_open: number
+          min_stock_current: number
+          note?: string | null
+          opened_at?: string
+          product_id: number
+          resolution_kind?: string | null
+          resolved_at?: string | null
+          status?: string
+          stock_at_open: number
+          stock_current: number
+          suggested_qty: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          deficit?: number
+          dismissed_at?: string | null
+          id?: string
+          min_stock_at_open?: number
+          min_stock_current?: number
+          note?: string | null
+          opened_at?: string
+          product_id?: number
+          resolution_kind?: string | null
+          resolved_at?: string | null
+          status?: string
+          stock_at_open?: number
+          stock_current?: number
+          suggested_qty?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
           created_at: string | null
@@ -929,8 +1038,25 @@ export type Database = {
           stored_url: string
         }[]
       }
+      stock_alert_deficit: {
+        Args: { p_min_stock: number; p_stock: number }
+        Returns: number
+      }
+      stock_alert_suggested_qty: {
+        Args: { p_min_stock: number; p_stock: number }
+        Returns: number
+      }
+      stock_alert_target_qty: { Args: { p_min_stock: number }; Returns: number }
+      sync_stock_alert_for_product: {
+        Args: { p_product_id: number }
+        Returns: undefined
+      }
       transition_catalog_order: {
         Args: { p_order_id: string; p_reason?: string; p_to_status: string }
+        Returns: Json
+      }
+      transition_stock_alert: {
+        Args: { p_alert_id: string; p_note?: string; p_to_status: string }
         Returns: Json
       }
     }
