@@ -1,9 +1,7 @@
 # Etapa 5 — Arquitectura incremental (runbook)
 
-- **Estado:** implementado **localmente** en el working tree (2026-08-12+).
-- **NO cerrado en producción.** Pendiente: commit, push, CI verde, deploy Vercel
-  **`ilara`**, smoke posdeploy.
-- **HEAD base de trabajo:** `0a1931a` (o descendiente sin commit de Stage 5 aún).
+- **Estado:** implementado, validado y publicado en `main` (commit `a8f4a8e`).
+- **HEAD de entrega:** `a8f4a8e`.
 - **Sin SQL remoto, migraciones, cambios de RLS/grants ni Edge Functions remotas.**
 
 ## Separación de estados

@@ -21,8 +21,7 @@ de login, venta, stock, eliminación y receipt fue correcto.
 El riesgo residual principal ya no es una exposición crítica activa: lifecycle de
 archivos, RPO/RTO de negocio, alertas externas y **deuda de componentes grandes**
 (UI). Stage 4 está desplegado y verificado en producción. Stage 5 (arquitectura
-incremental: clientes Supabase, DAL/DTOs, dominios) está **implementado en
-working tree local** — **sin** commit/push/deploy ni SQL remoto en esta entrega.
+incremental: clientes Supabase, DAL/DTOs, dominios) está **implementado, versionado y publicado** en `main` (commit `a8f4a8e`). No requiere SQL remoto adicional.
 
 ### Dictamen por área
 
@@ -33,8 +32,8 @@ working tree local** — **sin** commit/push/deploy ni SQL remoto en esta entreg
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
 | PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
-| Calidad de código | Mejorado Stage 5 (local) | Dominios/DTOs/DAL y clientes separados; componentes grandes residuales |
-| Arquitectura datos | Mejorado Stage 5 (local) | Browser / public server-only / server cookies; sin service role en app |
+| Calidad de código | Stage 5 cerrado | Dominios/DTOs/DAL y clientes separados; componentes grandes residuales |
+| Arquitectura datos | Stage 5 cerrado | Browser / public server-only / server cookies; sin service role en app |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
 | Accesibilidad | Mejorado Stage 4 | Dialog + ConfirmDialog + BulkActionDialog desplegados; axe/teclado E2E + mutantes bulk; residual en formularios legacy no bulk |
 | Observabilidad | Mejorado Stage 4 | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |

@@ -432,8 +432,8 @@ Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
 
 **Objetivo:** reducir deuda sin una reescritura que ponga en riesgo la operación.
 
-**Estado:** implementado **localmente** en working tree (base `0a1931a`).
-**No** commiteado, pusheado ni desplegado. Sin SQL/migraciones remotas.
+**Estado:** implementado, validado y publicado en `main` (commit `a8f4a8e`).
+Sin SQL/migraciones remotas adicionales.
 Runbook: [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](./docs/ETAPA5_ARQUITECTURA_RUNBOOK.md).
 
 - [x] DAL `server-only` incremental: `lib/dal/auth.ts`, `lib/dal/catalog.ts` +
