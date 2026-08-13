@@ -65,31 +65,24 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
 
     const search = page.locator('input[type="search"], input[placeholder*="Busc"]').first()
     if (await search.count()) {
-      await search.fill(productName.slice(0, 12))
+      await search.fill(productName)
       await page.waitForTimeout(500)
     }
 
-    // Intentar agregar el producto seed al carrito
-    const productCard = page.getByText(productName, { exact: false }).first()
-    if (await productCard.count()) {
-      await productCard.click({ trial: true }).catch(() => {})
-    }
-    const addNear = page
-      .locator('button')
-      .filter({ hasText: /agregar|añadir|\+/i })
-      .first()
-    if (await addNear.isVisible().catch(() => false)) {
-      await addNear.click()
-    } else {
-      // fallback genérico
-      await page.getByRole('button', { name: /agregar|bolsa|\+/i }).first().click()
-    }
+    // Seleccionar la card exacta: otras suites crean productos E2E en paralelo.
+    const productLink = page.getByRole('link', { name: productName, exact: true })
+    await expect(productLink).toBeVisible({ timeout: 10_000 })
+    const productCard = page.locator('article').filter({ has: productLink })
+    const addProduct = productCard.getByRole('button', { name: /agregar|añadir/i })
+    await addProduct.click()
 
     const bag = page.getByRole('button', { name: /bolsa/i }).first()
     await expect(bag).toBeVisible({ timeout: 10_000 })
-    await bag.click()
-
     const checkout = page.getByTestId('cart-checkout')
+    // Algunas variantes abren la bolsa al agregar; no hacer clic detrás del backdrop.
+    if (!(await checkout.isVisible().catch(() => false))) {
+      await bag.click()
+    }
     await expect(checkout).toBeVisible({ timeout: 10_000 })
     await checkout.click()
     await expect(page.getByTestId('checkout-pedido')).toBeVisible()
@@ -114,8 +107,10 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
     // Regresión: cerrar una confirmación debe desmontar el checkout y permitir un pedido nuevo.
     await page.getByRole('button', { name: /seguir mirando el catálogo/i }).click()
     await expect(page.getByTestId('checkout-pedido')).toHaveCount(0)
-    await addNear.click()
-    await bag.click()
+    await addProduct.click()
+    if (!(await page.getByTestId('cart-checkout').isVisible().catch(() => false))) {
+      await bag.click()
+    }
     await expect(page.getByTestId('cart-checkout')).toBeVisible()
     await page.getByTestId('cart-checkout').click()
     await expect(page.getByTestId('checkout-submit')).toBeVisible()

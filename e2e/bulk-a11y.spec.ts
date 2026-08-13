@@ -32,11 +32,14 @@ async function loginAsE2EAdmin(page: Page) {
 }
 
 async function assertFocusTrapped(page: Page, panelTestId: string) {
-  const focusedInDialog = await page.evaluate((tid) => {
-    const root = document.querySelector(`[data-testid="${tid}"]`)
-    return Boolean(root && root.contains(document.activeElement))
-  }, panelTestId)
-  expect(focusedInDialog).toBe(true)
+  await expect
+    .poll(() =>
+      page.evaluate((tid) => {
+        const root = document.querySelector(`[data-testid="${tid}"]`)
+        return Boolean(root && root.contains(document.activeElement))
+      }, panelTestId)
+    )
+    .toBe(true)
 
   await page.keyboard.press('Tab')
   const afterTab = await page.evaluate((tid) => {
