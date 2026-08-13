@@ -104,17 +104,21 @@ jobs:
         # No regenerar antes: hacerlo convertiría el control en un falso positivo.
         run: npm run db:types:check
 
-      - name: Integration Stage 0 + Stage 1
+      - name: Integration Stage 0 + Stage 1 + Stage 6.1
         run: |
           eval "$(supabase status -o env)"
           export STAGE0_INTEGRATION=1
           export STAGE1_INTEGRATION=1
+          export STAGE61_INTEGRATION=1
           export STAGE0_SUPABASE_URL="$API_URL"
           export STAGE0_ANON_KEY="$ANON_KEY"
           export STAGE0_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
           export STAGE1_SUPABASE_URL="$API_URL"
           export STAGE1_ANON_KEY="$ANON_KEY"
           export STAGE1_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          export STAGE61_SUPABASE_URL="$API_URL"
+          export STAGE61_ANON_KEY="$ANON_KEY"
+          export STAGE61_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
           # Usuarios de prueba locales (sin PII real)
           # La suite falla si STAGE1=1 y faltan users; se crean vía Admin API
           node <<'NODE'
@@ -139,6 +143,8 @@ jobs:
           ;(async () => {
             const a = await ensureUser('stage0-a@example.com', 'Stage0-Test-Pass-A1!')
             const b = await ensureUser('stage0-b@example.com', 'Stage0-Test-Pass-B1!')
+            await ensureUser('stage61-a@example.com', 'Stage61-Test-Pass-A1!')
+            await ensureUser('stage61-b@example.com', 'Stage61-Test-Pass-B1!')
             const bootstrap = await service.rpc('bootstrap_first_admin', { p_user_id: a })
             if (bootstrap.error) throw bootstrap.error
             console.log('users ready')
@@ -155,6 +161,10 @@ jobs:
           export STAGE1_USER_A_PASSWORD="$STAGE0_USER_A_PASSWORD"
           export STAGE1_USER_B_EMAIL="$STAGE0_USER_B_EMAIL"
           export STAGE1_USER_B_PASSWORD="$STAGE0_USER_B_PASSWORD"
+          export STAGE61_USER_A_EMAIL=stage61-a@example.com
+          export STAGE61_USER_A_PASSWORD='Stage61-Test-Pass-A1!'
+          export STAGE61_USER_B_EMAIL=stage61-b@example.com
+          export STAGE61_USER_B_PASSWORD='Stage61-Test-Pass-B1!'
           npm run test:integration
 
   e2e:

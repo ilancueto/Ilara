@@ -8,6 +8,7 @@ import {
   Store,
   Download,
   ArrowRight,
+  ClipboardList,
 } from 'lucide-react'
 import ExportarDatos from '@/components/ExportarDatos'
 
@@ -26,7 +27,7 @@ type Tile = {
   description: string
   go: string
   icon: typeof TrendingUp
-  tone: 'emerald' | 'amber' | 'violet' | 'pink'
+  tone: 'emerald' | 'amber' | 'violet' | 'pink' | 'sky'
   kind: 'tab' | 'link' | 'action'
   href?: string
   tab?: AppTab
@@ -56,6 +57,17 @@ const tiles: Tile[] = [
     kind: 'tab',
     tab: 'expenses',
     visible: (c) => c.canManageFinance,
+  },
+  {
+    id: 'orders',
+    title: 'Pedidos web',
+    description: 'Pedidos del catálogo: estados, stock y historial.',
+    go: 'Abrir',
+    icon: ClipboardList,
+    tone: 'sky',
+    kind: 'tab',
+    tab: 'orders',
+    visible: (c) => c.isAdmin,
   },
   {
     id: 'catalogo',
@@ -89,6 +101,7 @@ const toneClass: Record<Tile['tone'], string> = {
   violet:
     'bg-violet-50 text-violet-600 dark:bg-violet-900/40 dark:text-violet-300',
   pink: 'bg-pink-50 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400',
+  sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
 }
 
 export default function NegocioHub({ onNavigate, caps }: Props) {

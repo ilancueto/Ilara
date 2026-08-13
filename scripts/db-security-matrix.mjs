@@ -63,7 +63,18 @@ const anon = createClient(url, anonKey, {
 })
 
 // --- anon: superficies sensibles ---
-const sensitiveTables = ['sales', 'sale_items', 'expenses', 'customers', 'incomes', 'stock_movements']
+const sensitiveTables = [
+  'sales',
+  'sale_items',
+  'expenses',
+  'customers',
+  'incomes',
+  'stock_movements',
+  // Stage 6.1 — pedidos: sin lectura anónima
+  'orders',
+  'order_items',
+  'order_status_events',
+]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
   if (!error && data && data.length > 0) {

@@ -83,7 +83,9 @@ npm run test:db-security
 Runbooks por etapa: Stage 2 [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md);
 Stage 3 PWA; Stage 4 [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md)
 (desplegado); Stage 5 arquitectura **cerrada, desplegada y verificada**
-[`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md).
+[`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md);
+Stage 6.1 pedidos catálogo (**local / no release**)
+[`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md).
 
 ## Documentación extra
 
@@ -91,6 +93,7 @@ Stage 3 PWA; Stage 4 [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CA
 |-----------|-----------|
 | [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | **Fuentes vigentes** de riesgo y ejecución |
 | [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md) | Stage 5: clientes, DAL, DTOs y dominios; **cerrada y verificada en producción** |
+| [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md) | Stage 6.1: pedidos desde catálogo; **implementado local, pendiente release** |
 | [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md) | Stage 4: E2E/CI, a11y |
 | [`docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`](docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md) | Logs, eventos, Sentry opt-in |
 | [`docs/ETAPA4_OPERACION_RUNBOOK.md`](docs/ETAPA4_OPERACION_RUNBOOK.md) | Backup, rollback, RPO/RTO propuestas |

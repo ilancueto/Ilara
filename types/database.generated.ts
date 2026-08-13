@@ -228,6 +228,198 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          combo_components_snapshot: Json
+          combo_id: number | null
+          discount_percentage: number
+          id: number
+          line_subtotal: number
+          line_type: string
+          name_snapshot: string
+          order_id: string
+          product_id: number | null
+          product_id_snapshot: number | null
+          quantity: number
+          sort_order: number
+          unit_price: number
+          variant_snapshot: string | null
+        }
+        Insert: {
+          combo_components_snapshot?: Json
+          combo_id?: number | null
+          discount_percentage?: number
+          id?: number
+          line_subtotal: number
+          line_type: string
+          name_snapshot: string
+          order_id: string
+          product_id?: number | null
+          product_id_snapshot?: number | null
+          quantity: number
+          sort_order?: number
+          unit_price: number
+          variant_snapshot?: string | null
+        }
+        Update: {
+          combo_components_snapshot?: Json
+          combo_id?: number | null
+          discount_percentage?: number
+          id?: number
+          line_subtotal?: number
+          line_type?: string
+          name_snapshot?: string
+          order_id?: string
+          product_id?: number | null
+          product_id_snapshot?: number | null
+          quantity?: number
+          sort_order?: number
+          unit_price?: number
+          variant_snapshot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "combos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_events: {
+        Row: {
+          actor_kind: string
+          actor_user_id: string | null
+          created_at: string
+          from_status: string | null
+          id: number
+          order_id: string
+          reason: string | null
+          to_status: string
+        }
+        Insert: {
+          actor_kind?: string
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: number
+          order_id: string
+          reason?: string | null
+          to_status: string
+        }
+        Update: {
+          actor_kind?: string
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: number
+          order_id?: string
+          reason?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          cancel_reason: string | null
+          cancelled_at: string | null
+          channel: string
+          completed_at: string | null
+          confirmed_at: string | null
+          coupon_code: string | null
+          coupon_discount_percentage: number | null
+          created_at: string
+          created_by: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          discount_total: number
+          id: string
+          idempotency_key: string
+          notes: string | null
+          order_number: string
+          request_fingerprint: string
+          status: string
+          stock_reserved: boolean
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          channel?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          coupon_code?: string | null
+          coupon_discount_percentage?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          discount_total?: number
+          id?: string
+          idempotency_key: string
+          notes?: string | null
+          order_number: string
+          request_fingerprint: string
+          status?: string
+          stock_reserved?: boolean
+          subtotal: number
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          channel?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          coupon_code?: string | null
+          coupon_discount_percentage?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          discount_total?: number
+          id?: string
+          idempotency_key?: string
+          notes?: string | null
+          order_number?: string
+          request_fingerprint?: string
+          status?: string
+          stock_reserved?: boolean
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       passkey_audit_log: {
         Row: {
           created_at: string
@@ -667,6 +859,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
+      create_catalog_order: { Args: { p_payload: Json }; Returns: Json }
       create_sale_with_items: { Args: { p_payload: Json }; Returns: Json }
       current_app_role: {
         Args: never
@@ -717,6 +910,7 @@ export type Database = {
         }
         Returns: string
       }
+      next_catalog_order_number: { Args: never; Returns: string }
       set_user_role: {
         Args: {
           p_role: Database["public"]["Enums"]["app_role"]
@@ -734,6 +928,10 @@ export type Database = {
           source_table: string
           stored_url: string
         }[]
+      }
+      transition_catalog_order: {
+        Args: { p_order_id: string; p_reason?: string; p_to_status: string }
+        Returns: Json
       }
     }
     Enums: {

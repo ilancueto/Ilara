@@ -25,6 +25,11 @@ incremental: clientes Supabase, DAL/DTOs, dominios) está **cerrado, desplegado 
 verificado** en producción desde `main` (commit `a8f4a8e`). No requiere SQL
 remoto adicional.
 
+**Stage 6.1 (pedidos desde catálogo)** está **implementado y validado en local**
+(migración `orders`/`order_items`/`order_status_events`, RPC, checkout, panel).
+**No** está desplegado ni cerrado en producción al momento de este corte
+documental. Stage 7 (envíos/logística) permanece fuera de alcance y sin código.
+
 ### Dictamen por área
 
 | Área | Estado | Motivo principal |
@@ -34,8 +39,9 @@ remoto adicional.
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
 | PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
-| Calidad de código | Stage 5 cerrado | Dominios/DTOs/DAL y clientes separados; componentes grandes residuales |
-| Arquitectura datos | Stage 5 cerrado | Browser / public server-only / server cookies; sin service role en app |
+| Calidad de código | Stage 5 cerrado; 6.1 local | Dominios/DTOs/DAL + dominio `orders`; componentes grandes residuales |
+| Arquitectura datos | Stage 5 cerrado; 6.1 local | Browser / public / server; pedidos vía RPC DEFINER; sin service role en app |
+| Pedidos catálogo | Stage 6.1 local | Persistencia + estados + stock en confirm; **pendiente release** |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
 | Accesibilidad | Mejorado Stage 4 | Dialog + ConfirmDialog + BulkActionDialog desplegados; axe/teclado E2E + mutantes bulk; residual en formularios legacy no bulk |
 | Observabilidad | Mejorado Stage 4 | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |

@@ -15,6 +15,13 @@ export const ObservabilityEvent = {
   SERVER_ERROR: 'server.error',
   LATENCY_SAMPLE: 'perf.latency',
   UNAUTHORIZED: 'auth.unauthorized',
+  /** Stage 6.1 — pedidos catálogo (sin PII). */
+  ORDER_CREATE_STARTED: 'order_create_started',
+  ORDER_CREATE_SUCCEEDED: 'order_create_succeeded',
+  ORDER_CREATE_FAILED: 'order_create_failed',
+  ORDER_STATUS_CHANGED: 'order_status_changed',
+  ORDER_CONFIRMATION_FAILED: 'order_confirmation_failed',
+  ORDER_CANCEL_FAILED: 'order_cancel_failed',
 } as const
 
 export type ObservabilityEventName =

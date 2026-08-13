@@ -46,6 +46,10 @@ const ModalImagenPrevia = dynamic(
     () => import('@/components/gallery/ModalImagenPrevia').then(m => ({ default: m.ModalImagenPrevia })),
     { ssr: false }
 )
+const CheckoutPedido = dynamic(
+    () => import('@/components/Catalogo/CheckoutPedido').then(m => ({ default: m.CheckoutPedido })),
+    { ssr: false }
+)
 const ModalDetalleCombo = dynamic(
     () => import('@/components/Catalogo/ModalDetalleCombo').then(m => ({ default: m.ModalDetalleCombo })),
     { ssr: false }
@@ -59,6 +63,7 @@ const RITUAL_IMAGE = 'https://images.unsplash.com/photo-1687716432612-2a46da37a4
 export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
     const { showToast: baseShowToast } = useToast()
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
+    const [mostrarCheckout, setMostrarCheckout] = useState(false)
     const showToast = useCallback((type: 'success' | 'error' | 'warning' | 'info', message: string) => {
         const action = (type === 'success' && (message.includes('agregado') || message.includes('actualizada')))
             ? { label: 'Ver carrito', onClick: () => setMostrarCarrito(true) }
@@ -710,7 +715,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
             )}
 
             <ModalCarrito
-                open={mostrarCarrito}
+                open={mostrarCarrito && !mostrarCheckout}
                 onClose={() => setMostrarCarrito(false)}
                 carrito={carrito}
                 getPrecioConDescuento={getPrecioConDescuento}
@@ -727,8 +732,33 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                 descuentoCupon={descuentoCupon}
                 total={total}
                 onWhatsApp={handleWhatsAppClick}
+                onCheckout={() => {
+                    setMostrarCarrito(false)
+                    setMostrarCheckout(true)
+                }}
                 onSolicitarVaciar={() => setMostrarConfirmacion(true)}
             />
+
+            {mostrarCheckout && (
+                <CheckoutPedido
+                    open
+                    onClose={() => setMostrarCheckout(false)}
+                    onBack={() => {
+                        setMostrarCheckout(false)
+                        setMostrarCarrito(true)
+                    }}
+                    carrito={carrito}
+                    appliedCoupon={appliedCoupon}
+                    subtotal={subtotal}
+                    descuentoCupon={descuentoCupon}
+                    total={total}
+                    showToast={showToast}
+                    onOrderCreated={() => {
+                        clearCarrito()
+                        setAppliedCoupon(null)
+                    }}
+                />
+            )}
 
             <ModalConfirmacionVaciar open={mostrarConfirmacion} onClose={() => setMostrarConfirmacion(false)} onConfirm={vaciarCarrito} />
 

@@ -2,7 +2,8 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 ejecutadas; Etapa 6 permanece como roadmap de producto
+- **Estado:** Etapas 0–5 cerradas en producción; Stage 6.1 implementado localmente
+  (pendiente release); 6.2–6.7 y Etapa 7 permanecen como roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -56,6 +57,7 @@ precios y la aceptación del riesgo residual deben pertenecer al negocio.
 | 4. Calidad operativa | 5–8 días | E2E, a11y, observabilidad y recuperación | No |
 | 5. Arquitectura incremental | 5–10 días | Reducir deuda sin reescritura | No |
 | 6. Producto | Roadmap posterior | Pedidos, stock, devoluciones y reportes | No |
+| 7. Envíos y logística | Roadmap posterior | Evaluar proveedores, cotizar y gestionar envíos | No |
 
 ## 4. Etapa 0 — Contención inmediata
 
@@ -466,13 +468,32 @@ Criterio de salida:
 - [x] Smoke productivo read-only `https://ilara.com.ar`: 16/16 checks OK
   (catálogo, login, headers, manifest, service worker y rutas protegidas).
 
-## 10. Etapa 6 — Roadmap de producto
+## 10. Etapa 6 — Producto
 
 Esta etapa comienza sólo después de cerrar las etapas 0–2. El orden final depende
 de valor comercial y capacidad operativa.
 
-1. **Pedidos desde catálogo:** convertir el carrito/WhatsApp en una orden con
-   estados, trazabilidad y validación de stock.
+Runbook 6.1: [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](./docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md).
+
+### 10.1 Stage 6.1 — Pedidos desde el catálogo
+
+**Estado:** implementado y validado **localmente**. **No** cerrado en producción
+(sin commit/push/CI remoto/migración productiva/deploy/smoke al momento del
+informe de implementación).
+
+- [x] Modelo `orders` / `order_items` / `order_status_events` + RLS/RPC
+- [x] Precios autoritativos de catálogo + cupón revalidado + snapshots
+- [x] Idempotencia de creación y transiciones
+- [x] Stock: pending no descuenta; confirm reserva; cancel restaura una vez
+- [x] Checkout público + WhatsApp post-pedido
+- [x] Panel admin (tab Pedidos)
+- [x] Tests unitarios + integración local + suite DB
+- [ ] Commit / push / CI remoto
+- [ ] Migración productiva + deploy Vercel `ilara` + smoke
+
+### 10.2 Resto del roadmap de producto (pendiente)
+
+1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (local)
 2. **Alertas de reposición:** stock menor o igual a mínimo, sugerencia de compra y
    responsable de resolución.
 3. **Devoluciones y notas de crédito:** reversión trazable de pagos y stock sin
@@ -484,6 +505,10 @@ de valor comercial y capacidad operativa.
 7. **B2B, pagos online o multisucursal:** evaluar sólo cuando la operación actual
    tenga autorización granular y observabilidad.
 
+**Fuera de alcance de Etapa 6:** cotización, transportistas, sucursales de correo,
+etiquetas, tracking y cualquier otra integración logística. Esos temas pertenecen
+exclusivamente a Etapa 7 y no deben bloquear la implementación de pedidos.
+
 Cada feature debe incluir antes de desarrollo:
 
 - hipótesis y métrica de éxito;
@@ -492,7 +517,44 @@ Cada feature debe incluir antes de desarrollo:
 - migración reversible/forward-fix;
 - pruebas y runbook operativo.
 
-## 11. División sugerida en cambios/PR
+## 11. Etapa 7 — Envíos y logística
+
+Esta etapa comienza después de diseñar el flujo de pedidos de Etapa 6. No hay un
+transportista seleccionado ni una integración autorizada todavía.
+
+Alcance previsto:
+
+1. Comparar alternativas directas y agregadores disponibles en Argentina.
+2. Evaluar cobertura, tarifas, modalidades domicilio/sucursal, credenciales,
+   soporte, ambientes de prueba, etiquetas, tracking y condiciones comerciales.
+3. Diseñar una interfaz interna independiente del proveedor para cotización,
+   sucursales, creación de envío, etiquetas y seguimiento.
+4. Incorporar primero cotización por código postal con timeout, caché breve y
+   fallback manual; avanzar a alta de envío únicamente después de validarla.
+5. Guardar en el pedido un snapshot de la opción logística elegida, sin confiar
+   en importes enviados por el navegador.
+
+Supuesto operativo inicial para comparar tarifas, todavía no implementado:
+
+- origen: Neuquén Capital, código postal `8300`;
+- un solo bulto tipo bolsa;
+- medidas de referencia: `20 × 35 × 5 cm` (espesor de `5 cm` a confirmar);
+- peso máximo de referencia: `1 kg`;
+- valor declarado: total autoritativo de los productos del pedido.
+
+Gate previo a desarrollo:
+
+- [ ] Proveedor o agregador elegido por negocio.
+- [ ] Cuenta comercial, tarifas y credenciales de prueba disponibles.
+- [ ] Medidas reales de la bolsa confirmadas.
+- [ ] Política ante diferencias de peso/medidas y caída del proveedor definida.
+- [ ] Privacidad, secretos, rate limiting y observabilidad diseñados.
+- [ ] Plan de pruebas, deploy, rollback/forward-fix y soporte operativo aprobado.
+
+Hasta cumplir este gate, Etapa 7 permanece en investigación y no debe introducir
+código, migraciones, secretos ni afirmaciones de tarifas reales.
+
+## 12. División sugerida en cambios/PR
 
 | Orden | Cambio | Contenido |
 |---:|---|---|
@@ -510,7 +572,7 @@ Cada feature debe incluir antes de desarrollo:
 No agrupar cambios 1–6 en un único PR: requieren rollback y validación
 independientes.
 
-### 11.1 Orden de deploy de contención (Etapa 0)
+### 12.1 Orden de deploy de contención (Etapa 0)
 
 Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 
@@ -523,7 +585,7 @@ Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 7. Pruebas integración anon/positivas/cross-user (`npm run test:integration`)
 8. Migración legacy receipts + bucket privado estricto (`stage0_receipts_private_bucket`)
 
-### 11.2 Forward-fix Stage 0 (inventario legacy)
+### 12.2 Forward-fix Stage 0 (inventario legacy)
 
 | Migración | Estado | Acción |
 |---|---|---|
@@ -531,7 +593,7 @@ Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 
 No reabrir EXECUTE a `authenticated`. No reabrir anon.
 
-## 12. Checklist global de Definition of Done
+## 13. Checklist global de Definition of Done
 
 Un ítem sólo puede marcarse terminado si:
 
@@ -546,7 +608,7 @@ Un ítem sólo puede marcarse terminado si:
 - [ ] Se desplegó y pasó smoke test posdeploy.
 - [ ] `AUDITORIA.md` y este plan se actualizaron si cambió el riesgo residual.
 
-## 13. Métricas de cierre
+## 14. Métricas de cierre
 
 | Métrica | Objetivo |
 |---|---:|
@@ -560,7 +622,7 @@ Un ítem sólo puede marcarse terminado si:
 | Errores 5xx sin traza/correlation ID | 0 |
 | Restauraciones ensayadas | al menos 1 por trimestre |
 
-## 14. Registro de avance
+## 15. Registro de avance
 
 | Fecha | Etapa | Cambio | Estado | Evidencia / PR |
 |---|---|---|---|---|
@@ -577,6 +639,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-12 | 0–1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificación productiva 2026-08-12 |
 | 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
 | 2026-08-12 | 5 Arquitectura incremental | DAL/DTOs, clientes Supabase separados, dominios críticos y lógica POS testeada; sin SQL remoto adicional | Completado | Commit `a8f4a8e`; CI verde; deploy Vercel `ilara` READY; smoke productivo read-only 16/16 OK |
+| 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística; validación local | En revisión | Migración `20260813205545`; runbook `docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`; **no desplegado** |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

@@ -28,6 +28,8 @@ interface ModalCarritoProps {
     descuentoCupon: number
     total: number
     onWhatsApp: () => void
+    /** Stage 6.1 — abre checkout y persiste pedido antes de WhatsApp. */
+    onCheckout?: () => void
     onSolicitarVaciar: () => void
 }
 
@@ -49,6 +51,7 @@ export function ModalCarrito({
     descuentoCupon,
     total,
     onWhatsApp,
+    onCheckout,
     onSolicitarVaciar,
 }: ModalCarritoProps) {
     const panelRef = useRef<HTMLElement>(null)
@@ -238,14 +241,37 @@ export function ModalCarrito({
                                 <span className={styles.totalLabel}>Total</span>
                                 <strong className={styles.totalValue}>${formatPesoAR(total)}</strong>
                             </div>
-                            <button className={styles.checkout} type="button" onClick={onWhatsApp}>
+                            {onCheckout ? (
+                                <button
+                                    className={styles.checkout}
+                                    type="button"
+                                    onClick={onCheckout}
+                                    data-testid="cart-checkout"
+                                >
+                                    <span className={styles.checkoutCopy}>
+                                        <Sparkles size={18} />
+                                        Confirmar pedido
+                                    </span>
+                                    <ArrowUpRight size={18} />
+                                </button>
+                            ) : null}
+                            <button
+                                className={onCheckout ? styles.checkoutSecondary : styles.checkout}
+                                type="button"
+                                onClick={onWhatsApp}
+                                data-testid="cart-whatsapp-fallback"
+                            >
                                 <span className={styles.checkoutCopy}>
                                     <MessageCircle size={18} />
-                                    Pedir por WhatsApp
+                                    {onCheckout ? 'Solo WhatsApp (sin registrar)' : 'Pedir por WhatsApp'}
                                 </span>
                                 <ArrowUpRight size={18} />
                             </button>
-                            <p className={styles.checkoutNote}>Continuás el pedido por WhatsApp</p>
+                            <p className={styles.checkoutNote}>
+                                {onCheckout
+                                    ? 'Registramos el pedido en Ilara y después podés continuar por WhatsApp'
+                                    : 'Continuás el pedido por WhatsApp'}
+                            </p>
                         </footer>
                     </>
                 ) : (

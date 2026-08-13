@@ -72,6 +72,13 @@ const NegocioHub = dynamic(() => import('@/components/NegocioHub'), {
     </div>
   ),
 })
+const Pedidos = dynamic(() => import('@/components/Pedidos'), {
+  loading: () => (
+    <div className="flex items-center justify-center min-h-[40vh] text-pink-400">
+      <span className="animate-pulse">Cargando pedidos...</span>
+    </div>
+  ),
+})
 
 const TAB_TITLES: Record<AppTab, string> = {
   dashboard: 'Inicio',
@@ -81,6 +88,7 @@ const TAB_TITLES: Record<AppTab, string> = {
   expenses: 'Gastos',
   incomes: 'Ingresos',
   negocio: 'Negocio',
+  orders: 'Pedidos',
 }
 
 const VALID_TABS = new Set<AppTab>([
@@ -91,6 +99,7 @@ const VALID_TABS = new Set<AppTab>([
   'expenses',
   'incomes',
   'negocio',
+  'orders',
 ])
 
 /** Tabs del dock (Ingresos/Gastos resaltan Negocio). */
@@ -103,7 +112,7 @@ const DOCK_TABS = [
 ]
 
 function dockHighlight(tab: AppTab): AppTab {
-  if (tab === 'expenses' || tab === 'incomes') return 'negocio'
+  if (tab === 'expenses' || tab === 'incomes' || tab === 'orders') return 'negocio'
   return tab
 }
 
@@ -169,6 +178,7 @@ function HomeContent() {
       if (tab === 'sales' || tab === 'customers' || tab === 'dashboard') return c.canUsePos
       if (tab === 'expenses') return c.canManageFinance
       if (tab === 'incomes') return c.isAdmin
+      if (tab === 'orders') return c.isAdmin
       if (tab === 'negocio') return c.canManageFinance || c.isAdmin
       return false
     },
@@ -366,6 +376,7 @@ function HomeContent() {
           {activeTab === 'expenses' && staffCaps.canManageFinance && <Gastos />}
           {activeTab === 'incomes' && staffCaps.isAdmin && <Ingresos />}
           {activeTab === 'customers' && staffCaps.canUsePos && <Clientes />}
+          {activeTab === 'orders' && staffCaps.isAdmin && <Pedidos />}
           {activeTab === 'negocio' && (staffCaps.canManageFinance || staffCaps.isAdmin) && (
             <NegocioHub onNavigate={handleTabChange} caps={staffCaps} />
           )}

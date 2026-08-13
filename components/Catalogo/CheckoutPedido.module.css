@@ -1,0 +1,258 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 10, 20, 0.45);
+  cursor: pointer;
+}
+
+.drawer {
+  position: relative;
+  width: min(100%, 420px);
+  height: 100%;
+  background: #fff;
+  color: #1f1228;
+  box-shadow: -12px 0 40px rgba(20, 10, 30, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  padding: 1rem 1.1rem 1.5rem;
+}
+
+:global(.dark) .drawer {
+  background: #161018;
+  color: #f6eef3;
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.back {
+  border: 0;
+  background: transparent;
+  padding: 0.35rem;
+  border-radius: 0.65rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.back:hover {
+  background: rgba(180, 40, 120, 0.08);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a14b7c;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0.15rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+}
+
+.summary {
+  border-radius: 1rem;
+  background: #faf5f8;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+:global(.dark) .summary {
+  background: #221820;
+}
+
+.summaryRow,
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.summaryTotal {
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
+.note {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #7a6672;
+  line-height: 1.35;
+}
+
+:global(.dark) .note {
+  color: #b5a3b0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field label {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea {
+  border: 1px solid #e8d5df;
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  background: #fff;
+  color: inherit;
+}
+
+:global(.dark) .field input,
+:global(.dark) .field textarea {
+  background: #1c141a;
+  border-color: #3a2a34;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: 2px solid #db2777;
+  outline-offset: 1px;
+}
+
+.fieldHint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #8a7482;
+}
+
+.error {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+:global(.dark) .error {
+  background: #3b1515;
+  color: #fecaca;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  background: linear-gradient(135deg, #db2777, #be185d);
+  color: #fff;
+  margin-top: auto;
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: transparent;
+  color: inherit;
+  border: 1px solid #e8d5df;
+  margin-top: 0.5rem;
+}
+
+:global(.dark) .secondary {
+  border-color: #3a2a34;
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.successIcon {
+  color: #16a34a;
+  margin: 0 auto 0.5rem;
+}
+
+.orderNumberLabel {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #7a6672;
+}
+
+.orderNumber {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #be185d;
+}
+
+.successTotal {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+.hint {
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+  color: #7a6672;
+  line-height: 1.4;
+}
+
+:global(.dark) .hint,
+:global(.dark) .orderNumberLabel {
+  color: #b5a3b0;
+}

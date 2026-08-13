@@ -432,6 +432,27 @@
   transform: translateY(-1px);
 }
 
+.checkoutSecondary {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--bag-line);
+  border-radius: 17px;
+  background: transparent;
+  color: var(--bag-ink);
+  font-size: 13px;
+  font-weight: 650;
+  transition: background .2s ease;
+}
+
+.checkoutSecondary:hover {
+  background: var(--bag-soft);
+}
+
 .checkoutCopy {
   display: flex;
   align-items: center;

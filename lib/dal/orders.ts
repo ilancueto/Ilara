@@ -1,0 +1,35 @@
+import 'server-only'
+
+/**
+ * DAL server-only para creación pública de pedidos (Stage 6.1).
+ * Usa cliente público (anon) + RPC DEFINER. Sin service role.
+ */
+import { createSupabasePublicClient } from '@/lib/supabase/public'
+import {
+  buildCreateOrderPayload,
+  createOrderErrorFromRpc,
+  parseCreateOrderRpcResult,
+} from '@/lib/domain/orders/createOrder'
+import type { CreateOrderInput, CreateOrderResult } from '@/lib/domain/orders/types'
+import { AppError } from '@/lib/domain/errors'
+
+export async function createCatalogOrderServer(
+  input: CreateOrderInput
+): Promise<CreateOrderResult> {
+  const payload = buildCreateOrderPayload(input)
+  const supabase = createSupabasePublicClient()
+  const { data, error } = await supabase.rpc('create_catalog_order', {
+    p_payload: payload,
+  })
+
+  if (error) {
+    throw createOrderErrorFromRpc(error.message || '')
+  }
+  if (data == null) {
+    throw new AppError('unknown', 'No se pudo registrar el pedido. Intentá de nuevo.', {
+      message: 'empty_rpc_result',
+      retryable: true,
+    })
+  }
+  return parseCreateOrderRpcResult(data)
+}

@@ -7,3 +7,4 @@ export type AppTab =
   | 'expenses'
   | 'incomes'
   | 'negocio'
+  | 'orders'
