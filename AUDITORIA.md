@@ -25,10 +25,10 @@ incremental: clientes Supabase, DAL/DTOs, dominios) está **cerrado, desplegado 
 verificado** en producción desde `main` (commit `a8f4a8e`). No requiere SQL
 remoto adicional.
 
-**Stage 6.1 (pedidos desde catálogo)** está **implementado y validado en local**
-(migración `orders`/`order_items`/`order_status_events`, RPC, checkout, panel).
-**No** está desplegado ni cerrado en producción al momento de este corte
-documental. Stage 7 (envíos/logística) permanece fuera de alcance y sin código.
+**Stage 6.1 (pedidos desde catálogo)** está **cerrado, desplegado y verificado en
+producción** (migración `20260813205545`, RPC, checkout, panel, CI, smoke 16/16 y
+pedido controlado limpiado). Stage 7 (envíos/logística) permanece fuera de
+alcance y sin código.
 
 ### Dictamen por área
 
@@ -39,9 +39,9 @@ documental. Stage 7 (envíos/logística) permanece fuera de alcance y sin códig
 | Integridad monetaria | Cerrado | RPC autoritativa y smoke real de venta/stock correctos |
 | Gobierno de base de datos | Cerrado con deuda documentada | Baseline greenfield + CI; Stage 2 desplegado; residual bigint/serial explícito |
 | PWA / offline | Cerrado | PWA online-only instalada/verificada; sin offline de negocio |
-| Calidad de código | Stage 5 cerrado; 6.1 local | Dominios/DTOs/DAL + dominio `orders`; componentes grandes residuales |
-| Arquitectura datos | Stage 5 cerrado; 6.1 local | Browser / public / server; pedidos vía RPC DEFINER; sin service role en app |
-| Pedidos catálogo | Stage 6.1 local | Persistencia + estados + stock en confirm; **pendiente release** |
+| Calidad de código | Stage 5 y 6.1 cerrados | Dominios/DTOs/DAL + dominio `orders`; componentes grandes residuales |
+| Arquitectura datos | Stage 5 y 6.1 cerrados | Browser / public / server; pedidos vía RPC DEFINER; sin service role en app |
+| Pedidos catálogo | Stage 6.1 cerrado | Persistencia + estados + stock en confirm; desplegado y verificado |
 | UX visual | Bueno | Catálogo pulido, responsive y sin inestabilidad observada |
 | Accesibilidad | Mejorado Stage 4 | Dialog + ConfirmDialog + BulkActionDialog desplegados; axe/teclado E2E + mutantes bulk; residual en formularios legacy no bulk |
 | Observabilidad | Mejorado Stage 4 | Logs estructurados + request ID; Sentry opt-in sin DSN; alertas externas pendientes |
@@ -423,3 +423,4 @@ La salida de contención requiere, como mínimo:
 | 2026-08-12 | **Etapas 0 y 1 cerradas:** Supabase y Vercel desplegados; dos admins; smoke real de login, venta, stock, eliminación y receipt; anon sales/internal 401; catálogo 200; passkeys 403 y descartadas; secretos confirmados privados, sin rotación requerida. |
 | 2026-08-12 | **Etapa 2 cerrada:** commit `47b470d`, CI verde, único deploy Vercel `ilara` READY, migración `20260812013913` aplicada; sitio/catálogo/RPC 200, anon interno 401 y passkeys 403. |
 | 2026-08-12 | **Etapa 5 cerrada:** commit `a8f4a8e` publicado en `main`; CI remoto verde; deploy productivo Vercel `ilara` READY; smoke productivo read-only 16/16 OK. Sin SQL/migraciones remotas adicionales. |
+| 2026-08-13 | **Stage 6.1 cerrado:** commits `66507b8`, `89ac418` y `485ed14` en `main`; migración productiva `20260813205545`; CI remoto verde; Vercel `ilara` READY; smoke 16/16 y pedido controlado eliminado sin cambios de stock. |

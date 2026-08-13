@@ -2,8 +2,8 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 cerradas en producción; Stage 6.1 implementado localmente
-  (pendiente release); 6.2–6.7 y Etapa 7 permanecen como roadmap
+- **Estado:** Etapas 0–5 y Stage 6.1 cerrados en producción; 6.2–6.7 y Etapa 7
+  permanecen como roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -477,9 +477,9 @@ Runbook 6.1: [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](./docs/ETAPA6_1_PEDID
 
 ### 10.1 Stage 6.1 — Pedidos desde el catálogo
 
-**Estado:** implementado y validado **localmente**. **No** cerrado en producción
-(sin commit/push/CI remoto/migración productiva/deploy/smoke al momento del
-informe de implementación).
+**Estado (2026-08-13): CERRADO, DESPLEGADO Y VERIFICADO EN PRODUCCIÓN.**
+Migración `20260813205545`, Vercel `ilara` READY, smoke productivo 16/16 y
+pedido controlado verificado y limpiado.
 
 - [x] Modelo `orders` / `order_items` / `order_status_events` + RLS/RPC
 - [x] Precios autoritativos de catálogo + cupón revalidado + snapshots
@@ -488,12 +488,12 @@ informe de implementación).
 - [x] Checkout público + WhatsApp post-pedido
 - [x] Panel admin (tab Pedidos)
 - [x] Tests unitarios + integración local + suite DB
-- [ ] Commit / push / CI remoto
-- [ ] Migración productiva + deploy Vercel `ilara` + smoke
+- [x] Commit / push / CI remoto
+- [x] Migración productiva + deploy Vercel `ilara` + smoke
 
 ### 10.2 Resto del roadmap de producto (pendiente)
 
-1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (local)
+1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (cerrado en producción)
 2. **Alertas de reposición:** stock menor o igual a mínimo, sugerencia de compra y
    responsable de resolución.
 3. **Devoluciones y notas de crédito:** reversión trazable de pagos y stock sin
@@ -639,7 +639,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-12 | 0–1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificación productiva 2026-08-12 |
 | 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
 | 2026-08-12 | 5 Arquitectura incremental | DAL/DTOs, clientes Supabase separados, dominios críticos y lógica POS testeada; sin SQL remoto adicional | Completado | Commit `a8f4a8e`; CI verde; deploy Vercel `ilara` READY; smoke productivo read-only 16/16 OK |
-| 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística; validación local | En revisión | Migración `20260813205545`; runbook `docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`; **no desplegado** |
+| 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística | Completado | Commits `66507b8`, `89ac418`, `485ed14`; migración `20260813205545`; CI `31745190425`; Vercel `ilara` READY; smoke 16/16 y pedido controlado limpio |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

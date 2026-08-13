@@ -1,8 +1,7 @@
 # Etapa 6.1 — Pedidos desde el catálogo (runbook)
 
-- **Estado:** implementado y validado **localmente**. **No** desplegado.
-- **No afirmar cierre productivo** hasta: commit, push, CI remoto verde,
-  migración productiva, deploy Vercel `ilara` READY y smoke productivo.
+- **Estado (2026-08-13): CERRADO, DESPLEGADO Y VERIFICADO EN PRODUCCIÓN.**
+- Migración productiva, deploy Vercel `ilara`, smoke y pedido controlado verificados.
 - **Stage 6 completo:** **no**. Sólo 6.1. Iniciativas 6.2–6.7 y **toda** la
   Etapa 7 (envíos/logística) quedan fuera de alcance.
 
@@ -110,7 +109,7 @@ Motivo obligatorio al cancelar (≥ 3 caracteres).
 - Reintentos simultáneos con la misma clave convergen en un único pedido.
 - Transición al mismo estado: no re-descuenta ni re-restaura.
 
-## 10. Validación local ejecutada
+## 10. Validación ejecutada
 
 | Check | Resultado |
 |---|---|
@@ -127,17 +126,21 @@ Motivo obligatorio al cancelar (≥ 3 caracteres).
 | `npm run db:advisors:security` | OK, sin issues |
 | Integración Stage 6.1 (`STAGE61_INTEGRATION=1`) | 10/10 OK |
 | E2E `orders-catalog.spec.ts` (Playwright, E2E_* loopback) | 1/1 OK |
+| E2E afectado local (pedidos + bulk a11y) | 7/7 OK |
+| Build producción + seed prebuild + E2E pedidos | 1/1 OK |
 
-## 11. Plan de deploy (cuando se autorice)
+## 11. Deploy ejecutado
 
-1. Backup / ventana de mantenimiento breve si aplica.
-2. Aplicar migración `20260813205545_stage61_catalog_orders.sql` en Supabase remoto
-   (CLI o flujo versionado del proyecto; **no** SQL ad-hoc sin versionar).
-3. Verificar advisors y grants (anon sin SELECT en `orders*`).
-4. Deploy Vercel proyecto **`ilara`** desde `main` (nunca `ilara-app`).
-5. Smoke read-only: catálogo 200, login, crear pedido de prueba en staging/local
-   o pedido real controlado; confirmar en panel; cancelar restore.
-6. Actualizar `AUDITORIA.md` / `PLAN.md` con commit y evidencia.
+1. Migración versionada `20260813205545_stage61_catalog_orders.sql` aplicada al
+   proyecto Supabase `qbbnvdmadgomfmrsfxlo`.
+2. Grants verificados: `anon` sin SELECT de `orders*`; EXECUTE público sólo en
+   `create_catalog_order`; transición limitada a autenticados y validada por rol admin.
+3. Código publicado en `main`: `66507b8`; estabilización E2E: `89ac418` y `485ed14`.
+4. Vercel proyecto **`ilara`** desplegado desde `main`, estado `READY`, con aliases
+   `https://ilara.com.ar` y `https://www.ilara.com.ar`.
+5. CI definitivo: [GitHub Actions 31745190425](https://github.com/ilancueto/Ilara/actions/runs/31745190425).
+6. Smoke productivo read-only: 16/16 OK. Pedido controlado creado, inspeccionado y
+   eliminado por UUID exacto; cascadas limpias y sin reserva/cambio de stock.
 
 ## 12. Rollback / forward-fix
 
@@ -146,30 +149,31 @@ Motivo obligatorio al cancelar (≥ 3 caracteres).
   `create_catalog_order` a `anon` si hay abuso; o feature-flag UI (ocultar checkout).
 - No reescribir migraciones históricas.
 
-## 13. Smoke productivo (post-deploy, solo lectura / controlado)
+## 13. Smoke productivo ejecutado
 
-- `GET /catalogo` 200.
-- Login admin.
-- `/?tab=orders` carga panel.
-- Probe: `anon` SELECT `orders` → deny/401.
-- Pedido de prueba real solo con aprobación de negocio.
+- `npm run test:smoke` sobre `https://ilara.com.ar`: 16/16 OK.
+- Catálogo, login, headers, manifest, SW e iconos: OK.
+- Probe `anon` SELECT `orders`: denegado.
+- RPC pública creó un pedido pending con una línea y evento inicial correctos.
+- Pedido controlado eliminado después de verificarlo; no dejó filas dependientes.
 
 ## 14. Riesgos residuales
 
 - Rate limit por teléfono es simple (no WAF/CAPTCHA); abuso distribuido posible.
 - Sin tracking público: el cliente solo ve el número en la confirmación.
 - Coordinación de entrega manual (WhatsApp) hasta Stage 7.
-- E2E de pedidos puede ser frágil si el catálogo no indexa el producto seed a tiempo.
+- CI siembra el producto E2E antes del build estático y lo conserva entre reintentos.
 - Componentes de catálogo/panel siguen grandes (deuda Stage 5 residual).
 
 ## 15. Criterio de cierre de Stage 6.1 (productivo)
 
-- [ ] Commit en `main`
-- [ ] Push + CI remoto verde
-- [ ] Migración productiva aplicada
-- [ ] Deploy Vercel `ilara` READY
-- [ ] Smoke + pedido de prueba controlado
-- [ ] Revisión humana
-- [ ] Docs actualizados con evidencia
+- [x] Commit en `main`
+- [x] Push + CI remoto verde
+- [x] Migración productiva aplicada
+- [x] Deploy Vercel `ilara` READY
+- [x] Smoke + pedido de prueba controlado
+- [x] Autorización de release del propietario
+- [x] Docs actualizados con evidencia
 
-Hasta entonces: **implementado localmente, pendiente de revisión y release.**
+**Stage 6.1 cerrado.** Stage 6.2–6.7 siguen en roadmap y Stage 7 conserva todo el
+alcance de envíos/logística.
