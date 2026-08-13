@@ -1,17 +1,19 @@
 # Etapa 5 — Arquitectura incremental (runbook)
 
-- **Estado:** implementado, validado y publicado en `main` (commit `a8f4a8e`).
+- **Estado:** **cerrado, desplegado y verificado** en producción.
 - **HEAD de entrega:** `a8f4a8e`.
 - **Sin SQL remoto, migraciones, cambios de RLS/grants ni Edge Functions remotas.**
+- **Evidencia de cierre:** CI remoto verde, deploy Vercel `ilara` READY y smoke
+  productivo read-only 16/16 OK.
 
 ## Separación de estados
 
 | Capa | Estado |
 |---|---|
-| Código Stage 5 en repo local | Implementado |
-| Commit / push / CI remoto | **Pendiente** (humano) |
-| Deploy Vercel `ilara` | **Pendiente** |
-| Smoke `https://ilara.com.ar` | **Pendiente** |
+| Código Stage 5 | **Completado** (`a8f4a8e`) |
+| Commit / push / CI remoto | **Completado** — `main`, CI verde |
+| Deploy Vercel `ilara` | **Completado** — producción READY |
+| Smoke `https://ilara.com.ar` | **Completado** — 16/16 checks OK, solo lectura |
 
 ## A. Clientes Supabase
 

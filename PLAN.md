@@ -2,7 +2,7 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** propuesto para ejecución
+- **Estado:** Etapas 0–5 ejecutadas; Etapa 6 permanece como roadmap de producto
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -461,7 +461,10 @@ Criterio de salida:
 - [x] Responsabilidades separadas en dominios críticos (catálogo público, ventas
   POS, clientes bulk); UI grande residual documentada.
 - [x] Lógica crítica de Stage 5 con pruebas unitarias.
-- [ ] Commit / push / CI remoto / deploy `ilara` / smoke prod *(pendiente humano)*.
+- [x] Commit `a8f4a8e` + push a `main`; CI remoto verde.
+- [x] Deploy productivo Vercel `ilara` READY.
+- [x] Smoke productivo read-only `https://ilara.com.ar`: 16/16 checks OK
+  (catálogo, login, headers, manifest, service worker y rutas protegidas).
 
 ## 10. Etapa 6 — Roadmap de producto
 
@@ -573,6 +576,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-11 | 1 Seguridad e integridad | Corrección post-review: catálogo anon preservado, delete concurrente serializado, breakdown presente solo mixto, fixtures de roles restaurables | En revisión | Solo local; **no desplegado** |
 | 2026-08-12 | 0–1 Cierre | Supabase + Vercel desplegados; dos admins; smoke login/venta/stock/receipt; probes anon y passkey verdes; passkeys descartadas | Completado | Commits `48dd39a`, `80a709a`; verificación productiva 2026-08-12 |
 | 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
+| 2026-08-12 | 5 Arquitectura incremental | DAL/DTOs, clientes Supabase separados, dominios críticos y lógica POS testeada; sin SQL remoto adicional | Completado | Commit `a8f4a8e`; CI verde; deploy Vercel `ilara` READY; smoke productivo read-only 16/16 OK |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

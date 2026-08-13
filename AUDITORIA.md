@@ -21,7 +21,9 @@ de login, venta, stock, eliminación y receipt fue correcto.
 El riesgo residual principal ya no es una exposición crítica activa: lifecycle de
 archivos, RPO/RTO de negocio, alertas externas y **deuda de componentes grandes**
 (UI). Stage 4 está desplegado y verificado en producción. Stage 5 (arquitectura
-incremental: clientes Supabase, DAL/DTOs, dominios) está **implementado, versionado y publicado** en `main` (commit `a8f4a8e`). No requiere SQL remoto adicional.
+incremental: clientes Supabase, DAL/DTOs, dominios) está **cerrado, desplegado y
+verificado** en producción desde `main` (commit `a8f4a8e`). No requiere SQL
+remoto adicional.
 
 ### Dictamen por área
 
@@ -298,7 +300,7 @@ on-demand por tags queda como mejora posterior.
 
 **Severidad residual:** baja-media (componentes grandes; panel sigue client+RLS).
 
-**Mitigado en Stage 5 (local, pendiente commit/CI/deploy):**
+**Mitigado y verificado en Stage 5:**
 
 - Clientes Supabase separados: browser / public (`server-only`) / server cookies
   (`server-only`). Sin service role en app.
@@ -414,3 +416,4 @@ La salida de contención requiere, como mínimo:
 | 2026-08-11 | **Etapa 1 post-review local:** preflight preserva policies anon del catálogo Stage 0; borrado de venta serializado con `FOR UPDATE`; JSON null y breakdown no-mixto rechazados; integración restaura roles previos y cubre doble borrado. **No desplegado.** |
 | 2026-08-12 | **Etapas 0 y 1 cerradas:** Supabase y Vercel desplegados; dos admins; smoke real de login, venta, stock, eliminación y receipt; anon sales/internal 401; catálogo 200; passkeys 403 y descartadas; secretos confirmados privados, sin rotación requerida. |
 | 2026-08-12 | **Etapa 2 cerrada:** commit `47b470d`, CI verde, único deploy Vercel `ilara` READY, migración `20260812013913` aplicada; sitio/catálogo/RPC 200, anon interno 401 y passkeys 403. |
+| 2026-08-12 | **Etapa 5 cerrada:** commit `a8f4a8e` publicado en `main`; CI remoto verde; deploy productivo Vercel `ilara` READY; smoke productivo read-only 16/16 OK. Sin SQL/migraciones remotas adicionales. |
