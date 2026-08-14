@@ -31,18 +31,24 @@ const ARGENTINA_CARRIERS = [
 const ALLOWED_ORIGINS = new Set([
   'https://ilara.com.ar',
   'https://www.ilara.com.ar',
+  'https://ilarabeauty.vercel.app',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:3010',
   'http://127.0.0.1:3010',
 ])
+const VERCEL_APP_ORIGIN = /^https:\/\/ilara(?:-[a-z0-9-]+)?-ilara\.vercel\.app$/
 
 let provincesCache: { expiresAt: number; data: LocationItem[] } | null = null
 const localitiesCache = new Map<string, { expiresAt: number; data: LocationItem[] }>()
 
+function isAllowedOrigin(origin: string | null): origin is string {
+  return Boolean(origin && (ALLOWED_ORIGINS.has(origin) || VERCEL_APP_ORIGIN.test(origin)))
+}
+
 function corsHeaders(origin: string | null): Record<string, string> {
   return {
-    'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://ilara.com.ar',
+    'Access-Control-Allow-Origin': isAllowedOrigin(origin) ? origin : 'https://ilara.com.ar',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Vary': 'Origin',
@@ -317,7 +323,7 @@ serve(async (req: Request) => {
   const origin = req.headers.get('origin')
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(origin) })
   if (req.method !== 'POST') return json(405, { ok: false, code: 'method_not_allowed' }, origin)
-  if (origin && !ALLOWED_ORIGINS.has(origin)) return json(403, { ok: false, code: 'origin_not_allowed' }, origin)
+  if (origin && !isAllowedOrigin(origin)) return json(403, { ok: false, code: 'origin_not_allowed' }, origin)
 
   try {
     const body = asRecord(await req.json())

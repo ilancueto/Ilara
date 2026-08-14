@@ -77,6 +77,12 @@ describe('Stage 7 — cotizaciones Envia', () => {
     expect(checkout).toContain('Calculamos el código postal automáticamente')
   })
 
+  it('permite cargar provincias desde todos los aliases productivos de Vercel', () => {
+    expect(edgeFunction).toContain("'https://ilarabeauty.vercel.app'")
+    expect(edgeFunction).toContain('VERCEL_APP_ORIGIN.test(origin)')
+    expect(edgeFunction).toContain('origin && !isAllowedOrigin(origin)')
+  })
+
   it('Stage 7.1 conserva dirección completa y caché privado sin domicilio en claro', () => {
     expect(stage71Migration).toContain('destination_formatted_address')
     expect(stage71Migration).toContain('shipping_destination_formatted_address')
