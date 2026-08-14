@@ -510,8 +510,9 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 
 1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (cerrado en producción)
 2. ~~**Alertas de reposición**~~ → ver 10.2 (cerrado en producción)
-3. **Devoluciones y notas de crédito:** reversión trazable de pagos y stock sin
-   editar ventas históricas.
+3. **Devoluciones y notas de crédito:** implementado y validado localmente;
+   pendiente de release. Ver
+   [`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](./docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md).
 4. **Reportes de margen:** usar precio de compra histórico, descuentos y costos,
    no sólo facturación.
 5. **CRM mínimo:** historial, etiquetas y consentimiento para campañas.

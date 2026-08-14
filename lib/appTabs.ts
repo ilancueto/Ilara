@@ -9,3 +9,4 @@ export type AppTab =
   | 'negocio'
   | 'orders'
   | 'stock_alerts'
+  | 'returns'

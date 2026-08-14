@@ -86,6 +86,13 @@ const AlertasReposicion = dynamic(() => import('@/components/AlertasReposicion')
     </div>
   ),
 })
+const Devoluciones = dynamic(() => import('@/components/Devoluciones'), {
+  loading: () => (
+    <div className="flex items-center justify-center min-h-[40vh] text-pink-400">
+      <span className="animate-pulse">Cargando devoluciones...</span>
+    </div>
+  ),
+})
 
 const TAB_TITLES: Record<AppTab, string> = {
   dashboard: 'Inicio',
@@ -97,6 +104,7 @@ const TAB_TITLES: Record<AppTab, string> = {
   negocio: 'Negocio',
   orders: 'Pedidos',
   stock_alerts: 'Alertas stock',
+  returns: 'Devoluciones',
 }
 
 const VALID_TABS = new Set<AppTab>([
@@ -109,6 +117,7 @@ const VALID_TABS = new Set<AppTab>([
   'negocio',
   'orders',
   'stock_alerts',
+  'returns',
 ])
 
 /** Tabs del dock (Ingresos/Gastos resaltan Negocio). */
@@ -121,7 +130,13 @@ const DOCK_TABS = [
 ]
 
 function dockHighlight(tab: AppTab): AppTab {
-  if (tab === 'expenses' || tab === 'incomes' || tab === 'orders' || tab === 'stock_alerts') {
+  if (
+    tab === 'expenses' ||
+    tab === 'incomes' ||
+    tab === 'orders' ||
+    tab === 'stock_alerts' ||
+    tab === 'returns'
+  ) {
     return 'negocio'
   }
   return tab
@@ -191,6 +206,7 @@ function HomeContent() {
       if (tab === 'incomes') return c.isAdmin
       if (tab === 'orders') return c.isAdmin
       if (tab === 'stock_alerts') return c.isAdmin
+      if (tab === 'returns') return c.isAdmin
       if (tab === 'negocio') return c.canManageFinance || c.isAdmin
       return false
     },
@@ -390,6 +406,7 @@ function HomeContent() {
           {activeTab === 'customers' && staffCaps.canUsePos && <Clientes />}
           {activeTab === 'orders' && staffCaps.isAdmin && <Pedidos />}
           {activeTab === 'stock_alerts' && staffCaps.isAdmin && <AlertasReposicion />}
+          {activeTab === 'returns' && staffCaps.isAdmin && <Devoluciones />}
           {activeTab === 'negocio' && (staffCaps.canManageFinance || staffCaps.isAdmin) && (
             <NegocioHub onNavigate={handleTabChange} caps={staffCaps} />
           )}

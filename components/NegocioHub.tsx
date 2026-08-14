@@ -10,6 +10,7 @@ import {
   ArrowRight,
   ClipboardList,
   AlertTriangle,
+  RotateCcw,
 } from 'lucide-react'
 import ExportarDatos from '@/components/ExportarDatos'
 
@@ -79,6 +80,17 @@ const tiles: Tile[] = [
     tone: 'amber',
     kind: 'tab',
     tab: 'stock_alerts',
+    visible: (c) => c.isAdmin,
+  },
+  {
+    id: 'returns',
+    title: 'Devoluciones',
+    description: 'Notas de crédito, reintegros y devolución trazable de stock.',
+    go: 'Abrir',
+    icon: RotateCcw,
+    tone: 'pink',
+    kind: 'tab',
+    tab: 'returns',
     visible: (c) => c.isAdmin,
   },
   {

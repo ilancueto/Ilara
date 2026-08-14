@@ -647,6 +647,51 @@ export type Database = {
           },
         ]
       }
+      sale_item_components: {
+        Row: {
+          created_at: string
+          id: number
+          product_id: number | null
+          product_name: string
+          quantity_per_unit: number
+          sale_item_id: number
+          snapshot_source: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          product_id?: number | null
+          product_name: string
+          quantity_per_unit: number
+          sale_item_id: number
+          snapshot_source: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          product_id?: number | null
+          product_name?: string
+          quantity_per_unit?: number
+          sale_item_id?: number
+          snapshot_source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_item_components_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_item_components_sale_item_id_fkey"
+            columns: ["sale_item_id"]
+            isOneToOne: false
+            referencedRelation: "sale_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sale_items: {
         Row: {
           combo_id: number | null
@@ -698,6 +743,142 @@ export type Database = {
           },
           {
             foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_return_events: {
+        Row: {
+          actor_user_id: string
+          created_at: string
+          event_type: string
+          id: number
+          meta: Json
+          return_id: string
+        }
+        Insert: {
+          actor_user_id: string
+          created_at?: string
+          event_type: string
+          id?: number
+          meta?: Json
+          return_id: string
+        }
+        Update: {
+          actor_user_id?: string
+          created_at?: string
+          event_type?: string
+          id?: number
+          meta?: Json
+          return_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_return_events_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "sale_returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_return_items: {
+        Row: {
+          created_at: string
+          id: number
+          product_id: number | null
+          product_name: string
+          quantity: number
+          refund_amount: number
+          return_id: string
+          sale_item_id: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          product_id?: number | null
+          product_name: string
+          quantity: number
+          refund_amount: number
+          return_id: string
+          sale_item_id: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          product_id?: number | null
+          product_name?: string
+          quantity?: number
+          refund_amount?: number
+          return_id?: string
+          sale_item_id?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "sale_returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_return_items_sale_item_id_fkey"
+            columns: ["sale_item_id"]
+            isOneToOne: false
+            referencedRelation: "sale_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_returns: {
+        Row: {
+          created_at: string
+          created_by: string
+          credit_note_number: number
+          id: string
+          idempotency_key: string
+          reason: string
+          refund_method: string
+          refund_total: number
+          restock: boolean
+          sale_id: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          credit_note_number?: number
+          id?: string
+          idempotency_key: string
+          reason: string
+          refund_method: string
+          refund_total: number
+          restock?: boolean
+          sale_id: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          credit_note_number?: number
+          id?: string
+          idempotency_key?: string
+          reason?: string
+          refund_method?: string
+          refund_total?: number
+          restock?: boolean
+          sale_id?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_returns_sale_id_fkey"
             columns: ["sale_id"]
             isOneToOne: false
             referencedRelation: "sales"
@@ -969,6 +1150,7 @@ export type Database = {
       }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
       create_catalog_order: { Args: { p_payload: Json }; Returns: Json }
+      create_sale_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_with_items: { Args: { p_payload: Json }; Returns: Json }
       current_app_role: {
         Args: never

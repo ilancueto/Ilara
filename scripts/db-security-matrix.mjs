@@ -77,6 +77,10 @@ const sensitiveTables = [
   // Stage 6.2 — alertas de stock: sin lectura anónima
   'stock_alerts',
   'stock_alert_events',
+  // Stage 6.3 — devoluciones: documentos financieros solo admin
+  'sale_returns',
+  'sale_return_items',
+  'sale_return_events',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
@@ -131,7 +135,10 @@ if (serviceKey) {
   const service = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
-  const core = ['products', 'sales', 'user_roles', 'incomes', 'stock_movements']
+  const core = [
+    'products', 'sales', 'user_roles', 'incomes', 'stock_movements',
+    'sale_item_components', 'sale_returns', 'sale_return_items', 'sale_return_events',
+  ]
   for (const table of core) {
     const { error } = await service.from(table).select('*', { count: 'exact', head: true })
     if (error) fail(`service_role no puede head ${table}: ${error.code || 'err'}`)

@@ -35,13 +35,23 @@ if (!anonKey) {
 function findLocalDbContainer() {
   const listed = spawnSync(
     'docker',
-    ['ps', '--filter', 'name=supabase_db_', '--format', '{{.Names}}'],
+    [
+      'ps',
+      '--filter',
+      'name=supabase_db_',
+      '--filter',
+      `label=com.supabase.cli.workdir=${root}`,
+      '--format',
+      '{{.Names}}',
+    ],
     { encoding: 'utf8', cwd: root }
   )
   if (listed.status !== 0) throw new Error('no se pudieron listar contenedores Docker')
   const names = listed.stdout.split(/\r?\n/).map((v) => v.trim()).filter(Boolean)
   if (names.length !== 1) {
-    throw new Error(`se esperaba un único Postgres local de Supabase; encontrados=${names.length}`)
+    throw new Error(
+      `se esperaba el Postgres Supabase de este workspace; encontrados=${names.length}`
+    )
   }
   return names[0]
 }

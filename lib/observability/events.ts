@@ -29,6 +29,9 @@ export const ObservabilityEvent = {
   STOCK_ALERT_DISMISSED: 'stock_alert_dismissed',
   STOCK_ALERT_AUTO_RESOLVED: 'stock_alert_auto_resolved',
   STOCK_ALERT_TRANSITION_FAILED: 'stock_alert_transition_failed',
+  /** Stage 6.3 — devoluciones y notas de crédito (sin motivo/PII). */
+  SALE_RETURN_CREATED: 'sale_return_created',
+  SALE_RETURN_FAILED: 'sale_return_failed',
 } as const
 
 export type ObservabilityEventName =
