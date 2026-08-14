@@ -1,6 +1,6 @@
 # Etapa 6.3 — Devoluciones y notas de crédito
 
-- **Estado:** implementado y validado localmente; pendiente de release productivo.
+- **Estado:** cerrado en producción el 13 de agosto de 2026.
 - **Alcance:** ventas POS, notas de crédito, reintegro de stock y auditoría.
 - **Fuera de alcance:** devolución del proveedor, gateway de pagos, factura fiscal
   electrónica y logística de retorno (Stage 7).
@@ -22,7 +22,7 @@
 - `sale_return_events`: evidencia de creación.
 - `sale_item_components`: snapshot de productos físicos por línea.
 
-La migración es `20260814010417_stage63_sales_returns.sql`.
+La migración productiva es `20260814014105_stage63_sales_returns.sql`.
 
 ## 3. Combos
 
@@ -80,7 +80,7 @@ el reintegro sin afectar la nota de crédito.
 | tipos generados / drift | OK |
 | RLS 25 tablas | OK |
 | matriz anon/service | OK |
-| advisors seguridad | 0 issues |
+| advisors locales de seguridad | 0 issues bloqueantes |
 | unitarios | 123/123 |
 | integración Stage 6.3 | 10/10 |
 | E2E devolución parcial + axe | 1/1 |
@@ -99,9 +99,22 @@ crédito, combo mutable, no-admin, escritura directa y bloqueo de borrado.
 
 ## 9. Gate productivo
 
-- [ ] Commit y push
-- [ ] CI remoto verde
-- [ ] Migración productiva
-- [ ] Vercel READY
-- [ ] Smoke productivo sin residuos
-- [ ] Documentación de cierre
+- [x] Commit y push: `624a732`
+- [x] CI remoto verde: run `31761006327`
+- [x] Migración productiva: `20260814014105_stage63_sales_returns`
+- [x] Vercel READY: `dpl_6fH2nJtBDeGjAqt36H9bd5uR3QQf`
+- [x] Smoke productivo sin residuos (transacción con `ROLLBACK`)
+- [x] Documentación de cierre
+
+El smoke emitió una devolución parcial de `$1.200`, verificó stock `9`, venta
+original de `$2.400` y un snapshot físico, y luego revirtió toda la operación.
+Catálogo y login respondieron HTTP 200; el deployment no registró errores ni
+eventos fatales en la ventana posterior.
+
+El advisor alojado informa dos decisiones deliberadas de este stage:
+
+- `sale_item_components` tiene RLS sin policies porque es una tabla interna sin
+  acceso para `anon` ni `authenticated`;
+- `create_sale_return` es `SECURITY DEFINER` ejecutable por `authenticated`, pero
+  valida sesión y rol admin dentro de la función, usa `search_path=''` y no concede
+  escritura directa sobre los documentos.

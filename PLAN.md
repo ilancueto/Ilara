@@ -2,8 +2,8 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 y Stages 6.1–6.2 cerrados en producción;
-  6.3–6.7 y Etapa 7 en roadmap
+- **Estado:** Etapas 0–5 y Stages 6.1–6.3 cerrados en producción;
+  6.4–6.7 y Etapa 7 en roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -510,8 +510,8 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 
 1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (cerrado en producción)
 2. ~~**Alertas de reposición**~~ → ver 10.2 (cerrado en producción)
-3. **Devoluciones y notas de crédito:** implementado y validado localmente;
-   pendiente de release. Ver
+3. ~~**Devoluciones y notas de crédito**~~: cerrado en producción con notas
+   parciales, stock por snapshot, auditoría e idempotencia. Ver
    [`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](./docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md).
 4. **Reportes de margen:** usar precio de compra histórico, descuentos y costos,
    no sólo facturación.
