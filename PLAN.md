@@ -513,9 +513,8 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 3. ~~**Devoluciones y notas de crédito**~~: cerrado en producción con notas
    parciales, stock por snapshot, auditoría e idempotencia. Ver
    [`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](./docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md).
-4. **Reportes de margen:** implementado localmente con costo histórico por
-   componente, descuentos, devoluciones, calidad del dato y panel admin. Pendiente
-   publicación y verificación productiva. Ver
+4. ~~**Reportes de margen**~~: cerrado en producción con costo histórico por
+   componente, descuentos, devoluciones, calidad del dato y panel admin. Ver
    [`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](./docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md).
 5. **CRM mínimo:** historial, etiquetas y consentimiento para campañas.
 6. **Cuentas por cobrar/pagar y conciliación:** saldos, vencimientos y estados.
@@ -665,6 +664,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-12 | 2 Gobierno de datos | Baseline greenfield, forward-only Stage 2, tipos, CI db-security, inventario y runbook | Completado | Commit `47b470d`; CI verde; migración `20260812013913` y smoke productivo OK |
 | 2026-08-12 | 5 Arquitectura incremental | DAL/DTOs, clientes Supabase separados, dominios críticos y lógica POS testeada; sin SQL remoto adicional | Completado | Commit `a8f4a8e`; CI verde; deploy Vercel `ilara` READY; smoke productivo read-only 16/16 OK |
 | 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística | Completado | Commits `66507b8`, `89ac418`, `485ed14`; migración `20260813205545`; CI `31745190425`; Vercel `ilara` READY; smoke 16/16 y pedido controlado limpio |
+| 2026-08-13 | 6.4 Reportes de margen | Costo histórico, devoluciones, calidad del dato y panel admin | Completado | Commit `3b277b9`; migración `20260814020513`; CI `31763396516`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | En revisión | Migración `20260814090000`; runbook `docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`; **no desplegado** |
 | 2026-08-13 | 7 Envíos y logística | Selección de plataforma | Pendiente | Envia.com elegido; integración directa con transportistas descartada; faltan credenciales y gate técnico |
 

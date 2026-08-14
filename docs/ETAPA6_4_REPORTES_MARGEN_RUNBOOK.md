@@ -66,5 +66,13 @@ Es forward-only. Ante un fallo después de publicar:
 
 ## Cierre productivo
 
-Pendiente de completar en esta misma etapa: commit/push, CI remoto, migración
-Supabase productiva, deployment Vercel `ilara` y smoke productivo.
+Stage cerrado el 2026-08-13 (hora Argentina):
+
+- feature commit `3b277b9` publicado en `main`;
+- CI GitHub `31763396516`: `lint-test-build`, `db-security` y `e2e` verdes;
+- migración productiva `20260814020513` aplicada y confirmada en el historial
+  remoto;
+- Vercel deployment `dpl_Dm1rSwvAMvn5fkdA4rAVXCg4sJXr`, estado `READY`,
+  alias `https://ilara.com.ar`;
+- smoke productivo GET-only: 16/16;
+- escaneo de logs del deployment después del smoke: sin errores registrados.
