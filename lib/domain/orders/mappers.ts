@@ -75,6 +75,13 @@ export function mapOrderListItem(row: unknown): OrderListItem {
     shipping_destination_postal_code: strOrNull(r.shipping_destination_postal_code),
     shipping_destination_city: strOrNull(r.shipping_destination_city),
     shipping_destination_state: strOrNull(r.shipping_destination_state),
+    shipping_destination_province_id: strOrNull(r.shipping_destination_province_id),
+    shipping_destination_locality_id: strOrNull(r.shipping_destination_locality_id),
+    shipping_destination_street: strOrNull(r.shipping_destination_street),
+    shipping_destination_number: strOrNull(r.shipping_destination_number),
+    shipping_destination_formatted_address: strOrNull(r.shipping_destination_formatted_address),
+    shipping_destination_lat: r.shipping_destination_lat == null ? null : num(r.shipping_destination_lat),
+    shipping_destination_lon: r.shipping_destination_lon == null ? null : num(r.shipping_destination_lon),
     total: num(r.total),
     coupon_code: strOrNull(r.coupon_code),
     coupon_discount_percentage:

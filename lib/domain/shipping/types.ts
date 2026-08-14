@@ -2,6 +2,22 @@ export type ShippingDestination = {
   postalCode: string
   city: string
   state: string
+  street: string
+  number: string
+  formattedAddress: string
+}
+
+export type ShippingLocation = {
+  id: string
+  name: string
+  department?: string
+}
+
+export type ShippingAddressInput = {
+  provinceId: string
+  localityId: string
+  street: string
+  number: string
 }
 
 export type ShippingOption = {

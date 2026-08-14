@@ -9,8 +9,16 @@ const migration = readFileSync(
   resolve(root, 'supabase/migrations/20260814092526_stage7_envia_shipping.sql'),
   'utf8'
 )
+const stage71Migration = readFileSync(
+  resolve(root, 'supabase/migrations/20260814205248_stage71_structured_shipping_address.sql'),
+  'utf8'
+)
 const edgeFunction = readFileSync(
   resolve(root, 'supabase/functions/shipping-quotes/index.ts'),
+  'utf8'
+)
+const checkout = readFileSync(
+  resolve(root, 'components/Catalogo/CheckoutPedido.tsx'),
   'utf8'
 )
 
@@ -56,5 +64,24 @@ describe('Stage 7 — cotizaciones Envia', () => {
   it('muestra centavos de las tarifas sin redondear el total', () => {
     expect(formatPesoARExact(10411.36)).toBe('10.411,36')
     expect(formatPesoARExact(1500)).toBe('1.500')
+  })
+
+  it('Stage 7.1 carga provincias/localidades oficiales y resuelve CP en backend', () => {
+    expect(edgeFunction).toContain('https://apis.datos.gob.ar/georef/api/v2.0')
+    expect(edgeFunction).toContain('https://nominatim.openstreetmap.org/search')
+    expect(edgeFunction).toContain("'User-Agent': 'IlaraBeauty/1.0 (https://ilara.com.ar)'")
+    expect(edgeFunction).toContain("admin.rpc('acquire_shipping_geocode_slot')")
+    expect(checkout).toContain('checkout-province')
+    expect(checkout).toContain('checkout-locality')
+    expect(checkout).toContain('checkout-street-number')
+    expect(checkout).toContain('Calculamos el código postal automáticamente')
+  })
+
+  it('Stage 7.1 conserva dirección completa y caché privado sin domicilio en claro', () => {
+    expect(stage71Migration).toContain('destination_formatted_address')
+    expect(stage71Migration).toContain('shipping_destination_formatted_address')
+    expect(stage71Migration).toContain('shipping_geocode_cache')
+    expect(stage71Migration).toMatch(/query_hash text PRIMARY KEY/)
+    expect(stage71Migration).toMatch(/REVOKE ALL ON TABLE public\.shipping_geocode_cache FROM PUBLIC, anon, authenticated/)
   })
 })

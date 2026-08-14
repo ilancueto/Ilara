@@ -10,8 +10,12 @@ import { buildOrderWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import { formatPesoAR, formatPesoARExact } from '@/lib/formatPesoAR'
 import { normalizePhoneDigits } from '@/lib/domain/orders/validation'
-import { quoteShipping } from '@/lib/domain/shipping/browserShipping'
-import type { ShippingQuote } from '@/lib/domain/shipping/types'
+import {
+  listShippingLocalities,
+  listShippingProvinces,
+  quoteShipping,
+} from '@/lib/domain/shipping/browserShipping'
+import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/types'
 import { toUserMessage } from '@/lib/domain/errors'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
@@ -55,7 +59,14 @@ export function CheckoutPedido({
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [notes, setNotes] = useState('')
-  const [postalCode, setPostalCode] = useState('')
+  const [provinces, setProvinces] = useState<ShippingLocation[]>([])
+  const [localities, setLocalities] = useState<ShippingLocation[]>([])
+  const [provinceId, setProvinceId] = useState('')
+  const [localityId, setLocalityId] = useState('')
+  const [street, setStreet] = useState('')
+  const [streetNumber, setStreetNumber] = useState('')
+  const [locationsPending, setLocationsPending] = useState(false)
+  const [locationsError, setLocationsError] = useState<string | null>(null)
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null)
   const [selectedShippingId, setSelectedShippingId] = useState<string | null>(null)
   const [quotePending, setQuotePending] = useState(false)
@@ -66,6 +77,7 @@ export function CheckoutPedido({
   const [done, setDone] = useState<CreateOrderResult | null>(null)
   const idemRef = useRef<string>(newIdempotencyKey())
   const submittingRef = useRef(false)
+  const localityRequestRef = useRef(0)
 
   useEffect(() => {
     if (!open) return
@@ -87,10 +99,62 @@ export function CheckoutPedido({
     }
   }, [open, done])
 
+  useEffect(() => {
+    if (!open || provinces.length) return
+    let cancelled = false
+    setLocationsPending(true)
+    setLocationsError(null)
+    void listShippingProvinces()
+      .then((items) => {
+        if (!cancelled) setProvinces(items)
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setLocationsError(toUserMessage(error, 'No se pudieron cargar las provincias.'))
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLocationsPending(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, provinces.length])
+
   if (!open) return null
 
   const selectedShipping = shippingQuote?.options.find((option) => option.id === selectedShippingId) || null
   const estimatedTotal = total + (selectedShipping?.amount || 0)
+  const addressComplete = Boolean(
+    provinceId && localityId && street.trim().length >= 2 && /^\d{1,6}$/.test(streetNumber)
+  )
+
+  const invalidateQuote = () => {
+    setShippingQuote(null)
+    setSelectedShippingId(null)
+    setQuoteError(null)
+  }
+
+  const handleProvinceChange = async (nextProvinceId: string) => {
+    const requestId = ++localityRequestRef.current
+    setProvinceId(nextProvinceId)
+    setLocalityId('')
+    setLocalities([])
+    invalidateQuote()
+    if (!nextProvinceId) return
+    setLocationsPending(true)
+    setLocationsError(null)
+    try {
+      const items = await listShippingLocalities(nextProvinceId)
+      if (localityRequestRef.current === requestId) setLocalities(items)
+    } catch (error) {
+      if (localityRequestRef.current === requestId) {
+        setLocationsError(toUserMessage(error, 'No se pudieron cargar las localidades.'))
+      }
+    } finally {
+      if (localityRequestRef.current === requestId) setLocationsPending(false)
+    }
+  }
 
   const handleQuote = async () => {
     if (quotePending || pending) return
@@ -99,7 +163,12 @@ export function CheckoutPedido({
     setShippingQuote(null)
     setSelectedShippingId(null)
     try {
-      const result = await quoteShipping(postalCode)
+      const result = await quoteShipping({
+        provinceId,
+        localityId,
+        street,
+        number: streetNumber,
+      })
       setShippingQuote(result)
       setSelectedShippingId(result.options[0]?.id || null)
     } catch (error) {
@@ -254,7 +323,7 @@ export function CheckoutPedido({
             <p className={styles.hint}>
               Envío: {done.shipping_carrier} · {done.shipping_service}
               {done.shipping_delivery_estimate ? ` · ${done.shipping_delivery_estimate}` : ''}.<br />
-              Destino: CP {done.shipping_destination_postal_code}, {done.shipping_destination_city}.
+              Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`} · CP {done.shipping_destination_postal_code}.
             </p>
             <button
               type="button"
@@ -348,36 +417,98 @@ export function CheckoutPedido({
                 data-testid="checkout-email"
               />
             </div>
-            <div className={styles.field}>
-              <label htmlFor={`${formId}-postal-code`}>Código postal de destino *</label>
-              <div className={styles.quoteRow}>
-                <input
-                  id={`${formId}-postal-code`}
-                  name="postal_code"
-                  type="text"
-                  autoComplete="postal-code"
-                  inputMode="numeric"
-                  pattern="[0-9]{4}"
-                  maxLength={4}
-                  value={postalCode}
+            <fieldset className={styles.addressFields} disabled={pending || quotePending}>
+              <legend>Dirección de entrega *</legend>
+              <div className={styles.field}>
+                <label htmlFor={`${formId}-province`}>Provincia</label>
+                <select
+                  id={`${formId}-province`}
+                  name="province"
+                  value={provinceId}
+                  onChange={(e) => void handleProvinceChange(e.target.value)}
+                  required
+                  data-testid="checkout-province"
+                >
+                  <option value="">Elegí una provincia</option>
+                  {provinces.map((province) => (
+                    <option key={province.id} value={province.id}>{province.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label htmlFor={`${formId}-locality`}>Ciudad / localidad</label>
+                <select
+                  id={`${formId}-locality`}
+                  name="locality"
+                  value={localityId}
                   onChange={(e) => {
-                    const next = e.target.value.replace(/\D/g, '').slice(0, 4)
-                    setPostalCode(next)
-                    if (shippingQuote?.destination.postalCode !== next) {
-                      setShippingQuote(null)
-                      setSelectedShippingId(null)
-                    }
-                    setQuoteError(null)
+                    setLocalityId(e.target.value)
+                    invalidateQuote()
                   }}
                   required
-                  disabled={pending || quotePending}
+                  disabled={!provinceId || locationsPending || pending || quotePending}
+                  data-testid="checkout-locality"
+                >
+                  <option value="">{locationsPending ? 'Cargando…' : 'Elegí una localidad'}</option>
+                  {localities.map((locality) => (
+                    <option key={locality.id} value={locality.id}>
+                      {locality.name}{locality.department ? ` · ${locality.department}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.addressRow}>
+                <div className={styles.field}>
+                  <label htmlFor={`${formId}-street`}>Calle</label>
+                  <input
+                    id={`${formId}-street`}
+                    name="street"
+                    type="text"
+                    autoComplete="address-line1"
+                    maxLength={120}
+                    value={street}
+                    onChange={(e) => {
+                      setStreet(e.target.value)
+                      invalidateQuote()
+                    }}
+                    required
+                    data-testid="checkout-street"
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label htmlFor={`${formId}-street-number`}>Altura</label>
+                  <input
+                    id={`${formId}-street-number`}
+                    name="street_number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{1,6}"
+                    maxLength={6}
+                    value={streetNumber}
+                    onChange={(e) => {
+                      setStreetNumber(e.target.value.replace(/\D/g, '').slice(0, 6))
+                      invalidateQuote()
+                    }}
+                    required
+                    data-testid="checkout-street-number"
+                  />
+                </div>
+              </div>
+              <div className={styles.quoteRow}>
+                <p className={styles.fieldHint}>
+                  Calculamos el código postal automáticamente al cotizar.
+                </p>
+                <input
+                  type="hidden"
+                  name="postal_code"
+                  value={shippingQuote?.destination.postalCode || ''}
                   data-testid="checkout-postal-code"
                 />
                 <button
                   type="button"
                   className={styles.quoteButton}
                   onClick={() => void handleQuote()}
-                  disabled={pending || quotePending || postalCode.length !== 4}
+                  disabled={pending || quotePending || locationsPending || !addressComplete}
                   data-testid="checkout-quote-shipping"
                 >
                   {quotePending ? <Loader2 size={16} className={styles.spin} aria-hidden /> : <Truck size={16} aria-hidden />}
@@ -385,15 +516,20 @@ export function CheckoutPedido({
                 </button>
               </div>
               <p className={styles.fieldHint}>Origen: Neuquén 8300 · bolsa 20 × 35 × 5 cm · hasta 1 kg.</p>
-            </div>
+              <p className={styles.attribution}>
+                Localidades: <a href="https://www.argentina.gob.ar/georef" target="_blank" rel="noreferrer">Georef Argentina</a>
+                {' · '}CP: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>.
+              </p>
+            </fieldset>
 
+            {locationsError && <p className={styles.error} role="alert">{locationsError}</p>}
             {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
 
             {shippingQuote && (
               <fieldset className={styles.shippingOptions} data-testid="shipping-options">
                 <legend>Elegí el envío *</legend>
                 <p className={styles.destination}>
-                  {shippingQuote.destination.city}, {shippingQuote.destination.state} · CP {shippingQuote.destination.postalCode}
+                  {shippingQuote.destination.formattedAddress} · CP {shippingQuote.destination.postalCode}
                 </p>
                 {shippingQuote.options.map((option) => (
                   <label key={option.id} className={styles.shippingOption}>

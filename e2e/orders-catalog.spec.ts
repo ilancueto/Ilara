@@ -33,6 +33,13 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
         destination_postal_code: '1000',
         destination_city: 'Buenos Aires',
         destination_state: 'CABA',
+        destination_province_id: '02',
+        destination_locality_id: '02000010',
+        destination_street: 'AV CORRIENTES',
+        destination_number: '1000',
+        destination_formatted_address: 'AV CORRIENTES 1000, Buenos Aires, CABA',
+        destination_lat: -34.6037,
+        destination_lon: -58.3816,
         carrier: 'oca',
         carrier_description: 'OCA',
         service: 'standard',
@@ -118,13 +125,45 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
         })
         return
       }
+      const body = route.request().postDataJSON() as { action?: string }
+      if (body.action === 'provinces') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          headers: { 'access-control-allow-origin': '*' },
+          body: JSON.stringify({
+            ok: true,
+            provinces: [{ id: '02', name: 'Ciudad Autónoma de Buenos Aires' }],
+          }),
+        })
+        return
+      }
+      if (body.action === 'localities') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          headers: { 'access-control-allow-origin': '*' },
+          body: JSON.stringify({
+            ok: true,
+            localities: [{ id: '02000010', name: 'Buenos Aires', department: 'Comuna 1' }],
+          }),
+        })
+        return
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         headers: { 'access-control-allow-origin': '*' },
         body: JSON.stringify({
           ok: true,
-          destination: { postalCode: '1000', city: 'Buenos Aires', state: 'CABA' },
+          destination: {
+            postalCode: '1000',
+            city: 'Buenos Aires',
+            state: 'CABA',
+            street: 'AV CORRIENTES',
+            number: '1000',
+            formattedAddress: 'AV CORRIENTES 1000, Buenos Aires, CABA',
+          },
           expiresAt: shippingQuote.expiresAt,
           options: [{
             id: shippingQuote.id,
@@ -167,9 +206,14 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
 
     await page.getByTestId('checkout-name').fill('Cliente E2E')
     await page.getByTestId('checkout-phone').fill('2995550199')
-    await page.getByTestId('checkout-postal-code').fill('1000')
+    await page.getByTestId('checkout-province').selectOption('02')
+    await expect(page.getByTestId('checkout-locality')).toBeEnabled()
+    await page.getByTestId('checkout-locality').selectOption('02000010')
+    await page.getByTestId('checkout-street').fill('Avenida Corrientes')
+    await page.getByTestId('checkout-street-number').fill('1000')
     await page.getByTestId('checkout-quote-shipping').click()
     await expect(page.getByTestId('shipping-options')).toBeVisible()
+    await expect(page.getByTestId('checkout-postal-code')).toHaveValue('1000')
     await page.getByRole('radio', { name: /OCA.*Entrega a domicilio/i }).check()
     await expect(page.getByTestId('checkout-submit')).toBeEnabled()
     await page.getByTestId('checkout-submit').click()

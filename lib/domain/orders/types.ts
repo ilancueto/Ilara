@@ -52,6 +52,7 @@ export type CreateOrderResult = {
   shipping_destination_postal_code: string
   shipping_destination_city: string
   shipping_destination_state: string
+  shipping_destination_formatted_address: string | null
   total: number
   created_at: string
   idempotent_replay: boolean
@@ -80,6 +81,13 @@ export type OrderListItem = {
   shipping_destination_postal_code: string | null
   shipping_destination_city: string | null
   shipping_destination_state: string | null
+  shipping_destination_province_id: string | null
+  shipping_destination_locality_id: string | null
+  shipping_destination_street: string | null
+  shipping_destination_number: string | null
+  shipping_destination_formatted_address: string | null
+  shipping_destination_lat: number | null
+  shipping_destination_lon: number | null
   total: number
   coupon_code: string | null
   coupon_discount_percentage: number | null

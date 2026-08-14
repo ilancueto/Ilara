@@ -35,7 +35,9 @@ devoluciones, margen, CRM y finanzas.
 **Stage 7 (cotización logística)** está **cerrado, desplegado y verificado en
 producción**. Envia.com es el único integrador; el token vive en secretos de
 Supabase, las tarifas se guardan en snapshots backend-only y el pedido consume
-una opción vigente sin confiar en importes del navegador. Etiquetas y tracking
+una opción vigente sin confiar en importes del navegador. Stage 7.1 reemplaza el
+CP manual por provincia/localidad oficial, calle y altura; el backend normaliza
+la dirección, resuelve el CP y guarda el domicilio completo. Etiquetas y tracking
 quedan fuera de este stage para evitar cargos y operaciones sin política definida.
 
 ### Dictamen por área
@@ -433,4 +435,4 @@ La salida de contención requiere, como mínimo:
 | 2026-08-12 | **Etapa 2 cerrada:** commit `47b470d`, CI verde, único deploy Vercel `ilara` READY, migración `20260812013913` aplicada; sitio/catálogo/RPC 200, anon interno 401 y passkeys 403. |
 | 2026-08-12 | **Etapa 5 cerrada:** commit `a8f4a8e` publicado en `main`; CI remoto verde; deploy productivo Vercel `ilara` READY; smoke productivo read-only 16/16 OK. Sin SQL/migraciones remotas adicionales. |
 | 2026-08-13 | **Stage 6.1 cerrado:** commits `66507b8`, `89ac418` y `485ed14` en `main`; migración productiva `20260813205545`; CI remoto verde; Vercel `ilara` READY; smoke 16/16 y pedido controlado eliminado sin cambios de stock. |
-| 2026-08-14 | **Stage 7 cerrado:** Envia.com integrado para cotizaciones por CP; migración `20260814092526`, Edge Function productiva, snapshot/consumo único, total autoritativo y RLS verificados. Etiquetas/tracking fuera de alcance. |
+| 2026-08-14 | **Stage 7 / 7.1 cerrado:** formulario territorial guiado, CP automático y Envia.com; migraciones `20260814092526` y `20260814205248`, Edge Function, snapshot/consumo único, total autoritativo y RLS verificados. Etiquetas/tracking fuera de alcance. |

@@ -633,8 +633,15 @@ export type Database = {
           shipping_currency: string | null
           shipping_delivery_estimate: string | null
           shipping_destination_city: string | null
+          shipping_destination_formatted_address: string | null
+          shipping_destination_lat: number | null
+          shipping_destination_locality_id: string | null
+          shipping_destination_lon: number | null
+          shipping_destination_number: string | null
           shipping_destination_postal_code: string | null
+          shipping_destination_province_id: string | null
           shipping_destination_state: string | null
+          shipping_destination_street: string | null
           shipping_provider: string | null
           shipping_quote_id: string | null
           shipping_service: string | null
@@ -670,8 +677,15 @@ export type Database = {
           shipping_currency?: string | null
           shipping_delivery_estimate?: string | null
           shipping_destination_city?: string | null
+          shipping_destination_formatted_address?: string | null
+          shipping_destination_lat?: number | null
+          shipping_destination_locality_id?: string | null
+          shipping_destination_lon?: number | null
+          shipping_destination_number?: string | null
           shipping_destination_postal_code?: string | null
+          shipping_destination_province_id?: string | null
           shipping_destination_state?: string | null
+          shipping_destination_street?: string | null
           shipping_provider?: string | null
           shipping_quote_id?: string | null
           shipping_service?: string | null
@@ -707,8 +721,15 @@ export type Database = {
           shipping_currency?: string | null
           shipping_delivery_estimate?: string | null
           shipping_destination_city?: string | null
+          shipping_destination_formatted_address?: string | null
+          shipping_destination_lat?: number | null
+          shipping_destination_locality_id?: string | null
+          shipping_destination_lon?: number | null
+          shipping_destination_number?: string | null
           shipping_destination_postal_code?: string | null
+          shipping_destination_province_id?: string | null
           shipping_destination_state?: string | null
+          shipping_destination_street?: string | null
           shipping_provider?: string | null
           shipping_quote_id?: string | null
           shipping_service?: string | null
@@ -1257,22 +1278,58 @@ export type Database = {
           },
         ]
       }
+      shipping_geocode_cache: {
+        Row: {
+          created_at: string
+          postal_code: string
+          query_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          postal_code: string
+          query_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          postal_code?: string
+          query_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_geocode_requests: {
+        Row: {
+          id: number
+          requested_at: string
+        }
+        Insert: {
+          id?: never
+          requested_at?: string
+        }
+        Update: {
+          id?: never
+          requested_at?: string
+        }
+        Relationships: []
+      }
       shipping_quote_requests: {
         Row: {
           created_at: string
-          destination_postal_code: string
+          destination_postal_code: string | null
           id: number
           request_ip_hash: string
         }
         Insert: {
           created_at?: string
-          destination_postal_code: string
+          destination_postal_code?: string | null
           id?: never
           request_ip_hash: string
         }
         Update: {
           created_at?: string
-          destination_postal_code?: string
+          destination_postal_code?: string | null
           id?: never
           request_ip_hash?: string
         }
@@ -1288,8 +1345,15 @@ export type Database = {
           currency: string
           delivery_estimate: string | null
           destination_city: string
+          destination_formatted_address: string | null
+          destination_lat: number | null
+          destination_locality_id: string | null
+          destination_lon: number | null
+          destination_number: string | null
           destination_postal_code: string
+          destination_province_id: string | null
           destination_state: string
+          destination_street: string | null
           expires_at: string
           id: string
           order_id: string | null
@@ -1308,8 +1372,15 @@ export type Database = {
           currency: string
           delivery_estimate?: string | null
           destination_city: string
+          destination_formatted_address?: string | null
+          destination_lat?: number | null
+          destination_locality_id?: string | null
+          destination_lon?: number | null
+          destination_number?: string | null
           destination_postal_code: string
+          destination_province_id?: string | null
           destination_state: string
+          destination_street?: string | null
           expires_at: string
           id?: string
           order_id?: string | null
@@ -1328,8 +1399,15 @@ export type Database = {
           currency?: string
           delivery_estimate?: string | null
           destination_city?: string
+          destination_formatted_address?: string | null
+          destination_lat?: number | null
+          destination_locality_id?: string | null
+          destination_lon?: number | null
+          destination_number?: string | null
           destination_postal_code?: string
+          destination_province_id?: string | null
           destination_state?: string
+          destination_street?: string | null
           expires_at?: string
           id?: string
           order_id?: string | null
@@ -1531,6 +1609,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acquire_shipping_geocode_slot: { Args: never; Returns: undefined }
       bootstrap_first_admin: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

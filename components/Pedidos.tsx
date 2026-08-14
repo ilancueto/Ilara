@@ -397,8 +397,12 @@ export default function Pedidos() {
                     {detail.shipping_carrier_description} · {detail.shipping_service_description}
                   </p>
                   <p>
-                    CP {detail.shipping_destination_postal_code}, {detail.shipping_destination_city}, {detail.shipping_destination_state}
+                    {detail.shipping_destination_formatted_address
+                      || `CP ${detail.shipping_destination_postal_code}, ${detail.shipping_destination_city}, ${detail.shipping_destination_state}`}
                   </p>
+                  {detail.shipping_destination_formatted_address && (
+                    <p className="text-xs text-gray-500">CP {detail.shipping_destination_postal_code}</p>
+                  )}
                   <p>
                     ${formatPesoARExact(detail.shipping_amount)}
                     {detail.shipping_delivery_estimate ? ` · ${detail.shipping_delivery_estimate}` : ''}

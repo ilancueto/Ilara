@@ -33,6 +33,10 @@ export function parseCreateOrderRpcResult(rpcData: unknown): CreateOrderResult {
     shipping_destination_postal_code: String(r.shipping_destination_postal_code || ''),
     shipping_destination_city: String(r.shipping_destination_city || ''),
     shipping_destination_state: String(r.shipping_destination_state || ''),
+    shipping_destination_formatted_address:
+      r.shipping_destination_formatted_address == null
+        ? null
+        : String(r.shipping_destination_formatted_address),
     total: Number(r.total) || 0,
     created_at: String(r.created_at || new Date().toISOString()),
     idempotent_replay: Boolean(r.idempotent_replay),

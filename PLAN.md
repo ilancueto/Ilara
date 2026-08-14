@@ -554,7 +554,7 @@ Alcance cerrado:
 
 1. [x] Credencial productiva validada y guardada sólo como secreto de Supabase.
 2. [x] Edge Function `shipping-quotes` como adaptador exclusivo de Envia.com.
-3. [x] Cotización por CP argentino con origen fijo `8300`, una bolsa y timeout.
+3. [x] Dirección guiada por provincia/localidad oficial, calle y altura; CP resuelto automáticamente.
 4. [x] Opciones reales normalizadas, ordenadas por importe y con errores seguros.
 5. [x] Snapshot temporal backend-only, consumo único e idempotente por el RPC.
 6. [x] Total autoritativo del pedido incluye envío; panel muestra el snapshot.
@@ -562,6 +562,9 @@ Alcance cerrado:
 8. [x] Tests unitarios, reconstrucción DB, matriz RLS, build y E2E visual local.
 9. [x] Migración `20260814092526`, secreto y Edge Function aplicados en producción.
 10. [x] Cotización productiva CP 1000: ocho opciones reales; `anon` a quotes = 401.
+11. [x] Stage 7.1: Georef oficial carga 24 provincias y localidades dependientes.
+12. [x] Stage 7.1: dirección normalizada → Nominatim con caché/1 req·s → CP → Envia.
+13. [x] Snapshot del pedido conserva domicilio normalizado, CP y coordenadas.
 
 Configuración operativa implementada:
 
@@ -699,7 +702,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-14 | 6.5 CRM mínimo | Historial neto, etiquetas, notas y consentimiento admin-only | Completado | Commit `adefe8a`; migración `20260814024158`; CI `31765289604`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.6 Finanzas | CxC/CxP, cobros/pagos append-only y conciliación de caja | Completado | Commits `30d1463`, `1c3cd67`; migración `20260814033000`; CI `31767514128`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | Completado | Migraciones `20260814000544` y `20260814000745`; CI, Vercel y smoke productivo verdes |
-| 2026-08-14 | 7 Envíos y logística | Cotización Envia + snapshot autoritativo en pedidos | Completado | Migración `20260814092526`; Edge `shipping-quotes`; cotización productiva 8 opciones; quotes anon 401; ver runbook |
+| 2026-08-14 | 7 / 7.1 Envíos y logística | Dirección guiada + CP automático + cotización Envia + snapshot autoritativo | Completado | Migraciones `20260814092526` y `20260814205248`; Edge `shipping-quotes`; Georef + Nominatim + Envia; ver runbook |
 | 2026-08-13 | Roadmap 6.7 / 8 | Reordenamiento de expansión comercial | Completado | Stage 6.7 eliminado; B2B y multisucursal descartados; pagos online movido a Etapa 8 |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
