@@ -414,7 +414,7 @@ function HomeContent() {
           {activeTab === 'sales' && staffCaps.canUsePos && <Ventas />}
           {activeTab === 'expenses' && staffCaps.canManageFinance && <Gastos />}
           {activeTab === 'incomes' && staffCaps.isAdmin && <Ingresos />}
-          {activeTab === 'customers' && staffCaps.canUsePos && <Clientes />}
+          {activeTab === 'customers' && staffCaps.canUsePos && <Clientes isAdmin={staffCaps.isAdmin} />}
           {activeTab === 'orders' && staffCaps.isAdmin && <Pedidos />}
           {activeTab === 'stock_alerts' && staffCaps.isAdmin && <AlertasReposicion />}
           {activeTab === 'returns' && staffCaps.isAdmin && <Devoluciones />}

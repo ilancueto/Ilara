@@ -117,6 +117,151 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_consent_events: {
+        Row: {
+          channel: string
+          created_at: string
+          customer_id: number
+          evidence_note: string | null
+          granted: boolean
+          id: number
+          recorded_by: string
+          source: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          customer_id: number
+          evidence_note?: string | null
+          granted: boolean
+          id?: number
+          recorded_by: string
+          source: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          customer_id?: number
+          evidence_note?: string | null
+          granted?: boolean
+          id?: number
+          recorded_by?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_consent_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_notes: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          body: string
+          created_at: string
+          created_by: string
+          customer_id: number
+          id: number
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          body: string
+          created_at?: string
+          created_by: string
+          customer_id: number
+          id?: number
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string
+          customer_id?: number
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_tag_assignments: {
+        Row: {
+          assigned_by: string
+          created_at: string
+          customer_id: number
+          tag_id: number
+        }
+        Insert: {
+          assigned_by: string
+          created_at?: string
+          customer_id: number
+          tag_id: number
+        }
+        Update: {
+          assigned_by?: string
+          created_at?: string
+          customer_id?: number
+          tag_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_tag_assignments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "customer_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_tags: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string
+          id: number
+          name: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by: string
+          id?: number
+          name: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string
+          id?: number
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           created_at: string | null
@@ -1161,6 +1306,30 @@ export type Database = {
       current_app_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      customer_crm_add_note: {
+        Args: { p_body: string; p_customer_id: number }
+        Returns: Json
+      }
+      customer_crm_archive_note: { Args: { p_note_id: number }; Returns: Json }
+      customer_crm_profile: { Args: { p_customer_id: number }; Returns: Json }
+      customer_crm_record_consent: {
+        Args: {
+          p_customer_id: number
+          p_evidence_note?: string
+          p_granted: boolean
+          p_source: string
+        }
+        Returns: Json
+      }
+      customer_crm_set_tags: {
+        Args: { p_customer_id: number; p_tag_ids: number[] }
+        Returns: Json
+      }
+      customer_crm_tags: { Args: never; Returns: Json }
+      customer_crm_upsert_tag: {
+        Args: { p_color?: string; p_id: number; p_name: string }
+        Returns: Json
       }
       dashboard_finance_kpis: { Args: { p_since?: string }; Returns: Json }
       dashboard_sales_daily: {

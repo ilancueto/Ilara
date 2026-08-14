@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createPortal } from 'react-dom'
+import dynamic from 'next/dynamic'
 import { supabase, getUser, Cliente, Venta, ItemVenta } from '@/lib/supabase'
 import { Search, Plus, SquarePen, Trash2, Users, ShoppingBag, Calendar, User, TrendingUp, Mail, Phone, Eye, Receipt, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
@@ -15,13 +16,17 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
 import { CUSTOMER_LIST_SELECT } from '@/lib/domain/customers/browserCustomers'
 
+const CustomerCrmPanel = dynamic(() => import('@/components/CustomerCrmPanel'), {
+    loading: () => <p className="text-sm text-gray-500 py-6">Cargando CRM...</p>,
+})
+
 type ClienteStats = {
     totalVentas: number
     totalGastado: number
     ultimaCompra: string | null
 }
 
-export default function Clientes() {
+export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
     const { showSuccess, showError } = useToast()
     const { confirm: confirmDialog, confirmProps } = useConfirm()
     const [clientes, setClientes] = useState<Cliente[]>([])
@@ -653,7 +658,8 @@ export default function Clientes() {
                                     </div>
                                 </div>
                             )}
-                            {(() => {
+                            {isAdmin && <CustomerCrmPanel customerId={clientePerfil.id} />}
+                            {!isAdmin && (() => {
                                 const stats = clientesStats.get(clientePerfil.id) || { totalVentas: 0, totalGastado: 0, ultimaCompra: null }
                                 return (
                                     <div className="grid grid-cols-3 gap-4">
@@ -672,7 +678,7 @@ export default function Clientes() {
                                     </div>
                                 )
                             })()}
-                            <div>
+                            {!isAdmin && <div>
                                 <div className="flex items-baseline gap-2 mb-4">
                                     <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold flex items-center gap-2">
                                         <Receipt className="w-4 h-4" />
@@ -720,7 +726,7 @@ export default function Clientes() {
                                         })}
                                     </ul>
                                 )}
-                            </div>
+                            </div>}
                         </div>
                         <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                             <button type="button" onClick={() => { cerrarPerfil(); handleEditar(clientePerfil); }} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold shadow-lg shadow-pink-200 dark:shadow-pink-900/20">

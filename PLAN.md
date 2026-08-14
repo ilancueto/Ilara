@@ -516,7 +516,10 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 4. ~~**Reportes de margen**~~: cerrado en producción con costo histórico por
    componente, descuentos, devoluciones, calidad del dato y panel admin. Ver
    [`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](./docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md).
-5. **CRM mínimo:** historial, etiquetas y consentimiento para campañas.
+5. **CRM mínimo:** implementado localmente con historial neto, etiquetas, notas
+   internas y consentimiento auditable admin-only. Pendiente publicación y
+   verificación productiva. Ver
+   [`docs/ETAPA6_5_CRM_RUNBOOK.md`](./docs/ETAPA6_5_CRM_RUNBOOK.md).
 6. **Cuentas por cobrar/pagar y conciliación:** saldos, vencimientos y estados.
 *(La numeración 4–6 de este bloque corresponde a las iniciativas 6.4–6.6 del
 roadmap de producto.)*
