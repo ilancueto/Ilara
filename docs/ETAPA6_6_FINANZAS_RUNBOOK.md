@@ -76,5 +76,23 @@ Es forward-only. Ante una incidencia:
 
 ## Cierre productivo
 
-Pendiente de completar tras publicar el commit, aplicar la migración en Supabase,
-observar CI, desplegar Vercel y ejecutar smoke/probes productivos de sólo lectura.
+Stage cerrado el 2026-08-14:
+
+- feature commit `30d1463` y fix de aislamiento de test `1c3cd67` publicados en
+  `main`;
+- CI GitHub `31767514128`: `lint-test-build`, `db-security` y `e2e` verdes;
+- migración productiva `20260814033000` aplicada y confirmada en el historial
+  remoto;
+- Vercel deployment `dpl_7Sy4WqNFTdUR3vrcZv6ERxY3htwv`, estado `READY`, alias
+  `https://ilara.com.ar`;
+- smoke productivo GET-only: 16/16;
+- probes productivos `anon` contra cuentas, movimientos y snapshot: denegados
+  con `42501`;
+- escaneo de logs posterior al smoke: sin errores registrados.
+
+El linter remoto de Supabase informa advertencias generales por RPC
+`SECURITY DEFINER` ejecutables por roles previstos y protección de contraseñas
+filtradas desactivada. Los cuatro RPC Stage 6.6 exigen `auth.uid()` e
+`is_app_admin()` internamente; localmente los advisors estrictos y la matriz de
+roles quedaron verdes. La opción de Auth es deuda operativa global, no una
+regresión de Stage 6.6.

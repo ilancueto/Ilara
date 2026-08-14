@@ -2,8 +2,7 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 y Stages 6.1–6.5 cerrados en producción;
-  Stage 6.6 en cierre y Etapas 7–8 en roadmap
+- **Estado:** Etapas 0–6 cerradas en producción; Etapas 7–8 en roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -697,7 +696,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-13 | 6.1 Pedidos catálogo | Orders/RPC/checkout/panel; sin logística | Completado | Commits `66507b8`, `89ac418`, `485ed14`; migración `20260813205545`; CI `31745190425`; Vercel `ilara` READY; smoke 16/16 y pedido controlado limpio |
 | 2026-08-13 | 6.4 Reportes de margen | Costo histórico, devoluciones, calidad del dato y panel admin | Completado | Commit `3b277b9`; migración `20260814020513`; CI `31763396516`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.5 CRM mínimo | Historial neto, etiquetas, notas y consentimiento admin-only | Completado | Commit `adefe8a`; migración `20260814024158`; CI `31765289604`; Vercel `ilara` READY; smoke 16/16 |
-| 2026-08-14 | 6.6 Finanzas | CxC/CxP, cobros/pagos append-only y conciliación de caja | En revisión | Migración `20260814033000`; integración 5/5; unitarios 132/132; RLS 31/31; E2E 1/1; pendiente publicación productiva |
+| 2026-08-14 | 6.6 Finanzas | CxC/CxP, cobros/pagos append-only y conciliación de caja | Completado | Commits `30d1463`, `1c3cd67`; migración `20260814033000`; CI `31767514128`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | En revisión | Migración `20260814090000`; runbook `docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`; **no desplegado** |
 | 2026-08-13 | 7 Envíos y logística | Selección de plataforma | Pendiente | Envia.com elegido; integración directa con transportistas descartada; faltan credenciales y gate técnico |
 | 2026-08-13 | Roadmap 6.7 / 8 | Reordenamiento de expansión comercial | Completado | Stage 6.7 eliminado; B2B y multisucursal descartados; pagos online movido a Etapa 8 |
