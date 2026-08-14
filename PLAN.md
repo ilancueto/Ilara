@@ -2,8 +2,8 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 y Stages 6.1–6.3 cerrados en producción;
-  6.4–6.7 y Etapa 7 en roadmap
+- **Estado:** Etapas 0–5 y Stages 6.1–6.4 cerrados en producción;
+  Stages 6.5–6.6 y Etapas 7–8 en roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -518,11 +518,12 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
    [`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](./docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md).
 5. **CRM mínimo:** historial, etiquetas y consentimiento para campañas.
 6. **Cuentas por cobrar/pagar y conciliación:** saldos, vencimientos y estados.
-7. **B2B, pagos online o multisucursal:** evaluar sólo cuando la operación actual
-   tenga autorización granular y observabilidad.
-
-*(La numeración 4–7 de este bloque corresponde a las iniciativas 6.4–6.7 del
+*(La numeración 4–6 de este bloque corresponde a las iniciativas 6.4–6.6 del
 roadmap de producto.)*
+
+**Decisión de negocio (2026-08-13): Stage 6 termina en 6.6.** La iniciativa 6.7
+fue eliminada. B2B/mayoristas y multisucursal no quedan en el backlog. Pagos
+online se separa como **Etapa 8**.
 
 **Fuera de alcance de Etapa 6:** cotización, transportistas, sucursales de correo,
 etiquetas, tracking y cualquier otra integración logística. Esos temas pertenecen
@@ -578,7 +579,33 @@ Gate previo a desarrollo:
 Hasta cumplir el resto del gate, Etapa 7 permanece en preparación y no debe
 introducir código productivo, migraciones, secretos ni afirmaciones de tarifas reales.
 
-## 12. División sugerida en cambios/PR
+## 12. Etapa 8 — Pagos online
+
+**Decisión de negocio (2026-08-13):** pagos online deja de pertenecer a Stage 6
+y pasa a ser una etapa independiente. B2B y multisucursal quedan descartados.
+
+Alcance previsto:
+
+1. Elegir proveedor y modalidad de checkout; Mercado Pago es candidato, todavía
+   no una decisión técnica cerrada.
+2. Crear pagos exclusivamente desde backend con importes autoritativos del pedido.
+3. Verificar webhooks firmados e idempotentes; nunca confirmar por la URL de retorno.
+4. Modelar estados pendiente, aprobado, rechazado, cancelado y reembolsado.
+5. Definir reserva y liberación de stock cuando un pago vence o falla.
+6. Integrar reembolsos con Stage 6.3, comisiones con Stage 6.4 y conciliación con
+   Stage 6.6.
+7. Incorporar auditoría, observabilidad y panel de inconsistencias.
+
+Gate previo a desarrollo:
+
+- [ ] Proveedor y modalidad seleccionados.
+- [ ] Cuenta comercial y credenciales de prueba disponibles.
+- [ ] Política de reserva/vencimiento de stock definida.
+- [ ] Política de reembolsos, contracargos y comisiones definida.
+- [ ] Requisitos fiscales y de comprobantes confirmados.
+- [ ] Plan de pruebas, secretos, deploy y forward-fix aprobado.
+
+## 13. División sugerida en cambios/PR
 
 | Orden | Cambio | Contenido |
 |---:|---|---|
@@ -596,7 +623,7 @@ introducir código productivo, migraciones, secretos ni afirmaciones de tarifas 
 No agrupar cambios 1–6 en un único PR: requieren rollback y validación
 independientes.
 
-### 12.1 Orden de deploy de contención (Etapa 0)
+### 13.1 Orden de deploy de contención (Etapa 0)
 
 Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 
@@ -609,7 +636,7 @@ Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 7. Pruebas integración anon/positivas/cross-user (`npm run test:integration`)
 8. Migración legacy receipts + bucket privado estricto (`stage0_receipts_private_bucket`)
 
-### 12.2 Forward-fix Stage 0 (inventario legacy)
+### 13.2 Forward-fix Stage 0 (inventario legacy)
 
 | Migración | Estado | Acción |
 |---|---|---|
@@ -617,7 +644,7 @@ Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
 
 No reabrir EXECUTE a `authenticated`. No reabrir anon.
 
-## 13. Checklist global de Definition of Done
+## 14. Checklist global de Definition of Done
 
 Un ítem sólo puede marcarse terminado si:
 
@@ -632,7 +659,7 @@ Un ítem sólo puede marcarse terminado si:
 - [ ] Se desplegó y pasó smoke test posdeploy.
 - [ ] `AUDITORIA.md` y este plan se actualizaron si cambió el riesgo residual.
 
-## 14. Métricas de cierre
+## 15. Métricas de cierre
 
 | Métrica | Objetivo |
 |---|---:|
@@ -646,7 +673,7 @@ Un ítem sólo puede marcarse terminado si:
 | Errores 5xx sin traza/correlation ID | 0 |
 | Restauraciones ensayadas | al menos 1 por trimestre |
 
-## 15. Registro de avance
+## 16. Registro de avance
 
 | Fecha | Etapa | Cambio | Estado | Evidencia / PR |
 |---|---|---|---|---|
@@ -667,6 +694,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-13 | 6.4 Reportes de margen | Costo histórico, devoluciones, calidad del dato y panel admin | Completado | Commit `3b277b9`; migración `20260814020513`; CI `31763396516`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | En revisión | Migración `20260814090000`; runbook `docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`; **no desplegado** |
 | 2026-08-13 | 7 Envíos y logística | Selección de plataforma | Pendiente | Envia.com elegido; integración directa con transportistas descartada; faltan credenciales y gate técnico |
+| 2026-08-13 | Roadmap 6.7 / 8 | Reordenamiento de expansión comercial | Completado | Stage 6.7 eliminado; B2B y multisucursal descartados; pagos online movido a Etapa 8 |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.

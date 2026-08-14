@@ -2,7 +2,7 @@
 
 - **Estado (2026-08-13): CERRADO, DESPLEGADO Y VERIFICADO EN PRODUCCIÓN.**
 - Migración productiva, deploy Vercel `ilara`, smoke y pedido controlado verificados.
-- **Stage 6 completo:** **no**. Sólo 6.1. Iniciativas 6.2–6.7 y **toda** la
+- **Stage 6 completo:** **no**. Sólo 6.1. Iniciativas 6.2–6.6 y **toda** la
   Etapa 7 (envíos/logística) quedan fuera de alcance.
 
 ## 1. Objetivo
@@ -23,7 +23,7 @@ en la confirmación administrativa.
 
 ## 3. Fuera de alcance (explícito)
 
-- Stage 6.2–6.7 (reposición, devoluciones, margen, CRM, CxC/CxP, B2B).
+- Stage 6.2–6.6 (reposición, devoluciones, margen, CRM y CxC/CxP).
 - **Stage 7 completo:** integración con Envia.com, cotización por CP, tarifas,
   modalidades, etiquetas, tracking, alta de envíos, credenciales logísticas y
   campos de envío en el pedido.
@@ -175,5 +175,6 @@ Motivo obligatorio al cancelar (≥ 3 caracteres).
 - [x] Autorización de release del propietario
 - [x] Docs actualizados con evidencia
 
-**Stage 6.1 cerrado.** Stage 6.2–6.7 siguen en roadmap y Stage 7 conserva todo el
-alcance de envíos/logística.
+**Stage 6.1 cerrado.** Stage 6.2–6.6 completan el alcance vigente de Stage 6 y
+Stage 7 conserva todo el alcance de envíos/logística. Decisión posterior:
+Stage 6.7 fue eliminado y pagos online pasó a Etapa 8.
