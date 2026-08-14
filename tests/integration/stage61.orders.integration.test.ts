@@ -111,6 +111,33 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
   let adminRole: string | null
   let otherRole: string | null
   const createdOrderIds: string[] = []
+  const createdQuoteIds: string[] = []
+
+  async function createTestShippingQuote(amount = 500): Promise<string> {
+    const { data, error } = await service()
+      .from('shipping_quotes')
+      .insert({
+        quote_group_id: crypto.randomUUID(),
+        provider: 'envia',
+        destination_postal_code: '1000',
+        destination_city: 'Buenos Aires',
+        destination_state: 'Comuna 1',
+        carrier: 'test_carrier',
+        carrier_description: 'Carrier Test',
+        service: 'test_service',
+        service_description: 'Servicio Test',
+        delivery_estimate: '2-4 días',
+        amount,
+        currency: 'ARS',
+        request_ip_hash: 'a'.repeat(64),
+        expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+      })
+      .select('id')
+      .single()
+    if (error || !data?.id) throw error || new Error('shipping quote fixture missing')
+    createdQuoteIds.push(data.id)
+    return data.id
+  }
 
   beforeAll(async () => {
     const admin = service()
@@ -191,9 +218,16 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
   afterAll(async () => {
     const admin = service()
     if (createdOrderIds.length) {
+      await admin
+        .from('shipping_quotes')
+        .update({ order_id: null, consumed_at: null })
+        .in('order_id', createdOrderIds)
       await admin.from('order_status_events').delete().in('order_id', createdOrderIds)
       await admin.from('order_items').delete().in('order_id', createdOrderIds)
       await admin.from('orders').delete().in('id', createdOrderIds)
+    }
+    if (createdQuoteIds.length) {
+      await admin.from('shipping_quotes').delete().in('id', createdQuoteIds)
     }
     if (comboId) {
       await admin.from('combo_items').delete().eq('combo_id', comboId)
@@ -219,14 +253,19 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
 
     const events = await a.from('order_status_events').select('id').limit(1)
     expectDenied(events.error, events.data)
+
+    const quotes = await a.from('shipping_quotes').select('id').limit(1)
+    expectDenied(quotes.error, quotes.data)
   })
 
   it('crea pedido con precios autoritativos e ignora manipulación de total', async () => {
     const a = anon()
     const idem = crypto.randomUUID()
+    const shippingQuoteId = await createTestShippingQuote()
     const { data, error } = await a.rpc('create_catalog_order', {
       p_payload: {
         idempotency_key: idem,
+        shipping_quote_id: shippingQuoteId,
         customer_name: 'Cliente Test',
         customer_phone: '2995550001',
         lines: [{ line_type: 'product', product_id: productId, quantity: 2 }],
@@ -242,6 +281,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const { data: okData, error: okErr } = await a.rpc('create_catalog_order', {
       p_payload: {
         idempotency_key: idem,
+        shipping_quote_id: shippingQuoteId,
         customer_name: 'Cliente Test',
         customer_phone: '2995550001',
         lines: [{ line_type: 'product', product_id: productId, quantity: 2 }],
@@ -249,10 +289,11 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
       },
     })
     expect(okErr).toBeNull()
-    // unit con 10% = 900; x2 = 1800; cupón 10% = 180; total 1620
+    // unit con 10% = 900; x2 = 1800; cupón 10% = 180; envío = 500
     expect(Number(okData.subtotal)).toBe(1800)
     expect(Number(okData.discount_total)).toBe(180)
-    expect(Number(okData.total)).toBe(1620)
+    expect(Number(okData.shipping_amount)).toBe(500)
+    expect(Number(okData.total)).toBe(2120)
     expect(okData.order_number).toMatch(/^IL-\d{6}$/)
     createdOrderIds.push(okData.order_id)
 
@@ -264,8 +305,10 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
   it('idempotencia concurrente: misma clave devuelve el mismo pedido y rechaza otro payload', async () => {
     const a = anon()
     const idem = crypto.randomUUID()
+    const shippingQuoteId = await createTestShippingQuote()
     const payload = {
       idempotency_key: idem,
+      shipping_quote_id: shippingQuoteId,
       customer_name: 'Idem',
       customer_phone: '2995550002',
       lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
@@ -290,16 +333,18 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const a = anon()
     const phone = `298${String(Date.now()).slice(-7)}`
     const results = await Promise.all(
-      Array.from({ length: 9 }, (_, index) =>
-        a.rpc('create_catalog_order', {
+      Array.from({ length: 9 }, async (_, index) => {
+        const shippingQuoteId = await createTestShippingQuote()
+        return a.rpc('create_catalog_order', {
           p_payload: {
             idempotency_key: crypto.randomUUID(),
+            shipping_quote_id: shippingQuoteId,
             customer_name: `Rate ${index}`,
             customer_phone: phone,
             lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
           },
         })
-      )
+      })
     )
     const successful = results.filter((result) => !result.error)
     const limited = results.filter((result) => result.error)
@@ -335,6 +380,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const create = await anon().rpc('create_catalog_order', {
       p_payload: {
         idempotency_key: crypto.randomUUID(),
+        shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'Producto eliminado',
         customer_phone: '2995550098',
         lines: [{ line_type: 'product', product_id: ephemeral.id, quantity: 1 }],
@@ -368,6 +414,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const badCoupon = await a.rpc('create_catalog_order', {
       p_payload: {
         idempotency_key: crypto.randomUUID(),
+        shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'X',
         customer_phone: '2995550003',
         coupon_code: 'NOEXISTE999',
@@ -380,6 +427,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const hidden = await a.rpc('create_catalog_order', {
       p_payload: {
         idempotency_key: crypto.randomUUID(),
+        shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'X',
         customer_phone: '2995550004',
         lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
@@ -394,6 +442,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const create = await a.rpc('create_catalog_order', {
       p_payload: {
         idempotency_key: crypto.randomUUID(),
+        shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'Stock',
         customer_phone: '2995550005',
         lines: [
