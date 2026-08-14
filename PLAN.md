@@ -2,8 +2,8 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–5 y Stage 6.1 cerrados en producción; Stage 6.2
-  implementado localmente (pendiente release); 6.3–6.7 y Etapa 7 en roadmap
+- **Estado:** Etapas 0–5 y Stages 6.1–6.2 cerrados en producción;
+  6.3–6.7 y Etapa 7 en roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -493,7 +493,9 @@ pedido controlado verificado y limpiado.
 
 ### 10.2 Stage 6.2 — Alertas de reposición
 
-**Estado:** implementado y validado **localmente**. **No** cerrado en producción.
+**Estado (2026-08-13): CERRADO, DESPLEGADO Y VERIFICADO EN PRODUCCIÓN.**
+Migraciones `20260814000544` y `20260814000745`, Vercel `ilara` READY y
+smoke transaccional productivo aprobado sin residuos.
 
 Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md).
 
@@ -501,13 +503,13 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 - [x] Una alerta activa por producto; auto-cierre y nuevo ciclo
 - [x] Cantidad sugerida determinista + panel admin + RPC transición
 - [x] Tests unitarios, integración, E2E, suite DB/CI
-- [ ] Commit / push / CI remoto
-- [ ] Migración productiva + deploy Vercel `ilara` + smoke
+- [x] Commit / push / CI remoto
+- [x] Migración productiva + deploy Vercel `ilara` + smoke
 
 ### 10.3 Resto del roadmap de producto (pendiente)
 
 1. ~~**Pedidos desde catálogo**~~ → ver 10.1 (cerrado en producción)
-2. ~~**Alertas de reposición**~~ → ver 10.2 (local)
+2. ~~**Alertas de reposición**~~ → ver 10.2 (cerrado en producción)
 3. **Devoluciones y notas de crédito:** reversión trazable de pagos y stock sin
    editar ventas históricas.
 4. **Reportes de margen:** usar precio de compra histórico, descuentos y costos,

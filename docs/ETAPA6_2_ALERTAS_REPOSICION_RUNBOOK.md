@@ -1,8 +1,9 @@
 # Etapa 6.2 — Alertas de reposición (runbook)
 
-- **Estado:** implementado y validado **localmente**. **No** desplegado.
-- **No afirmar cierre productivo** hasta: commit, push, CI remoto verde,
-  migración productiva, deploy Vercel `ilara` READY y smoke.
+- **Estado (2026-08-13):** **cerrado, desplegado y verificado en producción**.
+- Commit de implementación `d0a0bd9`; CI GitHub `31755215276` verde.
+- Migraciones productivas `20260814000544` y `20260814000745`.
+- Vercel `ilara` READY en `d0a0bd9`; smoke transaccional aprobado sin residuos.
 - **Stage 6 completo:** **no**. Sólo 6.2. Stage 6.1 permanece cerrado en prod.
 - **Stage 7 / Envia.com:** **fuera de alcance** (sin código logístico).
 
@@ -63,7 +64,8 @@ Historial: from/to, actor, reason, meta, created_at.
 
 ### Migraciones
 
-- `20260814090000_stage62_stock_alerts.sql`
+- `20260814000544_stage62_stock_alerts.sql`
+- `20260814000745_stage62_fk_indexes.sql`
 
 La migración incluye grants explícitos para Data API y un advisory lock por
 producto para serializar apertura/cierre durante backfill y reintentos concurrentes.
@@ -120,14 +122,16 @@ Eventos (sin PII):
 | integración Stage 6.2 | 9/9 (incluye concurrencia) |
 | E2E `stock-alerts.spec.ts` | 1/1 OK |
 
-## 11. Deploy (cuando se autorice)
+## 11. Deploy productivo ejecutado
 
-1. Backup / ventana breve si aplica.
-2. Aplicar migración `20260814090000` en Supabase remoto.
-3. Verificar anon deny en `stock_alerts*`.
-4. Deploy Vercel **`ilara`** desde `main`.
-5. Smoke: login admin → Negocio → Alertas de stock; contador; tomar/resolver en producto de prueba.
-6. Actualizar docs con evidencia.
+1. Migraciones aplicadas y registradas en Supabase remoto.
+2. RLS activo; `anon` sin SELECT ni RPC; sync interno sin EXECUTE de clientes.
+3. Backfill completo: cero productos bajo mínimo sin alerta activa y cero duplicados.
+4. Vercel **`ilara`** READY desde `main`; dominio y rutas públicas responden 200.
+5. Smoke DB: apertura por stock bajo, auto-resolución y evento de sistema; rollback
+   completo con cero productos/alertas persistentes.
+6. Advisors: FKs nuevas cubiertas; warning DEFINER de `transition_stock_alert`
+   clasificado como intencional por gate interno `is_app_admin()`.
 
 ## 12. Rollback / forward-fix
 
@@ -144,9 +148,9 @@ Eventos (sin PII):
 
 ## 14. Criterio de cierre productivo
 
-- [ ] Commit + push + CI verde
-- [ ] Migraciones productivas
-- [ ] Deploy READY + smoke
-- [ ] Revisión humana
+- [x] Commit + push + CI verde
+- [x] Migraciones productivas
+- [x] Deploy READY + smoke
+- [x] Revisión técnica y autorización explícita del owner
 
-Hasta entonces: **implementado localmente, pendiente de release.**
+**Resultado:** Stage 6.2 cerrado en producción.

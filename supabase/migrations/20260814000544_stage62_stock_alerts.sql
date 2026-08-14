@@ -12,7 +12,9 @@
 -- ─── Tablas ──────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.stock_alerts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id integer NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  -- products.id is integer in the consolidated local baseline and bigint in
+  -- the historical production schema. bigint remains FK-compatible with both.
+  product_id bigint NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
   status text NOT NULL DEFAULT 'open'
     CHECK (status IN ('open', 'in_progress', 'resolved', 'dismissed')),
   -- Snapshots al abrir (y se refrescan en cada sync activo)
@@ -119,7 +121,7 @@ GRANT EXECUTE ON FUNCTION public.stock_alert_suggested_qty(integer, integer) TO 
 GRANT EXECUTE ON FUNCTION public.stock_alert_deficit(integer, integer) TO authenticated, service_role;
 
 -- ─── Sync por producto (trigger + backfill) ──────────────────────────────────
-CREATE OR REPLACE FUNCTION public.sync_stock_alert_for_product(p_product_id integer)
+CREATE OR REPLACE FUNCTION public.sync_stock_alert_for_product(p_product_id bigint)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -140,7 +142,9 @@ BEGIN
   -- Serializa backfill/trigger/reintentos del mismo producto. La actualización
   -- de products ya toma row lock, pero este lock también cubre invocaciones
   -- internas directas del owner durante migraciones y tareas operativas.
-  PERFORM pg_catalog.pg_advisory_xact_lock(6202, p_product_id);
+  PERFORM pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('stage62:stock-alert:' || p_product_id::text, 0)
+  );
 
   SELECT p.stock, p.min_stock
   INTO v_stock, v_min
@@ -248,9 +252,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.sync_stock_alert_for_product(integer) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.sync_stock_alert_for_product(integer) FROM anon;
-REVOKE ALL ON FUNCTION public.sync_stock_alert_for_product(integer) FROM authenticated;
+REVOKE ALL ON FUNCTION public.sync_stock_alert_for_product(bigint) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.sync_stock_alert_for_product(bigint) FROM anon;
+REVOKE ALL ON FUNCTION public.sync_stock_alert_for_product(bigint) FROM authenticated;
 -- Solo invocable por trigger / owner / service_role (no grant a authenticated)
 
 CREATE OR REPLACE FUNCTION public.trg_products_sync_stock_alert()
