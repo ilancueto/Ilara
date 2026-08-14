@@ -86,8 +86,12 @@ Stage 3 PWA; Stage 4 [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CA
 [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md);
 Stage 6.1 pedidos catálogo (**cerrado, desplegado y verificado**)
 [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md);
-Stage 6.2 alertas de reposición (**local / no release**)
-[`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md).
+Stages 6.2–6.6 producto (**ver runbooks de cierre**):
+[`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md),
+[`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md),
+[`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md),
+[`docs/ETAPA6_5_CRM_RUNBOOK.md`](docs/ETAPA6_5_CRM_RUNBOOK.md) y
+[`docs/ETAPA6_6_FINANZAS_RUNBOOK.md`](docs/ETAPA6_6_FINANZAS_RUNBOOK.md).
 
 ## Documentación extra
 
@@ -97,6 +101,7 @@ Stage 6.2 alertas de reposición (**local / no release**)
 | [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md) | Stage 5: clientes, DAL, DTOs y dominios; **cerrada y verificada en producción** |
 | [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md) | Stage 6.1: pedidos desde catálogo; **cerrado y verificado en producción** |
 | [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md) | Stage 6.2: alertas de stock; **implementado local, pendiente release** |
+| [`docs/ETAPA6_6_FINANZAS_RUNBOOK.md`](docs/ETAPA6_6_FINANZAS_RUNBOOK.md) | Stage 6.6: CxC/CxP, ledger auditable y conciliación |
 | [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md) | Stage 4: E2E/CI, a11y |
 | [`docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`](docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md) | Logs, eventos, Sentry opt-in |
 | [`docs/ETAPA4_OPERACION_RUNBOOK.md`](docs/ETAPA4_OPERACION_RUNBOOK.md) | Backup, rollback, RPO/RTO propuestas |

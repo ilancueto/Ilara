@@ -337,6 +337,123 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_accounts: {
+        Row: {
+          counterparty: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: number | null
+          description: string
+          due_date: string | null
+          id: string
+          kind: string
+          original_amount: number
+          sale_id: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: number | null
+          description: string
+          due_date?: string | null
+          id?: string
+          kind: string
+          original_amount: number
+          sale_id?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: number | null
+          description?: string
+          due_date?: string | null
+          id?: string
+          kind?: string
+          original_amount?: number
+          sale_id?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_accounts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_accounts_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: true
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_movements: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          created_by: string
+          direction: string
+          expense_id: string | null
+          id: string
+          idempotency_key: string
+          note: string | null
+          occurred_at: string
+          payment_method: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          created_by: string
+          direction: string
+          expense_id?: string | null
+          id?: string
+          idempotency_key: string
+          note?: string | null
+          occurred_at?: string
+          payment_method: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          created_by?: string
+          direction?: string
+          expense_id?: string | null
+          id?: string
+          idempotency_key?: string
+          note?: string | null
+          occurred_at?: string
+          payment_method?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_movements_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "financial_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_movements_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incomes: {
         Row: {
           amount: number
@@ -345,6 +462,7 @@ export type Database = {
           description: string | null
           id: string
           notes: string | null
+          payment_method: string
           type: string
           updated_by: string | null
           user_id: string
@@ -356,6 +474,7 @@ export type Database = {
           description?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string
           type: string
           updated_by?: string | null
           user_id: string
@@ -367,6 +486,7 @@ export type Database = {
           description?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string
           type?: string
           updated_by?: string | null
           user_id?: string
@@ -1358,6 +1478,40 @@ export type Database = {
       }
       delete_sale_and_restore_stock: {
         Args: { p_sale_id: number }
+        Returns: Json
+      }
+      finance_account_net_amount: {
+        Args: {
+          p_account: Database["public"]["Tables"]["financial_accounts"]["Row"]
+        }
+        Returns: number
+      }
+      finance_cancel_payable: {
+        Args: { p_account_id: string; p_reason: string }
+        Returns: Json
+      }
+      finance_create_payable: {
+        Args: {
+          p_amount: number
+          p_counterparty: string
+          p_description: string
+          p_due_date?: string
+        }
+        Returns: Json
+      }
+      finance_record_settlement: {
+        Args: {
+          p_account_id: string
+          p_amount: number
+          p_idempotency_key?: string
+          p_note?: string
+          p_occurred_at?: string
+          p_payment_method: string
+        }
+        Returns: Json
+      }
+      finance_stage66_snapshot: {
+        Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
       is_app_admin: { Args: never; Returns: boolean }

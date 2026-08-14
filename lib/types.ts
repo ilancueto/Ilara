@@ -95,6 +95,7 @@ export interface Income {
     notes?: string;
     user_id: string;
     updated_by?: string | null;
+    payment_method: PaymentMethod;
 }
 
 export interface IncomeFormData {
@@ -103,6 +104,7 @@ export interface IncomeFormData {
     type: IncomeType;
     description: string;
     notes?: string;
+    payment_method: PaymentMethod;
 }
 
 export interface IncomeFilters {

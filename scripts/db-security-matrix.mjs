@@ -86,6 +86,9 @@ const sensitiveTables = [
   'customer_tag_assignments',
   'customer_notes',
   'customer_consent_events',
+  // Stage 6.6 — ledger financiero sin acceso directo
+  'financial_accounts',
+  'financial_movements',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
@@ -150,6 +153,14 @@ for (const cols of ['purchase_price', 'notes', 'min_stock', 'created_by', 'updat
   ok('anon denegado en customer_crm_profile')
 }
 
+{
+  const { error } = await anon.rpc('finance_stage66_snapshot', {
+    p_from: '2026-01-01', p_to: '2026-01-01',
+  })
+  if (!isDenied(error)) fail(`anon finance_stage66_snapshot no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en finance_stage66_snapshot')
+}
+
 // --- service_role: RLS bypasseable; comprueba tablas core ---
 if (serviceKey) {
   const service = createClient(url, serviceKey, {
@@ -159,6 +170,7 @@ if (serviceKey) {
     'products', 'sales', 'user_roles', 'incomes', 'stock_movements',
     'sale_item_components', 'sale_returns', 'sale_return_items', 'sale_return_events',
     'customer_tags', 'customer_tag_assignments', 'customer_notes', 'customer_consent_events',
+    'financial_accounts', 'financial_movements',
   ]
   for (const table of core) {
     const { error } = await service.from(table).select('*', { count: 'exact', head: true })

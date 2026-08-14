@@ -6,7 +6,7 @@ import { getBrowserSupabase } from '@/lib/supabase/browser'
 import type { Income, IncomeFormData, IncomeFilters } from '@/lib/types'
 
 const INCOME_COLUMNS =
-  'id, created_at, date, type, description, amount, notes, user_id, updated_by' as const
+  'id, created_at, date, type, description, amount, notes, payment_method, user_id, updated_by' as const
 
 export async function getIncomes(filters?: IncomeFilters): Promise<Income[]> {
   const supabase = getBrowserSupabase()
@@ -57,6 +57,7 @@ export async function createIncome(form: IncomeFormData): Promise<Income> {
       type: form.type,
       description: form.description || '',
       notes: form.notes || null,
+      payment_method: form.payment_method,
       user_id: user.id,
     })
     .select(INCOME_COLUMNS)
@@ -82,6 +83,7 @@ export async function updateIncome(id: string, form: Partial<IncomeFormData>): P
   if (form.type != null) updatePayload.type = form.type
   if (form.description != null) updatePayload.description = form.description
   if (form.notes !== undefined) updatePayload.notes = form.notes
+  if (form.payment_method != null) updatePayload.payment_method = form.payment_method
   updatePayload.updated_by = user.id
 
   const { data, error } = await supabase

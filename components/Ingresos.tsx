@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { createPortal } from 'react-dom'
-import { Income, IncomeFormData, IncomeType, INCOME_TYPE_LABELS } from '@/lib/types'
+import { Income, IncomeFormData, IncomeType, INCOME_TYPE_LABELS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@/lib/types'
 import { getIncomes, createIncome, updateIncome, deleteIncome } from '@/lib/incomeService'
-import { Plus, TrendingUp, Pencil, Trash2, X, Filter, History, Wallet } from 'lucide-react'
+import { Plus, TrendingUp, Pencil, Trash2, X, Filter, History, Wallet, Scale } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useToast } from '@/context/ToastContext'
 import HistorialVentas from '@/components/HistorialVentas'
@@ -25,6 +26,10 @@ const TYPE_SHORT_LABELS: Record<IncomeType, string> = {
   otro: 'Otro',
 }
 
+const FinanceLedger = dynamic(() => import('@/components/FinanceLedger'), {
+  loading: () => <div className="h-72 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />,
+})
+
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
@@ -36,7 +41,7 @@ function formatCurrency(amount: number) {
 export default function Ingresos() {
   const { showSuccess, showError } = useToast()
   const { confirm, confirmProps } = useConfirm()
-  const [vistaActiva, setVistaActiva] = useState<'otros' | 'historial'>('historial')
+  const [vistaActiva, setVistaActiva] = useState<'otros' | 'historial' | 'finanzas'>('historial')
   const [incomes, setIncomes] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -52,6 +57,7 @@ export default function Ingresos() {
     type: 'otro',
     description: '',
     notes: '',
+    payment_method: 'otro',
   })
 
   const load = useCallback(async () => {
@@ -81,6 +87,7 @@ export default function Ingresos() {
       type: 'otro',
       description: '',
       notes: '',
+      payment_method: 'otro',
     })
     setModalOpen(true)
   }
@@ -93,6 +100,7 @@ export default function Ingresos() {
       type: income.type,
       description: income.description || '',
       notes: income.notes || '',
+      payment_method: income.payment_method,
     })
     setModalOpen(true)
   }
@@ -187,13 +195,25 @@ export default function Ingresos() {
                 <Wallet className="w-4 h-4" strokeWidth={2.5} />
                 Otros ingresos
               </button>
+              <button
+                onClick={() => setVistaActiva('finanzas')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${vistaActiva === 'finanzas'
+                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Scale className="w-4 h-4" strokeWidth={2.5} />
+                Cuentas y caja
+              </button>
             </PastelCard>
           </div>
         </div>
       </div>
 
       {vistaActiva === 'historial' ? (
-        <HistorialVentas />
+        <HistorialVentas onOpenFinance={() => setVistaActiva('finanzas')} />
+      ) : vistaActiva === 'finanzas' ? (
+        <FinanceLedger />
       ) : (
         <div className="flex flex-col gap-8">
           {/* Filtros: barra compacta en una fila (desktop) */}
@@ -375,6 +395,20 @@ export default function Ingresos() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Descripción */}
+                <div className="flex flex-col gap-2">
+                  <label className="form-label text-sm">Medio de ingreso</label>
+                  <select
+                    value={form.payment_method}
+                    onChange={(e) => setForm({ ...form, payment_method: e.target.value as PaymentMethod })}
+                    className="form-input w-full rounded-xl"
+                  >
+                    {(Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map((method) => (
+                      <option key={method} value={method}>{PAYMENT_METHOD_LABELS[method]}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Descripción */}

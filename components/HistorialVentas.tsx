@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase, getUser, Venta, ItemVenta, Cliente } from '@/lib/supabase'
-import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, CheckCircle } from 'lucide-react'
+import { supabase, Venta, ItemVenta, Cliente } from '@/lib/supabase'
+import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, Scale } from 'lucide-react'
 import { format, startOfDay, startOfWeek, startOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
 import ExportarReporte from './ExportarReporte'
@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/context/ToastContext'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
 
-export default function HistorialVentas() {
+export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () => void } = {}) {
     const { showSuccess, showError } = useToast()
     const [ventas, setVentas] = useState<(Venta & { items?: ItemVenta[] })[]>([])
     const [clientes, setClientes] = useState<Cliente[]>([])
@@ -122,26 +122,6 @@ export default function HistorialVentas() {
         const u = await getSaleReceiptViewUrl(venta)
         if (u) window.open(u, '_blank', 'noopener,noreferrer')
         else showError('No se pudo abrir el comprobante.')
-    }
-
-    const marcarComoCobrada = async (ventaId: number) => {
-        const user = await getUser()
-        const updatePayload: Record<string, unknown> = { status: 'completed' }
-        if (user?.id) updatePayload.updated_by = user.id
-        const { error } = await supabase
-            .from('sales')
-            .update(updatePayload)
-            .eq('id', ventaId)
-        if (error) {
-            showError('Error al marcar como cobrada')
-            return
-        }
-        showSuccess('Venta marcada como cobrada')
-        if (filtroPorCobrar) {
-            setVentas(ventas.filter(v => v.id !== ventaId))
-        } else {
-            setVentas(ventas.map(v => v.id === ventaId ? { ...v, status: 'completed' } : v))
-        }
     }
 
     const abrirComprobante = async (venta: Venta & { items?: ItemVenta[] }) => {
@@ -461,11 +441,12 @@ export default function HistorialVentas() {
                                             {venta.status === 'pending_payment' && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => marcarComoCobrada(venta.id)}
+                                                    onClick={onOpenFinance}
+                                                    disabled={!onOpenFinance}
                                                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700 font-bold text-sm transition-colors"
                                                 >
-                                                    <CheckCircle className="w-4 h-4" />
-                                                    Marcar como cobrada
+                                                    <Scale className="w-4 h-4" />
+                                                    Gestionar cobro
                                                 </button>
                                             )}
                                             <button
