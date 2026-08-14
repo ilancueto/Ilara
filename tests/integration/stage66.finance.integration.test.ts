@@ -49,10 +49,11 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
   let receivableId = ''
   let payableId = ''
   const expenseIds: string[] = []
-  const today = new Date().toISOString().slice(0, 10)
+  const testDate = '2036-06-16'
+  const testTime = `${testDate}T15:00:00.000Z`
 
   async function snapshot(): Promise<Snapshot> {
-    const result = await admin.rpc('finance_stage66_snapshot', { p_from: today, p_to: today })
+    const result = await admin.rpc('finance_stage66_snapshot', { p_from: testDate, p_to: testDate })
     if (result.error) throw result.error
     return result.data as unknown as Snapshot
   }
@@ -114,13 +115,13 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
     const anon = client(anonKey!)
     expect((await anon.from('financial_accounts').select('id')).error).toBeTruthy()
     expect((await admin.from('financial_accounts').select('id')).error).toBeTruthy()
-    expect((await anon.rpc('finance_stage66_snapshot', { p_from: today, p_to: today })).error).toBeTruthy()
-    expect((await other.rpc('finance_stage66_snapshot', { p_from: today, p_to: today })).error).toBeTruthy()
+    expect((await anon.rpc('finance_stage66_snapshot', { p_from: testDate, p_to: testDate })).error).toBeTruthy()
+    expect((await other.rpc('finance_stage66_snapshot', { p_from: testDate, p_to: testDate })).error).toBeTruthy()
   })
 
   it('crea CxC automática, cobra parcial e impide sobrepago', async () => {
     const sale = await admin.rpc('create_sale_with_items', { p_payload: {
-      sale: { sale_date: new Date().toISOString(), payment_method: 'credito', customer_name: 'Cliente Stage 66', status: 'pending_payment' },
+      sale: { sale_date: testTime, payment_method: 'credito', customer_name: 'Cliente Stage 66', status: 'pending_payment' },
       lines: [{ line_type: 'product', product_id: productId, quantity: 2 }],
     } })
     expect(sale.error).toBeNull()
@@ -133,16 +134,16 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
     const key = crypto.randomUUID()
     const partial = await admin.rpc('finance_record_settlement', {
       p_account_id: receivableId, p_amount: 500, p_payment_method: 'transferencia',
-      p_occurred_at: new Date().toISOString(), p_note: 'Primer pago parcial', p_idempotency_key: key,
+      p_occurred_at: testTime, p_note: 'Primer pago parcial', p_idempotency_key: key,
     })
     expect(partial.error).toBeNull()
     expect((await admin.rpc('finance_record_settlement', {
       p_account_id: receivableId, p_amount: 500, p_payment_method: 'transferencia',
-      p_occurred_at: new Date().toISOString(), p_note: 'Reintento idempotente', p_idempotency_key: key,
+      p_occurred_at: testTime, p_note: 'Reintento idempotente', p_idempotency_key: key,
     })).error).toBeNull()
     expect((await admin.rpc('finance_record_settlement', {
       p_account_id: receivableId, p_amount: 1600, p_payment_method: 'efectivo',
-      p_occurred_at: new Date().toISOString(), p_note: null, p_idempotency_key: crypto.randomUUID(),
+      p_occurred_at: testTime, p_note: null, p_idempotency_key: crypto.randomUUID(),
     })).error?.message).toMatch(/settlement_exceeds_balance/)
     value = await snapshot()
     expect(Number(value.accounts.find((row) => row.id === receivableId)!.paid_amount)).toBe(500)
@@ -156,12 +157,13 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
       idempotency_key: crypto.randomUUID(), lines: [{ sale_item_id: item.data!.id, quantity: 1 }],
     } })
     expect(returned.error).toBeNull()
+    await service.from('sale_returns').update({ created_at: testTime }).eq('sale_id', saleId)
     let value = await snapshot()
     expect(Number(value.accounts.find((row) => row.id === receivableId)!.net_amount)).toBe(1000)
     expect(Number(value.accounts.find((row) => row.id === receivableId)!.balance)).toBe(500)
     expect((await admin.rpc('finance_record_settlement', {
       p_account_id: receivableId, p_amount: 500, p_payment_method: 'efectivo',
-      p_occurred_at: new Date().toISOString(), p_note: 'Saldo final', p_idempotency_key: crypto.randomUUID(),
+      p_occurred_at: testTime, p_note: 'Saldo final', p_idempotency_key: crypto.randomUUID(),
     })).error).toBeNull()
     value = await snapshot()
     expect(value.accounts.find((row) => row.id === receivableId)!.status).toBe('settled')
@@ -170,7 +172,7 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
 
   it('paga CxP, genera gasto y concilia sin duplicar la venta a crédito', async () => {
     const cashSale = await admin.rpc('create_sale_with_items', { p_payload: {
-      sale: { sale_date: new Date().toISOString(), payment_method: 'efectivo', customer_name: 'Contado Stage 66', status: 'completed' },
+      sale: { sale_date: testTime, payment_method: 'efectivo', customer_name: 'Contado Stage 66', status: 'completed' },
       lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
     } })
     expect(cashSale.error).toBeNull()
@@ -180,15 +182,16 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
       sale_id: cashSaleId, reason: 'Reembolso de caja Stage 66', refund_method: 'efectivo', restock: true,
       idempotency_key: crypto.randomUUID(), lines: [{ sale_item_id: cashItem.data!.id, quantity: 1 }],
     } })).error).toBeNull()
+    await service.from('sale_returns').update({ created_at: testTime }).eq('sale_id', cashSaleId)
 
     const created = await admin.rpc('finance_create_payable', {
-      p_counterparty: 'Proveedor Stage 66', p_description: 'Insumos de prueba', p_amount: 600, p_due_date: today,
+      p_counterparty: 'Proveedor Stage 66', p_description: 'Insumos de prueba', p_amount: 600, p_due_date: testDate,
     })
     expect(created.error).toBeNull()
     payableId = String((created.data as { id: string }).id)
     const paid = await admin.rpc('finance_record_settlement', {
       p_account_id: payableId, p_amount: 600, p_payment_method: 'mercadopago',
-      p_occurred_at: new Date().toISOString(), p_note: 'Pago completo proveedor', p_idempotency_key: crypto.randomUUID(),
+      p_occurred_at: testTime, p_note: 'Pago completo proveedor', p_idempotency_key: crypto.randomUUID(),
     })
     expect(paid.error).toBeNull()
     const expenseId = String((paid.data as { expense_id: string }).expense_id)
