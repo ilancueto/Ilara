@@ -81,5 +81,14 @@ Es forward-only. Ante un problema:
 
 ## Cierre productivo
 
-Pendiente en esta misma etapa: commit/push, CI remoto, migración Supabase
-productiva, deployment Vercel `ilara`, smoke y actualización final de evidencia.
+Stage cerrado el 2026-08-14:
+
+- feature commit `adefe8a` publicado en `main`;
+- CI GitHub `31765289604`: `lint-test-build`, `db-security` y `e2e` verdes;
+- migración productiva `20260814024158` aplicada y confirmada en el historial
+  remoto;
+- Vercel deployment `dpl_GkjEw1fVV6boiKE8AGFiinj3uYpd`, estado `READY`,
+  alias `https://ilara.com.ar`;
+- smoke productivo GET-only: 16/16;
+- probes productivos `anon` contra perfil y etiquetas: denegados con `42501`;
+- escaneo de logs posterior al smoke: sin errores registrados.
