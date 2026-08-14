@@ -1,15 +1,18 @@
 'use client'
 
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
-import { ArrowLeft, CheckCircle2, Loader2, MessageCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
 import type { CatalogCartItem } from '@/hooks/useCarrito'
 import type { CreateOrderResult } from '@/lib/domain/orders/types'
 import { buildOrderWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
-import { formatPesoAR } from '@/lib/formatPesoAR'
+import { formatPesoAR, formatPesoARExact } from '@/lib/formatPesoAR'
 import { normalizePhoneDigits } from '@/lib/domain/orders/validation'
+import { quoteShipping } from '@/lib/domain/shipping/browserShipping'
+import type { ShippingQuote } from '@/lib/domain/shipping/types'
+import { toUserMessage } from '@/lib/domain/errors'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -52,6 +55,11 @@ export function CheckoutPedido({
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [notes, setNotes] = useState('')
+  const [postalCode, setPostalCode] = useState('')
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null)
+  const [selectedShippingId, setSelectedShippingId] = useState<string | null>(null)
+  const [quotePending, setQuotePending] = useState(false)
+  const [quoteError, setQuoteError] = useState<string | null>(null)
   const [fieldError, setFieldError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -81,6 +89,26 @@ export function CheckoutPedido({
 
   if (!open) return null
 
+  const selectedShipping = shippingQuote?.options.find((option) => option.id === selectedShippingId) || null
+  const estimatedTotal = total + (selectedShipping?.amount || 0)
+
+  const handleQuote = async () => {
+    if (quotePending || pending) return
+    setQuotePending(true)
+    setQuoteError(null)
+    setShippingQuote(null)
+    setSelectedShippingId(null)
+    try {
+      const result = await quoteShipping(postalCode)
+      setShippingQuote(result)
+      setSelectedShippingId(result.options[0]?.id || null)
+    } catch (error) {
+      setQuoteError(toUserMessage(error, 'No se pudo cotizar el envío. Intentá de nuevo.'))
+    } finally {
+      setQuotePending(false)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (pending || submittingRef.current || done) return
@@ -93,6 +121,10 @@ export function CheckoutPedido({
     }
     if (digits.length < 8 || digits.length > 15) {
       setFieldError('Ingresá un teléfono válido (8 a 15 dígitos).')
+      return
+    }
+    if (!selectedShippingId || !selectedShipping) {
+      setFieldError('Cotizá el envío y elegí una opción antes de confirmar.')
       return
     }
     setFieldError(null)
@@ -123,6 +155,7 @@ export function CheckoutPedido({
       try {
         const result = await createCatalogOrderAction({
           idempotency_key: idemRef.current,
+          shipping_quote_id: selectedShippingId,
           customer_name: trimmedName,
           customer_phone: digits,
           customer_email: email.trim() || null,
@@ -216,11 +249,12 @@ export function CheckoutPedido({
               {done.order_number}
             </p>
             <p className={styles.successTotal}>
-              Total: <strong>${formatPesoAR(done.total)}</strong>
+              Total: <strong>${formatPesoARExact(done.total)}</strong>
             </p>
             <p className={styles.hint}>
-              Guardá este número. La entrega o el retiro se coordinan con el negocio (sin cálculo
-              automático de envío).
+              Envío: {done.shipping_carrier} · {done.shipping_service}
+              {done.shipping_delivery_estimate ? ` · ${done.shipping_delivery_estimate}` : ''}.<br />
+              Destino: CP {done.shipping_destination_postal_code}, {done.shipping_destination_city}.
             </p>
             <button
               type="button"
@@ -249,13 +283,20 @@ export function CheckoutPedido({
                 </div>
               )}
               <div className={styles.summaryTotal}>
-                <span>Total estimado</span>
+                <span>Productos</span>
                 <strong>${formatPesoAR(total)}</strong>
               </div>
-              <p className={styles.note}>
-                El total final lo calcula el sistema al confirmar. No incluye envío (se coordina por
-                WhatsApp o con el negocio).
-              </p>
+              {selectedShipping && (
+                <div className={styles.summaryRow}>
+                  <span>Envío</span>
+                  <span>${formatPesoARExact(selectedShipping.amount)}</span>
+                </div>
+              )}
+              <div className={styles.summaryTotal}>
+                <span>Total estimado</span>
+                <strong>${formatPesoARExact(estimatedTotal)}</strong>
+              </div>
+              <p className={styles.note}>El sistema revalida productos, cupón y tarifa al confirmar.</p>
             </section>
 
             <div className={styles.field}>
@@ -308,6 +349,74 @@ export function CheckoutPedido({
               />
             </div>
             <div className={styles.field}>
+              <label htmlFor={`${formId}-postal-code`}>Código postal de destino *</label>
+              <div className={styles.quoteRow}>
+                <input
+                  id={`${formId}-postal-code`}
+                  name="postal_code"
+                  type="text"
+                  autoComplete="postal-code"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  value={postalCode}
+                  onChange={(e) => {
+                    const next = e.target.value.replace(/\D/g, '').slice(0, 4)
+                    setPostalCode(next)
+                    if (shippingQuote?.destination.postalCode !== next) {
+                      setShippingQuote(null)
+                      setSelectedShippingId(null)
+                    }
+                    setQuoteError(null)
+                  }}
+                  required
+                  disabled={pending || quotePending}
+                  data-testid="checkout-postal-code"
+                />
+                <button
+                  type="button"
+                  className={styles.quoteButton}
+                  onClick={() => void handleQuote()}
+                  disabled={pending || quotePending || postalCode.length !== 4}
+                  data-testid="checkout-quote-shipping"
+                >
+                  {quotePending ? <Loader2 size={16} className={styles.spin} aria-hidden /> : <Truck size={16} aria-hidden />}
+                  {quotePending ? 'Cotizando…' : 'Cotizar'}
+                </button>
+              </div>
+              <p className={styles.fieldHint}>Origen: Neuquén 8300 · bolsa 20 × 35 × 5 cm · hasta 1 kg.</p>
+            </div>
+
+            {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
+
+            {shippingQuote && (
+              <fieldset className={styles.shippingOptions} data-testid="shipping-options">
+                <legend>Elegí el envío *</legend>
+                <p className={styles.destination}>
+                  {shippingQuote.destination.city}, {shippingQuote.destination.state} · CP {shippingQuote.destination.postalCode}
+                </p>
+                {shippingQuote.options.map((option) => (
+                  <label key={option.id} className={styles.shippingOption}>
+                    <input
+                      type="radio"
+                      name="shipping_option"
+                      value={option.id}
+                      checked={selectedShippingId === option.id}
+                      onChange={() => setSelectedShippingId(option.id)}
+                      disabled={pending}
+                    />
+                    <span className={styles.shippingCopy}>
+                      <strong>{option.carrier} · {option.service}</strong>
+                      <small>{option.deliveryEstimate || 'Plazo a confirmar'}</small>
+                    </span>
+                    <strong>${formatPesoARExact(option.amount)}</strong>
+                  </label>
+                ))}
+                <p className={styles.fieldHint}>Tarifa válida por 15 minutos.</p>
+              </fieldset>
+            )}
+
+            <div className={styles.field}>
               <label htmlFor={`${formId}-notes`}>Notas (opcional)</label>
               <textarea
                 id={`${formId}-notes`}
@@ -331,7 +440,7 @@ export function CheckoutPedido({
             <button
               type="submit"
               className={styles.primary}
-              disabled={pending || carrito.length === 0}
+              disabled={pending || quotePending || carrito.length === 0 || !selectedShippingId}
               data-testid="checkout-submit"
               aria-busy={pending}
             >

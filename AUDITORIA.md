@@ -29,14 +29,14 @@ remoto adicional.
 producción** (migración `20260813205545`, RPC, checkout, panel, CI, smoke 16/16 y
 pedido controlado limpiado).
 
-**Stage 6.2 (alertas de reposición)** está **implementado y validado en local**
-(trigger en `products`, tablas `stock_alerts`/`stock_alert_events`, panel admin,
-RPC de transición). **No** está desplegado ni cerrado en producción al momento
-de este corte documental.
+**Stage 6** está cerrado hasta 6.6 y verificado en producción: pedidos, alertas,
+devoluciones, margen, CRM y finanzas.
 
-Stage 7 (envíos/logística) permanece fuera de alcance y sin código; Envia.com
-quedó elegido como plataforma para su futura integración, sin integraciones
-directas con transportistas.
+**Stage 7 (cotización logística)** está **cerrado, desplegado y verificado en
+producción**. Envia.com es el único integrador; el token vive en secretos de
+Supabase, las tarifas se guardan en snapshots backend-only y el pedido consume
+una opción vigente sin confiar en importes del navegador. Etiquetas y tracking
+quedan fuera de este stage para evitar cargos y operaciones sin política definida.
 
 ### Dictamen por área
 
@@ -433,4 +433,4 @@ La salida de contención requiere, como mínimo:
 | 2026-08-12 | **Etapa 2 cerrada:** commit `47b470d`, CI verde, único deploy Vercel `ilara` READY, migración `20260812013913` aplicada; sitio/catálogo/RPC 200, anon interno 401 y passkeys 403. |
 | 2026-08-12 | **Etapa 5 cerrada:** commit `a8f4a8e` publicado en `main`; CI remoto verde; deploy productivo Vercel `ilara` READY; smoke productivo read-only 16/16 OK. Sin SQL/migraciones remotas adicionales. |
 | 2026-08-13 | **Stage 6.1 cerrado:** commits `66507b8`, `89ac418` y `485ed14` en `main`; migración productiva `20260813205545`; CI remoto verde; Vercel `ilara` READY; smoke 16/16 y pedido controlado eliminado sin cambios de stock. |
-| 2026-08-13 | **Decisión Stage 7:** Envia.com será la única plataforma logística a integrar; descartadas integraciones directas con transportistas. Implementación todavía no iniciada. |
+| 2026-08-14 | **Stage 7 cerrado:** Envia.com integrado para cotizaciones por CP; migración `20260814092526`, Edge Function productiva, snapshot/consumo único, total autoritativo y RLS verificados. Etiquetas/tracking fuera de alcance. |

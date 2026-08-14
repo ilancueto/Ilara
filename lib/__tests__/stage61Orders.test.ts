@@ -58,6 +58,7 @@ describe('Stage 6.1 — máquina de estados', () => {
 describe('Stage 6.1 — validación y payload', () => {
   const base = {
     idempotency_key: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+    shipping_quote_id: '11111111-1111-4111-8111-111111111111',
     customer_name: 'Ana',
     customer_phone: '299 555 1234',
     lines: [{ line_type: 'product' as const, product_id: 1, quantity: 2 }],
@@ -84,6 +85,7 @@ describe('Stage 6.1 — validación y payload', () => {
     expect(payload).not.toHaveProperty('total')
     expect(payload).not.toHaveProperty('subtotal')
     expect(payload).not.toHaveProperty('unit_price')
+    expect(payload.shipping_quote_id).toBe('11111111-1111-4111-8111-111111111111')
     expect(payload.customer_phone).toBe('2995551234')
     expect(payload.coupon_code).toBe('PROMO10')
     expect(payload.lines).toEqual([{ line_type: 'product', product_id: 1, quantity: 2 }])
@@ -108,6 +110,14 @@ describe('Stage 6.1 — validación y payload', () => {
       status: 'pending',
       subtotal: 1000,
       discount_total: 100,
+      shipping_amount: 500,
+      shipping_currency: 'ARS',
+      shipping_carrier: 'OCA',
+      shipping_service: 'Puerta a puerta',
+      shipping_delivery_estimate: '3-5 días',
+      shipping_destination_postal_code: '1000',
+      shipping_destination_city: 'Buenos Aires',
+      shipping_destination_state: 'Comuna 1',
       total: 900,
       created_at: '2026-08-13T00:00:00Z',
       idempotent_replay: false,

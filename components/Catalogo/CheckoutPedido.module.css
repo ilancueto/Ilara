@@ -151,6 +151,91 @@
   color: #8a7482;
 }
 
+.quoteRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}
+
+.quoteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid #db2777;
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  background: transparent;
+  color: #be185d;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.quoteButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.shippingOptions {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid #ead7e1;
+  border-radius: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.shippingOptions legend {
+  padding: 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.destination {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #7a6672;
+}
+
+.shippingOption {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem;
+  border: 1px solid #ead7e1;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.shippingOption:has(input:checked) {
+  border-color: #db2777;
+  background: #fff5fa;
+}
+
+.shippingCopy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shippingCopy small {
+  color: #7a6672;
+}
+
+:global(.dark) .shippingOptions,
+:global(.dark) .shippingOption {
+  border-color: #3a2a34;
+}
+
+:global(.dark) .shippingOption:has(input:checked) {
+  background: #2b1723;
+}
+
 .error {
   margin: 0;
   padding: 0.65rem 0.75rem;

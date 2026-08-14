@@ -25,6 +25,14 @@ export function parseCreateOrderRpcResult(rpcData: unknown): CreateOrderResult {
     status: statusRaw,
     subtotal: Number(r.subtotal) || 0,
     discount_total: Number(r.discount_total) || 0,
+    shipping_amount: Number(r.shipping_amount) || 0,
+    shipping_currency: String(r.shipping_currency || 'ARS'),
+    shipping_carrier: String(r.shipping_carrier || ''),
+    shipping_service: String(r.shipping_service || ''),
+    shipping_delivery_estimate: r.shipping_delivery_estimate == null ? null : String(r.shipping_delivery_estimate),
+    shipping_destination_postal_code: String(r.shipping_destination_postal_code || ''),
+    shipping_destination_city: String(r.shipping_destination_city || ''),
+    shipping_destination_state: String(r.shipping_destination_state || ''),
     total: Number(r.total) || 0,
     created_at: String(r.created_at || new Date().toISOString()),
     idempotent_replay: Boolean(r.idempotent_replay),
@@ -48,6 +56,21 @@ export function createOrderErrorFromRpc(message: string): AppError {
   if (m.includes('client_price_not_allowed')) {
     return new AppError('validation', 'No se pudo procesar el pedido. Intentá de nuevo.', {
       message: 'client_price_not_allowed',
+    })
+  }
+  if (m.includes('shipping_quote_required') || m.includes('invalid_shipping_quote')) {
+    return new AppError('validation', 'Volvé a cotizar y elegí una opción de envío.', {
+      message: 'invalid_shipping_quote',
+    })
+  }
+  if (m.includes('shipping_quote_expired')) {
+    return new AppError('conflict', 'La cotización venció. Cotizá el envío nuevamente.', {
+      message: 'shipping_quote_expired', retryable: true,
+    })
+  }
+  if (m.includes('shipping_quote_consumed')) {
+    return new AppError('conflict', 'Esa cotización ya fue utilizada. Cotizá nuevamente.', {
+      message: 'shipping_quote_consumed', retryable: true,
     })
   }
   if (m.includes('rate_limited')) {

@@ -24,7 +24,7 @@ import {
   type OrderStatus,
 } from '@/lib/domain/orders/states'
 import type { OrderDetail, OrderListItem } from '@/lib/domain/orders/types'
-import { formatPesoAR } from '@/lib/formatPesoAR'
+import { formatPesoAR, formatPesoARExact } from '@/lib/formatPesoAR'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { useToast } from '@/context/ToastContext'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
@@ -212,7 +212,7 @@ export default function Pedidos() {
             Pedidos
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Catálogo público · sin logística automática
+            Catálogo público · cotizaciones Envia
           </p>
         </div>
         <button
@@ -301,7 +301,7 @@ export default function Pedidos() {
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {new Date(o.created_at).toLocaleString('es-AR')} · $
-                        {formatPesoAR(o.total)}
+                        {formatPesoARExact(o.total)}
                       </p>
                     </div>
                     <ChevronRight size={18} className="text-gray-400 shrink-0" aria-hidden />
@@ -390,6 +390,22 @@ export default function Pedidos() {
                 </div>
               )}
 
+              {detail.shipping_quote_id && (
+                <div className="rounded-xl bg-pink-50 dark:bg-pink-950/20 px-3 py-2 text-sm">
+                  <p className="text-xs text-gray-400 mb-1">Envío cotizado</p>
+                  <p className="font-semibold">
+                    {detail.shipping_carrier_description} · {detail.shipping_service_description}
+                  </p>
+                  <p>
+                    CP {detail.shipping_destination_postal_code}, {detail.shipping_destination_city}, {detail.shipping_destination_state}
+                  </p>
+                  <p>
+                    ${formatPesoARExact(detail.shipping_amount)}
+                    {detail.shipping_delivery_estimate ? ` · ${detail.shipping_delivery_estimate}` : ''}
+                  </p>
+                </div>
+              )}
+
               <div>
                 <h4 className="text-sm font-bold mb-2">Líneas</h4>
                 <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-100 dark:border-gray-800">
@@ -430,8 +446,13 @@ export default function Pedidos() {
                       Descuento: <strong>−${formatPesoAR(detail.discount_total)}</strong>
                     </p>
                   )}
+                  {detail.shipping_amount > 0 && (
+                    <p>
+                      Envío: <strong>${formatPesoARExact(detail.shipping_amount)}</strong>
+                    </p>
+                  )}
                   <p className="text-base">
-                    Total: <strong>${formatPesoAR(detail.total)}</strong>
+                    Total: <strong>${formatPesoARExact(detail.total)}</strong>
                   </p>
                 </div>
               </div>

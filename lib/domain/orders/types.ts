@@ -32,6 +32,7 @@ export type CreateOrderCustomerInput = {
 
 export type CreateOrderInput = CreateOrderCustomerInput & {
   idempotency_key: string
+  shipping_quote_id: string
   lines: CreateOrderLineInput[]
   coupon_code?: string | null
 }
@@ -43,6 +44,14 @@ export type CreateOrderResult = {
   status: OrderStatus
   subtotal: number
   discount_total: number
+  shipping_amount: number
+  shipping_currency: string
+  shipping_carrier: string
+  shipping_service: string
+  shipping_delivery_estimate: string | null
+  shipping_destination_postal_code: string
+  shipping_destination_city: string
+  shipping_destination_state: string
   total: number
   created_at: string
   idempotent_replay: boolean
@@ -59,6 +68,18 @@ export type OrderListItem = {
   notes: string | null
   subtotal: number
   discount_total: number
+  shipping_quote_id: string | null
+  shipping_provider: string | null
+  shipping_carrier: string | null
+  shipping_carrier_description: string | null
+  shipping_service: string | null
+  shipping_service_description: string | null
+  shipping_delivery_estimate: string | null
+  shipping_amount: number
+  shipping_currency: string | null
+  shipping_destination_postal_code: string | null
+  shipping_destination_city: string | null
+  shipping_destination_state: string | null
   total: number
   coupon_code: string | null
   coupon_discount_percentage: number | null

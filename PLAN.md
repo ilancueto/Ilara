@@ -2,7 +2,7 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–6 cerradas en producción; Etapas 7–8 en roadmap
+- **Estado:** Etapas 0–7 cerradas en producción; Etapa 8 en roadmap
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -542,45 +542,46 @@ Cada feature debe incluir antes de desarrollo:
 
 ## 11. Etapa 7 — Envíos y logística
 
-Esta etapa comienza después de diseñar el flujo de pedidos de Etapa 6.
+**Estado (2026-08-14): CERRADA, DESPLEGADA Y VERIFICADA EN PRODUCCIÓN.**
+
+Runbook: [`docs/ETAPA7_ENVIA_COTIZACIONES_RUNBOOK.md`](./docs/ETAPA7_ENVIA_COTIZACIONES_RUNBOOK.md).
+
 **Decisión de negocio (2026-08-13): Envia.com es la plataforma logística elegida.**
 No se desarrollarán integraciones directas con Correo Argentino, OCA ni Andreani;
 los servicios disponibles se consumirán exclusivamente a través de Envia.com.
 
-Alcance previsto:
+Alcance cerrado:
 
-1. Validar la cuenta, credenciales, ambiente de prueba, cobertura y contrato de
-   la API de Envia.com para Argentina.
-2. Diseñar un adaptador interno `ShippingProvider` para que checkout y pedidos no
-   dependan del formato de Envia.com.
-3. Implementar primero cotización por código postal: origen fijo `8300`, un bulto,
-   timeout, caché breve, observabilidad y fallback manual.
-4. Mostrar servicios/tarifas devueltos por Envia.com sin inventar disponibilidad
-   ni precios cuando la API falle.
-5. Guardar en el pedido un snapshot de la opción logística elegida, sin confiar
-   en importes enviados por el navegador.
-6. En una segunda entrega del Stage 7, evaluar/implementar alta del envío,
-   etiqueta y tracking usando la misma integración.
+1. [x] Credencial productiva validada y guardada sólo como secreto de Supabase.
+2. [x] Edge Function `shipping-quotes` como adaptador exclusivo de Envia.com.
+3. [x] Cotización por CP argentino con origen fijo `8300`, una bolsa y timeout.
+4. [x] Opciones reales normalizadas, ordenadas por importe y con errores seguros.
+5. [x] Snapshot temporal backend-only, consumo único e idempotente por el RPC.
+6. [x] Total autoritativo del pedido incluye envío; panel muestra el snapshot.
+7. [x] Rate limit por hash de IP, CORS acotado y logs sin token ni PII de contacto.
+8. [x] Tests unitarios, reconstrucción DB, matriz RLS, build y E2E visual local.
+9. [x] Migración `20260814092526`, secreto y Edge Function aplicados en producción.
+10. [x] Cotización productiva CP 1000: ocho opciones reales; `anon` a quotes = 401.
 
-Supuesto operativo inicial para cotizar en Envia.com, todavía no implementado:
+Configuración operativa implementada:
 
 - origen: Neuquén Capital, código postal `8300`;
 - un solo bulto tipo bolsa;
-- medidas de referencia: `20 × 35 × 5 cm` (espesor de `5 cm` a confirmar);
+- medidas de referencia: `20 × 35 × 5 cm`;
 - peso máximo de referencia: `1 kg`;
-- valor declarado: total autoritativo de los productos del pedido.
+- sin seguro ni generación de etiqueta en esta etapa.
 
-Gate previo a desarrollo:
+Decisión de alcance: Stage 7 cierra con **cotización y snapshot en pedidos**.
+Generar etiquetas, contratar/recaudar el envío, tracking y webhooks no se ejecutan
+automáticamente; si negocio los solicita serán una etapa nueva con domicilio real
+de origen, política operativa y pruebas que puedan producir cargos.
 
 - [x] Plataforma logística elegida por negocio: **Envia.com**.
-- [ ] Cuenta comercial, tarifas y credenciales de prueba disponibles.
-- [ ] Medidas reales de la bolsa confirmadas.
-- [ ] Política ante diferencias de peso/medidas y caída del proveedor definida.
-- [ ] Privacidad, secretos, rate limiting y observabilidad diseñados.
-- [ ] Plan de pruebas, deploy, rollback/forward-fix y soporte operativo aprobado.
-
-Hasta cumplir el resto del gate, Etapa 7 permanece en preparación y no debe
-introducir código productivo, migraciones, secretos ni afirmaciones de tarifas reales.
+- [x] Credencial productiva disponible (sandbox descartado por falla informada).
+- [x] Bolsa fijada en `20 × 35 × 5 cm`, hasta `1 kg`.
+- [x] Caída/timeout no inventa tarifas y mantiene el pedido sin confirmar.
+- [x] Privacidad, secretos, rate limiting y observabilidad implementados.
+- [x] Deploy y forward-fix documentados en el runbook.
 
 ## 12. Etapa 8 — Pagos online
 
@@ -697,8 +698,8 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-13 | 6.4 Reportes de margen | Costo histórico, devoluciones, calidad del dato y panel admin | Completado | Commit `3b277b9`; migración `20260814020513`; CI `31763396516`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.5 CRM mínimo | Historial neto, etiquetas, notas y consentimiento admin-only | Completado | Commit `adefe8a`; migración `20260814024158`; CI `31765289604`; Vercel `ilara` READY; smoke 16/16 |
 | 2026-08-14 | 6.6 Finanzas | CxC/CxP, cobros/pagos append-only y conciliación de caja | Completado | Commits `30d1463`, `1c3cd67`; migración `20260814033000`; CI `31767514128`; Vercel `ilara` READY; smoke 16/16 |
-| 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | En revisión | Migración `20260814090000`; runbook `docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`; **no desplegado** |
-| 2026-08-13 | 7 Envíos y logística | Selección de plataforma | Pendiente | Envia.com elegido; integración directa con transportistas descartada; faltan credenciales y gate técnico |
+| 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | Completado | Migraciones `20260814000544` y `20260814000745`; CI, Vercel y smoke productivo verdes |
+| 2026-08-14 | 7 Envíos y logística | Cotización Envia + snapshot autoritativo en pedidos | Completado | Migración `20260814092526`; Edge `shipping-quotes`; cotización productiva 8 opciones; quotes anon 401; ver runbook |
 | 2026-08-13 | Roadmap 6.7 / 8 | Reordenamiento de expansión comercial | Completado | Stage 6.7 eliminado; B2B y multisucursal descartados; pagos online movido a Etapa 8 |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,

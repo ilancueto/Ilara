@@ -3,3 +3,7 @@
 # Necesario para /register y /login que no tienen sesión aún
 [functions.passkey-auth]
 verify_jwt = false
+
+# Stage 7: cotización pública, con CORS, validación y rate limit propios.
+[functions.shipping-quotes]
+verify_jwt = false

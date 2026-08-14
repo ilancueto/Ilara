@@ -70,6 +70,7 @@ export function validateOrderLineInput(line: CreateOrderLineInput, index: number
 /** Valida y normaliza el input de creación. Lanza AppError si falla. */
 export function normalizeCreateOrderInput(input: CreateOrderInput): {
   idempotency_key: string
+  shipping_quote_id: string
   customer_name: string
   customer_phone: string
   customer_email: string | null
@@ -81,6 +82,13 @@ export function normalizeCreateOrderInput(input: CreateOrderInput): {
   if (!isValidIdempotencyKey(idempotency_key)) {
     throw new AppError('validation', 'No se pudo iniciar el pedido. Recargá e intentá de nuevo.', {
       message: 'invalid_idempotency_key',
+    })
+  }
+
+  const shipping_quote_id = String(input.shipping_quote_id || '').trim().toLowerCase()
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(shipping_quote_id)) {
+    throw new AppError('validation', 'Volvé a cotizar y elegí una opción de envío.', {
+      message: 'invalid_shipping_quote',
     })
   }
 
@@ -137,6 +145,7 @@ export function normalizeCreateOrderInput(input: CreateOrderInput): {
 
   return {
     idempotency_key,
+    shipping_quote_id,
     customer_name,
     customer_phone,
     customer_email: rawEmail ? rawEmail.toLowerCase() : null,
@@ -151,6 +160,7 @@ export function buildCreateOrderRpcPayload(input: CreateOrderInput): Record<stri
   const n = normalizeCreateOrderInput(input)
   return {
     idempotency_key: n.idempotency_key,
+    shipping_quote_id: n.shipping_quote_id,
     customer_name: n.customer_name,
     customer_phone: n.customer_phone,
     customer_email: n.customer_email,

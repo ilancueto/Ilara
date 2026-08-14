@@ -627,6 +627,18 @@ export type Database = {
           notes: string | null
           order_number: string
           request_fingerprint: string
+          shipping_amount: number
+          shipping_carrier: string | null
+          shipping_carrier_description: string | null
+          shipping_currency: string | null
+          shipping_delivery_estimate: string | null
+          shipping_destination_city: string | null
+          shipping_destination_postal_code: string | null
+          shipping_destination_state: string | null
+          shipping_provider: string | null
+          shipping_quote_id: string | null
+          shipping_service: string | null
+          shipping_service_description: string | null
           status: string
           stock_reserved: boolean
           subtotal: number
@@ -652,6 +664,18 @@ export type Database = {
           notes?: string | null
           order_number: string
           request_fingerprint: string
+          shipping_amount?: number
+          shipping_carrier?: string | null
+          shipping_carrier_description?: string | null
+          shipping_currency?: string | null
+          shipping_delivery_estimate?: string | null
+          shipping_destination_city?: string | null
+          shipping_destination_postal_code?: string | null
+          shipping_destination_state?: string | null
+          shipping_provider?: string | null
+          shipping_quote_id?: string | null
+          shipping_service?: string | null
+          shipping_service_description?: string | null
           status?: string
           stock_reserved?: boolean
           subtotal: number
@@ -677,13 +701,33 @@ export type Database = {
           notes?: string | null
           order_number?: string
           request_fingerprint?: string
+          shipping_amount?: number
+          shipping_carrier?: string | null
+          shipping_carrier_description?: string | null
+          shipping_currency?: string | null
+          shipping_delivery_estimate?: string | null
+          shipping_destination_city?: string | null
+          shipping_destination_postal_code?: string | null
+          shipping_destination_state?: string | null
+          shipping_provider?: string | null
+          shipping_quote_id?: string | null
+          shipping_service?: string | null
+          shipping_service_description?: string | null
           status?: string
           stock_reserved?: boolean
           subtotal?: number
           total?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_quote_fkey"
+            columns: ["shipping_quote_id"]
+            isOneToOne: true
+            referencedRelation: "shipping_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       passkey_audit_log: {
         Row: {
@@ -1213,6 +1257,98 @@ export type Database = {
           },
         ]
       }
+      shipping_quote_requests: {
+        Row: {
+          created_at: string
+          destination_postal_code: string
+          id: number
+          request_ip_hash: string
+        }
+        Insert: {
+          created_at?: string
+          destination_postal_code: string
+          id?: never
+          request_ip_hash: string
+        }
+        Update: {
+          created_at?: string
+          destination_postal_code?: string
+          id?: never
+          request_ip_hash?: string
+        }
+        Relationships: []
+      }
+      shipping_quotes: {
+        Row: {
+          amount: number
+          carrier: string
+          carrier_description: string
+          consumed_at: string | null
+          created_at: string
+          currency: string
+          delivery_estimate: string | null
+          destination_city: string
+          destination_postal_code: string
+          destination_state: string
+          expires_at: string
+          id: string
+          order_id: string | null
+          provider: string
+          quote_group_id: string
+          request_ip_hash: string
+          service: string
+          service_description: string
+        }
+        Insert: {
+          amount: number
+          carrier: string
+          carrier_description: string
+          consumed_at?: string | null
+          created_at?: string
+          currency: string
+          delivery_estimate?: string | null
+          destination_city: string
+          destination_postal_code: string
+          destination_state: string
+          expires_at: string
+          id?: string
+          order_id?: string | null
+          provider?: string
+          quote_group_id: string
+          request_ip_hash: string
+          service: string
+          service_description: string
+        }
+        Update: {
+          amount?: number
+          carrier?: string
+          carrier_description?: string
+          consumed_at?: string | null
+          created_at?: string
+          currency?: string
+          delivery_estimate?: string | null
+          destination_city?: string
+          destination_postal_code?: string
+          destination_state?: string
+          expires_at?: string
+          id?: string
+          order_id?: string | null
+          provider?: string
+          quote_group_id?: string
+          request_ip_hash?: string
+          service?: string
+          service_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_quotes_order_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_alert_events: {
         Row: {
           actor_kind: string
@@ -1421,6 +1557,10 @@ export type Database = {
       }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
       create_catalog_order: { Args: { p_payload: Json }; Returns: Json }
+      create_catalog_order_core_stage61: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
       create_sale_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_with_items: { Args: { p_payload: Json }; Returns: Json }
       current_app_role: {

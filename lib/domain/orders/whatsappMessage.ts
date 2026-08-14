@@ -1,7 +1,7 @@
 /**
  * Mensaje de WhatsApp post-pedido (sin tokens, sin IDs internos).
  */
-import { formatPesoAR } from '@/lib/formatPesoAR'
+import { formatPesoARExact } from '@/lib/formatPesoAR'
 
 export type WhatsAppOrderSummaryLine = {
   name: string
@@ -27,7 +27,7 @@ export function buildOrderWhatsAppMessage(input: {
     ...items,
     ...more,
     '',
-    `Total: $${formatPesoAR(input.total)}`,
+    `Total: $${formatPesoARExact(input.total)}`,
     '',
     '¿Me ayudan a coordinar la entrega o el retiro?',
   ].join('\n')

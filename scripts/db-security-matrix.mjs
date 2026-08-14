@@ -89,6 +89,9 @@ const sensitiveTables = [
   // Stage 6.6 — ledger financiero sin acceso directo
   'financial_accounts',
   'financial_movements',
+  // Stage 7 — cotizaciones y rate limit sólo backend
+  'shipping_quotes',
+  'shipping_quote_requests',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
@@ -171,6 +174,7 @@ if (serviceKey) {
     'sale_item_components', 'sale_returns', 'sale_return_items', 'sale_return_events',
     'customer_tags', 'customer_tag_assignments', 'customer_notes', 'customer_consent_events',
     'financial_accounts', 'financial_movements',
+    'shipping_quotes', 'shipping_quote_requests',
   ]
   for (const table of core) {
     const { error } = await service.from(table).select('*', { count: 'exact', head: true })
