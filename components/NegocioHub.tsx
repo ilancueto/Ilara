@@ -11,6 +11,7 @@ import {
   ClipboardList,
   AlertTriangle,
   RotateCcw,
+  ChartNoAxesCombined,
 } from 'lucide-react'
 import ExportarDatos from '@/components/ExportarDatos'
 
@@ -38,6 +39,17 @@ type Tile = {
 }
 
 const tiles: Tile[] = [
+  {
+    id: 'margin_reports',
+    title: 'Margen real',
+    description: 'Ganancia por producto con costos, descuentos y devoluciones.',
+    go: 'Ver reporte',
+    icon: ChartNoAxesCombined,
+    tone: 'emerald',
+    kind: 'tab',
+    tab: 'margin_reports',
+    visible: (c) => c.isAdmin,
+  },
   {
     id: 'incomes',
     title: 'Ingresos',

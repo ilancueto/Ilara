@@ -513,8 +513,10 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 3. ~~**Devoluciones y notas de crédito**~~: cerrado en producción con notas
    parciales, stock por snapshot, auditoría e idempotencia. Ver
    [`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](./docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md).
-4. **Reportes de margen:** usar precio de compra histórico, descuentos y costos,
-   no sólo facturación.
+4. **Reportes de margen:** implementado localmente con costo histórico por
+   componente, descuentos, devoluciones, calidad del dato y panel admin. Pendiente
+   publicación y verificación productiva. Ver
+   [`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](./docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md).
 5. **CRM mínimo:** historial, etiquetas y consentimiento para campañas.
 6. **Cuentas por cobrar/pagar y conciliación:** saldos, vencimientos y estados.
 7. **B2B, pagos online o multisucursal:** evaluar sólo cuando la operación actual

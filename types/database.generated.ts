@@ -649,6 +649,7 @@ export type Database = {
       }
       sale_item_components: {
         Row: {
+          cost_source: string
           created_at: string
           id: number
           product_id: number | null
@@ -656,8 +657,10 @@ export type Database = {
           quantity_per_unit: number
           sale_item_id: number
           snapshot_source: string
+          unit_cost: number | null
         }
         Insert: {
+          cost_source: string
           created_at?: string
           id?: number
           product_id?: number | null
@@ -665,8 +668,10 @@ export type Database = {
           quantity_per_unit: number
           sale_item_id: number
           snapshot_source: string
+          unit_cost?: number | null
         }
         Update: {
+          cost_source?: string
           created_at?: string
           id?: number
           product_id?: number | null
@@ -674,6 +679,7 @@ export type Database = {
           quantity_per_unit?: number
           sale_item_id?: number
           snapshot_source?: string
+          unit_cost?: number | null
         }
         Relationships: [
           {
@@ -1202,6 +1208,10 @@ export type Database = {
         Returns: string
       }
       next_catalog_order_number: { Args: never; Returns: string }
+      sales_margin_report: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: Json
+      }
       set_user_role: {
         Args: {
           p_role: Database["public"]["Enums"]["app_role"]

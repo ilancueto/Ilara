@@ -130,6 +130,15 @@ for (const cols of ['purchase_price', 'notes', 'min_stock', 'created_by', 'updat
   ok(`anon ejecuta catalog_sales_by_product (n=${Array.isArray(data) ? data.length : 0})`)
 }
 
+{
+  const { error } = await anon.rpc('sales_margin_report', {
+    p_from: '2026-01-01',
+    p_to: '2026-01-01',
+  })
+  if (!isDenied(error)) fail(`anon sales_margin_report no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en sales_margin_report')
+}
+
 // --- service_role: RLS bypasseable; comprueba tablas core ---
 if (serviceKey) {
   const service = createClient(url, serviceKey, {

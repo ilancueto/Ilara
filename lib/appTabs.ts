@@ -10,3 +10,4 @@ export type AppTab =
   | 'orders'
   | 'stock_alerts'
   | 'returns'
+  | 'margin_reports'
