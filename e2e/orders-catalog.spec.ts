@@ -21,6 +21,34 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
   let productId: number | null = null
   let productName = ''
   let ownsProduct = false
+  const shippingQuoteIds: string[] = []
+
+  async function seedShippingQuote() {
+    const expiresAt = new Date(Date.now() + 15 * 60_000).toISOString()
+    const { data, error } = await serviceClient()
+      .from('shipping_quotes')
+      .insert({
+        quote_group_id: crypto.randomUUID(),
+        provider: 'envia',
+        destination_postal_code: '1000',
+        destination_city: 'Buenos Aires',
+        destination_state: 'CABA',
+        carrier: 'oca',
+        carrier_description: 'OCA',
+        service: 'standard',
+        service_description: 'Entrega a domicilio',
+        delivery_estimate: '2-4 días',
+        amount: 500,
+        currency: 'ARS',
+        request_ip_hash: 'e'.repeat(64),
+        expires_at: expiresAt,
+      })
+      .select('id')
+      .single()
+    if (error || !data?.id) throw error || new Error('No se pudo crear la cotización E2E')
+    shippingQuoteIds.push(data.id)
+    return { id: data.id as string, expiresAt }
+  }
 
   test.beforeAll(async () => {
     if (!process.env.E2E_SUPABASE_URL) return
@@ -55,9 +83,16 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
         ids = Array.from(new Set([...ids, ...((byProd || []).map((r) => r.order_id as string))]))
       }
       if (ids.length) {
+        await admin
+          .from('shipping_quotes')
+          .update({ order_id: null, consumed_at: null })
+          .in('order_id', ids)
         await admin.from('order_status_events').delete().in('order_id', ids)
         await admin.from('order_items').delete().in('order_id', ids)
         await admin.from('orders').delete().in('id', ids)
+      }
+      if (shippingQuoteIds.length) {
+        await admin.from('shipping_quotes').delete().in('id', shippingQuoteIds)
       }
     } catch {
       /* ignore cleanup errors */
@@ -70,6 +105,38 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
   test('crear pedido desde catálogo y verlo en panel', async ({ page }) => {
     requireE2E()
     test.skip(!productId, 'sin producto seed')
+
+    const shippingQuote = await seedShippingQuote()
+    await page.route('**/functions/v1/shipping-quotes', async (route) => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({
+          status: 204,
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
+          },
+        })
+        return
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: JSON.stringify({
+          ok: true,
+          destination: { postalCode: '1000', city: 'Buenos Aires', state: 'CABA' },
+          expiresAt: shippingQuote.expiresAt,
+          options: [{
+            id: shippingQuote.id,
+            carrier: 'OCA',
+            service: 'Entrega a domicilio',
+            deliveryEstimate: '2-4 días',
+            amount: 500,
+            currency: 'ARS',
+          }],
+        }),
+      })
+    })
 
     await page.goto('/catalogo')
     await page.waitForLoadState('networkidle')
@@ -100,6 +167,11 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
 
     await page.getByTestId('checkout-name').fill('Cliente E2E')
     await page.getByTestId('checkout-phone').fill('2995550199')
+    await page.getByTestId('checkout-postal-code').fill('1000')
+    await page.getByTestId('checkout-quote-shipping').click()
+    await expect(page.getByTestId('shipping-options')).toBeVisible()
+    await page.getByRole('radio', { name: /OCA.*Entrega a domicilio/i }).check()
+    await expect(page.getByTestId('checkout-submit')).toBeEnabled()
     await page.getByTestId('checkout-submit').click()
 
     await expect(page.getByTestId('checkout-success')).toBeVisible({ timeout: 25_000 })
