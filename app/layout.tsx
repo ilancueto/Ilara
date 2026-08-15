@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Outfit, Great_Vibes } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -10,24 +10,26 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { getSiteUrl } from "@/lib/site";
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+const outfit = localFont({
+  src: "./fonts/outfit-latin-wght-normal.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-outfit",
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["500", "600"],
+const fraunces = localFont({
+  src: "./fonts/fraunces-latin-wght-normal.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-fraunces",
   display: "swap",
 });
 
-/** Reemplaza Mareline (cdnfonts) por fuente self-hosted vía Google → Next (privacidad + CSP). */
-const ilaraScript = Great_Vibes({
+const ilaraScript = localFont({
+  src: "./fonts/great-vibes-latin-400-normal.woff2",
   weight: "400",
-  subsets: ["latin"],
+  style: "normal",
   variable: "--font-ilara-script",
   display: "swap",
 });
