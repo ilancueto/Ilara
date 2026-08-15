@@ -40,6 +40,14 @@ describe('Stage 7 — cotizaciones Envia', () => {
     expect(edgeFunction).not.toContain('/ship/generate/')
   })
 
+  it('ofrece sólo la opción más barata a domicilio y en sucursal', () => {
+    expect(edgeFunction).toContain('const cheapestHome = rankedRates.find')
+    expect(edgeFunction).toContain('const cheapestBranch = rankedRates.find')
+    expect(edgeFunction).toContain("service_description: 'Entrega a domicilio'")
+    expect(edgeFunction).toContain("service_description: 'Retiro en sucursal'")
+    expect(edgeFunction).not.toContain('.slice(0, 8)')
+  })
+
   it('cierra tablas de quotes y rate limit para roles públicos', () => {
     expect(migration).toMatch(/ENABLE ROW LEVEL SECURITY/g)
     expect(migration).toMatch(/REVOKE ALL ON TABLE public\.shipping_quotes FROM PUBLIC, anon, authenticated/)

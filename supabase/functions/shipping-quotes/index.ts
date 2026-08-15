@@ -314,7 +314,7 @@ serve(async (req: Request) => {
       }
     }))
     const rates = carrierResponses.flatMap((response) => Array.isArray(response.data) ? response.data : [])
-    const normalized = rates.flatMap((entry) => {
+    const rankedRates = rates.flatMap((entry) => {
       const rate = asRecord(entry)
       const amount = positiveMoney(rate.totalPrice)
       const currency = text(rate.currency).toUpperCase()
@@ -329,7 +329,27 @@ serve(async (req: Request) => {
         delivery_estimate: text(rate.deliveryEstimate) || null,
         amount,
       }]
-    }).sort((a, b) => a.amount - b.amount).slice(0, 8)
+    }).sort((a, b) => a.amount - b.amount)
+
+    const isBranchDelivery = (rate: (typeof rankedRates)[number]) => {
+      const label = `${rate.service} ${rate.service_description}`
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+
+      return /sucursal|punto (?:de )?retiro|retiro en (?:agencia|punto)|pickup|pick up|branch|office|ocurre/.test(label)
+    }
+
+    const cheapestHome = rankedRates.find((rate) => !isBranchDelivery(rate))
+    const cheapestBranch = rankedRates.find(isBranchDelivery)
+    const normalized = [
+      cheapestHome
+        ? { ...cheapestHome, service_description: 'Entrega a domicilio' }
+        : null,
+      cheapestBranch
+        ? { ...cheapestBranch, service_description: 'Retiro en sucursal' }
+        : null,
+    ].filter((rate): rate is NonNullable<typeof rate> => rate !== null)
 
     if (normalized.length === 0) {
       console.warn(JSON.stringify({ event: 'shipping_quote_empty', postalCode: address.postalCode }))
