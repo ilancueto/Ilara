@@ -63,6 +63,7 @@ export function CheckoutPedido({
   const [localities, setLocalities] = useState<ShippingLocation[]>([])
   const [provinceId, setProvinceId] = useState('')
   const [localityId, setLocalityId] = useState('')
+  const [postalCode, setPostalCode] = useState('')
   const [street, setStreet] = useState('')
   const [streetNumber, setStreetNumber] = useState('')
   const [locationsPending, setLocationsPending] = useState(false)
@@ -126,7 +127,8 @@ export function CheckoutPedido({
   const selectedShipping = shippingQuote?.options.find((option) => option.id === selectedShippingId) || null
   const estimatedTotal = total + (selectedShipping?.amount || 0)
   const addressComplete = Boolean(
-    provinceId && localityId && street.trim().length >= 2 && /^\d{1,6}$/.test(streetNumber)
+    provinceId && localityId && /^\d{4}$/.test(postalCode)
+    && street.trim().length >= 2 && /^\d{1,6}$/.test(streetNumber)
   )
 
   const invalidateQuote = () => {
@@ -166,6 +168,7 @@ export function CheckoutPedido({
       const result = await quoteShipping({
         provinceId,
         localityId,
+        postalCode,
         street,
         number: streetNumber,
       })
@@ -493,13 +496,26 @@ export function CheckoutPedido({
                   />
                 </div>
               </div>
-              <div className={styles.quoteRow}>
+              <div className={styles.field}>
+                <label htmlFor={`${formId}-postal-code`}>Código postal</label>
                 <input
-                  type="hidden"
+                  id={`${formId}-postal-code`}
                   name="postal_code"
-                  value={shippingQuote?.destination.postalCode || ''}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="postal-code"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  value={postalCode}
+                  onChange={(e) => {
+                    setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 4))
+                    invalidateQuote()
+                  }}
+                  required
                   data-testid="checkout-postal-code"
                 />
+              </div>
+              <div className={styles.quoteRow}>
                 <button
                   type="button"
                   className={styles.quoteButton}

@@ -12,11 +12,11 @@ import type {
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_province: 'Elegí una provincia válida.',
   invalid_locality: 'Elegí una ciudad o localidad válida.',
+  invalid_postal_code: 'Ingresá un código postal válido de 4 números.',
   invalid_street: 'Ingresá una calle válida.',
   invalid_street_number: 'Ingresá una altura válida.',
-  address_not_found: 'No pudimos reconocer esa calle y altura. Revisá la dirección.',
-  postal_code_not_found: 'No encontramos esa dirección. Revisá la calle y la altura.',
-  no_shipping_options: 'No hay opciones de envío disponibles para esa dirección.',
+  postal_code_not_found: 'No encontramos ese código postal. Revisalo e intentá de nuevo.',
+  no_shipping_options: 'No hay opciones de envío disponibles para ese código postal.',
   rate_limited: 'Hiciste varias cotizaciones. Esperá unos minutos e intentá de nuevo.',
   shipping_timeout: 'La cotización demoró demasiado. Intentá de nuevo.',
   shipping_provider_error: 'No pudimos mostrar opciones de envío. Intentá de nuevo.',
@@ -31,12 +31,15 @@ function record(value: unknown): Record<string, unknown> {
 
 function shippingError(code: string): AppError {
   const validation = [
-    'invalid_province', 'invalid_locality', 'invalid_street', 'invalid_street_number',
-    'address_not_found', 'postal_code_not_found', 'rate_limited',
+    'invalid_province', 'invalid_locality', 'invalid_postal_code', 'invalid_street',
+    'invalid_street_number', 'postal_code_not_found', 'rate_limited',
   ].includes(code)
   return new AppError(validation ? 'validation' : 'unknown', ERROR_MESSAGES[code] || ERROR_MESSAGES.shipping_unavailable, {
     message: code,
-    retryable: !['invalid_province', 'invalid_locality', 'invalid_street', 'invalid_street_number'].includes(code),
+    retryable: ![
+      'invalid_province', 'invalid_locality', 'invalid_postal_code',
+      'invalid_street', 'invalid_street_number',
+    ].includes(code),
   })
 }
 
@@ -85,15 +88,17 @@ export async function listShippingLocalities(provinceId: string): Promise<Shippi
 export async function quoteShipping(input: ShippingAddressInput): Promise<ShippingQuote> {
   const provinceId = input.provinceId.trim()
   const localityId = input.localityId.trim()
+  const postalCode = input.postalCode.trim()
   const street = input.street.trim()
   const number = input.number.trim()
   if (!/^\d{2}$/.test(provinceId)) throw shippingError('invalid_province')
   if (!/^\d{8}$/.test(localityId)) throw shippingError('invalid_locality')
+  if (!/^\d{4}$/.test(postalCode)) throw shippingError('invalid_postal_code')
   if (street.length < 2 || street.length > 120) throw shippingError('invalid_street')
   if (!/^\d{1,6}$/.test(number) || Number(number) < 1) throw shippingError('invalid_street_number')
 
   const payload = await invokeShipping({
-    action: 'quote', provinceId, localityId, street, number,
+    action: 'quote', provinceId, localityId, postalCode, street, number,
   })
 
   const destination = record(payload.destination)

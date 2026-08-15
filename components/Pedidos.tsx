@@ -396,12 +396,17 @@ export default function Pedidos() {
                   <p className="font-semibold">
                     {detail.shipping_carrier_description} · {detail.shipping_service_description}
                   </p>
-                  <p>
-                    {detail.shipping_destination_formatted_address
-                      || `CP ${detail.shipping_destination_postal_code}, ${detail.shipping_destination_city}, ${detail.shipping_destination_state}`}
-                  </p>
-                  {detail.shipping_destination_formatted_address && (
-                    <p className="text-xs text-gray-500">CP {detail.shipping_destination_postal_code}</p>
+                  {detail.shipping_destination_street && detail.shipping_destination_number ? (
+                    <div className="space-y-0.5">
+                      <p><span className="text-gray-500">Dirección:</span> {detail.shipping_destination_street} {detail.shipping_destination_number}</p>
+                      <p><span className="text-gray-500">Localidad:</span> {detail.shipping_destination_city}, {detail.shipping_destination_state}</p>
+                      <p><span className="text-gray-500">Código postal:</span> {detail.shipping_destination_postal_code}</p>
+                    </div>
+                  ) : (
+                    <p>
+                      {detail.shipping_destination_formatted_address
+                        || `CP ${detail.shipping_destination_postal_code}, ${detail.shipping_destination_city}, ${detail.shipping_destination_state}`}
+                    </p>
                   )}
                   <p>
                     ${formatPesoARExact(detail.shipping_amount)}

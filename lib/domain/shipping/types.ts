@@ -16,6 +16,7 @@ export type ShippingLocation = {
 export type ShippingAddressInput = {
   provinceId: string
   localityId: string
+  postalCode: string
   street: string
   number: string
 }

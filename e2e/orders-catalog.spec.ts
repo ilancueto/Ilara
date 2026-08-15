@@ -35,11 +35,11 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
         destination_state: 'CABA',
         destination_province_id: '02',
         destination_locality_id: '02000010',
-        destination_street: 'AV CORRIENTES',
+        destination_street: 'Avenida Corrientes',
         destination_number: '1000',
-        destination_formatted_address: 'AV CORRIENTES 1000, Buenos Aires, CABA',
-        destination_lat: -34.6037,
-        destination_lon: -58.3816,
+        destination_formatted_address: 'Avenida Corrientes 1000, Buenos Aires, CABA',
+        destination_lat: null,
+        destination_lon: null,
         carrier: 'oca',
         carrier_description: 'OCA',
         service: 'standard',
@@ -125,7 +125,14 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
         })
         return
       }
-      const body = route.request().postDataJSON() as { action?: string }
+      const body = route.request().postDataJSON() as {
+        action?: string
+        provinceId?: string
+        localityId?: string
+        postalCode?: string
+        street?: string
+        number?: string
+      }
       if (body.action === 'provinces') {
         await route.fulfill({
           status: 200,
@@ -150,6 +157,14 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
         })
         return
       }
+      expect(body).toMatchObject({
+        action: 'quote',
+        provinceId: '02',
+        localityId: '02000010',
+        postalCode: '1000',
+        street: 'Avenida Corrientes',
+        number: '1000',
+      })
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -160,9 +175,9 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
             postalCode: '1000',
             city: 'Buenos Aires',
             state: 'CABA',
-            street: 'AV CORRIENTES',
+            street: 'Avenida Corrientes',
             number: '1000',
-            formattedAddress: 'AV CORRIENTES 1000, Buenos Aires, CABA',
+            formattedAddress: 'Avenida Corrientes 1000, Buenos Aires, CABA',
           },
           expiresAt: shippingQuote.expiresAt,
           options: [{
@@ -211,6 +226,7 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
     await page.getByTestId('checkout-locality').selectOption('02000010')
     await page.getByTestId('checkout-street').fill('Avenida Corrientes')
     await page.getByTestId('checkout-street-number').fill('1000')
+    await page.getByTestId('checkout-postal-code').fill('1000')
     await page.getByTestId('checkout-quote-shipping').click()
     await expect(page.getByTestId('shipping-options')).toBeVisible()
     await expect(page.getByTestId('checkout-postal-code')).toHaveValue('1000')
@@ -262,7 +278,14 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
     await page.getByTestId('pedidos-search').fill(orderNumber)
     await page.waitForTimeout(600)
     await page.getByTestId(`pedido-row-${orderNumber}`).click()
-    await expect(page.getByTestId('pedido-detail')).toBeVisible()
+    const orderDetail = page.getByTestId('pedido-detail')
+    await expect(orderDetail).toBeVisible()
+    await expect(orderDetail.getByText('Dirección:', { exact: true })).toBeVisible()
+    await expect(orderDetail.getByText(/Avenida Corrientes 1000/)).toBeVisible()
+    await expect(orderDetail.getByText('Localidad:', { exact: true })).toBeVisible()
+    await expect(orderDetail.getByText(/Buenos Aires, CABA/)).toBeVisible()
+    await expect(orderDetail.getByText('Código postal:', { exact: true })).toBeVisible()
+    await expect(orderDetail.getByText(/Código postal:\s*1000/)).toBeVisible()
 
     await page.getByTestId('pedido-transition-confirmed').click()
     await page.getByTestId('confirm-pedido-confirm').click()

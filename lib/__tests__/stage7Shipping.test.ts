@@ -13,6 +13,10 @@ const stage71Migration = readFileSync(
   resolve(root, 'supabase/migrations/20260814205248_stage71_structured_shipping_address.sql'),
   'utf8'
 )
+const stage72Migration = readFileSync(
+  resolve(root, 'supabase/migrations/20260815010716_stage72_customer_postal_code.sql'),
+  'utf8'
+)
 const edgeFunction = readFileSync(
   resolve(root, 'supabase/functions/shipping-quotes/index.ts'),
   'utf8'
@@ -66,14 +70,15 @@ describe('Stage 7 — cotizaciones Envia', () => {
     expect(formatPesoARExact(1500)).toBe('1.500')
   })
 
-  it('Stage 7.1 carga provincias/localidades oficiales y resuelve CP en backend', () => {
+  it('Stage 7.2 carga ubicaciones oficiales y recibe el CP del cliente', () => {
     expect(edgeFunction).toContain('https://apis.datos.gob.ar/georef/api/v2.0')
-    expect(edgeFunction).toContain('https://nominatim.openstreetmap.org/search')
-    expect(edgeFunction).toContain("'User-Agent': 'IlaraBeauty/1.0 (https://ilara.com.ar)'")
-    expect(edgeFunction).toContain("admin.rpc('acquire_shipping_geocode_slot')")
+    expect(edgeFunction).not.toContain('https://nominatim.openstreetmap.org/search')
+    expect(edgeFunction).toContain("text(body.postalCode)")
     expect(checkout).toContain('checkout-province')
     expect(checkout).toContain('checkout-locality')
     expect(checkout).toContain('checkout-street-number')
+    expect(checkout).toContain('checkout-postal-code')
+    expect(checkout).toContain('autoComplete="postal-code"')
     expect(checkout).not.toContain('Calculamos el código postal automáticamente')
     expect(checkout).not.toContain('Origen: Neuquén')
     expect(checkout).not.toContain('Localidades:')
@@ -94,5 +99,12 @@ describe('Stage 7 — cotizaciones Envia', () => {
     expect(stage71Migration).toContain('shipping_geocode_cache')
     expect(stage71Migration).toMatch(/query_hash text PRIMARY KEY/)
     expect(stage71Migration).toMatch(/REVOKE ALL ON TABLE public\.shipping_geocode_cache FROM PUBLIC, anon, authenticated/)
+  })
+
+  it('Stage 7.2 permite conservar una dirección sin coordenadas', () => {
+    expect(stage72Migration).toContain('DROP CONSTRAINT shipping_quotes_structured_address')
+    expect(stage72Migration).toContain('DROP CONSTRAINT orders_structured_shipping_address')
+    expect(stage72Migration).toMatch(/destination_lat IS NULL\s+AND destination_lon IS NULL/)
+    expect(stage72Migration).toMatch(/shipping_destination_lat IS NULL\s+AND shipping_destination_lon IS NULL/)
   })
 })

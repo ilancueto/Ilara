@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
-import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.112.2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.2'
 
 type JsonRecord = Record<string, unknown>
 type LocationItem = { id: string; name: string; department?: string }
@@ -11,18 +11,16 @@ type StructuredAddress = {
   street: string
   number: string
   formattedAddress: string
-  lat: number
-  lon: number
+  lat: number | null
+  lon: number | null
   postalCode: string
 }
 
 const ENVIA_RATE_URL = 'https://api.envia.com/ship/rate/'
 const ENVIA_GEOCODE_URL = 'https://geocodes.envia.com/zipcode/AR'
 const GEOREF_BASE_URL = 'https://apis.datos.gob.ar/georef/api/v2.0'
-const NOMINATIM_SEARCH_URL = 'https://nominatim.openstreetmap.org/search'
 const QUOTE_TTL_MS = 15 * 60 * 1000
 const REQUEST_TIMEOUT_MS = 12_000
-const GEOCODE_CACHE_MS = 30 * 24 * 60 * 60 * 1000
 const LOCATIONS_CACHE_MS = 24 * 60 * 60 * 1000
 const MAX_QUOTES_PER_10_MINUTES = 12
 const ARGENTINA_CARRIERS = [
@@ -90,15 +88,6 @@ function finiteNumber(value: unknown): number | null {
 function positiveMoney(value: unknown): number | null {
   const parsed = finiteNumber(value)
   return parsed !== null && parsed > 0 ? Math.round(parsed * 100) / 100 : null
-}
-
-function normalizeSearch(value: string): string {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-}
-
-function numericPostalCode(value: unknown): string | null {
-  const match = text(value).toUpperCase().match(/(?:^|[A-Z])(\d{4})(?:[A-Z]{3})?$/)
-  return match?.[1] || null
 }
 
 function geocodeLocation(value: unknown): { city: string; stateCode: string; stateName: string } | null {
@@ -207,114 +196,31 @@ async function resolveOfficialLocality(provinceId: string, localityId: string) {
   return { locality, provinceName: text(province.nombre) }
 }
 
-async function normalizeOfficialAddress(
-  provinceId: string,
-  localityName: string,
-  streetInput: string,
-  numberInput: string,
-) {
-  const payload = await georefFetch('direcciones', new URLSearchParams({
-    direccion: `${streetInput} ${numberInput}`,
-    provincia: provinceId,
-    localidad: localityName,
-    max: '1',
-  }))
-  const raw = Array.isArray(payload.direcciones) ? asRecord(payload.direcciones[0]) : {}
-  const street = text(asRecord(raw.calle).nombre)
-  const number = String(asRecord(raw.altura).valor || '').trim()
-  const location = asRecord(raw.ubicacion)
-  const lat = finiteNumber(location.lat)
-  const lon = finiteNumber(location.lon)
-  if (!street || number !== String(Number(numberInput)) || lat === null || lon === null) {
-    throw new Error('address_not_found')
-  }
-  return { street, number, lat, lon }
-}
-
-async function resolvePostalCode(
-  admin: SupabaseClient,
-  provinceName: string,
-  localityName: string,
-  street: string,
-  number: string,
-): Promise<string> {
-  const queryKey = normalizeSearch(`${provinceName}|${localityName}|${street}|${number}`)
-  const queryHash = await sha256(`ar|${queryKey}`)
-  const freshSince = new Date(Date.now() - GEOCODE_CACHE_MS).toISOString()
-  const { data: cached, error: cacheError } = await admin
-    .from('shipping_geocode_cache')
-    .select('postal_code')
-    .eq('query_hash', queryHash)
-    .gte('updated_at', freshSince)
-    .maybeSingle()
-  if (cacheError) throw new Error('geocode_cache_read_failed')
-  if (cached?.postal_code) return cached.postal_code
-
-  const { error: slotError } = await admin.rpc('acquire_shipping_geocode_slot')
-  if (slotError) throw new Error('geocode_slot_failed')
-
-  const params = new URLSearchParams({
-    format: 'jsonv2',
-    street: `${number} ${street}`,
-    city: localityName,
-    state: provinceName,
-    country: 'Argentina',
-    countrycodes: 'ar',
-    addressdetails: '1',
-    limit: '3',
-  })
-  const raw = await fetchJson(`${NOMINATIM_SEARCH_URL}?${params.toString()}`, {
-    headers: {
-      'User-Agent': 'IlaraBeauty/1.0 (https://ilara.com.ar)',
-      'Referer': 'https://ilara.com.ar/',
-      'Accept-Language': 'es-AR,es;q=0.9',
-    },
-  })
-  const postalCode = (Array.isArray(raw) ? raw : []).flatMap((value) => {
-    const address = asRecord(asRecord(value).address)
-    if (text(address.country_code).toLowerCase() !== 'ar') return []
-    const code = numericPostalCode(address.postcode)
-    return code ? [code] : []
-  })[0]
-  if (!postalCode) throw new Error('postal_code_not_found')
-
-  const { error: upsertError } = await admin.from('shipping_geocode_cache').upsert({
-    query_hash: queryHash,
-    postal_code: postalCode,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: 'query_hash' })
-  if (upsertError) throw new Error('geocode_cache_write_failed')
-  return postalCode
-}
-
 async function resolveStructuredAddress(
-  admin: SupabaseClient,
   body: JsonRecord,
 ): Promise<StructuredAddress> {
   const provinceId = text(body.provinceId)
   const localityId = text(body.localityId)
+  const postalCode = text(body.postalCode)
   const streetInput = text(body.street)
   const numberInput = text(body.number)
+  if (!/^\d{4}$/.test(postalCode)) throw new Error('invalid_postal_code')
   if (streetInput.length < 2 || streetInput.length > 120) throw new Error('invalid_street')
   if (!/^\d{1,6}$/.test(numberInput) || Number(numberInput) < 1) throw new Error('invalid_street_number')
 
   const { locality, provinceName } = await resolveOfficialLocality(provinceId, localityId)
-  const normalized = await normalizeOfficialAddress(
-    provinceId, locality.name, streetInput, numberInput,
-  )
-  const postalCode = await resolvePostalCode(
-    admin, provinceName, locality.name, normalized.street, normalized.number,
-  )
+  const street = streetInput.replace(/\s+/g, ' ')
+  const number = String(Number(numberInput))
   return {
     provinceId,
     provinceName,
     localityId,
     localityName: locality.name,
-    street: normalized.street,
-    number: normalized.number,
-    formattedAddress: `${normalized.street} ${normalized.number}, ${locality.name}, ${provinceName}`,
-    lat: normalized.lat,
-    lon: normalized.lon,
+    street,
+    number,
+    formattedAddress: `${street} ${number}, ${locality.name}, ${provinceName}`,
+    lat: null,
+    lon: null,
     postalCode,
   }
 }
@@ -366,7 +272,7 @@ serve(async (req: Request) => {
       .single()
     if (requestInsertError || !requestRow) throw new Error('quote_rate_limit_record_failed')
 
-    const address = await resolveStructuredAddress(admin, body)
+    const address = await resolveStructuredAddress(body)
     const { error: requestUpdateError } = await admin
       .from('shipping_quote_requests')
       .update({ destination_postal_code: address.postalCode })
@@ -485,8 +391,8 @@ serve(async (req: Request) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
     const validationCodes = new Set([
-      'invalid_province', 'invalid_locality', 'invalid_street', 'invalid_street_number',
-      'address_not_found', 'postal_code_not_found',
+      'invalid_province', 'invalid_locality', 'invalid_postal_code',
+      'invalid_street', 'invalid_street_number', 'postal_code_not_found',
     ])
     const code = error instanceof Error && error.name === 'AbortError'
       ? 'shipping_timeout'
