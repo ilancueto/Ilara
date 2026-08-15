@@ -15,12 +15,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_street: 'Ingresá una calle válida.',
   invalid_street_number: 'Ingresá una altura válida.',
   address_not_found: 'No pudimos reconocer esa calle y altura. Revisá la dirección.',
-  postal_code_not_found: 'No pudimos determinar el código postal de esa dirección.',
+  postal_code_not_found: 'No encontramos esa dirección. Revisá la calle y la altura.',
   no_shipping_options: 'No hay opciones de envío disponibles para esa dirección.',
   rate_limited: 'Hiciste varias cotizaciones. Esperá unos minutos e intentá de nuevo.',
   shipping_timeout: 'La cotización demoró demasiado. Intentá de nuevo.',
-  shipping_provider_error: 'Envia no pudo calcular tarifas en este momento.',
-  shipping_unavailable: 'El cotizador no está disponible en este momento.',
+  shipping_provider_error: 'No pudimos mostrar opciones de envío. Intentá de nuevo.',
+  shipping_unavailable: 'No pudimos mostrar opciones de envío. Intentá de nuevo.',
 }
 
 function record(value: unknown): Record<string, unknown> {

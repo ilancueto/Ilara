@@ -172,7 +172,7 @@ export function CheckoutPedido({
       setShippingQuote(result)
       setSelectedShippingId(result.options[0]?.id || null)
     } catch (error) {
-      setQuoteError(toUserMessage(error, 'No se pudo cotizar el envío. Intentá de nuevo.'))
+      setQuoteError(toUserMessage(error, 'No pudimos mostrar opciones de envío. Intentá de nuevo.'))
     } finally {
       setQuotePending(false)
     }
@@ -245,7 +245,7 @@ export function CheckoutPedido({
 
         setDone(result.order)
         onOrderCreated(result.order)
-        showToast('success', `Pedido ${result.order.order_number} registrado`)
+        showToast('success', `Pedido ${result.order.order_number} confirmado`)
       } catch {
         setSubmitError('No se pudo crear el pedido. Revisá tu conexión e intentá de nuevo.')
         showToast('error', 'Error de conexión. Tu bolsa se conservó.')
@@ -269,7 +269,7 @@ export function CheckoutPedido({
     })
     const ok = openWhatsApp(msg, false)
     if (!ok) {
-      showToast('warning', 'No se pudo abrir WhatsApp. Tu pedido ya quedó registrado.')
+      showToast('warning', 'No se pudo abrir WhatsApp. Tu pedido ya está confirmado.')
     }
   }
 
@@ -279,7 +279,7 @@ export function CheckoutPedido({
         className={styles.backdrop}
         type="button"
         onClick={pending ? undefined : onClose}
-        aria-label="Cerrar checkout"
+        aria-label="Cerrar pedido"
         disabled={pending}
       />
       <aside
@@ -303,9 +303,9 @@ export function CheckoutPedido({
             </button>
           )}
           <div>
-            <p className={styles.eyebrow}>{done ? 'Confirmación' : 'Checkout'}</p>
+            <p className={styles.eyebrow}>{done ? 'Confirmación' : 'Tu pedido'}</p>
             <h2 id={`${formId}-title`} className={styles.title}>
-              {done ? 'Pedido registrado' : 'Datos del pedido'}
+              {done ? '¡Pedido confirmado!' : 'Datos del pedido'}
             </h2>
           </div>
         </header>
@@ -362,10 +362,9 @@ export function CheckoutPedido({
                 </div>
               )}
               <div className={styles.summaryTotal}>
-                <span>Total estimado</span>
+                <span>Total</span>
                 <strong>${formatPesoARExact(estimatedTotal)}</strong>
               </div>
-              <p className={styles.note}>El sistema revalida productos, cupón y tarifa al confirmar.</p>
             </section>
 
             <div className={styles.field}>
@@ -495,9 +494,6 @@ export function CheckoutPedido({
                 </div>
               </div>
               <div className={styles.quoteRow}>
-                <p className={styles.fieldHint}>
-                  Calculamos el código postal automáticamente al cotizar.
-                </p>
                 <input
                   type="hidden"
                   name="postal_code"
@@ -512,14 +508,9 @@ export function CheckoutPedido({
                   data-testid="checkout-quote-shipping"
                 >
                   {quotePending ? <Loader2 size={16} className={styles.spin} aria-hidden /> : <Truck size={16} aria-hidden />}
-                  {quotePending ? 'Cotizando…' : 'Cotizar'}
+                  {quotePending ? 'Buscando…' : 'Ver envíos'}
                 </button>
               </div>
-              <p className={styles.fieldHint}>Origen: Neuquén 8300 · bolsa 20 × 35 × 5 cm · hasta 1 kg.</p>
-              <p className={styles.attribution}>
-                Localidades: <a href="https://www.argentina.gob.ar/georef" target="_blank" rel="noreferrer">Georef Argentina</a>
-                {' · '}CP: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>.
-              </p>
             </fieldset>
 
             {locationsError && <p className={styles.error} role="alert">{locationsError}</p>}
@@ -548,7 +539,6 @@ export function CheckoutPedido({
                     <strong>${formatPesoARExact(option.amount)}</strong>
                   </label>
                 ))}
-                <p className={styles.fieldHint}>Tarifa válida por 15 minutos.</p>
               </fieldset>
             )}
 
@@ -583,7 +573,7 @@ export function CheckoutPedido({
               {pending ? (
                 <>
                   <Loader2 size={18} className={styles.spin} aria-hidden />
-                  Registrando…
+                  Confirmando…
                 </>
               ) : (
                 'Confirmar pedido'

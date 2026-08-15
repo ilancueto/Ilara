@@ -459,13 +459,6 @@
   gap: 9px;
 }
 
-.checkoutNote {
-  margin: 10px 0 0;
-  color: var(--bag-muted);
-  text-align: center;
-  font-size: 10px;
-}
-
 .empty {
   min-height: 0;
   padding: 42px 28px;

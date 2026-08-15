@@ -53,7 +53,7 @@ export function ModalDetalleCombo({ combo, onClose, onAgregar, disponible }: Mod
           <div className="space-y-2.5">
             {items.map((ci, idx) => {
               const prod = ci.products as PublicCatalogProduct | undefined
-              const nombre = prod?.name ?? `Producto #${ci.product_id}`
+              const nombre = prod?.name ?? 'Producto incluido'
               const img = prod ? getProductImages(prod)[0] : undefined
               return (
                 <div key={ci.id ?? idx} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-700/60 border border-gray-100 dark:border-gray-600">

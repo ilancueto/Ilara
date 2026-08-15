@@ -101,17 +101,6 @@
   font-size: 1rem;
 }
 
-.note {
-  margin: 0.35rem 0 0;
-  font-size: 0.75rem;
-  color: #7a6672;
-  line-height: 1.35;
-}
-
-:global(.dark) .note {
-  color: #b5a3b0;
-}
-
 .field {
   display: flex;
   flex-direction: column;
@@ -170,18 +159,6 @@
   gap: 0.5rem;
 }
 
-.attribution {
-  margin: 0;
-  font-size: 0.68rem;
-  color: #8a7482;
-}
-
-.attribution a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
 :global(.dark) .addressFields {
   border-color: #3a2a34;
 }
@@ -193,9 +170,8 @@
 }
 
 .quoteRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .quoteButton {
@@ -339,8 +315,7 @@
 }
 
 @media (max-width: 380px) {
-  .addressRow,
-  .quoteRow {
+  .addressRow {
     grid-template-columns: 1fr;
   }
 }

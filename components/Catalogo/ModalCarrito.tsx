@@ -263,15 +263,10 @@ export function ModalCarrito({
                             >
                                 <span className={styles.checkoutCopy}>
                                     <MessageCircle size={18} />
-                                    {onCheckout ? 'Solo WhatsApp (sin registrar)' : 'Pedir por WhatsApp'}
+                                    Pedir por WhatsApp
                                 </span>
                                 <ArrowUpRight size={18} />
                             </button>
-                            <p className={styles.checkoutNote}>
-                                {onCheckout
-                                    ? 'Registramos el pedido en Ilara y después podés continuar por WhatsApp'
-                                    : 'Continuás el pedido por WhatsApp'}
-                            </p>
                         </footer>
                     </>
                 ) : (

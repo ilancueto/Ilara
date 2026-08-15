@@ -5,12 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft, RefreshCw } from 'lucide-react'
 import ThemeSwitch from '@/components/ThemeSwitch'
 
-type Props = { id: number; canonicalPath: string }
-
-/**
- * Fallback cuando el fetch SSR de la ficha falla: `router.refresh()` vuelve a ejecutar el Server Component.
- */
-export function ProductoCatalogoRecover({ id, canonicalPath }: Props) {
+export function ProductoCatalogoRecover() {
   const router = useRouter()
 
   return (
@@ -32,12 +27,9 @@ export function ProductoCatalogoRecover({ id, canonicalPath }: Props) {
             Producto no encontrado
           </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-          Puede ser un fallo temporal del servidor. Podés reintentar o volver al catálogo.
+          No pudimos mostrar este producto. Podés intentar nuevamente o volver al catálogo.
         </p>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-6 font-mono truncate" title={canonicalPath}>
-          #{id}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
           <button
             type="button"
             onClick={() => router.refresh()}

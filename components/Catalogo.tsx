@@ -285,7 +285,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                         <Search size={18} />
                     </button>
                     <span className={styles.themeControl}><ThemeSwitch /></span>
-                    <Link className={styles.loginButton} href="/login">Login</Link>
+                    <Link className={styles.loginButton} href="/login">Ingresar</Link>
                     <button
                         className={styles.bagButton}
                         type="button"
@@ -696,7 +696,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                 <div className={styles.footerLinks}>
                     <small>HABLEMOS</small>
                     <button type="button" onClick={() => openWhatsApp('¡Hola! Quiero hacer una consulta sobre el catálogo de Ilara.', false)}>WhatsApp</button>
-                    <Link href="/login">Acceso al panel</Link>
+                    <Link href="/login">Ingresar</Link>
                 </div>
                 <p className={styles.footerNote}>© {new Date().getFullYear()} Ilara Beauty · Neuquén</p>
             </footer>

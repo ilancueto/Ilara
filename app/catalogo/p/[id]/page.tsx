@@ -124,7 +124,7 @@ export default async function CatalogoProductoPage({ params }: PageProps) {
     const supabase = createSupabasePublicClient()
     const res = await fetchCatalogProductByIdServer(supabase, id)
     if (res.status === 'error') {
-        return <ProductoCatalogoRecover id={id} canonicalPath={`/catalogo/p/${id}`} />
+        return <ProductoCatalogoRecover />
     }
     if (res.status === 'not_found') notFound()
 

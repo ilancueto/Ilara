@@ -74,7 +74,12 @@ describe('Stage 7 — cotizaciones Envia', () => {
     expect(checkout).toContain('checkout-province')
     expect(checkout).toContain('checkout-locality')
     expect(checkout).toContain('checkout-street-number')
-    expect(checkout).toContain('Calculamos el código postal automáticamente')
+    expect(checkout).not.toContain('Calculamos el código postal automáticamente')
+    expect(checkout).not.toContain('Origen: Neuquén')
+    expect(checkout).not.toContain('Localidades:')
+    expect(checkout).not.toContain('OpenStreetMap contributors')
+    expect(checkout).not.toContain('El sistema revalida')
+    expect(checkout).not.toContain('Total estimado')
   })
 
   it('permite cargar provincias desde todos los aliases productivos de Vercel', () => {
