@@ -242,7 +242,7 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
     await page.getByTestId('cart-checkout').click()
     await expect(page.getByTestId('checkout-submit')).toBeVisible()
     await expect(page.getByTestId('checkout-success')).toHaveCount(0)
-    await page.getByRole('button', { name: /cerrar checkout/i }).click()
+    await page.getByRole('button', { name: /cerrar pedido/i }).click()
 
     const { email, password } = await ensureE2EAdmin()
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
