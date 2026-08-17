@@ -20,6 +20,12 @@ export default function PagosConfig() {
   const [error, setError] = useState<string | null>(null)
   const [fee, setFee] = useState('0.053119')
   const [increment, setIncrement] = useState('100')
+  const [bankCbu, setBankCbu] = useState('')
+  const [bankAlias, setBankAlias] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [bankHolder, setBankHolder] = useState('')
+  const [bankCuit, setBankCuit] = useState('')
+  const [bankInstructions, setBankInstructions] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -30,6 +36,12 @@ export default function PagosConfig() {
       setPreview(nextPreview)
       setFee(String(nextPreview.version.effective_fee_rate))
       setIncrement(String(nextPreview.version.rounding_increment))
+      setBankCbu(nextPreview.version.bank_cbu ?? '')
+      setBankAlias(nextPreview.version.bank_alias ?? '')
+      setBankName(nextPreview.version.bank_name ?? '')
+      setBankHolder(nextPreview.version.bank_account_holder ?? '')
+      setBankCuit(nextPreview.version.bank_cuit ?? '')
+      setBankInstructions(nextPreview.version.bank_instructions ?? '')
     } catch (cause) {
       setError(toUserMessage(cause, 'No se pudo cargar la configuración de precios.'))
     } finally {
@@ -54,7 +66,13 @@ export default function PagosConfig() {
         mercado_pago_enabled: false,
         bank_transfer_enabled: false,
         catalog_dual_price_visible: false,
-        notes: 'Borrador Stage 8.1. Flags apagados.',
+        bank_cbu: bankCbu,
+        bank_alias: bankAlias,
+        bank_name: bankName,
+        bank_account_holder: bankHolder,
+        bank_cuit: bankCuit,
+        bank_instructions: bankInstructions,
+        notes: 'Borrador Stage 8.3. Flags apagados. Sin datos bancarios de ejemplo.',
       })
       await load()
     } catch (cause) {
@@ -136,6 +154,68 @@ export default function PagosConfig() {
               <p>Catálogo dual: <strong>{preview.version.catalog_dual_price_visible ? 'visible' : 'oculto'}</strong></p>
             </div>
           </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              CBU
+              <input
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                value={bankCbu}
+                onChange={(event) => setBankCbu(event.target.value)}
+                autoComplete="off"
+                maxLength={32}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              Alias
+              <input
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                value={bankAlias}
+                onChange={(event) => setBankAlias(event.target.value)}
+                autoComplete="off"
+                maxLength={40}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              Banco
+              <input
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                value={bankName}
+                onChange={(event) => setBankName(event.target.value)}
+                autoComplete="off"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              Titular
+              <input
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                value={bankHolder}
+                onChange={(event) => setBankHolder(event.target.value)}
+                autoComplete="off"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              CUIT
+              <input
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                value={bankCuit}
+                onChange={(event) => setBankCuit(event.target.value)}
+                autoComplete="off"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm md:col-span-2">
+              Indicaciones para transferir
+              <textarea
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                value={bankInstructions}
+                onChange={(event) => setBankInstructions(event.target.value)}
+                rows={3}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-gray-500">
+            Dejá vacío lo que todavía no tengas. No se guardan datos de ejemplo.
+          </p>
 
           <div className="flex flex-wrap gap-2">
             <button

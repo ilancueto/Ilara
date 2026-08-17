@@ -153,7 +153,10 @@ describe('Stage 5 — frontera server-only / service role', () => {
       for (const file of walkTsFiles(root)) {
         if (file.includes(`${join('lib', '__tests__')}`)) continue
         // Sanitización puede mencionar service_role como patrón a redactar
-        if (file.replace(/\\/g, '/').endsWith('lib/observability/sanitize.ts')) continue
+        const rel = file.replace(/\\/g, '/')
+        if (rel.endsWith('lib/observability/sanitize.ts')) continue
+        // Job interno de expiración y URL firmada de comprobante. Nunca se importa desde cliente.
+        if (rel.endsWith('lib/supabase/service.ts')) continue
         const text = readFileSync(file, 'utf8')
         if (/process\.env\.(SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY)/.test(text)) {
           offenders.push(file.replace(ROOT, ''))
@@ -173,6 +176,9 @@ describe('Stage 5 — frontera server-only / service role', () => {
       'lib/catalog/serverCatalog.ts',
       'lib/dal/auth.ts',
       'lib/dal/catalog.ts',
+      'lib/dal/orders.ts',
+      'lib/dal/payments.ts',
+      'lib/supabase/service.ts',
     ]) {
       const text = readFileSync(join(ROOT, rel), 'utf8')
       expect(text, rel).toMatch(/import ['"]server-only['"]/)

@@ -100,6 +100,10 @@ const sensitiveTables = [
   'order_payments',
   'payment_events',
   'payment_access_tokens',
+  // Stage 8.3 — capability, comprobantes y evidencia de expiración
+  'order_access_capabilities',
+  'payment_receipts',
+  'payment_expire_runs',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
@@ -187,6 +191,27 @@ for (const cols of ['purchase_price', 'notes', 'min_stock', 'created_by', 'updat
   ok('anon denegado en payment_admin_preview_pricing')
 }
 
+{
+  const { error } = await anon.rpc('expire_catalog_payments')
+  if (!isDenied(error)) fail(`anon expire_catalog_payments no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en expire_catalog_payments')
+}
+
+{
+  const { error } = await anon.rpc('payment_expire_health')
+  if (!isDenied(error)) fail(`anon payment_expire_health no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en payment_expire_health')
+}
+
+{
+  const { error } = await anon.rpc('admin_review_transfer_payment', {
+    p_payment_id: '00000000-0000-0000-0000-000000000000',
+    p_action: 'approve',
+  })
+  if (!isDenied(error)) fail(`anon admin_review_transfer_payment no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en admin_review_transfer_payment')
+}
+
 // --- service_role: RLS bypasseable; comprueba tablas core ---
 if (serviceKey) {
   const service = createClient(url, serviceKey, {
@@ -202,6 +227,9 @@ if (serviceKey) {
     'order_payments',
     'payment_events',
     'payment_access_tokens',
+    'order_access_capabilities',
+    'payment_receipts',
+    'payment_expire_runs',
   ]
   for (const table of core) {
     const { error } = await service.from(table).select('*', { count: 'exact', head: true })

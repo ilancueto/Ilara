@@ -5,10 +5,16 @@ import { getEnv } from '@/lib/env';
 import { createRequestId } from '@/lib/observability';
 
 /** Rutas públicas exactas: no requieren sesión y no deben redirigir a /login. */
-const PUBLIC_EXACT_ROUTES = new Set(['/login', '/sitemap.xml', '/sitemap-xml', '/robots.txt']);
+const PUBLIC_EXACT_ROUTES = new Set([
+    '/login',
+    '/sitemap.xml',
+    '/sitemap-xml',
+    '/robots.txt',
+    '/api/internal/expire-payments',
+]);
 
 /** Rutas públicas por prefijo: el catálogo público incluye subrutas como /catalogo/p/[id]. */
-const PUBLIC_PREFIX_ROUTES = ['/catalogo'];
+const PUBLIC_PREFIX_ROUTES = ['/catalogo', '/pedido'];
 
 const REQUEST_ID_HEADER = 'x-request-id';
 

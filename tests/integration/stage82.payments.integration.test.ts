@@ -1,32 +1,44 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createHash } from 'node:crypto'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+const buyerA = `cap-a-${crypto.randomUUID()}`
+const buyerB = `cap-b-${crypto.randomUUID()}`
+const hashOf = (plain: string) => createHash('sha256').update(plain).digest('hex')
 
 const PROD_PROJECT_REFS = ['qbbnvdmadgomfmrsfxlo'] as const
 const enabled = process.env.STAGE82_INTEGRATION === '1' || process.env.STAGE8_INTEGRATION === '1'
 const url =
   process.env.STAGE82_SUPABASE_URL?.trim() ||
   process.env.STAGE81_SUPABASE_URL?.trim() ||
+  process.env.STAGE61_SUPABASE_URL?.trim() ||
   process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
 const anonKey =
   process.env.STAGE82_ANON_KEY?.trim() ||
   process.env.STAGE81_ANON_KEY?.trim() ||
+  process.env.STAGE61_ANON_KEY?.trim() ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 const serviceKey =
   process.env.STAGE82_SERVICE_ROLE_KEY?.trim() ||
   process.env.STAGE81_SERVICE_ROLE_KEY?.trim() ||
+  process.env.STAGE61_SERVICE_ROLE_KEY?.trim() ||
   process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
 const adminEmail =
   process.env.STAGE82_USER_A_EMAIL?.trim() ||
-  process.env.STAGE81_USER_A_EMAIL?.trim()
+  process.env.STAGE81_USER_A_EMAIL?.trim() ||
+  process.env.STAGE61_USER_A_EMAIL?.trim()
 const adminPassword =
   process.env.STAGE82_USER_A_PASSWORD?.trim() ||
-  process.env.STAGE81_USER_A_PASSWORD?.trim()
+  process.env.STAGE81_USER_A_PASSWORD?.trim() ||
+  process.env.STAGE61_USER_A_PASSWORD?.trim()
 const otherEmail =
   process.env.STAGE82_USER_B_EMAIL?.trim() ||
-  process.env.STAGE81_USER_B_EMAIL?.trim()
+  process.env.STAGE81_USER_B_EMAIL?.trim() ||
+  process.env.STAGE61_USER_B_EMAIL?.trim()
 const otherPassword =
   process.env.STAGE82_USER_B_PASSWORD?.trim() ||
-  process.env.STAGE81_USER_B_PASSWORD?.trim()
+  process.env.STAGE81_USER_B_PASSWORD?.trim() ||
+  process.env.STAGE61_USER_B_PASSWORD?.trim()
 
 const isProd = Boolean(url && PROD_PROJECT_REFS.some((ref) => url.toLowerCase().includes(ref)))
 const complete = Boolean(url && anonKey && serviceKey && adminEmail && adminPassword && otherEmail && otherPassword)
@@ -96,14 +108,23 @@ describe.skipIf(!canRun)('Stage 8.2 core de pagos', () => {
       line_subtotal: 100000,
     })
     if (item.error) throw item.error
+    const cap = await service.from('order_access_capabilities').insert({
+      order_id: orderId,
+      capability_hash: hashOf(buyerA),
+      expires_at: new Date(Date.now() + 86400_000).toISOString(),
+    })
+    if (cap.error) throw cap.error
   })
 
   afterAll(async () => {
     if (orderId) {
+      const payIds = (await service.from('order_payments').select('id').eq('order_id', orderId)).data?.map((row) => row.id) ?? []
+      if (payIds.length) {
+        await service.from('payment_receipts').delete().in('payment_id', payIds)
+        await service.from('payment_events').delete().in('payment_id', payIds)
+      }
+      await service.from('order_access_capabilities').delete().eq('order_id', orderId)
       await service.from('payment_access_tokens').delete().eq('order_id', orderId)
-      await service.from('payment_events').delete().in('payment_id', (
-        await service.from('order_payments').select('id').eq('order_id', orderId)
-      ).data?.map((row) => row.id) ?? [])
       await service.from('order_payments').delete().eq('order_id', orderId)
       await service.from('order_items').delete().eq('order_id', orderId)
       await service.from('order_status_events').delete().eq('order_id', orderId)
@@ -122,9 +143,13 @@ describe.skipIf(!canRun)('Stage 8.2 core de pagos', () => {
     const table = await anon.from('order_payments').select('id')
     expect(table.error).toBeTruthy()
     const started = await anon.rpc('start_catalog_order_payment', {
-      p_payload: { order_id: orderId, method: 'bank_transfer', idempotency_key: crypto.randomUUID() },
+      p_payload: { access_capability: buyerA, method: 'bank_transfer', idempotency_key: crypto.randomUUID() },
     })
     expect(started.error?.message || '').toMatch(/payments_disabled/)
+    const byIdOnly = await anon.rpc('start_catalog_order_payment', {
+      p_payload: { order_id: orderId, method: 'bank_transfer', idempotency_key: crypto.randomUUID() },
+    })
+    expect(byIdOnly.error?.message || '').toMatch(/invalid_access_capability|client_order_id_not_allowed/)
   })
 
   it('reserva una sola vez, rechaza precio cliente y expira restaurando stock', async () => {
@@ -136,7 +161,7 @@ describe.skipIf(!canRun)('Stage 8.2 core de pagos', () => {
 
     const rejected = await admin.rpc('start_catalog_order_payment', {
       p_payload: {
-        order_id: orderId,
+        access_capability: buyerA,
         method: 'bank_transfer',
         idempotency_key: crypto.randomUUID(),
         amount_due: 1,
@@ -146,16 +171,15 @@ describe.skipIf(!canRun)('Stage 8.2 core de pagos', () => {
 
     const key = crypto.randomUUID()
     const first = await admin.rpc('start_catalog_order_payment', {
-      p_payload: { order_id: orderId, method: 'bank_transfer', idempotency_key: key },
+      p_payload: { access_capability: buyerA, method: 'bank_transfer', idempotency_key: key },
     })
     expect(first.error).toBeNull()
-    const created = first.data as { payment_id: string; amount_due: number; access_token: string; stock_reserved: boolean }
+    const created = first.data as { payment_id: string; amount_due: number; stock_reserved: boolean }
     expect(created.amount_due).toBe(100000)
-    expect(created.access_token).toMatch(/^[a-f0-9]{64}$/)
     expect(created.stock_reserved).toBe(true)
 
     const replay = await admin.rpc('start_catalog_order_payment', {
-      p_payload: { order_id: orderId, method: 'bank_transfer', idempotency_key: key },
+      p_payload: { access_capability: buyerA, method: 'bank_transfer', idempotency_key: key },
     })
     expect(replay.error).toBeNull()
     expect((replay.data as { idempotent_replay: boolean }).idempotent_replay).toBe(true)
@@ -176,6 +200,20 @@ describe.skipIf(!canRun)('Stage 8.2 core de pagos', () => {
     expect(after.data?.stock).toBe(startedStock)
     const order = await service.from('orders').select('status, stock_reserved').eq('id', orderId).single()
     expect(order.data).toEqual({ status: 'cancelled', stock_reserved: false })
+
+    const again = await service.rpc('expire_catalog_payments')
+    expect(again.error).toBeNull()
+    const afterAgain = await service.from('products').select('stock').eq('id', productId).single()
+    expect(afterAgain.data?.stock).toBe(startedStock)
+  })
+
+  it('un comprador no opera el pago de otro', async () => {
+    const stranger = await admin.rpc('start_catalog_order_payment', {
+      p_payload: { access_capability: buyerB, method: 'bank_transfer', idempotency_key: crypto.randomUUID() },
+    })
+    expect(stranger.error?.message || '').toMatch(/invalid_access_capability/)
+    const peek = await admin.rpc('get_catalog_payment_public', { p_access_capability: buyerB })
+    expect(peek.error?.message || '').toMatch(/invalid_access_capability/)
   })
 
   it('no-admin no confirma y anon no expira', async () => {

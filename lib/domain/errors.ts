@@ -61,7 +61,7 @@ export function mapRpcMessageToAppError(raw: string): AppError {
   if (m.includes('not_authenticated')) {
     return new AppError('auth', 'Sesión expirada. Volvé a iniciar sesión.', { message: 'not_authenticated' })
   }
-  if (m.includes('not_authorized')) {
+  if (m.includes('not_authorized') || m.includes('invalid_access_capability')) {
     return new AppError('forbidden', 'No tenés permiso para esta operación.', { message: 'not_authorized' })
   }
   if (

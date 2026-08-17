@@ -5,7 +5,15 @@
  * Fail-closed si el flag está y faltan credenciales. Bloquea prod.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { createHash } from 'node:crypto'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+function withAccess<T extends { idempotency_key: string }>(payload: T) {
+  return {
+    ...payload,
+    access_capability_hash: createHash('sha256').update(`plain-${payload.idempotency_key}`).digest('hex'),
+  }
+}
 
 const PROD_PROJECT_REFS = ['qbbnvdmadgomfmrsfxlo'] as const
 
@@ -270,7 +278,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const idem = crypto.randomUUID()
     const shippingQuoteId = await createTestShippingQuote()
     const { data, error } = await a.rpc('create_catalog_order', {
-      p_payload: {
+      p_payload: withAccess({
         idempotency_key: idem,
         shipping_quote_id: shippingQuoteId,
         customer_name: 'Cliente Test',
@@ -280,20 +288,20 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
         // manipulación
         total: 1,
         unit_price: 1,
-      },
+      }),
     })
     expect(error?.message || '').toMatch(/client_price_not_allowed/)
     expect(data).toBeNull()
 
     const { data: okData, error: okErr } = await a.rpc('create_catalog_order', {
-      p_payload: {
+      p_payload: withAccess({
         idempotency_key: idem,
         shipping_quote_id: shippingQuoteId,
         customer_name: 'Cliente Test',
         customer_phone: '2995550001',
         lines: [{ line_type: 'product', product_id: productId, quantity: 2 }],
         coupon_code: couponCode,
-      },
+      }),
     })
     expect(okErr).toBeNull()
     // unit con 10% = 900; x2 = 1800; cupón 10% = 180; envío = 500
@@ -313,13 +321,13 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     const a = anon()
     const idem = crypto.randomUUID()
     const shippingQuoteId = await createTestShippingQuote()
-    const payload = {
+    const payload = withAccess({
       idempotency_key: idem,
       shipping_quote_id: shippingQuoteId,
       customer_name: 'Idem',
       customer_phone: '2995550002',
       lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
-    }
+    })
     const [r1, r2] = await Promise.all([
       a.rpc('create_catalog_order', { p_payload: payload }),
       a.rpc('create_catalog_order', { p_payload: payload }),
@@ -343,13 +351,13 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
       Array.from({ length: 9 }, async (_, index) => {
         const shippingQuoteId = await createTestShippingQuote()
         return a.rpc('create_catalog_order', {
-          p_payload: {
+          p_payload: withAccess({
             idempotency_key: crypto.randomUUID(),
             shipping_quote_id: shippingQuoteId,
             customer_name: `Rate ${index}`,
             customer_phone: phone,
             lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
-          },
+          }),
         })
       })
     )
@@ -385,13 +393,13 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     if (ephemeralErr) throw ephemeralErr
 
     const create = await anon().rpc('create_catalog_order', {
-      p_payload: {
+      p_payload: withAccess({
         idempotency_key: crypto.randomUUID(),
         shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'Producto eliminado',
         customer_phone: '2995550098',
         lines: [{ line_type: 'product', product_id: ephemeral.id, quantity: 1 }],
-      },
+      }),
     })
     expect(create.error).toBeNull()
     createdOrderIds.push(create.data.order_id)
@@ -419,26 +427,26 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
   it('rechaza cupón inválido y producto invisible', async () => {
     const a = anon()
     const badCoupon = await a.rpc('create_catalog_order', {
-      p_payload: {
+      p_payload: withAccess({
         idempotency_key: crypto.randomUUID(),
         shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'X',
         customer_phone: '2995550003',
         coupon_code: 'NOEXISTE999',
         lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
-      },
+      }),
     })
     expect(badCoupon.error?.message || '').toMatch(/invalid_coupon/)
 
     await service().from('products').update({ visible_in_catalog: false }).eq('id', productId)
     const hidden = await a.rpc('create_catalog_order', {
-      p_payload: {
+      p_payload: withAccess({
         idempotency_key: crypto.randomUUID(),
         shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'X',
         customer_phone: '2995550004',
         lines: [{ line_type: 'product', product_id: productId, quantity: 1 }],
-      },
+      }),
     })
     expect(hidden.error?.message || '').toMatch(/product_not_available/)
     await service().from('products').update({ visible_in_catalog: true }).eq('id', productId)
@@ -447,7 +455,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
   it('admin confirma (stock), cancel restaura; no-admin no opera', async () => {
     const a = anon()
     const create = await a.rpc('create_catalog_order', {
-      p_payload: {
+      p_payload: withAccess({
         idempotency_key: crypto.randomUUID(),
         shipping_quote_id: await createTestShippingQuote(),
         customer_name: 'Stock',
@@ -456,7 +464,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
           { line_type: 'product', product_id: productId, quantity: 1 },
           { line_type: 'combo', combo_id: comboId, quantity: 1 },
         ],
-      },
+      }),
     })
     expect(create.error).toBeNull()
     const orderId = create.data.order_id as string

@@ -56,6 +56,8 @@ export type CreateOrderResult = {
   total: number
   created_at: string
   idempotent_replay: boolean
+  /** Clave de seguimiento. Solo se entrega desde el Server Action, nunca se guarda en claro. */
+  access_capability?: string
 }
 
 export type OrderListItem = {

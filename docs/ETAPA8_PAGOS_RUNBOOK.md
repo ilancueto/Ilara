@@ -46,20 +46,26 @@ commit, deploy). No marcar un ítem si solo compiló.
 
 - [x] Tablas `order_payments`, `payment_events`, tokens
 - [x] Reserva al iniciar pago; restore en expire/cancel
-- [x] Cron oficial (`cron.schedule`, no `UPDATE cron.job`)
+- [x] Cron oficial intentado (`cron.schedule`, no `UPDATE cron.job`)
+- [x] Hallazgo: producción `qbbnvdmadgomfmrsfxlo` no tiene `pg_cron` / `cron.job`
 - [x] RLS / REVOKE / advisors
-- [x] Integración local 4/4 (capa apagada, reserva única, expire, roles)
-- [ ] Commit independiente
-- [ ] Prod solo con checks verdes y flags off
+- [x] Integración local (capa apagada, reserva única, expire, roles)
+- [x] Commit `ed76100`
+- [x] Prod migración `20260817225016` con flags off; cron real ausente (bloqueante 8.3)
 
-## 8.3 Transferencia
+## 8.3 Transferencia + bloqueantes 8.2
 
-- [ ] Datos bancarios snapshot
-- [ ] Token opaco
-- [ ] Bucket `payment-receipts` privado
-- [ ] Review admin
-- [ ] E2E transferencia
-- [ ] Commit / deploy apagado
+- [x] Expiración: Vercel Cron `*/5` + `/api/internal/expire-payments` + `CRON_SECRET`
+- [x] Evidencia: `payment_expire_runs` + `payment_expire_health` (solo service_role)
+- [x] Capability HMAC al crear pedido; DB solo hash; `order_id` no autoriza
+- [x] Datos bancarios versionados (vacíos hasta que el dueño los cargue)
+- [x] Bucket `payment-receipts` privado; URL firmada solo admin
+- [x] Review admin; rechazo con motivo; reintento mientras el pedido sigue vigente
+- [x] `estimated_fee` = comisión MP estimada; `price_uplift` = público − base
+- [x] Aprobación no inserta `sales` ni `incomes`
+- [ ] Checks locales / CI / migración prod (esta corrida)
+- [ ] E2E de transferencia con flags on (queda para 8.6)
+- [ ] Commit / deploy con flags apagados
 
 ## 8.4 Mercado Pago
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
@@ -17,6 +18,7 @@ import {
 } from '@/lib/domain/shipping/browserShipping'
 import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/types'
 import { toUserMessage } from '@/lib/domain/errors'
+import { saveOrderAccess } from '@/lib/domain/payments/publicSession'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -246,6 +248,9 @@ export function CheckoutPedido({
           return
         }
 
+        if (result.order.access_capability) {
+          saveOrderAccess(result.order.order_number, result.order.access_capability)
+        }
         setDone(result.order)
         onOrderCreated(result.order)
         showToast('success', `Pedido ${result.order.order_number} confirmado`)
@@ -328,9 +333,14 @@ export function CheckoutPedido({
               {done.shipping_delivery_estimate ? ` · ${done.shipping_delivery_estimate}` : ''}.<br />
               Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`} · CP {done.shipping_destination_postal_code}.
             </p>
+            {done.access_capability && (
+              <Link href="/pedido" className={styles.primary} data-testid="checkout-continue-payment">
+                Continuar al pago
+              </Link>
+            )}
             <button
               type="button"
-              className={styles.primary}
+              className={done.access_capability ? styles.secondary : styles.primary}
               onClick={openWa}
               data-testid="checkout-whatsapp"
             >

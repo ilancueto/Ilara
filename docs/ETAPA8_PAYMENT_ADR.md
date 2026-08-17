@@ -26,7 +26,7 @@ Stages 0–7 están cerrados en producción (`ilara.com.ar`, proyecto Supabase
 | Finanzas 6.6 | Libro de CxC/CxP atado a `sales` + `incomes` + `expenses` + `sale_returns` | Insertar un pedido cobrado como `incomes` o como venta POS **duplicaría** caja. |
 | Comprobantes POS | Bucket `receipts` privado, 5 MB, prefijo `{auth.uid()}/` | El comprador es anónimo. No se reutiliza ese bucket para comprobantes de transferencia. |
 | Integraciones | Edge Functions `shipping-quotes` y `passkey-auth`; secretos solo en Supabase; `verify_jwt = false` + auth propia | Mercado Pago sigue ese patrón. Cero `service_role` y cero `NEXT_PUBLIC_*` de tokens MP. |
-| Cron | No hay jobs hoy | Usar `cron.schedule(...)` (API oficial de Supabase Cron / pg_cron). Nunca `UPDATE cron.job`. |
+| Cron | No hay jobs hoy | Intento inicial: `cron.schedule(...)` (API oficial). Nunca `UPDATE cron.job`. **Corrección 8.3:** producción no tiene `pg_cron`; la expiración vive en Vercel Cron + Route Handler autenticado con `CRON_SECRET` + `service_role`. |
 | Next.js 16.3 | Server Actions = POST alcanzable; Route Handlers en `app/**/route.ts` | Acciones públicas y admin con `'use server'`. Webhook **no** vive en Next. |
 
 Hallazgo de stock que el ADR fija: `transition_catalog_order` **ya** restaura

@@ -12,11 +12,22 @@ import {
 } from '@/lib/domain/orders/createOrder'
 import type { CreateOrderInput, CreateOrderResult } from '@/lib/domain/orders/types'
 import { AppError } from '@/lib/domain/errors'
+import { deriveOrderAccessSecret, hashOrderAccessSecret } from '@/lib/domain/payments/orderAccess'
 
 export async function createCatalogOrderServer(
   input: CreateOrderInput
 ): Promise<CreateOrderResult> {
   const payload = buildCreateOrderPayload(input)
+  let accessCapability: string
+  try {
+    accessCapability = await deriveOrderAccessSecret(String(payload.idempotency_key || ''))
+  } catch {
+    throw new AppError('unknown', 'No se pudo registrar el pedido. Intentá de nuevo.', {
+      message: 'missing_order_access_secret',
+      retryable: true,
+    })
+  }
+  payload.access_capability_hash = await hashOrderAccessSecret(accessCapability)
   const supabase = createSupabasePublicClient()
   const { data, error } = await supabase.rpc('create_catalog_order', {
     p_payload: payload,
@@ -31,5 +42,8 @@ export async function createCatalogOrderServer(
       retryable: true,
     })
   }
-  return parseCreateOrderRpcResult(data)
+  return {
+    ...parseCreateOrderRpcResult(data),
+    access_capability: accessCapability,
+  }
 }

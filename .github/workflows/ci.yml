@@ -104,7 +104,7 @@ jobs:
         # No regenerar antes: hacerlo convertiría el control en un falso positivo.
         run: npm run db:types:check
 
-      - name: Integration Stage 0 + Stage 1 + Stage 6.1–6.6
+      - name: Integration Stage 0 + Stage 1 + Stage 6.1–6.6 + Stage 8
         run: |
           eval "$(supabase status -o env)"
           export STAGE0_INTEGRATION=1
@@ -115,6 +115,7 @@ jobs:
           export STAGE64_INTEGRATION=1
           export STAGE65_INTEGRATION=1
           export STAGE66_INTEGRATION=1
+          export STAGE8_INTEGRATION=1
           export STAGE0_SUPABASE_URL="$API_URL"
           export STAGE0_ANON_KEY="$ANON_KEY"
           export STAGE0_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
@@ -163,7 +164,7 @@ jobs:
           ;(async () => {
             const a = await ensureUser('stage0-a@example.com', 'Stage0-Test-Pass-A1!')
             const b = await ensureUser('stage0-b@example.com', 'Stage0-Test-Pass-B1!')
-            await ensureUser('stage61-a@example.com', 'Stage61-Test-Pass-A1!')
+            const a61 = await ensureUser('stage61-a@example.com', 'Stage61-Test-Pass-A1!')
             await ensureUser('stage61-b@example.com', 'Stage61-Test-Pass-B1!')
             await ensureUser('stage62-a@example.com', 'Stage62-Test-Pass-A1!')
             await ensureUser('stage62-b@example.com', 'Stage62-Test-Pass-B1!')
@@ -177,6 +178,11 @@ jobs:
             await ensureUser('stage66-b@example.com', 'Stage66-Test-Pass-B1!')
             const bootstrap = await service.rpc('bootstrap_first_admin', { p_user_id: a })
             if (bootstrap.error) throw bootstrap.error
+            const role61 = await service.from('user_roles').upsert(
+              { user_id: a61, role: 'admin', updated_by: a },
+              { onConflict: 'user_id' }
+            )
+            if (role61.error) throw role61.error
             console.log('users ready')
           })().catch((e) => {
             console.error('user bootstrap failed', e?.message || e)
@@ -257,6 +263,8 @@ jobs:
             echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
             echo "E2E_USER_EMAIL=e2e-admin@example.com"
             echo "E2E_USER_PASSWORD=E2E-Test-Pass-A1!"
+            echo "ORDER_ACCESS_SECRET=e2e-order-access-secret-32"
+            echo "CRON_SECRET=e2e-cron-secret-32chars"
           } >> "$GITHUB_ENV"
 
       - name: Bootstrap E2E admin (local only)
@@ -364,6 +372,8 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          ORDER_ACCESS_SECRET: ${{ env.ORDER_ACCESS_SECRET }}
+          CRON_SECRET: ${{ env.CRON_SECRET }}
 
       - name: Run E2E (local Supabase only — webServer arranca next start)
         run: |
@@ -387,6 +397,9 @@ jobs:
           E2E_USER_PASSWORD: ${{ env.E2E_USER_PASSWORD }}
           E2E_CATALOG_PRODUCT_ID: ${{ env.E2E_CATALOG_PRODUCT_ID }}
           E2E_CATALOG_PRODUCT_NAME: ${{ env.E2E_CATALOG_PRODUCT_NAME }}
+          ORDER_ACCESS_SECRET: ${{ env.ORDER_ACCESS_SECRET }}
+          CRON_SECRET: ${{ env.CRON_SECRET }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.E2E_SERVICE_ROLE_KEY }}
 
       - name: Postdeploy smoke against local server (read-only, fail-closed)
         run: |

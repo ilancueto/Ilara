@@ -92,6 +92,38 @@ export function createOrderErrorFromRpc(message: string): AppError {
   if (m.includes('invalid_customer_name')) {
     return new AppError('validation', 'Ingresá tu nombre.', { message: 'invalid_customer_name' })
   }
+  if (m.includes('invalid_access_capability') || m.includes('client_order_id_not_allowed')) {
+    return new AppError('forbidden', 'No pudimos validar tu pedido. Volvé a abrirlo desde la confirmación.', {
+      message: 'invalid_access_capability',
+    })
+  }
+  if (m.includes('payments_disabled') || m.includes('method_disabled')) {
+    return new AppError('validation', 'Ese medio de pago no está disponible por ahora.', {
+      message: 'payments_disabled',
+    })
+  }
+  if (m.includes('payment_already_open')) {
+    return new AppError('conflict', 'Ya hay un pago en curso para este pedido.', {
+      message: 'payment_already_open',
+    })
+  }
+  if (m.includes('reject_reason_required')) {
+    return new AppError('validation', 'Indicá el motivo del rechazo.', {
+      message: 'reject_reason_required',
+    })
+  }
+  if (m.includes('receipt_required')) {
+    return new AppError('validation', 'Hace falta el comprobante para confirmar este pago.', {
+      message: 'receipt_required',
+    })
+  }
+  if (m.includes('invalid_receipt')) {
+    return new AppError(
+      'validation',
+      'El comprobante no es válido. Usá JPG, PNG, WEBP o PDF de hasta 5 MB.',
+      { message: 'invalid_receipt' }
+    )
+  }
   if (m.includes('invalid_idempotency_key')) {
     return new AppError('validation', 'No se pudo iniciar el pedido. Recargá e intentá de nuevo.', {
       message: 'invalid_idempotency_key',

@@ -29,6 +29,11 @@ import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { useToast } from '@/context/ToastContext'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { ObservabilityEvent } from '@/lib/observability/events'
+import {
+  adminOrderPaymentsAction,
+  type AdminOrderPayment,
+} from '@/app/actions/adminPayments'
+import { PedidoPagosPanel } from '@/components/Pedidos/PedidoPagosPanel'
 
 const STATUS_FILTERS: Array<OrderStatus | 'all'> = ['all', ...ORDER_STATUSES]
 
@@ -69,6 +74,7 @@ export default function Pedidos() {
   const [cancelOpen, setCancelOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelError, setCancelError] = useState<string | null>(null)
+  const [payments, setPayments] = useState<AdminOrderPayment[]>([])
 
   const loadList = useCallback(async () => {
     setLoading(true)
@@ -95,9 +101,12 @@ export default function Pedidos() {
       setSelectedId(id)
       setDetailLoading(true)
       setDetail(null)
+      setPayments([])
       try {
         const d = await getOrderDetail(id)
         setDetail(d)
+        const pay = await adminOrderPaymentsAction(id)
+        if (pay.ok) setPayments(pay.data)
       } catch (err) {
         showToast('error', toUserMessage(err, 'No se pudo cargar el detalle.'))
         setSelectedId(null)
@@ -389,6 +398,19 @@ export default function Pedidos() {
                   <p>{detail.notes}</p>
                 </div>
               )}
+
+              <div>
+                <h4 className="text-sm font-bold mb-2">Pago</h4>
+                <PedidoPagosPanel
+                  orderId={detail.id}
+                  payments={payments}
+                  onChange={(next) => {
+                    setPayments(next)
+                    void getOrderDetail(detail.id).then(setDetail)
+                    void loadList()
+                  }}
+                />
+              </div>
 
               {detail.shipping_quote_id && (
                 <div className="rounded-xl bg-pink-50 dark:bg-pink-950/20 px-3 py-2 text-sm">

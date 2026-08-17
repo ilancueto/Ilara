@@ -22,6 +22,9 @@ export const ObservabilityEvent = {
   ORDER_STATUS_CHANGED: 'order_status_changed',
   ORDER_CONFIRMATION_FAILED: 'order_confirmation_failed',
   ORDER_CANCEL_FAILED: 'order_cancel_failed',
+  PAYMENT_EXPIRE_RUN: 'payment_expire_run',
+  PAYMENT_TRANSFER_STARTED: 'payment_transfer_started',
+  PAYMENT_TRANSFER_REVIEWED: 'payment_transfer_reviewed',
   /** Stage 6.2 — alertas de reposición (sin PII). */
   STOCK_ALERT_OPENED: 'stock_alert_opened',
   STOCK_ALERT_TAKEN: 'stock_alert_taken',

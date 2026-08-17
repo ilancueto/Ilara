@@ -11,6 +11,7 @@ const publicSurfaces = [
   'components/Catalogo/CatalogPrice.tsx',
   'lib/domain/payments/labels.ts',
   'lib/domain/shipping/browserShipping.ts',
+  'components/Catalogo/PedidoPagoClient.tsx',
 ].map((path) => readFileSync(resolve(root, path), 'utf8')).join('\n')
 
 describe('copy del catálogo público', () => {

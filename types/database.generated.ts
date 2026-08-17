@@ -493,6 +493,41 @@ export type Database = {
         }
         Relationships: []
       }
+      order_access_capabilities: {
+        Row: {
+          capability_hash: string
+          created_at: string
+          expires_at: string
+          last_used_at: string | null
+          order_id: string
+          revoked_at: string | null
+        }
+        Insert: {
+          capability_hash: string
+          created_at?: string
+          expires_at: string
+          last_used_at?: string | null
+          order_id: string
+          revoked_at?: string | null
+        }
+        Update: {
+          capability_hash?: string
+          created_at?: string
+          expires_at?: string
+          last_used_at?: string | null
+          order_id?: string
+          revoked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_access_capabilities_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           combo_components_snapshot: Json
@@ -591,6 +626,7 @@ export type Database = {
           method: string
           net_received: number | null
           order_id: string
+          price_uplift: number | null
           pricing_version_id: string
           provider: string
           provider_payment_id: string | null
@@ -629,6 +665,7 @@ export type Database = {
           method: string
           net_received?: number | null
           order_id: string
+          price_uplift?: number | null
           pricing_version_id: string
           provider: string
           provider_payment_id?: string | null
@@ -667,6 +704,7 @@ export type Database = {
           method?: string
           net_received?: number | null
           order_id?: string
+          price_uplift?: number | null
           pricing_version_id?: string
           provider?: string
           provider_payment_id?: string | null
@@ -1140,6 +1178,30 @@ export type Database = {
           },
         ]
       }
+      payment_expire_runs: {
+        Row: {
+          actor: string
+          expired_count: number
+          finished_at: string
+          id: number
+          started_at: string
+        }
+        Insert: {
+          actor?: string
+          expired_count: number
+          finished_at?: string
+          id?: number
+          started_at?: string
+        }
+        Update: {
+          actor?: string
+          expired_count?: number
+          finished_at?: string
+          id?: number
+          started_at?: string
+        }
+        Relationships: []
+      }
       payment_pricing_versions: {
         Row: {
           activated_at: string | null
@@ -1229,6 +1291,44 @@ export type Database = {
           version_number?: number
         }
         Relationships: []
+      }
+      payment_receipts: {
+        Row: {
+          byte_size: number
+          id: string
+          mime_type: string
+          payment_id: string
+          sha256: string
+          storage_path: string
+          uploaded_at: string
+        }
+        Insert: {
+          byte_size: number
+          id?: string
+          mime_type: string
+          payment_id: string
+          sha256: string
+          storage_path: string
+          uploaded_at?: string
+        }
+        Update: {
+          byte_size?: number
+          id?: string
+          mime_type?: string
+          payment_id?: string
+          sha256?: string
+          storage_path?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: true
+            referencedRelation: "order_payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -1937,6 +2037,15 @@ export type Database = {
     }
     Functions: {
       acquire_shipping_geocode_slot: { Args: never; Returns: undefined }
+      admin_order_payments: { Args: { p_order_id: string }; Returns: Json }
+      admin_payment_receipt_path: {
+        Args: { p_payment_id: string }
+        Returns: string
+      }
+      admin_review_transfer_payment: {
+        Args: { p_action: string; p_payment_id: string; p_reason?: string }
+        Returns: Json
+      }
       bootstrap_first_admin: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1962,12 +2071,26 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
+      complete_transfer_receipt: {
+        Args: {
+          p_access_capability: string
+          p_byte_size: number
+          p_mime_type: string
+          p_sha256: string
+          p_storage_path: string
+        }
+        Returns: Json
+      }
       confirm_catalog_order_after_payment: {
         Args: { p_order_id: string }
         Returns: Json
       }
       create_catalog_order: { Args: { p_payload: Json }; Returns: Json }
       create_catalog_order_core_stage61: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
+      create_catalog_order_core_stage72: {
         Args: { p_payload: Json }
         Returns: Json
       }
@@ -2065,6 +2188,10 @@ export type Database = {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
+      get_catalog_payment_public: {
+        Args: { p_access_capability: string }
+        Returns: Json
+      }
       is_app_admin: { Args: never; Returns: boolean }
       log_passkey_audit_event: {
         Args: {
@@ -2092,6 +2219,7 @@ export type Database = {
         Returns: Json
       }
       payment_admin_save_draft: { Args: { p_payload: Json }; Returns: Json }
+      payment_expire_health: { Args: never; Returns: Json }
       payment_public_price: {
         Args: { p_base: number; p_fee_rate?: number; p_increment?: number }
         Returns: number
@@ -2099,6 +2227,10 @@ export type Database = {
       payment_public_pricing_context: { Args: never; Returns: Json }
       payment_quote_totals: {
         Args: { p_fee_rate?: number; p_increment?: number; p_payload: Json }
+        Returns: Json
+      }
+      prepare_transfer_receipt: {
+        Args: { p_access_capability: string; p_extension: string }
         Returns: Json
       }
       sales_margin_report: {

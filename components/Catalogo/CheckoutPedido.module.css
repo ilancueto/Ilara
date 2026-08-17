@@ -286,6 +286,7 @@
   background: linear-gradient(135deg, #db2777, #be185d);
   color: #fff;
   margin-top: auto;
+  text-decoration: none;
 }
 
 .primary:disabled {

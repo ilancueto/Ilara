@@ -24,6 +24,13 @@ export const INTERNAL_WORDS_FORBIDDEN_IN_PUBLIC_UI = [
   'init_point',
   'sandbox',
   'effective_fee_rate',
+  'token',
+  'cron',
+  'localidades',
+  'feature flag',
+  'access_capability',
+  'order_id',
+  'rpc',
 ] as const
 
 export function bankTransferSecondaryLine(formattedBase: string): string {

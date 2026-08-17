@@ -5,3 +5,5 @@
 // Valores dummy solo para tests unitarios (no son secretos reales).
 process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://example.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder'
+process.env.ORDER_ACCESS_SECRET ??= 'vitest-order-access-secret'
+process.env.CRON_SECRET ??= 'vitest-cron-secret-16'

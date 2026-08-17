@@ -63,3 +63,27 @@ export type PricingPreview = {
   affected_combos: number
   samples: PricingPreviewRow[]
 }
+
+export type PublicPaymentView = {
+  order_number: string
+  order_status: string
+  payment_status: string | null
+  method: string | null
+  amount_due: number | null
+  base_amount: number | null
+  quoted_base_amount: number | null
+  quoted_public_amount: number | null
+  transfer_available: boolean
+  currency: string
+  expires_at: string | null
+  has_receipt: boolean
+  can_retry: boolean
+  bank: {
+    cbu: string | null
+    alias: string | null
+    bank_name: string | null
+    account_holder: string | null
+    cuit: string | null
+    instructions: string | null
+  } | null
+}

@@ -50,6 +50,9 @@ export default defineConfig({
             process.env.E2E_ANON_KEY ||
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder',
+          ORDER_ACCESS_SECRET:
+            process.env.ORDER_ACCESS_SECRET || 'e2e-order-access-secret-32',
+          CRON_SECRET: process.env.CRON_SECRET || 'e2e-cron-secret-32chars',
         },
       },
   timeout: 60000,
