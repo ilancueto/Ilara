@@ -63,9 +63,14 @@ commit, deploy). No marcar un ítem si solo compiló.
 - [x] Review admin; rechazo con motivo; reintento mientras el pedido sigue vigente
 - [x] `estimated_fee` = comisión MP estimada; `price_uplift` = público − base
 - [x] Aprobación no inserta `sales` ni `incomes`
-- [ ] Checks locales / CI / migración prod (esta corrida)
+- [x] Checks locales: lint, tsc, 167 unitarios, reset, advisors, RLS 42, matriz, control negativo, build
+- [x] Integración aislada 26/26 (6.1 + 8.1 + 8.2 + 8.3)
+- [x] Commit `d6084c8` + push `main`
+- [x] Migración productiva `20260817231453` aplicada; flags off verificados
+- [x] `payment_expire_health`: `has_run=true`, `last_expired_count=0`
+- [x] Secretos Vercel `ORDER_ACCESS_SECRET` y `CRON_SECRET` (Production/Preview, sensitive). `SUPABASE_SERVICE_ROLE_KEY` ya existía.
 - [ ] E2E de transferencia con flags on (queda para 8.6)
-- [ ] Commit / deploy con flags apagados
+- [ ] CI remoto de este push
 
 ## 8.4 Mercado Pago
 
@@ -125,3 +130,5 @@ npm run test:smoke
 |---|---|---|---|---|
 | 2026-08-17 | 8.0 docs | `ed9c280` | n/a | ADR + runbook + doc de producto |
 | 2026-08-17 | 8.1 precios | `19d0cea` | migración prod + flags off | CI `32077144361`; smoke 16/16 |
+| 2026-08-17 | 8.2 core | `ed76100` | migración `20260817225016` | flags off; pg_cron ausente |
+| 2026-08-17 | 8.3 transferencia + cron Vercel | `d6084c8` | migración `20260817231453` | flags off; expire health 0; 0 pagos |

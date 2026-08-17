@@ -56,7 +56,7 @@ No existen señas ni pagos parciales del pedido.
 | 8.0 | Auditoría y ADR | Cerrado (docs) |
 | 8.1 | Motor de precios versionado | Cerrado en prod con flags apagados |
 | 8.2 | Core de pagos, stock, RLS | Aplicado en prod; cron de Postgres no disponible — corregido en 8.3 |
-| 8.3 | Transferencia, capability y expiración Vercel | Implementado; flags apagados |
+| 8.3 | Transferencia, capability y expiración Vercel | Cerrado en prod con flags apagados |
 | 8.4 | Mercado Pago Checkout Pro | Pendiente |
 | 8.5 | Finanzas, margen, conciliación, panel | Pendiente |
 | 8.6 | Release productivo atómico | Pendiente |
