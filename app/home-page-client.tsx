@@ -100,6 +100,13 @@ const ReportesMargen = dynamic(() => import('@/components/ReportesMargen'), {
     </div>
   ),
 })
+const PagosConfig = dynamic(() => import('@/components/PagosConfig'), {
+  loading: () => (
+    <div className="flex items-center justify-center min-h-[40vh] text-pink-400">
+      <span className="animate-pulse">Cargando precios...</span>
+    </div>
+  ),
+})
 
 const TAB_TITLES: Record<AppTab, string> = {
   dashboard: 'Inicio',
@@ -113,6 +120,7 @@ const TAB_TITLES: Record<AppTab, string> = {
   stock_alerts: 'Alertas stock',
   returns: 'Devoluciones',
   margin_reports: 'Margen real',
+  payments: 'Precios y pagos',
 }
 
 const VALID_TABS = new Set<AppTab>([
@@ -127,6 +135,7 @@ const VALID_TABS = new Set<AppTab>([
   'stock_alerts',
   'returns',
   'margin_reports',
+  'payments',
 ])
 
 /** Tabs del dock (Ingresos/Gastos resaltan Negocio). */
@@ -146,6 +155,7 @@ function dockHighlight(tab: AppTab): AppTab {
     tab === 'stock_alerts' ||
     tab === 'returns'
     || tab === 'margin_reports'
+    || tab === 'payments'
   ) {
     return 'negocio'
   }
@@ -218,6 +228,7 @@ function HomeContent() {
       if (tab === 'stock_alerts') return c.isAdmin
       if (tab === 'returns') return c.isAdmin
       if (tab === 'margin_reports') return c.isAdmin
+      if (tab === 'payments') return c.isAdmin
       if (tab === 'negocio') return c.canManageFinance || c.isAdmin
       return false
     },
@@ -419,6 +430,7 @@ function HomeContent() {
           {activeTab === 'stock_alerts' && staffCaps.isAdmin && <AlertasReposicion />}
           {activeTab === 'returns' && staffCaps.isAdmin && <Devoluciones />}
           {activeTab === 'margin_reports' && staffCaps.isAdmin && <ReportesMargen />}
+          {activeTab === 'payments' && staffCaps.isAdmin && <PagosConfig />}
           {activeTab === 'negocio' && (staffCaps.canManageFinance || staffCaps.isAdmin) && (
             <NegocioHub onNavigate={handleTabChange} caps={staffCaps} />
           )}

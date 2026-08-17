@@ -11,3 +11,4 @@ export type AppTab =
   | 'stock_alerts'
   | 'returns'
   | 'margin_reports'
+  | 'payments'

@@ -19,8 +19,29 @@ import {
   type PublicCatalogCombo,
   type PublicCatalogProduct,
 } from '@/lib/domain/catalog/publicDto'
+import { applyComboPublicPricing, applyProductPublicPricing } from '@/lib/domain/payments/applyPublicPricing'
+import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
+import type { PublicPricingContext } from '@/lib/domain/payments/types'
 
 export { CATALOG_PRODUCT_SELECT } from '@/lib/catalog/publicCatalogSelect'
+
+export async function fetchPublicPricingContextServer(
+  supabase: SupabaseClient
+): Promise<PublicPricingContext> {
+  const { data, error } = await supabase.rpc('payment_public_pricing_context')
+  if (error) return mapPublicPricingContext(null)
+  return mapPublicPricingContext(data)
+}
+
+export function applyCatalogPricing<T extends PublicCatalogProduct | PublicCatalogCombo>(
+  item: T,
+  context: PublicPricingContext
+): T {
+  if ('combo_items' in item) {
+    return applyComboPublicPricing(item as PublicCatalogCombo, context) as T
+  }
+  return applyProductPublicPricing(item as PublicCatalogProduct, context) as T
+}
 
 export type CatalogQueryOk<T> = { ok: true; data: T }
 export type CatalogQueryErr = { ok: false }

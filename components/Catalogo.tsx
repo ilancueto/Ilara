@@ -23,6 +23,7 @@ import { openWhatsApp } from '@/lib/whatsappLink'
 import { cartSubtotal, couponDiscountFromPercent, totalAfterCoupon } from '@/lib/catalogPricing'
 import { getCatalogBadgesForProduct } from '@/lib/catalogBadges'
 import { formatPesoAR } from '@/lib/formatPesoAR'
+import { CatalogPrice } from '@/components/Catalogo/CatalogPrice'
 import { useToast } from '@/context/ToastContext'
 import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
@@ -511,7 +512,13 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                                     >
                                                         {combo.name}
                                                     </button>
-                                                    <p className={styles.price}>${formatPesoAR(combo.sale_price)}</p>
+                                                    <CatalogPrice
+                                                        className={styles.price}
+                                                        amount={combo.sale_price}
+                                                        dual={combo.dual_price_visible === true}
+                                                        publicAmount={combo.public_price}
+                                                        transferAmount={combo.transfer_price}
+                                                    />
                                                     {combo.description && <p className={styles.productBrand}>{combo.description}</p>}
                                                 </div>
                                             </article>
@@ -621,10 +628,14 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                             <div className={styles.productInfo}>
                                                 <span className={styles.productCategory}>{producto.categories?.name ?? 'Belleza'}</span>
                                                 <Link className={styles.productName} href={`/catalogo/p/${producto.id}`}>{producto.name}</Link>
-                                                <p className={styles.price}>
-                                                    {(producto.discount_percentage ?? 0) > 0 && <s>${formatPesoAR(producto.sale_price)}</s>}
-                                                    ${formatPesoAR(getPrecioConDescuento(producto))}
-                                                </p>
+                                                <CatalogPrice
+                                                    className={styles.price}
+                                                    amount={getPrecioConDescuento(producto)}
+                                                    listAmount={producto.sale_price}
+                                                    dual={producto.dual_price_visible === true}
+                                                    publicAmount={producto.public_price}
+                                                    transferAmount={producto.transfer_price ?? getPrecioConDescuento(producto)}
+                                                />
                                                 {producto.brand && <p className={styles.productBrand}>{producto.brand}</p>}
                                             </div>
                                         </article>

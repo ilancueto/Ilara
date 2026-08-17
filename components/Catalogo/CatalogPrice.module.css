@@ -1,0 +1,15 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.public {
+  font-weight: inherit;
+}
+
+.transfer {
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--ilara-muted, #6b5b63);
+}

@@ -94,6 +94,8 @@ const sensitiveTables = [
   'shipping_quote_requests',
   'shipping_geocode_cache',
   'shipping_geocode_requests',
+  // Stage 8.1 — versiones de precio, sin enumeración anónima
+  'payment_pricing_versions',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
@@ -166,6 +168,21 @@ for (const cols of ['purchase_price', 'notes', 'min_stock', 'created_by', 'updat
   ok('anon denegado en finance_stage66_snapshot')
 }
 
+{
+  const { data, error } = await anon.rpc('payment_public_pricing_context')
+  if (error) fail(`anon payment_public_pricing_context falló: ${error.code || 'err'}`)
+  if (!data || data.catalog_dual_price_visible !== false) {
+    fail('anon payment_public_pricing_context no nació oculto')
+  }
+  ok('anon contexto de precios dual oculto')
+}
+
+{
+  const { error } = await anon.rpc('payment_admin_preview_pricing')
+  if (!isDenied(error)) fail(`anon payment_admin_preview_pricing no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en payment_admin_preview_pricing')
+}
+
 // --- service_role: RLS bypasseable; comprueba tablas core ---
 if (serviceKey) {
   const service = createClient(url, serviceKey, {
@@ -177,6 +194,7 @@ if (serviceKey) {
     'customer_tags', 'customer_tag_assignments', 'customer_notes', 'customer_consent_events',
     'financial_accounts', 'financial_movements',
     'shipping_quotes', 'shipping_quote_requests', 'shipping_geocode_cache', 'shipping_geocode_requests',
+    'payment_pricing_versions',
   ]
   for (const table of core) {
     const { error } = await service.from(table).select('*', { count: 'exact', head: true })

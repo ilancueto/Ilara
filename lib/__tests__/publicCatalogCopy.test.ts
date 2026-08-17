@@ -8,6 +8,8 @@ const publicSurfaces = [
   'components/Catalogo/ModalCarrito.tsx',
   'components/Catalogo/ProductoCatalogoRecover.tsx',
   'components/Catalogo/ModalDetalleCombo.tsx',
+  'components/Catalogo/CatalogPrice.tsx',
+  'lib/domain/payments/labels.ts',
   'lib/domain/shipping/browserShipping.ts',
 ].map((path) => readFileSync(resolve(root, path), 'utf8')).join('\n')
 

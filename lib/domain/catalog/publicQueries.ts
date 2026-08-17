@@ -16,17 +16,21 @@ import {
   type PublicCatalogCombo,
   type PublicCatalogProduct,
 } from '@/lib/domain/catalog/publicDto'
+import { applyComboPublicPricing, applyProductPublicPricing } from '@/lib/domain/payments/applyPublicPricing'
+import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
+import type { PublicPricingContext } from '@/lib/domain/payments/types'
 
 export type PublicCatalogSnapshot = {
   productos: PublicCatalogProduct[]
   combos: PublicCatalogCombo[]
   categorias: PublicCatalogCategory[]
+  pricing: PublicPricingContext
 }
 
 export async function fetchPublicCatalogSnapshot(
   client: SupabaseClient
 ): Promise<{ ok: true; data: PublicCatalogSnapshot } | { ok: false }> {
-  const [pr, co, ca] = await Promise.all([
+  const [pr, co, ca, pricing] = await Promise.all([
     client
       .from('products')
       .select(CATALOG_PRODUCT_SELECT)
@@ -37,16 +41,20 @@ export async function fetchPublicCatalogSnapshot(
       ascending: false,
     }),
     client.from('categories').select(CATALOG_CATEGORY_SELECT).order('name'),
+    client.rpc('payment_public_pricing_context'),
   ])
 
   if (pr.error || co.error || ca.error) return { ok: false }
 
+  const context = mapPublicPricingContext(pricing.error ? null : pricing.data)
+
   return {
     ok: true,
     data: {
-      productos: mapPublicCatalogProducts(pr.data),
-      combos: mapPublicCatalogCombos(co.data),
+      productos: mapPublicCatalogProducts(pr.data).map((item) => applyProductPublicPricing(item, context)),
+      combos: mapPublicCatalogCombos(co.data).map((item) => applyComboPublicPricing(item, context)),
       categorias: mapPublicCatalogCategories(ca.data),
+      pricing: context,
     },
   }
 }

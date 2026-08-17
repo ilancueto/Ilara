@@ -20,6 +20,9 @@ export type PublicCatalogProduct = {
   visible_in_catalog?: boolean | null
   created_at: string
   categories?: { name: string }
+  dual_price_visible?: boolean
+  transfer_price?: number
+  public_price?: number
 }
 
 export type PublicCatalogComboItem = {
@@ -38,6 +41,9 @@ export type PublicCatalogCombo = {
   is_active: boolean
   created_at: string
   combo_items?: PublicCatalogComboItem[]
+  dual_price_visible?: boolean
+  transfer_price?: number
+  public_price?: number
 }
 
 export type PublicCatalogCategory = {

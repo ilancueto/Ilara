@@ -44,9 +44,20 @@ export function ProductRelatedTile({ product, displayPrice }: Props) {
         <span className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 group-hover:text-pink-600 dark:text-zinc-100 dark:group-hover:text-pink-300 sm:text-[0.9375rem]">
           {product.name}
         </span>
-        <span className="mt-auto text-base font-extrabold tabular-nums text-gray-900 dark:text-zinc-50 sm:text-lg">
-          ${formatPesoAR(displayPrice)}
-        </span>
+        {product.dual_price_visible && product.public_price != null ? (
+          <span className="mt-auto flex flex-col gap-0.5">
+            <span className="text-base font-extrabold tabular-nums text-gray-900 dark:text-zinc-50 sm:text-lg">
+              ${formatPesoAR(product.public_price)}
+            </span>
+            <span className="text-[0.7rem] font-medium leading-tight text-gray-500 dark:text-zinc-400">
+              ${formatPesoAR(product.transfer_price ?? displayPrice)} por transferencia
+            </span>
+          </span>
+        ) : (
+          <span className="mt-auto text-base font-extrabold tabular-nums text-gray-900 dark:text-zinc-50 sm:text-lg">
+            ${formatPesoAR(displayPrice)}
+          </span>
+        )}
       </div>
     </Link>
   )

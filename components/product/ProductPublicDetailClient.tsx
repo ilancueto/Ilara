@@ -14,6 +14,7 @@ import {
 } from '@/lib/catalogPricing'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
 import { formatPesoAR } from '@/lib/formatPesoAR'
+import { bankTransferSecondaryLine } from '@/lib/domain/payments/labels'
 import { getShareAbsoluteUrl } from '@/lib/site'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import { useCarrito } from '@/hooks/useCarrito'
@@ -150,6 +151,8 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   const mainSrc = images[activeIdx]
   const isPrimaryLcpImage = activeIdx === 0
   const precio = priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
+  const dualVisible = producto.dual_price_visible === true && producto.public_price != null
+  const displayPrice = dualVisible ? producto.public_price! : precio
 
   const compartir = () => {
     const link = getShareAbsoluteUrl(canonicalPath)
@@ -469,9 +472,14 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
                               $
                             </span>
                             <span className="text-4xl font-extrabold tabular-nums tracking-tight sm:text-5xl lg:text-6xl">
-                              {formatPesoAR(precio)}
+                              {formatPesoAR(displayPrice)}
                             </span>
                           </div>
+                          {dualVisible && (
+                            <p className="text-sm font-medium text-gray-600 dark:text-zinc-300">
+                              {bankTransferSecondaryLine(formatPesoAR(producto.transfer_price ?? precio))}
+                            </p>
+                          )}
                           <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-pink-200/70">
                             Precio actual
                           </p>
@@ -483,9 +491,14 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
                               $
                             </span>
                             <span className="text-4xl font-extrabold tabular-nums tracking-tight sm:text-5xl lg:text-6xl">
-                              {formatPesoAR(precio)}
+                              {formatPesoAR(displayPrice)}
                             </span>
                           </div>
+                          {dualVisible && (
+                            <p className="text-sm font-medium text-gray-600 dark:text-zinc-300">
+                              {bankTransferSecondaryLine(formatPesoAR(producto.transfer_price ?? precio))}
+                            </p>
+                          )}
                           <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-pink-200/70">
                             Precio
                           </p>

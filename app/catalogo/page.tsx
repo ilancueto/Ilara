@@ -5,6 +5,8 @@ import {
     fetchCatalogProductsServer,
     fetchCatalogCombosServer,
     fetchCatalogCategoriesServer,
+    fetchPublicPricingContextServer,
+    applyCatalogPricing,
 } from '@/lib/catalog/serverCatalog'
 import { getSiteUrl } from '@/lib/site'
 
@@ -58,18 +60,19 @@ export const revalidate = 60
 export default async function CatalogoPage() {
     // Cliente público sin cookies → permite ISR (revalidate) real en catálogo.
     const supabase = createSupabasePublicClient()
-    const [pr, co, ca] = await Promise.all([
+    const [pr, co, ca, pricing] = await Promise.all([
         fetchCatalogProductsServer(supabase),
         fetchCatalogCombosServer(supabase),
         fetchCatalogCategoriesServer(supabase),
+        fetchPublicPricingContextServer(supabase),
     ])
     const serverFetchFailed = !pr.ok || !co.ok || !ca.ok
 
     return (
         <Catalogo
             initialCatalog={{
-                productos: pr.ok ? pr.data : [],
-                combos: co.ok ? co.data : [],
+                productos: pr.ok ? pr.data.map((item) => applyCatalogPricing(item, pricing)) : [],
+                combos: co.ok ? co.data.map((item) => applyCatalogPricing(item, pricing)) : [],
                 categorias: ca.ok ? ca.data : [],
                 serverFetchFailed,
             }}

@@ -26,18 +26,19 @@ commit, deploy). No marcar un ítem si solo compiló.
 - [x] Docs oficiales Supabase Cron (`cron.schedule`, no editar `cron.job`)
 - [x] ADR escrito
 - [x] `ETAPA8_PAGOS_ONLINE.md` sin señas y con decisiones cerradas
-- [ ] Commit de 8.0 (docs)
+- [x] Commit de 8.0 (docs) `ed9c280`
 
 ## 8.1 Precios
 
-- [ ] Motor puro TS + función SQL `numeric`
-- [ ] `payment_pricing_versions` + preview admin
-- [ ] Dual price en catálogo detrás de flag
-- [ ] Tests: 5,3119 %, ceil $100, múltiplo exacto, producto, combo, qty, cupón, envío, cambio de versión, snapshot, copy humana
-- [ ] Checks locales verdes
+- [x] Motor puro TS + función SQL `numeric`
+- [x] `payment_pricing_versions` + preview admin
+- [x] Dual price en catálogo detrás de flag
+- [x] Tests: 5,3119 %, ceil $100, múltiplo exacto, producto, combo, qty, cupón, envío, cambio de versión, snapshot, copy humana
+- [x] Checks locales verdes (lint, tsc, 160 unitarios, reset, advisors, RLS 36, matriz, control negativo, build, PWA)
+- [x] Integración local 7/7
 - [ ] Commit independiente
-- [ ] Flag público apagado
-- [ ] No aplicar migración productiva todavía si no está 8.2 (se decide al cierre de 8.1: schema de versiones sí puede ir a prod apagado)
+- [x] Flag público apagado (versión 1 activa con dual/payments en false)
+- [ ] Migración productiva (pendiente de push; flags off)
 
 ## 8.2 Core pagos y stock
 
@@ -114,4 +115,5 @@ npm run test:smoke
 
 | Fecha | Subetapa | Commit | Deploy | Evidencia |
 |---|---|---|---|---|
-| 2026-08-17 | 8.0 docs | pendiente | n/a | ADR + runbook + doc de producto |
+| 2026-08-17 | 8.0 docs | `ed9c280` | n/a | ADR + runbook + doc de producto |
+| 2026-08-17 | 8.1 precios | pendiente de commit | no prod aún | motor + migración `20260817222422`; flags off |

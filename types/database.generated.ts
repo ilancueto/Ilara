@@ -903,6 +903,96 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_pricing_versions: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          bank_account_holder: string | null
+          bank_alias: string | null
+          bank_cbu: string | null
+          bank_cuit: string | null
+          bank_instructions: string | null
+          bank_name: string | null
+          bank_transfer_enabled: boolean
+          catalog_dual_price_visible: boolean
+          created_at: string
+          created_by: string | null
+          effective_fee_rate: number
+          id: string
+          iva_rate: number | null
+          listed_fee_rate: number | null
+          mercado_pago_enabled: boolean
+          mp_reservation_minutes: number
+          notes: string | null
+          payments_enabled: boolean
+          receipt_required: boolean
+          rounding_increment: number
+          status: string
+          superseded_at: string | null
+          transfer_reservation_hours: number
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          bank_account_holder?: string | null
+          bank_alias?: string | null
+          bank_cbu?: string | null
+          bank_cuit?: string | null
+          bank_instructions?: string | null
+          bank_name?: string | null
+          bank_transfer_enabled?: boolean
+          catalog_dual_price_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          effective_fee_rate: number
+          id?: string
+          iva_rate?: number | null
+          listed_fee_rate?: number | null
+          mercado_pago_enabled?: boolean
+          mp_reservation_minutes?: number
+          notes?: string | null
+          payments_enabled?: boolean
+          receipt_required?: boolean
+          rounding_increment: number
+          status: string
+          superseded_at?: string | null
+          transfer_reservation_hours?: number
+          updated_at?: string
+          version_number: number
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          bank_account_holder?: string | null
+          bank_alias?: string | null
+          bank_cbu?: string | null
+          bank_cuit?: string | null
+          bank_instructions?: string | null
+          bank_name?: string | null
+          bank_transfer_enabled?: boolean
+          catalog_dual_price_visible?: boolean
+          created_at?: string
+          created_by?: string | null
+          effective_fee_rate?: number
+          id?: string
+          iva_rate?: number | null
+          listed_fee_rate?: number | null
+          mercado_pago_enabled?: boolean
+          mp_reservation_minutes?: number
+          notes?: string | null
+          payments_enabled?: boolean
+          receipt_required?: boolean
+          rounding_increment?: number
+          status?: string
+          superseded_at?: string | null
+          transfer_reservation_hours?: number
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           brand: string | null
@@ -1750,6 +1840,25 @@ export type Database = {
         Returns: string
       }
       next_catalog_order_number: { Args: never; Returns: string }
+      payment_admin_activate_version: {
+        Args: { p_version_id: string }
+        Returns: Json
+      }
+      payment_admin_list_versions: { Args: never; Returns: Json }
+      payment_admin_preview_pricing: {
+        Args: { p_version_id?: string }
+        Returns: Json
+      }
+      payment_admin_save_draft: { Args: { p_payload: Json }; Returns: Json }
+      payment_public_price: {
+        Args: { p_base: number; p_fee_rate?: number; p_increment?: number }
+        Returns: number
+      }
+      payment_public_pricing_context: { Args: never; Returns: Json }
+      payment_quote_totals: {
+        Args: { p_fee_rate?: number; p_increment?: number; p_payload: Json }
+        Returns: Json
+      }
       sales_margin_report: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
@@ -1952,3 +2061,4 @@ export const Constants = {
     },
   },
 } as const
+

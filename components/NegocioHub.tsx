@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   RotateCcw,
   ChartNoAxesCombined,
+  Banknote,
 } from 'lucide-react'
 import ExportarDatos from '@/components/ExportarDatos'
 
@@ -48,6 +49,17 @@ const tiles: Tile[] = [
     tone: 'emerald',
     kind: 'tab',
     tab: 'margin_reports',
+    visible: (c) => c.isAdmin,
+  },
+  {
+    id: 'payments',
+    title: 'Precios y pagos',
+    description: 'Versiones de precio público, vista previa y activación. Sin recargo sorpresa.',
+    go: 'Configurar',
+    icon: Banknote,
+    tone: 'violet',
+    kind: 'tab',
+    tab: 'payments',
     visible: (c) => c.isAdmin,
   },
   {

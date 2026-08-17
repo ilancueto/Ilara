@@ -4,6 +4,8 @@ import { createSupabasePublicClient } from '@/lib/supabase/public'
 import {
     fetchCatalogProductByIdServer,
     fetchCatalogRelatedProductsServer,
+    fetchPublicPricingContextServer,
+    applyCatalogPricing,
 } from '@/lib/catalog/serverCatalog'
 import { ProductPublicDetailClient } from '@/components/product/ProductPublicDetailClient'
 import { ProductoCatalogoRecover } from '@/components/Catalogo/ProductoCatalogoRecover'
@@ -122,19 +124,22 @@ export default async function CatalogoProductoPage({ params }: PageProps) {
     if (!Number.isFinite(id)) notFound()
 
     const supabase = createSupabasePublicClient()
-    const res = await fetchCatalogProductByIdServer(supabase, id)
+    const [res, pricing] = await Promise.all([
+        fetchCatalogProductByIdServer(supabase, id),
+        fetchPublicPricingContextServer(supabase),
+    ])
     if (res.status === 'error') {
         return <ProductoCatalogoRecover />
     }
     if (res.status === 'not_found') notFound()
 
-    const p = res.product
-    const related = await fetchCatalogRelatedProductsServer(
+    const p = applyCatalogPricing(res.product, pricing)
+    const related = (await fetchCatalogRelatedProductsServer(
         supabase,
         p.id,
         p.category_id,
         8
-    )
+    )).map((item) => applyCatalogPricing(item, pricing))
 
     const siteOrigin = getSiteUrl().replace(/\/$/, '')
     const canonical = `${siteOrigin}/catalogo/p/${id}`
