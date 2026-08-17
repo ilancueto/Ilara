@@ -53,7 +53,7 @@ No existen señas ni pagos parciales del pedido.
 | ID | Alcance | Estado |
 |---|---|---|
 | 8.0 | Auditoría y ADR | Cerrado (docs) |
-| 8.1 | Motor de precios versionado | Cerrado en repo local (flag apagado) |
+| 8.1 | Motor de precios versionado | Cerrado en prod con flags apagados |
 | 8.2 | Core de pagos, stock, cron, RLS | Pendiente |
 | 8.3 | Transferencia y comprobante | Pendiente |
 | 8.4 | Mercado Pago Checkout Pro | Pendiente |

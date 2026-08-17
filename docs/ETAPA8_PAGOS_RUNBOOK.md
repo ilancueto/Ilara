@@ -36,9 +36,11 @@ commit, deploy). No marcar un ítem si solo compiló.
 - [x] Tests: 5,3119 %, ceil $100, múltiplo exacto, producto, combo, qty, cupón, envío, cambio de versión, snapshot, copy humana
 - [x] Checks locales verdes (lint, tsc, 160 unitarios, reset, advisors, RLS 36, matriz, control negativo, build, PWA)
 - [x] Integración local 7/7
-- [ ] Commit independiente
+- [x] Commit independiente `19d0cea`
 - [x] Flag público apagado (versión 1 activa con dual/payments en false)
-- [ ] Migración productiva (pendiente de push; flags off)
+- [x] Push `main` + CI `32077144361` verde (lint-test-build, db-security, e2e)
+- [x] Migración productiva `20260817222422` aplicada; flags off verificados
+- [x] Smoke productivo 16/16
 
 ## 8.2 Core pagos y stock
 
@@ -116,4 +118,4 @@ npm run test:smoke
 | Fecha | Subetapa | Commit | Deploy | Evidencia |
 |---|---|---|---|---|
 | 2026-08-17 | 8.0 docs | `ed9c280` | n/a | ADR + runbook + doc de producto |
-| 2026-08-17 | 8.1 precios | pendiente de commit | no prod aún | motor + migración `20260817222422`; flags off |
+| 2026-08-17 | 8.1 precios | `19d0cea` | migración prod + flags off | CI `32077144361`; smoke 16/16 |
