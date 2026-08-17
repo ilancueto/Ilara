@@ -23,9 +23,12 @@ const QUOTE_TTL_MS = 15 * 60 * 1000
 const REQUEST_TIMEOUT_MS = 12_000
 const LOCATIONS_CACHE_MS = 24 * 60 * 60 * 1000
 const MAX_QUOTES_PER_10_MINUTES = 12
-const ARGENTINA_CARRIERS = [
-  'andreani', 'correoArgentino', 'dhl', 'dpd', 'fedex', 'oca', 'rueddo', 'urbano', 'welivery',
-]
+const ARGENTINA_CARRIERS = ['oca', 'andreani', 'correoArgentino'] as const
+const CARRIER_LABELS: Record<(typeof ARGENTINA_CARRIERS)[number], string> = {
+  oca: 'OCA',
+  andreani: 'Andreani',
+  correoArgentino: 'Correo Argentino',
+}
 const ALLOWED_ORIGINS = new Set([
   'https://ilara.com.ar',
   'https://www.ilara.com.ar',
@@ -303,18 +306,24 @@ serve(async (req: Request) => {
       }],
     }
 
-    const carrierResponses = await Promise.all(ARGENTINA_CARRIERS.map(async (carrier) => {
+    const carrierResponses = await Promise.all(ARGENTINA_CARRIERS.map(async (requestedCarrier) => {
       try {
-        return asRecord(await enviaFetch(ENVIA_RATE_URL, enviaToken, {
+        const response = asRecord(await enviaFetch(ENVIA_RATE_URL, enviaToken, {
           method: 'POST',
-          body: JSON.stringify({ ...baseRatePayload, shipment: { type: 1, carrier } }),
+          body: JSON.stringify({ ...baseRatePayload, shipment: { type: 1, carrier: requestedCarrier } }),
         }))
+        return {
+          requestedCarrier,
+          rates: Array.isArray(response.data) ? response.data : [],
+        }
       } catch {
-        return {}
+        return { requestedCarrier, rates: [] }
       }
     }))
-    const rates = carrierResponses.flatMap((response) => Array.isArray(response.data) ? response.data : [])
-    const rankedRates = rates.flatMap((entry) => {
+    const rates = carrierResponses.flatMap(({ requestedCarrier, rates: carrierRates }) => (
+      carrierRates.map((entry) => ({ entry, requestedCarrier }))
+    ))
+    const rankedRates = rates.flatMap(({ entry, requestedCarrier }) => {
       const rate = asRecord(entry)
       const amount = positiveMoney(rate.totalPrice)
       const currency = text(rate.currency).toUpperCase()
@@ -322,8 +331,9 @@ serve(async (req: Request) => {
       const service = text(rate.service)
       if (!amount || currency !== 'ARS' || !carrier || !service) return []
       return [{
+        requested_carrier: requestedCarrier,
         carrier,
-        carrier_description: text(rate.carrierDescription) || carrier,
+        carrier_description: CARRIER_LABELS[requestedCarrier],
         service,
         service_description: text(rate.serviceDescription) || service,
         delivery_estimate: text(rate.deliveryEstimate) || null,
@@ -340,16 +350,30 @@ serve(async (req: Request) => {
       return /sucursal|punto (?:de )?retiro|retiro en (?:agencia|punto)|pickup|pick up|branch|office|ocurre/.test(label)
     }
 
-    const cheapestHome = rankedRates.find((rate) => !isBranchDelivery(rate))
-    const cheapestBranch = rankedRates.find(isBranchDelivery)
-    const normalized = [
-      cheapestHome
-        ? { ...cheapestHome, service_description: 'Entrega a domicilio' }
-        : null,
-      cheapestBranch
-        ? { ...cheapestBranch, service_description: 'Retiro en sucursal' }
-        : null,
-    ].filter((rate): rate is NonNullable<typeof rate> => rate !== null)
+    const normalized = ARGENTINA_CARRIERS.flatMap((requestedCarrier) => {
+      const carrierRates = rankedRates.filter((rate) => rate.requested_carrier === requestedCarrier)
+      const cheapestHome = carrierRates.find((rate) => !isBranchDelivery(rate))
+      const cheapestBranch = carrierRates.find(isBranchDelivery)
+
+      return [
+        cheapestHome
+          ? { ...cheapestHome, service_description: 'Entrega a domicilio' }
+          : null,
+        cheapestBranch
+          ? { ...cheapestBranch, service_description: 'Retiro en sucursal' }
+          : null,
+      ].flatMap((rate) => {
+        if (!rate) return []
+        return [{
+          carrier: rate.carrier,
+          carrier_description: rate.carrier_description,
+          service: rate.service,
+          service_description: rate.service_description,
+          delivery_estimate: rate.delivery_estimate,
+          amount: rate.amount,
+        }]
+      })
+    })
 
     if (normalized.length === 0) {
       console.warn(JSON.stringify({ event: 'shipping_quote_empty', postalCode: address.postalCode }))

@@ -40,12 +40,15 @@ describe('Stage 7 — cotizaciones Envia', () => {
     expect(edgeFunction).not.toContain('/ship/generate/')
   })
 
-  it('ofrece sólo la opción más barata a domicilio y en sucursal', () => {
-    expect(edgeFunction).toContain('const cheapestHome = rankedRates.find')
-    expect(edgeFunction).toContain('const cheapestBranch = rankedRates.find')
+  it('ofrece domicilio y sucursal por cada correo solicitado', () => {
+    expect(edgeFunction).toContain("const ARGENTINA_CARRIERS = ['oca', 'andreani', 'correoArgentino'] as const")
+    expect(edgeFunction).toContain('const carrierRates = rankedRates.filter')
+    expect(edgeFunction).toContain('const cheapestHome = carrierRates.find')
+    expect(edgeFunction).toContain('const cheapestBranch = carrierRates.find')
     expect(edgeFunction).toContain("service_description: 'Entrega a domicilio'")
     expect(edgeFunction).toContain("service_description: 'Retiro en sucursal'")
-    expect(edgeFunction).not.toContain('.slice(0, 8)')
+    expect(edgeFunction).toContain("correoArgentino: 'Correo Argentino'")
+    expect(edgeFunction).not.toMatch(/'dhl'|'dpd'|'fedex'|'rueddo'|'urbano'|'welivery'/)
   })
 
   it('cierra tablas de quotes y rate limit para roles públicos', () => {
