@@ -45,9 +45,9 @@ export function transitionReservesStock(from: OrderStatus, to: OrderStatus): boo
   return from === 'pending' && to === 'confirmed'
 }
 
-/** ¿Esta transición restaura stock? cancel desde estado con reserva. */
+/** ¿Esta transición puede restaurar stock? cancel con reserva, incluso desde pending. */
 export function transitionMayRestoreStock(from: OrderStatus, to: OrderStatus): boolean {
-  return to === 'cancelled' && from !== 'pending' && from !== 'cancelled'
+  return to === 'cancelled' && from !== 'cancelled'
 }
 
 export function orderStatusLabel(status: OrderStatus): string {

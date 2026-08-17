@@ -566,6 +566,138 @@ export type Database = {
           },
         ]
       }
+      order_payments: {
+        Row: {
+          actual_fee: number | null
+          amount_due: number
+          approved_at: string | null
+          bank_account_holder: string | null
+          bank_alias: string | null
+          bank_cbu: string | null
+          bank_cuit: string | null
+          bank_instructions: string | null
+          bank_name: string | null
+          base_amount: number
+          cancelled_at: string | null
+          collector_id: string | null
+          created_at: string
+          currency: string
+          estimated_fee: number | null
+          expected_available_at: string | null
+          expires_at: string
+          external_reference: string
+          id: string
+          idempotency_key: string
+          method: string
+          net_received: number | null
+          order_id: string
+          pricing_version_id: string
+          provider: string
+          provider_payment_id: string | null
+          provider_preference_id: string | null
+          public_amount: number
+          reconciled_at: string | null
+          refunded_amount: number
+          refunded_at: string | null
+          reject_reason: string | null
+          rejected_at: string | null
+          status: string
+          transfer_saving: number
+          updated_at: string
+        }
+        Insert: {
+          actual_fee?: number | null
+          amount_due: number
+          approved_at?: string | null
+          bank_account_holder?: string | null
+          bank_alias?: string | null
+          bank_cbu?: string | null
+          bank_cuit?: string | null
+          bank_instructions?: string | null
+          bank_name?: string | null
+          base_amount: number
+          cancelled_at?: string | null
+          collector_id?: string | null
+          created_at?: string
+          currency?: string
+          estimated_fee?: number | null
+          expected_available_at?: string | null
+          expires_at: string
+          external_reference: string
+          id?: string
+          idempotency_key: string
+          method: string
+          net_received?: number | null
+          order_id: string
+          pricing_version_id: string
+          provider: string
+          provider_payment_id?: string | null
+          provider_preference_id?: string | null
+          public_amount: number
+          reconciled_at?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          reject_reason?: string | null
+          rejected_at?: string | null
+          status: string
+          transfer_saving: number
+          updated_at?: string
+        }
+        Update: {
+          actual_fee?: number | null
+          amount_due?: number
+          approved_at?: string | null
+          bank_account_holder?: string | null
+          bank_alias?: string | null
+          bank_cbu?: string | null
+          bank_cuit?: string | null
+          bank_instructions?: string | null
+          bank_name?: string | null
+          base_amount?: number
+          cancelled_at?: string | null
+          collector_id?: string | null
+          created_at?: string
+          currency?: string
+          estimated_fee?: number | null
+          expected_available_at?: string | null
+          expires_at?: string
+          external_reference?: string
+          id?: string
+          idempotency_key?: string
+          method?: string
+          net_received?: number | null
+          order_id?: string
+          pricing_version_id?: string
+          provider?: string
+          provider_payment_id?: string | null
+          provider_preference_id?: string | null
+          public_amount?: number
+          reconciled_at?: string | null
+          refunded_amount?: number
+          refunded_at?: string | null
+          reject_reason?: string | null
+          rejected_at?: string | null
+          status?: string
+          transfer_saving?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_pricing_version_id_fkey"
+            columns: ["pricing_version_id"]
+            isOneToOne: false
+            referencedRelation: "payment_pricing_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_status_events: {
         Row: {
           actor_kind: string
@@ -626,6 +758,8 @@ export type Database = {
           idempotency_key: string
           notes: string | null
           order_number: string
+          pricing_version_id: string | null
+          public_total: number | null
           request_fingerprint: string
           shipping_amount: number
           shipping_carrier: string | null
@@ -650,6 +784,7 @@ export type Database = {
           stock_reserved: boolean
           subtotal: number
           total: number
+          transfer_saving: number | null
           updated_at: string
         }
         Insert: {
@@ -670,6 +805,8 @@ export type Database = {
           idempotency_key: string
           notes?: string | null
           order_number: string
+          pricing_version_id?: string | null
+          public_total?: number | null
           request_fingerprint: string
           shipping_amount?: number
           shipping_carrier?: string | null
@@ -694,6 +831,7 @@ export type Database = {
           stock_reserved?: boolean
           subtotal: number
           total: number
+          transfer_saving?: number | null
           updated_at?: string
         }
         Update: {
@@ -714,6 +852,8 @@ export type Database = {
           idempotency_key?: string
           notes?: string | null
           order_number?: string
+          pricing_version_id?: string | null
+          public_total?: number | null
           request_fingerprint?: string
           shipping_amount?: number
           shipping_carrier?: string | null
@@ -738,9 +878,17 @@ export type Database = {
           stock_reserved?: boolean
           subtotal?: number
           total?: number
+          transfer_saving?: number | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_pricing_version_id_fkey"
+            columns: ["pricing_version_id"]
+            isOneToOne: false
+            referencedRelation: "payment_pricing_versions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_shipping_quote_fkey"
             columns: ["shipping_quote_id"]
@@ -902,6 +1050,95 @@ export type Database = {
           window_start?: string
         }
         Relationships: []
+      }
+      payment_access_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          order_id: string
+          payment_id: string
+          token_hash: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          order_id: string
+          payment_id: string
+          token_hash: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          order_id?: string
+          payment_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_access_tokens_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_access_tokens_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "order_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: number
+          normalized_status: string | null
+          payload_hash: string
+          payment_id: string
+          processing_result: string
+          provider_event_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: number
+          normalized_status?: string | null
+          payload_hash: string
+          payment_id: string
+          processing_result: string
+          provider_event_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: number
+          normalized_status?: string | null
+          payload_hash?: string
+          payment_id?: string
+          processing_result?: string
+          provider_event_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "order_payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_pricing_versions: {
         Row: {
@@ -1725,6 +1962,10 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
+      confirm_catalog_order_after_payment: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
       create_catalog_order: { Args: { p_payload: Json }; Returns: Json }
       create_catalog_order_core_stage61: {
         Args: { p_payload: Json }
@@ -1789,6 +2030,7 @@ export type Database = {
         Args: { p_sale_id: number }
         Returns: Json
       }
+      expire_catalog_payments: { Args: never; Returns: Json }
       finance_account_net_amount: {
         Args: {
           p_account: Database["public"]["Tables"]["financial_accounts"]["Row"]
@@ -1881,6 +2123,7 @@ export type Database = {
           stored_url: string
         }[]
       }
+      start_catalog_order_payment: { Args: { p_payload: Json }; Returns: Json }
       stock_alert_deficit: {
         Args: { p_min_stock: number; p_stock: number }
         Returns: number

@@ -96,6 +96,10 @@ const sensitiveTables = [
   'shipping_geocode_requests',
   // Stage 8.1 — versiones de precio, sin enumeración anónima
   'payment_pricing_versions',
+  // Stage 8.2 — pagos y tokens, sin enumeración anónima
+  'order_payments',
+  'payment_events',
+  'payment_access_tokens',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)
@@ -195,6 +199,9 @@ if (serviceKey) {
     'financial_accounts', 'financial_movements',
     'shipping_quotes', 'shipping_quote_requests', 'shipping_geocode_cache', 'shipping_geocode_requests',
     'payment_pricing_versions',
+    'order_payments',
+    'payment_events',
+    'payment_access_tokens',
   ]
   for (const table of core) {
     const { error } = await service.from(table).select('*', { count: 'exact', head: true })

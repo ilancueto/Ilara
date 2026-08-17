@@ -44,11 +44,11 @@ commit, deploy). No marcar un ítem si solo compiló.
 
 ## 8.2 Core pagos y stock
 
-- [ ] Tablas `order_payments`, `payment_events`, tokens
-- [ ] Reserva al iniciar pago; restore en expire/cancel
-- [ ] Cron oficial
-- [ ] RLS / REVOKE / advisors
-- [ ] Integración: idempotencia, concurrencia, approve vs expire, roles
+- [x] Tablas `order_payments`, `payment_events`, tokens
+- [x] Reserva al iniciar pago; restore en expire/cancel
+- [x] Cron oficial (`cron.schedule`, no `UPDATE cron.job`)
+- [x] RLS / REVOKE / advisors
+- [x] Integración local 4/4 (capa apagada, reserva única, expire, roles)
 - [ ] Commit independiente
 - [ ] Prod solo con checks verdes y flags off
 

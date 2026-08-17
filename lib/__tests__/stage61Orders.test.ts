@@ -47,7 +47,7 @@ describe('Stage 6.1 — máquina de estados', () => {
     expect(transitionReservesStock('pending', 'confirmed')).toBe(true)
     expect(transitionReservesStock('confirmed', 'preparing')).toBe(false)
     expect(transitionMayRestoreStock('confirmed', 'cancelled')).toBe(true)
-    expect(transitionMayRestoreStock('pending', 'cancelled')).toBe(false)
+    expect(transitionMayRestoreStock('pending', 'cancelled')).toBe(true)
   })
 
   it('labels en español', () => {

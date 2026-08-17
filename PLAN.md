@@ -591,8 +591,8 @@ de origen, política operativa y pruebas que puedan producir cargos.
 **Decisión de negocio (2026-08-13):** pagos online deja de pertenecer a Stage 6
 y pasa a ser una etapa independiente. B2B y multisucursal quedan descartados.
 
-**Estado (2026-08-17):** Stage 8.0 documentado. Stage 8.1 implementado en repo
-con flags apagados. 8.2–8.6 pendientes. Sin cobros online en producción.
+**Estado (2026-08-17):** 8.0 y 8.1 cerrados. 8.2 implementado en repo (flags
+apagados). 8.3–8.6 pendientes. Sin cobros online en producción.
 
 ADR: [`docs/ETAPA8_PAYMENT_ADR.md`](./docs/ETAPA8_PAYMENT_ADR.md).
 Runbook: [`docs/ETAPA8_PAGOS_RUNBOOK.md`](./docs/ETAPA8_PAGOS_RUNBOOK.md).
@@ -711,6 +711,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-13 | Roadmap 6.7 / 8 | Reordenamiento de expansión comercial | Completado | Stage 6.7 eliminado; B2B y multisucursal descartados; pagos online movido a Etapa 8 |
 | 2026-08-17 | 8.0 Auditoría | ADR de pagos, decisiones cerradas, runbook vivo | Completado | `docs/ETAPA8_PAYMENT_ADR.md`; sin código ni deploy |
 | 2026-08-17 | 8.1 Precios | Motor versionado, dual price detrás de flag, preview admin | Completado | `19d0cea`; migración prod `20260817222422`; flags off; CI `32077144361`; smoke 16/16 |
+| 2026-08-17 | 8.2 Core pagos | Tablas, reserva al iniciar, expire, cron.schedule, RLS | En curso | migración `20260817225016`; flags off |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.
