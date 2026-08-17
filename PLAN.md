@@ -2,7 +2,7 @@
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–7 cerradas en producción; Etapa 8 en roadmap
+- **Estado:** Etapas 0–7 cerradas en producción; Etapa 8.0 (ADR) documentada; implementación 8.1–8.6 pendiente
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 
@@ -591,26 +591,31 @@ de origen, política operativa y pruebas que puedan producir cargos.
 **Decisión de negocio (2026-08-13):** pagos online deja de pertenecer a Stage 6
 y pasa a ser una etapa independiente. B2B y multisucursal quedan descartados.
 
-Alcance previsto:
+**Estado (2026-08-17):** Stage 8.0 cerrado en documentación. Implementación
+pendiente. Feature apagada. Sin cobros online en producción.
 
-1. Elegir proveedor y modalidad de checkout; Mercado Pago es candidato, todavía
-   no una decisión técnica cerrada.
-2. Crear pagos exclusivamente desde backend con importes autoritativos del pedido.
-3. Verificar webhooks firmados e idempotentes; nunca confirmar por la URL de retorno.
-4. Modelar estados pendiente, aprobado, rechazado, cancelado y reembolsado.
-5. Definir reserva y liberación de stock cuando un pago vence o falla.
-6. Integrar reembolsos con Stage 6.3, comisiones con Stage 6.4 y conciliación con
-   Stage 6.6.
-7. Incorporar auditoría, observabilidad y panel de inconsistencias.
+ADR: [`docs/ETAPA8_PAYMENT_ADR.md`](./docs/ETAPA8_PAYMENT_ADR.md).
+Runbook: [`docs/ETAPA8_PAGOS_RUNBOOK.md`](./docs/ETAPA8_PAGOS_RUNBOOK.md).
 
-Gate previo a desarrollo:
+Decisiones cerradas (ya no son un gate abierto):
 
-- [ ] Proveedor y modalidad seleccionados.
-- [ ] Cuenta comercial y credenciales de prueba disponibles.
-- [ ] Política de reserva/vencimiento de stock definida.
-- [ ] Política de reembolsos, contracargos y comisiones definida.
-- [ ] Requisitos fiscales y de comprobantes confirmados.
-- [ ] Plan de pruebas, secretos, deploy y forward-fix aprobado.
+1. [x] Proveedor y modalidad: Mercado Pago Checkout Pro + transferencia bancaria.
+2. [x] Solo pago total. Sin señas.
+3. [x] Precio público (gross-up + techo a $100) vs precio base/transferencia.
+4. [x] Reserva: MP 30 min, transferencia 24 h; stock al iniciar el pago.
+5. [x] Webhook firmado + GET canónico; retorno informativo.
+6. [x] Reembolso financiero separado de devolución física (6.3).
+7. [x] Sin insertar cobros de catálogo en `sales` ni `incomes` (6.6).
+
+Pendiente del propietario para 8.4/8.6 (no bloquea 8.1–8.3):
+
+- [ ] Credenciales de prueba/producción y secreto de webhook.
+- [ ] Confirmación de acreditación a 10 días y tasa efectiva de la cuenta.
+- [ ] Datos bancarios reales.
+- [ ] Aviso antes del primer cobro o reembolso monetario real.
+
+Subetapas: 8.1 precios → 8.2 core/stock → 8.3 transferencia → 8.4 MP →
+8.5 finanzas/panel → 8.6 release atómico.
 
 ## 13. División sugerida en cambios/PR
 
@@ -704,6 +709,7 @@ Un ítem sólo puede marcarse terminado si:
 | 2026-08-14 | 6.2 Alertas reposición | Trigger stock + panel + RPC; sin compras ni logística | Completado | Migraciones `20260814000544` y `20260814000745`; CI, Vercel y smoke productivo verdes |
 | 2026-08-14 | 7 / 7.1 Envíos y logística | Dirección guiada + CP automático + cotización Envia + snapshot autoritativo | Completado | Migraciones `20260814092526` y `20260814205248`; Edge `shipping-quotes`; Georef + Nominatim + Envia; ver runbook |
 | 2026-08-13 | Roadmap 6.7 / 8 | Reordenamiento de expansión comercial | Completado | Stage 6.7 eliminado; B2B y multisucursal descartados; pagos online movido a Etapa 8 |
+| 2026-08-17 | 8.0 Auditoría | ADR de pagos, decisiones cerradas, runbook vivo | Completado | `docs/ETAPA8_PAYMENT_ADR.md`; sin código ni deploy |
 
 Estados permitidos: `Pendiente`, `En curso`, `Bloqueado`, `En revisión`,
 `Desplegado`, `Verificado` y `Completado`.
