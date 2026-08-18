@@ -74,13 +74,14 @@ commit, deploy). No marcar un ítem si solo compiló.
 
 ## 8.4 Mercado Pago
 
-- [ ] Preference + `X-Idempotency-Key`
-- [ ] Webhook HMAC + GET canónico
-- [ ] Retorno informativo
-- [ ] Reembolsos
-- [ ] Mocks / integración / E2E
-- [ ] Commit / deploy apagado
-- [ ] Credenciales solicitadas al propietario si faltan
+- [x] Preference + `X-Idempotency-Key` (Edge Function `payments-mp-preference`)
+- [x] Webhook HMAC + GET canónico (`payments-mp-webhook` + `apply_mercado_pago_payment`)
+- [x] Retorno `/pedido` informativo; no confirma por URL
+- [x] Reembolsos admin; no restauran stock; no tocan `sales`/`incomes`
+- [x] Tests de firma, mismatch, duplicate, stale y reembolso
+- [ ] E2E sandbox con flags on (8.6)
+- [ ] Deploy de Edge Functions + secreto de webhook del dueño
+- [ ] Commit / flags apagados
 
 ## 8.5 Finanzas y administración
 

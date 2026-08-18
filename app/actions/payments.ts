@@ -3,12 +3,28 @@
 import {
   getPublicPaymentServer,
   startBankTransferPaymentServer,
+  startMercadoPagoCheckoutServer,
   uploadTransferReceiptServer,
 } from '@/lib/dal/payments'
 import type { PublicPaymentView } from '@/lib/domain/payments/types'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string }
+
+export async function startMercadoPagoAction(
+  accessCapability: string,
+  idempotencyKey: string
+): Promise<ActionResult<{ checkout_url: string }>> {
+  try {
+    const data = await startMercadoPagoCheckoutServer({
+      access_capability: accessCapability,
+      idempotency_key: idempotencyKey,
+    })
+    return { ok: true, data }
+  } catch (error) {
+    return { ok: false, error: toUserMessage(error, 'No se pudo iniciar el pago.') }
+  }
+}
 
 export async function startBankTransferAction(
   accessCapability: string,

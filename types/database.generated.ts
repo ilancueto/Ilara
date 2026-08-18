@@ -629,6 +629,7 @@ export type Database = {
           price_uplift: number | null
           pricing_version_id: string
           provider: string
+          provider_checkout_url: string | null
           provider_payment_id: string | null
           provider_preference_id: string | null
           public_amount: number
@@ -668,6 +669,7 @@ export type Database = {
           price_uplift?: number | null
           pricing_version_id: string
           provider: string
+          provider_checkout_url?: string | null
           provider_payment_id?: string | null
           provider_preference_id?: string | null
           public_amount: number
@@ -707,6 +709,7 @@ export type Database = {
           price_uplift?: number | null
           pricing_version_id?: string
           provider?: string
+          provider_checkout_url?: string | null
           provider_payment_id?: string | null
           provider_preference_id?: string | null
           public_amount?: number
@@ -2042,10 +2045,16 @@ export type Database = {
         Args: { p_payment_id: string }
         Returns: string
       }
+      admin_refund_catalog_payment: {
+        Args: { p_amount: number; p_payment_id: string; p_reason: string }
+        Returns: Json
+      }
       admin_review_transfer_payment: {
         Args: { p_action: string; p_payment_id: string; p_reason?: string }
         Returns: Json
       }
+      apply_mercado_pago_payment: { Args: { p_payload: Json }; Returns: Json }
+      attach_mp_preference: { Args: { p_payload: Json }; Returns: Json }
       bootstrap_first_admin: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -2207,6 +2216,10 @@ export type Database = {
           p_user_id?: string
         }
         Returns: string
+      }
+      mp_preference_context: {
+        Args: { p_access_capability: string }
+        Returns: Json
       }
       next_catalog_order_number: { Args: never; Returns: string }
       payment_admin_activate_version: {

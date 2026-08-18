@@ -4,6 +4,7 @@ export type StoredOrderAccess = {
   orderNumber: string
   access: string
   transferStartKey?: string
+  mpStartKey?: string
 }
 
 function writeStore(payload: StoredOrderAccess): void {
@@ -18,6 +19,7 @@ export function saveOrderAccess(orderNumber: string, access: string): void {
     orderNumber,
     access,
     transferStartKey: previous?.orderNumber === orderNumber ? previous.transferStartKey : undefined,
+    mpStartKey: previous?.orderNumber === orderNumber ? previous.mpStartKey : undefined,
   })
 }
 
@@ -35,11 +37,16 @@ export function loadOrderAccess(): StoredOrderAccess | null {
 }
 
 /** Misma clave si se pierde la red; otra solo cuando hay que reintentar de verdad. */
-export function paymentStartKey(rotate = false): string {
+export function paymentStartKey(method: 'bank_transfer' | 'mercado_pago', rotate = false): string {
   const stored = loadOrderAccess()
   if (!stored) return crypto.randomUUID()
-  if (!rotate && stored.transferStartKey) return stored.transferStartKey
+  const current = method === 'mercado_pago' ? stored.mpStartKey : stored.transferStartKey
+  if (!rotate && current) return current
   const next = crypto.randomUUID()
-  writeStore({ ...stored, transferStartKey: next })
+  writeStore({
+    ...stored,
+    transferStartKey: method === 'bank_transfer' ? next : stored.transferStartKey,
+    mpStartKey: method === 'mercado_pago' ? next : stored.mpStartKey,
+  })
   return next
 }

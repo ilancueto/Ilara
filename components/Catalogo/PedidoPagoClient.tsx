@@ -9,6 +9,7 @@ import { loadOrderAccess, paymentStartKey } from '@/lib/domain/payments/publicSe
 import {
   getPublicPaymentAction,
   startBankTransferAction,
+  startMercadoPagoAction,
   uploadTransferReceiptAction,
 } from '@/app/actions/payments'
 import type { PublicPaymentView } from '@/lib/domain/payments/types'
@@ -65,12 +66,24 @@ export function PedidoPagoClient() {
   function startTransfer(rotateKey: boolean) {
     if (!access) return
     startTransition(async () => {
-      const result = await startBankTransferAction(access, paymentStartKey(rotateKey))
+      const result = await startBankTransferAction(access, paymentStartKey('bank_transfer', rotateKey))
       if (!result.ok) {
         setError(result.error)
         return
       }
       refresh(access)
+    })
+  }
+
+  function startMercadoPago(rotateKey: boolean) {
+    if (!access) return
+    startTransition(async () => {
+      const result = await startMercadoPagoAction(access, paymentStartKey('mercado_pago', rotateKey))
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      window.location.assign(result.data.checkout_url)
     })
   }
 
@@ -87,9 +100,15 @@ export function PedidoPagoClient() {
     })
   }
 
-  const displayAmount = view?.amount_due ?? view?.base_amount ?? view?.quoted_base_amount ?? null
-  const showStart = Boolean(view && !view.payment_status && view.transfer_available)
-  const showRetry = Boolean(view?.can_retry && view.transfer_available)
+  const transferAmount = view?.amount_due && view.method === 'bank_transfer'
+    ? view.amount_due
+    : view?.quoted_base_amount ?? view?.base_amount ?? null
+  const publicAmount = view?.amount_due && view.method === 'mercado_pago'
+    ? view.amount_due
+    : view?.quoted_public_amount ?? null
+  const showMethodChoice = Boolean(view && !view.payment_status)
+  const showRetryTransfer = Boolean(view?.can_retry && view.transfer_available)
+  const showRetryMp = Boolean(view?.can_retry && view.mp_available)
 
   return (
     <main className="mx-auto max-w-xl px-4 py-10 text-gray-900 dark:text-zinc-50">
@@ -105,28 +124,51 @@ export function PedidoPagoClient() {
       {view && (
         <section className="mt-6 flex flex-col gap-4">
           <p className="text-sm text-gray-600 dark:text-zinc-300">{statusLabel(view.payment_status)}</p>
-          {displayAmount != null && (
-            <div>
-              <p className="text-sm text-gray-500">Importe a transferir</p>
-              <p className="text-2xl font-extrabold tabular-nums">
-                ${formatPesoARExact(displayAmount)}
-              </p>
+          {showMethodChoice && (view.mp_available || view.transfer_available) && (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-semibold">{PUBLIC_PAYMENT_COPY.choosePayment}</p>
+              {view.mp_available && publicAmount != null && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => startMercadoPago(false)}
+                  className="rounded-xl bg-pink-600 px-4 py-3 font-bold text-white disabled:opacity-60"
+                >
+                  {PUBLIC_PAYMENT_COPY.mercadoPago} · ${formatPesoARExact(publicAmount)}
+                </button>
+              )}
+              {view.transfer_available && transferAmount != null && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => startTransfer(false)}
+                  className="rounded-xl border border-pink-200 px-4 py-3 font-bold disabled:opacity-60"
+                >
+                  {PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)}
+                </button>
+              )}
             </div>
           )}
-          {showStart && (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => startTransfer(false)}
-              className="rounded-xl bg-pink-600 px-4 py-3 font-bold text-white disabled:opacity-60"
-            >
-              {PUBLIC_PAYMENT_COPY.bankTransfer}
-            </button>
-          )}
-          {!view.payment_status && !view.transfer_available && (
+          {showMethodChoice && !view.transfer_available && !view.mp_available && (
             <p className="text-sm text-gray-600 dark:text-zinc-300">
               El pago en línea todavía no está habilitado. Tu pedido ya quedó registrado; te vamos a contactar para coordinar.
             </p>
+          )}
+          {view.method === 'mercado_pago' && view.payment_status === 'pending' && (
+            <div className="flex flex-col gap-2">
+              {view.amount_due != null && (
+                <p className="text-2xl font-extrabold tabular-nums">${formatPesoARExact(view.amount_due)}</p>
+              )}
+              {view.checkout_url && (
+                <a href={view.checkout_url} className="rounded-xl bg-pink-600 px-4 py-3 text-center font-bold text-white">
+                  Continuar el pago
+                </a>
+              )}
+              <p className="text-sm text-gray-600 dark:text-zinc-300">{PUBLIC_PAYMENT_COPY.returnInformative}</p>
+            </div>
+          )}
+          {view.method === 'bank_transfer' && transferAmount != null && (
+            <p className="text-2xl font-extrabold tabular-nums">${formatPesoARExact(transferAmount)}</p>
           )}
           {view.method === 'bank_transfer' && (
             <div className="rounded-2xl border border-pink-100 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -171,10 +213,19 @@ export function PedidoPagoClient() {
           {view.payment_status === 'expired' && (
             <p>{PUBLIC_PAYMENT_COPY.paymentExpired}</p>
           )}
-          {showRetry && (
-            <button type="button" disabled={pending} onClick={() => startTransfer(true)} className="rounded-xl bg-pink-600 px-4 py-3 font-bold text-white">
-              Intentar de nuevo
-            </button>
+          {(showRetryTransfer || showRetryMp) && (
+            <div className="flex flex-col gap-2">
+              {showRetryMp && (
+                <button type="button" disabled={pending} onClick={() => startMercadoPago(true)} className="rounded-xl bg-pink-600 px-4 py-3 font-bold text-white">
+                  Intentar de nuevo con Mercado Pago
+                </button>
+              )}
+              {showRetryTransfer && (
+                <button type="button" disabled={pending} onClick={() => startTransfer(true)} className="rounded-xl border border-pink-200 px-4 py-3 font-bold">
+                  Intentar de nuevo por transferencia
+                </button>
+              )}
+            </div>
           )}
         </section>
       )}

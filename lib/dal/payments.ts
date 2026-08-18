@@ -11,6 +11,42 @@ export type { PublicPaymentView }
 const record = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
 
+export async function startMercadoPagoCheckoutServer(input: {
+  access_capability: string
+  idempotency_key: string
+}): Promise<{ checkout_url: string }> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '')
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  if (!url || !anon) {
+    throw new AppError('unknown', 'No se pudo abrir el pago. Intentá de nuevo.', { message: 'missing_public_env' })
+  }
+  const response = await fetch(`${url}/functions/v1/payments-mp-preference`, {
+    method: 'POST',
+    headers: {
+      apikey: anon,
+      Authorization: `Bearer ${anon}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      access_capability: input.access_capability,
+      idempotency_key: input.idempotency_key,
+    }),
+    cache: 'no-store',
+  })
+  const payload = record(await response.json().catch(() => ({})))
+  const checkout = String(payload.checkout_url || '')
+  if (!response.ok || !checkout.startsWith('https://')) {
+    if (payload.code === 'payments_disabled') {
+      throw createOrderErrorFromRpc('payments_disabled')
+    }
+    throw new AppError('unknown', 'No se pudo abrir Mercado Pago. Intentá de nuevo.', {
+      message: 'mp_preference_failed',
+      retryable: true,
+    })
+  }
+  return { checkout_url: checkout }
+}
+
 export async function startBankTransferPaymentServer(input: {
   access_capability: string
   idempotency_key: string
@@ -45,6 +81,8 @@ export async function getPublicPaymentServer(accessCapability: string): Promise<
     quoted_base_amount: raw.quoted_base_amount == null ? null : Number(raw.quoted_base_amount),
     quoted_public_amount: raw.quoted_public_amount == null ? null : Number(raw.quoted_public_amount),
     transfer_available: raw.transfer_available === true,
+    mp_available: raw.mp_available === true,
+    checkout_url: raw.checkout_url == null ? null : String(raw.checkout_url),
     currency: String(raw.currency || 'ARS'),
     expires_at: raw.expires_at == null ? null : String(raw.expires_at),
     has_receipt: raw.has_receipt === true,

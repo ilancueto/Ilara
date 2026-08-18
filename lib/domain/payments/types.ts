@@ -74,6 +74,8 @@ export type PublicPaymentView = {
   quoted_base_amount: number | null
   quoted_public_amount: number | null
   transfer_available: boolean
+  mp_available: boolean
+  checkout_url: string | null
   currency: string
   expires_at: string | null
   has_receipt: boolean

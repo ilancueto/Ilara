@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import {
   adminOrderPaymentsAction,
   adminReceiptSignedUrlAction,
+  adminRefundPaymentAction,
   adminReviewTransferAction,
   type AdminOrderPayment,
 } from '@/app/actions/adminPayments'
@@ -102,6 +103,42 @@ export function PedidoPagosPanel({ orderId, payments, onChange }: Props) {
               >
                 Ver comprobante
               </button>
+            )}
+            {['approved', 'partially_refunded'].includes(payment.status) && (
+              <div className="mt-3 space-y-2">
+                <label className="block text-xs font-bold" htmlFor={`refund-${payment.id}`}>
+                  Motivo del reembolso
+                </label>
+                <textarea
+                  id={`refund-${payment.id}`}
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 dark:border-gray-700 dark:bg-gray-950"
+                />
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    if (reason.trim().length < 3) {
+                      setError('Indicá el motivo del reembolso.')
+                      return
+                    }
+                    startTransition(async () => {
+                      const result = await adminRefundPaymentAction(payment.id, reason.trim(), payment.method)
+                      if (!result.ok) {
+                        setError(result.error)
+                        return
+                      }
+                      setReason('')
+                      await reload()
+                    })
+                  }}
+                  className="rounded-xl bg-rose-600 px-3 py-2 text-sm font-bold text-white disabled:opacity-60"
+                >
+                  Registrar reembolso
+                </button>
+              </div>
             )}
             {reviewable && (
               <div className="mt-3 space-y-2">

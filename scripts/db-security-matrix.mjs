@@ -212,6 +212,14 @@ for (const cols of ['purchase_price', 'notes', 'min_stock', 'created_by', 'updat
   ok('anon denegado en admin_review_transfer_payment')
 }
 
+{
+  const { error } = await anon.rpc('apply_mercado_pago_payment', {
+    p_payload: { external_reference: 'x', provider_payment_id: '1', event_id: 'e' },
+  })
+  if (!isDenied(error)) fail(`anon apply_mercado_pago_payment no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en apply_mercado_pago_payment')
+}
+
 // --- service_role: RLS bypasseable; comprueba tablas core ---
 if (serviceKey) {
   const service = createClient(url, serviceKey, {

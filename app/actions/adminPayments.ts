@@ -77,6 +77,51 @@ export async function adminOrderPaymentsAction(orderId: string): Promise<ActionR
   }
 }
 
+export async function adminRefundPaymentAction(
+  paymentId: string,
+  reason: string,
+  method: string,
+  amount?: number
+): Promise<ActionResult<{ status: string }>> {
+  try {
+    const supabase = await createSupabaseServerClient()
+    if (method === 'mercado_pago') {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '')
+      const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+      if (!url || !anon) return { ok: false, error: 'No se pudo contactar al medio de pago.' }
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      if (!accessToken) return { ok: false, error: 'Sesión expirada. Volvé a iniciar sesión.' }
+      const refunded = await fetch(`${url}/functions/v1/payments-mp-refund`, {
+        method: 'POST',
+        headers: {
+          apikey: anon,
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ payment_id: paymentId, reason, amount: amount ?? null }),
+        cache: 'no-store',
+      })
+      if (!refunded.ok) {
+        return { ok: false, error: 'No se pudo reembolsar. El pedido no se modificó.' }
+      }
+      const body = await refunded.json().catch(() => ({}))
+      const status = body && typeof body === 'object' ? String((body as { status?: string }).status || 'refunded') : 'refunded'
+      return { ok: true, data: { status } }
+    }
+    const { data, error } = await supabase.rpc('admin_refund_catalog_payment', {
+      p_payment_id: paymentId,
+      p_amount: amount ?? null,
+      p_reason: reason,
+    })
+    if (error) return { ok: false, error: toUserMessage(error, 'No se pudo registrar el reembolso.') }
+    const row = data && typeof data === 'object' ? data as { status?: string } : {}
+    return { ok: true, data: { status: String(row.status || 'refunded') } }
+  } catch (error) {
+    return { ok: false, error: toUserMessage(error, 'No se pudo registrar el reembolso.') }
+  }
+}
+
 export async function adminReceiptSignedUrlAction(paymentId: string): Promise<ActionResult<string>> {
   try {
     const supabase = await createSupabaseServerClient()

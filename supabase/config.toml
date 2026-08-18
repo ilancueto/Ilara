@@ -7,3 +7,15 @@ verify_jwt = false
 # Stage 7: cotización pública, con CORS, validación y rate limit propios.
 [functions.shipping-quotes]
 verify_jwt = false
+
+# Stage 8.4: comprador anónimo con capability. El access token vive en secrets.
+[functions.payments-mp-preference]
+verify_jwt = false
+
+# Stage 8.4: webhook público firmado. Sin JWT de Supabase.
+[functions.payments-mp-webhook]
+verify_jwt = false
+
+# Stage 8.4: reembolso. Valida sesión admin adentro.
+[functions.payments-mp-refund]
+verify_jwt = false
