@@ -220,6 +220,15 @@ for (const cols of ['purchase_price', 'notes', 'min_stock', 'created_by', 'updat
   ok('anon denegado en apply_mercado_pago_payment')
 }
 
+{
+  const { error } = await anon.rpc('finance_stage8_payments_slice', {
+    p_from: '2026-08-01',
+    p_to: '2026-08-01',
+  })
+  if (!isDenied(error)) fail(`anon finance_stage8_payments_slice no fue denegado: code=${error?.code || '?'}`)
+  ok('anon denegado en finance_stage8_payments_slice')
+}
+
 // --- service_role: RLS bypasseable; comprueba tablas core ---
 if (serviceKey) {
   const service = createClient(url, serviceKey, {

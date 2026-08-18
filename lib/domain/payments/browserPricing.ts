@@ -2,6 +2,7 @@ import { getBrowserSupabase } from '@/lib/supabase/browser'
 import { AppError } from '@/lib/domain/errors'
 import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
 import type { PricingPreview, PricingVersion, PublicPricingContext } from '@/lib/domain/payments/types'
+import { mapPaymentOpsBoard } from '@/lib/domain/payments/finance'
 
 export { mapPublicPricingContext }
 
@@ -101,6 +102,12 @@ export async function savePricingDraft(payload: Record<string, unknown>): Promis
   })
   if (error) throwRpc(error)
   return mapVersion(data)
+}
+
+export async function fetchPaymentOpsBoard() {
+  const { data, error } = await getBrowserSupabase().rpc('admin_payment_ops_board')
+  if (error) throwRpc(error)
+  return mapPaymentOpsBoard(data)
 }
 
 export async function activatePricingVersion(versionId: string): Promise<PricingVersion> {

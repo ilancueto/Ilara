@@ -591,8 +591,8 @@ de origen, política operativa y pruebas que puedan producir cargos.
 **Decisión de negocio (2026-08-13):** pagos online deja de pertenecer a Stage 6
 y pasa a ser una etapa independiente. B2B y multisucursal quedan descartados.
 
-**Estado (2026-08-17):** 8.0 y 8.1 cerrados. 8.2 implementado en repo (flags
-apagados). 8.3–8.6 pendientes. Sin cobros online en producción.
+**Estado (2026-08-17):** 8.0–8.5 implementados. Capa en producción **apagada**.
+8.6 deja el procedimiento de encendido; no se cobra hasta revisión del dueño.
 
 ADR: [`docs/ETAPA8_PAYMENT_ADR.md`](./docs/ETAPA8_PAYMENT_ADR.md).
 Runbook: [`docs/ETAPA8_PAGOS_RUNBOOK.md`](./docs/ETAPA8_PAGOS_RUNBOOK.md).

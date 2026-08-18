@@ -2041,6 +2041,7 @@ export type Database = {
     Functions: {
       acquire_shipping_geocode_slot: { Args: never; Returns: undefined }
       admin_order_payments: { Args: { p_order_id: string }; Returns: Json }
+      admin_payment_ops_board: { Args: never; Returns: Json }
       admin_payment_receipt_path: {
         Args: { p_payment_id: string }
         Returns: string
@@ -2194,6 +2195,10 @@ export type Database = {
         Returns: Json
       }
       finance_stage66_snapshot: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: Json
+      }
+      finance_stage8_payments_slice: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
       }

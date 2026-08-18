@@ -3,6 +3,16 @@
 import { getBrowserSupabase } from '@/lib/supabase/browser'
 import type { CreatePayableInput, FinanceSnapshot, SettlementInput } from './types'
 import { mapFinanceSnapshot } from './mappers'
+import { mapCatalogFinanceSlice, type CatalogFinanceSlice } from '@/lib/domain/payments/finance'
+
+export async function getCatalogPaymentSlice(from: string, to: string): Promise<CatalogFinanceSlice> {
+  const { data, error } = await getBrowserSupabase().rpc('finance_stage8_payments_slice', {
+    p_from: from,
+    p_to: to,
+  })
+  if (error) throw error
+  return mapCatalogFinanceSlice(data)
+}
 
 export async function getFinanceSnapshot(from: string, to: string): Promise<FinanceSnapshot> {
   const { data, error } = await getBrowserSupabase().rpc('finance_stage66_snapshot', {

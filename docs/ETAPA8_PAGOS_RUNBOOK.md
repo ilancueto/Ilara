@@ -85,24 +85,20 @@ commit, deploy). No marcar un ítem si solo compiló.
 
 ## 8.5 Finanzas y administración
 
-- [ ] Slice de caja sin duplicar 6.6
-- [ ] Comisión real en margen de pagos
-- [ ] Alertas de conciliación
-- [ ] Panel completo
-- [ ] Commit independiente
+- [x] Slice `finance_stage8_payments_slice` sin tocar 6.6
+- [x] Comisión estimada vs real y reembolsos
+- [x] Hallazgos de conciliación (sin asientos)
+- [x] Tablero en Precios y pagos + corte en Cuentas y caja
+- [ ] Commit / migración prod (esta corrida)
 
 ## 8.6 Release
 
-- [ ] `supabase db reset --local`
-- [ ] CI remoto verde
-- [ ] Migraciones productivas
-- [ ] Secrets
-- [ ] Edge Functions
-- [ ] Vercel READY
-- [ ] Smoke productivo
-- [ ] Aviso antes de cobro real
-- [ ] Activación atómica
-- [ ] `PLAN.md` + `ETAPA8_RELEASE_REPORT.md`
+- [x] Informe [`ETAPA8_RELEASE_REPORT.md`](./ETAPA8_RELEASE_REPORT.md)
+- [x] Procedimiento de encendido atómico documentado
+- [ ] Reset local + CI de este cierre
+- [ ] Migración 8.5 en prod
+- [ ] Edge Functions: pendientes del secreto de webhook
+- [x] Flags apagados; **no** hay activación ni cobro real
 
 ## Checks (usar equivalentes reales de `package.json`)
 

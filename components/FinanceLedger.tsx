@@ -8,8 +8,10 @@ import Loader from '@/components/Loader'
 import { useToast } from '@/context/ToastContext'
 import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { cancelPayable, createPayable, getFinanceSnapshot, recordSettlement } from '@/lib/domain/finance/browserFinance'
+import { cancelPayable, createPayable, getCatalogPaymentSlice, getFinanceSnapshot, recordSettlement } from '@/lib/domain/finance/browserFinance'
 import type { FinancialAccount, FinancialAccountKind, FinanceSnapshot } from '@/lib/domain/finance/types'
+import type { CatalogFinanceSlice } from '@/lib/domain/payments/finance'
+import { paymentMethodLabel, type PaymentMethodCode } from '@/lib/domain/payments/states'
 import { PAYMENT_METHOD_LABELS, type PaymentMethod } from '@/lib/types'
 
 const METHODS = Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]
@@ -33,6 +35,7 @@ export default function FinanceLedger() {
   const { confirm, confirmProps } = useConfirm()
   const [period, setPeriod] = useState(defaultPeriod)
   const [snapshot, setSnapshot] = useState<FinanceSnapshot | null>(null)
+  const [catalog, setCatalog] = useState<CatalogFinanceSlice | null>(null)
   const [loading, setLoading] = useState(true)
   const [kind, setKind] = useState<FinancialAccountKind>('receivable')
   const [onlyOpen, setOnlyOpen] = useState(true)
@@ -50,7 +53,12 @@ export default function FinanceLedger() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setSnapshot(await getFinanceSnapshot(period.from, period.to))
+      const [nextSnapshot, nextCatalog] = await Promise.all([
+        getFinanceSnapshot(period.from, period.to),
+        getCatalogPaymentSlice(period.from, period.to),
+      ])
+      setSnapshot(nextSnapshot)
+      setCatalog(nextCatalog)
     } catch (error) {
       console.error('[finance] snapshot', error)
       showError('No se pudo cargar el panel financiero')
@@ -192,6 +200,45 @@ export default function FinanceLedger() {
           {snapshot?.reconciliation.length === 0 && <p className="py-8 text-center text-sm text-gray-500">Sin movimientos de caja en el período.</p>}
         </div>
       </PastelCard>
+
+      {catalog && (
+        <PastelCard className="p-5 sm:p-6" noHover data-testid="catalog-payment-slice">
+          <p className="text-xs font-bold text-pink-600 uppercase tracking-wider">Pedidos online</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">Corte aparte del mostrador</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Estos cobros no se cargan como otro ingreso. El neto combinado suma mostrador + pedidos.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+            <div className="rounded-xl border border-gray-100 px-3 py-3 dark:border-gray-800">
+              <p className="text-[10px] uppercase text-gray-400 font-bold">Mostrador</p>
+              <p className="font-black mt-1">{money(catalog.pos.net)}</p>
+            </div>
+            <div className="rounded-xl border border-gray-100 px-3 py-3 dark:border-gray-800">
+              <p className="text-[10px] uppercase text-gray-400 font-bold">Pedidos</p>
+              <p className="font-black mt-1">{money(catalog.catalog.net)}</p>
+            </div>
+            <div className="rounded-xl border border-pink-100 px-3 py-3 dark:border-pink-900">
+              <p className="text-[10px] uppercase text-gray-400 font-bold">Neto combinado</p>
+              <p className="font-black mt-1 text-pink-700">{money(catalog.combined.net)}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 text-sm">
+            <div>Cobrado: <strong>{money(catalog.margin.gross)}</strong></div>
+            <div>Comisión estimada: <strong>{money(catalog.margin.estimated_fee)}</strong></div>
+            <div>Comisión real: <strong>{money(catalog.margin.actual_fee)}</strong></div>
+            <div>Reembolsos: <strong>{money(catalog.margin.refunds)}</strong></div>
+          </div>
+          {catalog.methods.length > 0 && (
+            <ul className="mt-4 text-sm space-y-1">
+              {catalog.methods.map((line) => (
+                <li key={line.method}>
+                  {paymentMethodLabel((line.method || 'bank_transfer') as PaymentMethodCode)}: {money(line.net)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </PastelCard>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">

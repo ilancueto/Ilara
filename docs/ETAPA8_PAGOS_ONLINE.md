@@ -3,9 +3,8 @@
 Pagos online es una etapa independiente. Ya no forma parte de Stage 6.7.
 B2B/mayoristas y multisucursal están fuera del backlog.
 
-**Estado (2026-08-17):** 8.0–8.1 cerrados. 8.2 aplicado en prod con flags
-apagados (sin cron real). 8.3 implementa transferencia, capability y
-expiración por Vercel Cron. Feature apagada. No hay cobros online activos.
+**Estado (2026-08-17):** 8.0–8.5 cerrados en código. Capa productiva apagada.
+8.6 documenta el encendido; no hay cobros online activos.
 
 ADR vigente: [`ETAPA8_PAYMENT_ADR.md`](./ETAPA8_PAYMENT_ADR.md).
 Checklist vivo: [`ETAPA8_PAGOS_RUNBOOK.md`](./ETAPA8_PAGOS_RUNBOOK.md).
@@ -58,8 +57,8 @@ No existen señas ni pagos parciales del pedido.
 | 8.2 | Core de pagos, stock, RLS | Aplicado en prod; cron de Postgres no disponible — corregido en 8.3 |
 | 8.3 | Transferencia, capability y expiración Vercel | Cerrado en prod con flags apagados |
 | 8.4 | Mercado Pago Checkout Pro | Código y migración en prod; flags y cobros apagados |
-| 8.5 | Finanzas, margen, conciliación, panel | Pendiente |
-| 8.6 | Release productivo atómico | Pendiente |
+| 8.5 | Finanzas, margen, conciliación, panel | Implementado; flags apagados |
+| 8.6 | Release productivo atómico | Informe listo; encendido pendiente del dueño |
 
 ## Pendiente del propietario (para 8.4 / 8.6)
 

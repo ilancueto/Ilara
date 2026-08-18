@@ -4,10 +4,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import {
   activatePricingVersion,
+  fetchPaymentOpsBoard,
   listPricingVersions,
   previewPricing,
   savePricingDraft,
 } from '@/lib/domain/payments/browserPricing'
+import type { PaymentOpsBoard } from '@/lib/domain/payments/finance'
+import { paymentMethodLabel, paymentStatusLabel, type PaymentMethodCode, type PaymentStatus } from '@/lib/domain/payments/states'
 import type { PricingPreview, PricingVersion } from '@/lib/domain/payments/types'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 import { toUserMessage } from '@/lib/domain/errors'
@@ -26,14 +29,20 @@ export default function PagosConfig() {
   const [bankHolder, setBankHolder] = useState('')
   const [bankCuit, setBankCuit] = useState('')
   const [bankInstructions, setBankInstructions] = useState('')
+  const [board, setBoard] = useState<PaymentOpsBoard | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [list, nextPreview] = await Promise.all([listPricingVersions(), previewPricing()])
+      const [list, nextPreview, nextBoard] = await Promise.all([
+        listPricingVersions(),
+        previewPricing(),
+        fetchPaymentOpsBoard(),
+      ])
       setVersions(list)
       setPreview(nextPreview)
+      setBoard(nextBoard)
       setFee(String(nextPreview.version.effective_fee_rate))
       setIncrement(String(nextPreview.version.rounding_increment))
       setBankCbu(nextPreview.version.bank_cbu ?? '')
@@ -252,6 +261,44 @@ export default function PagosConfig() {
             </table>
           </div>
         </>
+      )}
+
+      {board && (
+        <div className="rounded-2xl border border-gray-200 p-4 dark:border-zinc-800" data-testid="payments-ops-board">
+          <h3 className="text-lg font-bold">Estado operativo</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Cobros {board.flags.payments_enabled ? 'habilitados' : 'apagados'} ·
+            Mercado Pago {board.flags.mercado_pago_enabled ? 'habilitado' : 'apagado'} ·
+            Transferencia {board.flags.bank_transfer_enabled ? 'habilitada' : 'apagada'}
+          </p>
+          <p className="text-sm mt-2">
+            Vencimientos: {board.expire.has_run
+              ? `última corrida ${new Date(board.expire.last_finished_at || '').toLocaleString('es-AR')}`
+              : 'todavía no hay una corrida registrada'}
+          </p>
+          {board.findings.length > 0 && (
+            <ul className="mt-3 space-y-1 text-sm">
+              {board.findings.map((finding, index) => (
+                <li key={`${finding.code}-${index}`} className={finding.severity === 'critical' ? 'text-rose-700' : ''}>
+                  {finding.detail}{finding.order_number ? ` · ${finding.order_number}` : ''}
+                </li>
+              ))}
+            </ul>
+          )}
+          {board.findings.length === 0 && (
+            <p className="mt-3 text-sm text-gray-500">No hay alertas de conciliación.</p>
+          )}
+          {board.recent.length > 0 && (
+            <ul className="mt-4 divide-y divide-gray-100 text-sm dark:divide-zinc-800">
+              {board.recent.slice(0, 8).map((row) => (
+                <li key={row.id} className="flex flex-wrap justify-between gap-2 py-2">
+                  <span>{row.order_number} · {paymentMethodLabel((row.method || 'bank_transfer') as PaymentMethodCode)}</span>
+                  <span>{paymentStatusLabel((row.status || 'pending') as PaymentStatus)} · ${formatPesoAR(row.amount_due)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <div>

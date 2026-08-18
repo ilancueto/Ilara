@@ -91,6 +91,17 @@ export function PedidoPagosPanel({ orderId, payments, onChange }: Props) {
             <p className="mt-1 tabular-nums">
               Importe: ${formatPesoARExact(payment.amount_due ?? payment.base_amount ?? 0)}
             </p>
+            {payment.estimated_fee != null && (
+              <p className="text-xs text-gray-500">Comisión estimada: ${formatPesoARExact(payment.estimated_fee)}</p>
+            )}
+            {payment.actual_fee != null && (
+              <p className="text-xs text-gray-500">Comisión real: ${formatPesoARExact(payment.actual_fee)}</p>
+            )}
+            {payment.expected_available_at && (
+              <p className="text-xs text-gray-500">
+                Acreditación estimada: {new Date(payment.expected_available_at).toLocaleDateString('es-AR')}
+              </p>
+            )}
             {payment.reject_reason && (
               <p className="mt-1 text-rose-700">Motivo: {payment.reject_reason}</p>
             )}

@@ -16,6 +16,10 @@ export type AdminOrderPayment = {
   transfer_saving: number | null
   price_uplift: number | null
   estimated_fee: number | null
+  actual_fee: number | null
+  net_received: number | null
+  refunded_amount: number | null
+  expected_available_at: string | null
   expires_at: string | null
   approved_at: string | null
   rejected_at: string | null
@@ -37,6 +41,10 @@ function mapAdminPayment(raw: unknown): AdminOrderPayment | null {
     transfer_saving: row.transfer_saving == null ? null : Number(row.transfer_saving),
     price_uplift: row.price_uplift == null ? null : Number(row.price_uplift),
     estimated_fee: row.estimated_fee == null ? null : Number(row.estimated_fee),
+    actual_fee: row.actual_fee == null ? null : Number(row.actual_fee),
+    net_received: row.net_received == null ? null : Number(row.net_received),
+    refunded_amount: row.refunded_amount == null ? null : Number(row.refunded_amount),
+    expected_available_at: row.expected_available_at == null ? null : String(row.expected_available_at),
     expires_at: row.expires_at == null ? null : String(row.expires_at),
     approved_at: row.approved_at == null ? null : String(row.approved_at),
     rejected_at: row.rejected_at == null ? null : String(row.rejected_at),
