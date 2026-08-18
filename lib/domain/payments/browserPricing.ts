@@ -1,5 +1,5 @@
 import { getBrowserSupabase } from '@/lib/supabase/browser'
-import { AppError } from '@/lib/domain/errors'
+import { AppError, mapRpcMessageToAppError } from '@/lib/domain/errors'
 import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
 import type { PricingPreview, PricingVersion, PublicPricingContext } from '@/lib/domain/payments/types'
 import { mapPaymentOpsBoard } from '@/lib/domain/payments/finance'
@@ -53,8 +53,20 @@ export async function fetchPublicPricingContext(): Promise<PublicPricingContext>
 }
 
 function throwRpc(error: { message?: string } | null): never {
+  const message = error?.message || 'pricing_rpc_failed'
+  if (message.includes('payment_method_requires_payments')) {
+    throw new AppError('validation', 'Primero habilitá los cobros online.', { message })
+  }
+  if (message.includes('payment_methods_required')) {
+    throw new AppError('validation', 'Elegí al menos un medio de cobro.', { message })
+  }
+  if (message.includes('bank_details_required')) {
+    throw new AppError('validation', 'Completá los datos de la cuenta para recibir transferencias.', { message })
+  }
+  const mapped = mapRpcMessageToAppError(message)
+  if (mapped.code !== 'unknown') throw mapped
   throw new AppError('unknown', 'No se pudo completar la operación.', {
-    message: error?.message || 'pricing_rpc_failed',
+    message,
   })
 }
 

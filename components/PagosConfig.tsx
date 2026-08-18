@@ -14,8 +14,28 @@ import { paymentMethodLabel, paymentStatusLabel, type PaymentMethodCode, type Pa
 import type { PricingPreview, PricingVersion } from '@/lib/domain/payments/types'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 import { toUserMessage } from '@/lib/domain/errors'
+import { useConfirm } from '@/hooks/useConfirm'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+
+function activationIssues(version: PricingVersion): string[] {
+  const issues: string[] = []
+  if ((version.mercado_pago_enabled || version.bank_transfer_enabled) && !version.payments_enabled) {
+    issues.push('Primero habilitá los cobros online.')
+  }
+  if (version.payments_enabled && !version.mercado_pago_enabled && !version.bank_transfer_enabled) {
+    issues.push('Elegí al menos un medio de cobro.')
+  }
+  if (version.bank_transfer_enabled) {
+    const hasDestination = Boolean(version.bank_cbu?.trim() || version.bank_alias?.trim())
+    if (!hasDestination || !version.bank_name?.trim() || !version.bank_account_holder?.trim() || !version.bank_cuit?.trim()) {
+      issues.push('Completá los datos de la cuenta para recibir transferencias.')
+    }
+  }
+  return issues
+}
 
 export default function PagosConfig() {
+  const { confirm, confirmProps } = useConfirm()
   const [versions, setVersions] = useState<PricingVersion[]>([])
   const [preview, setPreview] = useState<PricingPreview | null>(null)
   const [loading, setLoading] = useState(true)
@@ -100,6 +120,24 @@ export default function PagosConfig() {
   }
 
   async function handleActivate(id: string) {
+    const version = versions.find((item) => item.id === id)
+    if (!version) {
+      setError('No encontramos esa configuración. Actualizá la página e intentá de nuevo.')
+      return
+    }
+    const issues = activationIssues(version)
+    if (issues.length > 0) {
+      setError(issues.join(' '))
+      return
+    }
+    if (version.payments_enabled && !await confirm({
+      title: 'Publicar opciones de cobro',
+      description: 'Las clientas podrán elegir los medios seleccionados al realizar un pedido. Confirmá que revisaste la configuración antes de continuar.',
+      confirmLabel: 'Publicar',
+      cancelLabel: 'Volver a revisar',
+      danger: false,
+    })) return
+
     setSaving(true)
     setError(null)
     try {
@@ -120,7 +158,7 @@ export default function PagosConfig() {
             Precios y pagos
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Configuración de precios, medios y estado de activación. La operación de cada cobro vive en Pedidos.
+            Configurá los precios y las opciones de cobro. Cada pedido se administra desde Pedidos.
           </p>
         </div>
         <button
@@ -235,16 +273,22 @@ export default function PagosConfig() {
           </p>
 
           <div className="rounded-2xl border border-gray-200 p-4 dark:border-zinc-800 flex flex-col gap-3">
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Interruptores de activación (Feature Flags)</h3>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Opciones disponibles en la tienda</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                 <input
                   type="checkbox"
                   className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
                   checked={paymentsEnabled}
-                  onChange={(e) => setPaymentsEnabled(e.target.checked)}
+                  onChange={(e) => {
+                    setPaymentsEnabled(e.target.checked)
+                    if (!e.target.checked) {
+                      setMpEnabled(false)
+                      setTransferEnabled(false)
+                    }
+                  }}
                 />
-                <span className="font-semibold">Habilitar pasarela de pagos online</span>
+                <span className="font-semibold">Permitir cobros online</span>
               </label>
 
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
@@ -252,9 +296,10 @@ export default function PagosConfig() {
                   type="checkbox"
                   className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
                   checked={mpEnabled}
+                  disabled={!paymentsEnabled}
                   onChange={(e) => setMpEnabled(e.target.checked)}
                 />
-                <span className="font-semibold">Habilitar Mercado Pago (Checkout Pro)</span>
+                <span className="font-semibold">Ofrecer Mercado Pago</span>
               </label>
 
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
@@ -262,9 +307,10 @@ export default function PagosConfig() {
                   type="checkbox"
                   className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
                   checked={transferEnabled}
+                  disabled={!paymentsEnabled}
                   onChange={(e) => setTransferEnabled(e.target.checked)}
                 />
-                <span className="font-semibold">Habilitar Transferencia Bancaria</span>
+                <span className="font-semibold">Ofrecer transferencia</span>
               </label>
 
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
@@ -278,7 +324,7 @@ export default function PagosConfig() {
               </label>
             </div>
             <p className="text-xs text-gray-500">
-              Al guardar el borrador y activarlo, estos flags determinarán qué opciones verán los clientes en la tienda.
+              Guardá los cambios para revisarlos. Cuando publiques esta configuración, las clientas verán las opciones elegidas al hacer su pedido.
             </p>
           </div>
 
@@ -328,9 +374,9 @@ export default function PagosConfig() {
             Transferencia {board.flags.bank_transfer_enabled ? 'habilitada' : 'apagada'}
           </p>
           <p className="text-sm mt-2">
-            Vencimientos: {board.expire.has_run
-              ? `última corrida ${new Date(board.expire.last_finished_at || '').toLocaleString('es-AR')}`
-              : 'todavía no hay una corrida registrada'}
+            Pedidos pendientes: {board.expire.has_run
+              ? `última revisión ${new Date(board.expire.last_finished_at || '').toLocaleString('es-AR')}`
+              : 'todavía no hay revisiones registradas'}
           </p>
           {board.findings.length > 0 && (
             <ul className="mt-3 space-y-1 text-sm">
@@ -375,13 +421,14 @@ export default function PagosConfig() {
                   onClick={() => void handleActivate(version.id)}
                   className="text-xs font-extrabold text-pink-700 dark:text-pink-300"
                 >
-                  Restaurar / activar
+                  Publicar esta versión
                 </button>
               )}
             </li>
           ))}
         </ul>
       </div>
+      <ConfirmDialog {...confirmProps} testId="confirm-payment-publication" />
     </section>
   )
 }
