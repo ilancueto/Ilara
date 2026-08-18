@@ -127,3 +127,58 @@ export async function transitionOrder(
   }
   return parseTransitionOrderResult(data)
 }
+
+export type DeleteCancelledOrdersResult = {
+  deleted_count: number
+  skipped_count: number
+}
+
+export async function deleteCancelledOrders(
+  orderId?: string
+): Promise<DeleteCancelledOrdersResult> {
+  const supabase = getBrowserSupabase()
+  const { data, error } = await supabase.rpc('delete_cancelled_catalog_orders', {
+    p_order_id: orderId ?? null,
+  })
+  if (error) {
+    throw deleteCancelledOrderErrorFromRpc(error.message || '')
+  }
+  const row = (data && typeof data === 'object' ? data : {}) as Record<string, unknown>
+  return {
+    deleted_count: Number(row.deleted_count ?? 0),
+    skipped_count: Number(row.skipped_count ?? 0),
+  }
+}
+
+export function deleteCancelledOrderErrorFromRpc(message: string): AppError {
+  const m = message || ''
+  if (m.includes('order_not_found')) {
+    return new AppError('not_found', 'Pedido no encontrado.', { message: 'order_not_found' })
+  }
+  if (m.includes('order_not_cancelled')) {
+    return new AppError('conflict', 'Solo se pueden borrar pedidos cancelados.', {
+      message: 'order_not_cancelled',
+    })
+  }
+  if (m.includes('order_has_payment')) {
+    return new AppError(
+      'conflict',
+      'Ese pedido tiene un cobro registrado. No se puede borrar.',
+      { message: 'order_has_payment' }
+    )
+  }
+  if (m.includes('not_authenticated')) {
+    return new AppError('auth', 'Sesión expirada. Volvé a iniciar sesión.', {
+      message: 'not_authenticated',
+    })
+  }
+  if (m.includes('not_authorized')) {
+    return new AppError('forbidden', 'No tenés permiso para borrar pedidos.', {
+      message: 'not_authorized',
+    })
+  }
+  return new AppError('unknown', 'No se pudieron borrar los pedidos. Intentá de nuevo.', {
+    message: m.split(/[:\s]/)[0]?.slice(0, 64) || 'rpc_error',
+    retryable: true,
+  })
+}

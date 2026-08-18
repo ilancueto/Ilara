@@ -20,7 +20,10 @@ import {
 } from '../domain/orders/validation'
 import { buildOrderWhatsAppMessage } from '../domain/orders/whatsappMessage'
 import { mapOrderListItem, mapOrderItemRow } from '../domain/orders/mappers'
+import { deleteCancelledOrderErrorFromRpc } from '../domain/orders/browserOrders'
 import { AppError } from '../domain/errors'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   cartSubtotal,
   couponDiscountFromPercent,
@@ -203,5 +206,24 @@ describe('Stage 6.1 — WhatsApp y mappers', () => {
       sort_order: 0,
     })
     expect(item.combo_components_snapshot[0]?.product_id).toBe(9)
+  })
+})
+
+describe('Stage 9.9 — borrar cancelados', () => {
+  it('explica por qué no se puede borrar', () => {
+    expect(deleteCancelledOrderErrorFromRpc('order_not_cancelled').userMessage).toContain('cancelados')
+    expect(deleteCancelledOrderErrorFromRpc('order_has_payment').userMessage).toContain('cobro')
+    expect(deleteCancelledOrderErrorFromRpc('not_authorized').code).toBe('forbidden')
+  })
+
+  it('el SQL solo borra cancelados y omite cobros aprobados', () => {
+    const sql = readFileSync(
+      join(__dirname, '../../supabase/migrations/20260818240000_stage99_delete_cancelled_orders.sql'),
+      'utf8'
+    )
+    expect(sql).toContain('delete_cancelled_catalog_orders')
+    expect(sql).toContain("o.status = 'cancelled'")
+    expect(sql).toContain('order_has_payment')
+    expect(sql).toContain('is_app_admin')
   })
 })

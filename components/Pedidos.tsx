@@ -10,6 +10,7 @@ import {
   Package,
   RefreshCw,
   Search,
+  Trash2,
   UserPlus,
   X,
 } from 'lucide-react'
@@ -17,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useConfirm } from '@/hooks/useConfirm'
 import {
+  deleteCancelledOrders,
   getOrderDetail,
   listOrders,
   transitionOrder,
@@ -236,6 +238,68 @@ export default function Pedidos() {
     [detail]
   )
 
+  const cancelledCount = useMemo(
+    () => orders.filter((order) => order.status === 'cancelled').length,
+    [orders]
+  )
+
+  const handleDeleteOne = useCallback(async () => {
+    if (!detail || detail.status !== 'cancelled') return
+    const ok = await confirm({
+      title: `¿Borrar ${detail.order_number}?`,
+      description: 'Se elimina del listado. No se puede deshacer.',
+      confirmLabel: 'Borrar pedido',
+      cancelLabel: 'Volver',
+      danger: true,
+    })
+    if (!ok) return
+    setActionLoading(true)
+    try {
+      await deleteCancelledOrders(detail.id)
+      showToast('success', `Se borró ${detail.order_number}.`)
+      setSelectedId(null)
+      setDetail(null)
+      await loadList()
+    } catch (err) {
+      showToast('error', toUserMessage(err, 'No se pudo borrar el pedido.'))
+    } finally {
+      setActionLoading(false)
+    }
+  }, [confirm, detail, loadList, showToast])
+
+  const handleDeleteCancelled = useCallback(async () => {
+    const ok = await confirm({
+      title: '¿Borrar todos los pedidos cancelados?',
+      description:
+        'Se eliminan los cancelados. Si alguno tuvo un cobro aprobado, ese se deja.',
+      confirmLabel: 'Borrar cancelados',
+      cancelLabel: 'Volver',
+      danger: true,
+    })
+    if (!ok) return
+    setActionLoading(true)
+    try {
+      const result = await deleteCancelledOrders()
+      if (result.deleted_count === 0 && result.skipped_count === 0) {
+        showToast('info', 'No hay pedidos cancelados para borrar.')
+      } else if (result.skipped_count > 0) {
+        showToast(
+          'success',
+          `Se borraron ${result.deleted_count}. ${result.skipped_count} se dejaron porque tuvieron cobro.`
+        )
+      } else {
+        showToast('success', `Se borraron ${result.deleted_count} pedidos cancelados.`)
+      }
+      setSelectedId(null)
+      setDetail(null)
+      await loadList()
+    } catch (err) {
+      showToast('error', toUserMessage(err, 'No se pudieron borrar los pedidos.'))
+    } finally {
+      setActionLoading(false)
+    }
+  }, [confirm, loadList, showToast])
+
   return (
     <div className="flex flex-col gap-5 animate-fade-in pb-8" data-testid="pedidos-panel">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
@@ -247,15 +311,27 @@ export default function Pedidos() {
             Operación, pago, envío, devolución y contacto de la clienta
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void loadList()}
-          className="inline-flex items-center gap-2 self-start rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
-          data-testid="pedidos-refresh"
-        >
-          <RefreshCw size={16} />
-          Actualizar
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void handleDeleteCancelled()}
+            disabled={actionLoading}
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30 disabled:opacity-60"
+            data-testid="pedidos-delete-cancelled"
+          >
+            <Trash2 size={16} />
+            {cancelledCount > 0 ? `Borrar cancelados (${cancelledCount})` : 'Borrar cancelados'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void loadList()}
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+            data-testid="pedidos-refresh"
+          >
+            <RefreshCw size={16} />
+            Actualizar
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -706,6 +782,19 @@ export default function Pedidos() {
                     </button>
                   </div>
                 </div>
+              )}
+
+              {detail.status === 'cancelled' && !cancelOpen && (
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => void handleDeleteOne()}
+                  className="inline-flex items-center gap-1.5 self-start rounded-xl border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 disabled:opacity-60"
+                  data-testid="pedido-delete"
+                >
+                  <Trash2 size={16} />
+                  Borrar pedido
+                </button>
               )}
 
               {actions.length > 0 && !cancelOpen && (
