@@ -104,6 +104,11 @@ export function createOrderErrorFromRpc(message: string): AppError {
   if (m.includes('invalid_customer_name')) {
     return new AppError('validation', 'Ingresá tu nombre.', { message: 'invalid_customer_name' })
   }
+  if (m.includes('invalid_follow_token') || m.includes('follow_pay_not_allowed')) {
+    return new AppError('forbidden', 'Este enlace ya no sirve. Armá el pedido de nuevo si todavía lo querés.', {
+      message: 'invalid_follow_token',
+    })
+  }
   if (m.includes('invalid_access_capability') || m.includes('client_order_id_not_allowed')) {
     return new AppError('forbidden', 'No pudimos validar tu pedido. Volvé a abrirlo desde la confirmación.', {
       message: 'invalid_access_capability',

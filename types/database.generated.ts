@@ -611,6 +611,44 @@ export type Database = {
           },
         ]
       }
+      order_follow_tokens: {
+        Row: {
+          can_pay: boolean
+          created_at: string
+          expires_at: string
+          last_used_at: string | null
+          order_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          can_pay?: boolean
+          created_at?: string
+          expires_at: string
+          last_used_at?: string | null
+          order_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          can_pay?: boolean
+          created_at?: string
+          expires_at?: string
+          last_used_at?: string | null
+          order_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_follow_tokens_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           combo_components_snapshot: Json
@@ -2350,6 +2388,17 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_transfer_receipt_follow: {
+        Args: {
+          p_byte_size: number
+          p_follow_token: string
+          p_mime_type: string
+          p_order_number: string
+          p_sha256: string
+          p_storage_path: string
+        }
+        Returns: Json
+      }
       confirm_catalog_order_after_payment: {
         Args: { p_order_id: string }
         Returns: Json
@@ -2462,6 +2511,10 @@ export type Database = {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
+      get_catalog_order_follow: {
+        Args: { p_follow_token: string; p_order_number: string }
+        Returns: Json
+      }
       get_catalog_payment_public: {
         Args: { p_access_capability: string }
         Returns: Json
@@ -2513,6 +2566,14 @@ export type Database = {
       }
       prepare_transfer_receipt: {
         Args: { p_access_capability: string; p_extension: string }
+        Returns: Json
+      }
+      prepare_transfer_receipt_follow: {
+        Args: {
+          p_extension: string
+          p_follow_token: string
+          p_order_number: string
+        }
         Returns: Json
       }
       sales_margin_report: {

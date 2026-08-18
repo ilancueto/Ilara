@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
+            disallow: '/pedido',
         },
         sitemap: `${base}/sitemap.xml`,
         host: base.replace(/^https:\/\//, ''),

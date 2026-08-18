@@ -14,6 +14,7 @@ export function buildOrderWhatsAppMessage(input: {
   lines: WhatsAppOrderSummaryLine[]
   customer_name?: string
   fulfillment_mode?: string | null
+  follow_url?: string | null
 }): string {
   const name = (input.customer_name || '').trim()
   const greeting = name ? `¡Hola! Soy ${name}.` : '¡Hola!'
@@ -36,6 +37,7 @@ export function buildOrderWhatsAppMessage(input: {
     ...more,
     '',
     `Total: $${formatPesoARExact(input.total)}`,
+    ...(input.follow_url ? ['', `Seguí tu pedido: ${input.follow_url}`] : []),
     '',
     '¿Me ayudan a coordinar?',
   ].join('\n')

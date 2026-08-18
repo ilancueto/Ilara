@@ -20,6 +20,7 @@ import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/type
 import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { saveOrderAccess } from '@/lib/domain/payments/publicSession'
+import { buildOrderFollowCleanPath, buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -276,12 +277,16 @@ export function CheckoutPedido({
       name: item.producto ? item.producto.name : item.combo!.name,
       quantity: item.cantidad,
     }))
+    const followUrl = done.follow_token
+      ? buildOrderFollowUrl(done.order_number, done.follow_token)
+      : null
     const msg = buildOrderWhatsAppMessage({
       order_number: done.order_number,
       total: done.total,
       lines,
       customer_name: name.trim(),
       fulfillment_mode: done.fulfillment_mode ?? fulfillmentMode,
+      follow_url: followUrl,
     })
     const ok = openWhatsApp(msg, false)
     if (!ok) {
@@ -348,13 +353,44 @@ export function CheckoutPedido({
                 FULFILLMENT_COPY[done.fulfillment_mode || fulfillmentMode].success
               )}
             </p>
-            {done.access_capability && (
-              <Link href="/pedido" className={styles.primary} data-testid="checkout-continue-payment">
+            {done.follow_token && (
+              <p className={styles.hint} data-testid="checkout-follow-link">
+                Guardá este enlace para ver el estado del pedido:
+                <br />
+                <span className={styles.followUrl}>{buildOrderFollowUrl(done.order_number, done.follow_token)}</span>
+              </p>
+            )}
+            {done.follow_token && (
+              <button
+                type="button"
+                className={styles.secondary}
+                data-testid="checkout-copy-follow"
+                onClick={() => {
+                  const url = buildOrderFollowUrl(done.order_number, done.follow_token!)
+                  void navigator.clipboard?.writeText(url).then(
+                    () => showToast('success', 'Enlace copiado'),
+                    () => showToast('warning', 'No se pudo copiar. Seleccioná el enlace a mano.'),
+                  )
+                }}
+              >
+                Copiar enlace
+              </button>
+            )}
+            {(done.follow_token || done.access_capability) && (
+              <Link
+                href={done.follow_token ? buildOrderFollowCleanPath(done.order_number) : '/pedido'}
+                className={styles.primary}
+                data-testid="checkout-continue-payment"
+              >
                 Pagar
               </Link>
             )}
-            {done.access_capability && (
-              <Link href="/pedido" className={styles.secondary} data-testid="checkout-pay-transfer">
+            {done.follow_token && (
+              <Link
+                href={buildOrderFollowCleanPath(done.order_number)}
+                className={styles.secondary}
+                data-testid="checkout-pay-transfer"
+              >
                 Pagar por transferencia
               </Link>
             )}

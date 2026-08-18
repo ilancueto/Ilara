@@ -62,8 +62,10 @@ export type CreateOrderResult = {
   total: number
   created_at: string
   idempotent_replay: boolean
-  /** Clave de seguimiento. Solo se entrega desde el Server Action, nunca se guarda en claro. */
+  /** Clave de pago del dispositivo que armó el pedido. No va en la URL. */
   access_capability?: string
+  /** Token de seguimiento para el link. Distinto de la clave de pago. */
+  follow_token?: string
 }
 
 export type OrderReturnSummary = {

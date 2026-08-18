@@ -93,3 +93,12 @@ export type PublicPaymentView = {
     instructions: string | null
   } | null
 }
+
+export type PublicFollowView = PublicPaymentView & {
+  fulfillment_mode: string
+  shipping_amount: number
+  shipping_carrier: string | null
+  shipping_service: string | null
+  shipping_delivery_estimate: string | null
+  can_pay: boolean
+}

@@ -6,6 +6,7 @@
  */
 import { createCatalogOrderServer } from '@/lib/dal/orders'
 import type { CreateOrderInput, CreateOrderResult } from '@/lib/domain/orders/types'
+import { setOrderFollowCookie } from '@/lib/domain/orders/followSession'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { ObservabilityEvent } from '@/lib/observability/events'
@@ -33,6 +34,9 @@ export async function createCatalogOrderAction(
 
   try {
     const order = await createCatalogOrderServer(input)
+    if (order.follow_token) {
+      await setOrderFollowCookie(order.order_number, order.follow_token)
+    }
     logStructured({
       event: ObservabilityEvent.ORDER_CREATE_SUCCEEDED,
       level: 'info',

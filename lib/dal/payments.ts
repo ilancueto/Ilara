@@ -4,7 +4,7 @@ import { createSupabasePublicClient } from '@/lib/supabase/public'
 import { createSupabaseServiceClient } from '@/lib/supabase/service'
 import { createOrderErrorFromRpc } from '@/lib/domain/orders/createOrder'
 import { AppError } from '@/lib/domain/errors'
-import type { PublicPaymentView } from '@/lib/domain/payments/types'
+import type { PublicFollowView, PublicPaymentView } from '@/lib/domain/payments/types'
 
 export type { PublicPaymentView }
 
@@ -48,13 +48,17 @@ export async function startMercadoPagoCheckoutServer(input: {
 }
 
 export async function startBankTransferPaymentServer(input: {
-  access_capability: string
+  access_capability?: string
+  follow_token?: string
+  order_number?: string
   idempotency_key: string
 }) {
   const supabase = createSupabasePublicClient()
   const { data, error } = await supabase.rpc('start_catalog_order_payment', {
     p_payload: {
-      access_capability: input.access_capability,
+      ...(input.follow_token
+        ? { follow_token: input.follow_token, order_number: input.order_number }
+        : { access_capability: input.access_capability }),
       method: 'bank_transfer',
       idempotency_key: input.idempotency_key,
     },
@@ -69,7 +73,10 @@ export async function getPublicPaymentServer(accessCapability: string): Promise<
     p_access_capability: accessCapability,
   })
   if (error) throw createOrderErrorFromRpc(error.message || '')
-  const raw = record(data)
+  return mapPublicPaymentView(record(data))
+}
+
+function mapPublicPaymentView(raw: Record<string, unknown>): PublicPaymentView {
   const bank = raw.bank && typeof raw.bank === 'object' ? record(raw.bank) : null
   return {
     order_number: String(raw.order_number || ''),
@@ -97,6 +104,29 @@ export async function getPublicPaymentServer(accessCapability: string): Promise<
           instructions: bank.instructions == null ? null : String(bank.instructions),
         }
       : null,
+  }
+}
+
+export async function getPublicFollowServer(
+  orderNumber: string,
+  followToken: string
+): Promise<PublicFollowView> {
+  const supabase = createSupabasePublicClient()
+  const { data, error } = await supabase.rpc('get_catalog_order_follow', {
+    p_order_number: orderNumber,
+    p_follow_token: followToken,
+  })
+  if (error) throw createOrderErrorFromRpc(error.message || '')
+  const raw = record(data)
+  return {
+    ...mapPublicPaymentView(raw),
+    fulfillment_mode: String(raw.fulfillment_mode || 'envio'),
+    shipping_amount: Number(raw.shipping_amount) || 0,
+    shipping_carrier: raw.shipping_carrier == null ? null : String(raw.shipping_carrier),
+    shipping_service: raw.shipping_service == null ? null : String(raw.shipping_service),
+    shipping_delivery_estimate:
+      raw.shipping_delivery_estimate == null ? null : String(raw.shipping_delivery_estimate),
+    can_pay: raw.can_pay === true,
   }
 }
 
@@ -137,6 +167,49 @@ export async function uploadTransferReceiptServer(accessCapability: string, file
 
   const done = await publicClient.rpc('complete_transfer_receipt', {
     p_access_capability: accessCapability,
+    p_storage_path: path,
+    p_mime_type: file.type || 'application/octet-stream',
+    p_byte_size: file.size,
+    p_sha256: sha256,
+  })
+  if (done.error) throw createOrderErrorFromRpc(done.error.message || '')
+  return record(done.data)
+}
+
+export async function uploadTransferReceiptFollowServer(
+  orderNumber: string,
+  followToken: string,
+  file: File
+) {
+  if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
+    throw new AppError('validation', 'El comprobante no puede superar 5 MB.', { message: 'invalid_receipt_size' })
+  }
+  const publicClient = createSupabasePublicClient()
+  const prepared = await publicClient.rpc('prepare_transfer_receipt_follow', {
+    p_order_number: orderNumber,
+    p_follow_token: followToken,
+    p_extension: extensionFor(file),
+  })
+  if (prepared.error) throw createOrderErrorFromRpc(prepared.error.message || '')
+  const path = String(record(prepared.data).storage_path || '')
+  if (!path) throw new AppError('unknown', 'No se pudo guardar el comprobante.', { message: 'receipt_path' })
+
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  const sha256 = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
+
+  const service = createSupabaseServiceClient()
+  const upload = await service.storage.from('payment-receipts').upload(path, bytes, {
+    contentType: file.type || 'application/octet-stream',
+    upsert: false,
+  })
+  if (upload.error) {
+    throw new AppError('unknown', 'No se pudo guardar el comprobante.', { message: 'receipt_upload' })
+  }
+
+  const done = await publicClient.rpc('complete_transfer_receipt_follow', {
+    p_order_number: orderNumber,
+    p_follow_token: followToken,
     p_storage_path: path,
     p_mime_type: file.type || 'application/octet-stream',
     p_byte_size: file.size,
