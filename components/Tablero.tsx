@@ -25,6 +25,8 @@ import { useTheme } from '@/context/ThemeContext'
 import type { PanelNavigate } from '@/lib/appNavigation'
 import { fetchPanelBadges } from '@/lib/domain/panel/browserPanelBadges'
 import { getCatalogPaymentSlice } from '@/lib/domain/finance/browserFinance'
+import { fetchPaymentOpsBoard } from '@/lib/domain/payments/browserPricing'
+import { paymentMethodLabel, type PaymentMethodCode } from '@/lib/domain/payments/states'
 
 type PeriodoIngresos = 'total' | '7d' | '30d'
 
@@ -63,6 +65,14 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
     const [pedidosAbiertos, setPedidosAbiertos] = useState(0)
+    const [catalogRecientes, setCatalogRecientes] = useState<Array<{
+        id: string
+        order_number: string
+        method: string
+        amount_due: number
+        approved_at: string | null
+        created_at: string
+    }>>([])
 
     const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
     const [detalleVenta, setDetalleVenta] = useState<Venta | null>(null)
@@ -112,10 +122,22 @@ export default function Tablero({ onNavigate }: TableroProps) {
                   ? subDays(today, 30).toISOString().slice(0, 10)
                   : '2016-01-01'
         try {
-            const slice = await getCatalogPaymentSlice(from, to)
+            const [slice, board] = await Promise.all([
+                getCatalogPaymentSlice(from, to),
+                fetchPaymentOpsBoard(),
+            ])
             setKpi((prev) => ({ ...prev, catalog_inflow: slice.catalog.inflow }))
+            const since = corte ? corte.getTime() : 0
+            setCatalogRecientes(
+                board.recent.filter((row) => {
+                    if (!['approved', 'partially_refunded', 'refunded'].includes(row.status)) return false
+                    const stamp = Date.parse(row.approved_at || row.created_at)
+                    return Number.isFinite(stamp) && stamp >= since
+                })
+            )
         } catch {
             setKpi((prev) => ({ ...prev, catalog_inflow: 0 }))
+            setCatalogRecientes([])
         }
 
         if (periodoIngresos === 'total') {
@@ -397,10 +419,14 @@ export default function Tablero({ onNavigate }: TableroProps) {
                     <TarjetaEstadistica
                         icono={<ClipboardList className="w-5 h-5" />}
                         etiqueta="Pedidos web"
-                        valor={pedidosAbiertos.toString()}
+                        valor={`$${kpi.catalog_inflow.toLocaleString()}`}
                         color="text-sky-500"
                         bgIcon="bg-sky-50"
-                        subtitulo={pedidosAbiertos > 0 ? 'Pendientes o confirmados' : 'Sin pedidos abiertos'}
+                        subtitulo={
+                            pedidosAbiertos > 0
+                                ? `${pedidosAbiertos} abiertos · cobrados en el período`
+                                : 'Cobrados en el período'
+                        }
                         alerta={pedidosAbiertos > 0}
                         onActivate={onNavigate ? () => onNavigate('orders') : undefined}
                     />
@@ -505,46 +531,57 @@ export default function Tablero({ onNavigate }: TableroProps) {
                             </span>
                         </div>
 
-                        {ultimasVentas.length > 0 ? (
+                        {ultimasVentas.length > 0 || catalogRecientes.length > 0 ? (
                             <div className="flex flex-col">
-                                {ultimasVentas.slice(0, 5).map(venta => {
-                                    const fromCustomer = venta.customers
-                                        ? `${venta.customers.first_name ?? ''} ${venta.customers.last_name ?? ''}`.trim()
-                                        : ''
-                                    const nombre = venta.customer_name?.trim() || fromCustomer
-                                    const display = nombre || `Venta #${venta.id}`
-                                    const initials = nombre
-                                        ? nombre
-                                              .split(/\s+/)
-                                              .filter(Boolean)
-                                              .slice(0, 2)
-                                              .map((w) => w[0]?.toUpperCase() ?? '')
-                                              .join('') || '#'
-                                        : '#'
-                                    return (
+                                {[
+                                    ...catalogRecientes.map((row) => ({
+                                        key: `web-${row.id}`,
+                                        title: row.order_number,
+                                        subtitle: `${paymentMethodLabel((row.method || 'mercado_pago') as PaymentMethodCode)} · web`,
+                                        total: row.amount_due,
+                                        at: row.approved_at || row.created_at,
+                                        onClick: () => onNavigate?.('orders'),
+                                    })),
+                                    ...ultimasVentas.map((venta) => {
+                                        const fromCustomer = venta.customers
+                                            ? `${venta.customers.first_name ?? ''} ${venta.customers.last_name ?? ''}`.trim()
+                                            : ''
+                                        const nombre = venta.customer_name?.trim() || fromCustomer
+                                        return {
+                                            key: `pos-${venta.id}`,
+                                            title: nombre || `Venta #${venta.id}`,
+                                            subtitle: `${venta.payment_method || 'mostrador'} · mostrador`,
+                                            total: venta.total,
+                                            at: venta.created_at,
+                                            onClick: () => abrirDetalleVenta(venta),
+                                        }
+                                    }),
+                                ]
+                                    .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
+                                    .slice(0, 5)
+                                    .map((row) => (
                                         <button
-                                            key={venta.id}
+                                            key={row.key}
                                             type="button"
-                                            onClick={() => abrirDetalleVenta(venta)}
+                                            onClick={row.onClick}
                                             className="w-full flex items-center gap-3 py-3 border-b border-gray-100/80 dark:border-white/5 last:border-0 text-left group"
                                         >
                                             <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/40 dark:to-zinc-800 border border-pink-100 dark:border-white/10 flex items-center justify-center text-[11px] font-extrabold text-pink-600 dark:text-pink-300 shrink-0">
-                                                {initials}
+                                                {row.title.slice(0, 2).toUpperCase()}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className="font-bold text-sm text-gray-900 dark:text-gray-100 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">
-                                                    {display}
+                                                    {row.title}
                                                 </p>
                                                 <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5 truncate capitalize">
-                                                    {venta.payment_method || '—'} · {format(new Date(venta.created_at), 'HH:mm', { locale: es })}
+                                                    {row.subtitle} · {format(new Date(row.at), 'HH:mm', { locale: es })}
                                                 </p>
                                             </div>
                                             <p className="font-extrabold text-sm tabular-nums text-gray-900 dark:text-gray-50 shrink-0">
-                                                ${venta.total.toLocaleString()}
+                                                ${row.total.toLocaleString()}
                                             </p>
                                         </button>
-                                    )
-                                })}
+                                    ))}
                             </div>
                         ) : (
                             <div className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm border border-dashed border-pink-100 dark:border-white/10 rounded-2xl">
