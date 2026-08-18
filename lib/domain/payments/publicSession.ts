@@ -3,6 +3,7 @@ const STORAGE_KEY = 'ilara.pedidoSeguimiento'
 export type StoredOrderAccess = {
   orderNumber: string
   access: string
+  followToken?: string
   transferStartKey?: string
   mpStartKey?: string
 }
@@ -12,12 +13,17 @@ function writeStore(payload: StoredOrderAccess): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
 }
 
-export function saveOrderAccess(orderNumber: string, access: string): void {
+export function saveOrderAccess(
+  orderNumber: string,
+  access: string,
+  followToken?: string | null
+): void {
   if (!orderNumber || !access) return
   const previous = loadOrderAccess()
   writeStore({
     orderNumber,
     access,
+    followToken: followToken || (previous?.orderNumber === orderNumber ? previous.followToken : undefined),
     transferStartKey: previous?.orderNumber === orderNumber ? previous.transferStartKey : undefined,
     mpStartKey: previous?.orderNumber === orderNumber ? previous.mpStartKey : undefined,
   })

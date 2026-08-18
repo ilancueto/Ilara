@@ -45,6 +45,7 @@ describe('Stage 9.7 — link de seguimiento', () => {
     expect(path).toContain('t=abc123token')
     expect(path).not.toContain('order_id')
     expect(checkout).toContain('buildOrderFollowUrl')
+    expect(checkout).toContain('buildOrderFollowPath')
     expect(checkout).toContain('checkout-copy-follow')
   })
 

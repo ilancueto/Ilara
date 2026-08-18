@@ -20,7 +20,7 @@ import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/type
 import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { saveOrderAccess } from '@/lib/domain/payments/publicSession'
-import { buildOrderFollowCleanPath, buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
+import { buildOrderFollowPath, buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -257,7 +257,11 @@ export function CheckoutPedido({
         }
 
         if (result.order.access_capability) {
-          saveOrderAccess(result.order.order_number, result.order.access_capability)
+          saveOrderAccess(
+            result.order.order_number,
+            result.order.access_capability,
+            result.order.follow_token
+          )
         }
         setDone(result.order)
         onOrderCreated(result.order)
@@ -378,7 +382,11 @@ export function CheckoutPedido({
             )}
             {(done.follow_token || done.access_capability) && (
               <Link
-                href={done.follow_token ? buildOrderFollowCleanPath(done.order_number) : '/pedido'}
+                href={
+                  done.follow_token
+                    ? buildOrderFollowPath(done.order_number, done.follow_token)
+                    : '/pedido'
+                }
                 className={styles.primary}
                 data-testid="checkout-continue-payment"
               >
@@ -387,7 +395,7 @@ export function CheckoutPedido({
             )}
             {done.follow_token && (
               <Link
-                href={buildOrderFollowCleanPath(done.order_number)}
+                href={buildOrderFollowPath(done.order_number, done.follow_token)}
                 className={styles.secondary}
                 data-testid="checkout-pay-transfer"
               >

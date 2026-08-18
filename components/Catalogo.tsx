@@ -30,6 +30,8 @@ import { BadgeRotator } from '@/components/Catalogo/BadgeRotator'
 import { ImagenComboRotativa } from '@/components/Catalogo/ImagenComboRotativa'
 import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 import { useCarrito } from '@/hooks/useCarrito'
+import { loadOrderAccess } from '@/lib/domain/payments/publicSession'
+import { buildOrderFollowPath } from '@/lib/domain/orders/followLink'
 import { useCatalogData, type CatalogInitialSnapshot } from '@/hooks/useCatalogData'
 import { useCatalogDerivedLists } from '@/hooks/useCatalogDerivedLists'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
@@ -66,6 +68,8 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
     const { showToast: baseShowToast } = useToast()
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
     const [mostrarCheckout, setMostrarCheckout] = useState(false)
+    const [checkoutConfirmado, setCheckoutConfirmado] = useState(false)
+    const [ultimoPedido, setUltimoPedido] = useState<{ orderNumber: string; href: string } | null>(null)
     const showToast = useCallback((type: 'success' | 'error' | 'warning' | 'info', message: string) => {
         const action = (type === 'success' && (message.includes('agregado') || message.includes('actualizada')))
             ? { label: 'Ver carrito', onClick: () => setMostrarCarrito(true) }
@@ -171,6 +175,20 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         setMostrarCarrito(false)
         showToast('info', 'Carrito vaciado')
     }
+
+    useEffect(() => {
+        const stored = loadOrderAccess()
+        if (!stored?.orderNumber) {
+            setUltimoPedido(null)
+            return
+        }
+        setUltimoPedido({
+            orderNumber: stored.orderNumber,
+            href: stored.followToken
+                ? buildOrderFollowPath(stored.orderNumber, stored.followToken)
+                : '/pedido',
+        })
+    }, [checkoutConfirmado, mostrarCheckout])
 
     const subtotal = cartSubtotal(
         carrito.map(item => ({
@@ -287,6 +305,11 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                         <Search size={18} />
                     </button>
                     <span className={styles.themeControl}><ThemeSwitch /></span>
+                    {ultimoPedido && (
+                        <Link className={styles.loginButton} href={ultimoPedido.href} data-testid="catalog-last-order">
+                            Pedido {ultimoPedido.orderNumber}
+                        </Link>
+                    )}
                     <Link className={styles.loginButton} href="/login">Ingresar</Link>
                     <button
                         className={styles.bagButton}
@@ -754,7 +777,14 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
             {mostrarCheckout && (
                 <CheckoutPedido
                     open
-                    onClose={() => setMostrarCheckout(false)}
+                    onClose={() => {
+                        setMostrarCheckout(false)
+                        if (checkoutConfirmado) {
+                            clearCarrito()
+                            setAppliedCoupon(null)
+                            setCheckoutConfirmado(false)
+                        }
+                    }}
                     onBack={() => {
                         setMostrarCheckout(false)
                         setMostrarCarrito(true)
@@ -766,8 +796,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                     total={total}
                     showToast={showToast}
                     onOrderCreated={() => {
-                        clearCarrito()
-                        setAppliedCoupon(null)
+                        setCheckoutConfirmado(true)
                     }}
                 />
             )}
