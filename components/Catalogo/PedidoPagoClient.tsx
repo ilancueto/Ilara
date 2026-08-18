@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/states'
-import { loadOrderAccess, paymentStartKey } from '@/lib/domain/payments/publicSession'
+import { loadOrderAccess, paymentStartKey, storedFollow } from '@/lib/domain/payments/publicSession'
 import { buildOrderFollowPath } from '@/lib/domain/orders/followLink'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
@@ -54,8 +54,9 @@ export function PedidoPagoClient() {
         setError('No encontramos un pedido abierto en este navegador.')
         return
       }
-      if (stored.followToken && stored.orderNumber) {
-        window.location.replace(buildOrderFollowPath(stored.orderNumber, stored.followToken))
+      const follow = storedFollow(stored)
+      if (follow && stored.orderNumber) {
+        window.location.replace(buildOrderFollowPath(stored.orderNumber, follow))
         return
       }
       setAccess(stored.access)

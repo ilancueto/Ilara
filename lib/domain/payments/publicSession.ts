@@ -29,6 +29,10 @@ export function saveOrderAccess(
   })
 }
 
+export function storedFollow(stored: StoredOrderAccess): string | undefined {
+  return stored.followToken
+}
+
 export function loadOrderAccess(): StoredOrderAccess | null {
   if (typeof window === 'undefined') return null
   try {

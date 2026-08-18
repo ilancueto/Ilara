@@ -563,6 +563,44 @@ export type Database = {
           },
         ]
       }
+      order_follow_tokens: {
+        Row: {
+          can_pay: boolean
+          created_at: string
+          expires_at: string
+          last_used_at: string | null
+          order_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          can_pay?: boolean
+          created_at?: string
+          expires_at: string
+          last_used_at?: string | null
+          order_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          can_pay?: boolean
+          created_at?: string
+          expires_at?: string
+          last_used_at?: string | null
+          order_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_follow_tokens_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_item_components: {
         Row: {
           cost_source: string
@@ -607,44 +645,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      order_follow_tokens: {
-        Row: {
-          can_pay: boolean
-          created_at: string
-          expires_at: string
-          last_used_at: string | null
-          order_id: string
-          revoked_at: string | null
-          token_hash: string
-        }
-        Insert: {
-          can_pay?: boolean
-          created_at?: string
-          expires_at: string
-          last_used_at?: string | null
-          order_id: string
-          revoked_at?: string | null
-          token_hash: string
-        }
-        Update: {
-          can_pay?: boolean
-          created_at?: string
-          expires_at?: string
-          last_used_at?: string | null
-          order_id?: string
-          revoked_at?: string | null
-          token_hash?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_follow_tokens_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: true
-            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -2412,6 +2412,14 @@ export type Database = {
         Args: { p_payload: Json }
         Returns: Json
       }
+      create_catalog_order_core_stage83: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
+      create_catalog_order_core_stage96: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
       create_order_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_with_items: { Args: { p_payload: Json }; Returns: Json }
@@ -2467,6 +2475,10 @@ export type Database = {
           sale_count: number
           total: number
         }[]
+      }
+      delete_cancelled_catalog_orders: {
+        Args: { p_order_id?: string }
+        Returns: Json
       }
       delete_sale_and_restore_stock: {
         Args: { p_sale_id: number }
@@ -2537,6 +2549,10 @@ export type Database = {
       }
       mp_preference_context: {
         Args: { p_access_capability: string }
+        Returns: Json
+      }
+      mp_preference_context_follow: {
+        Args: { p_follow_token: string; p_order_number: string }
         Returns: Json
       }
       next_catalog_order_number: { Args: never; Returns: string }
