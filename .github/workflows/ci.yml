@@ -104,7 +104,7 @@ jobs:
         # No regenerar antes: hacerlo convertiría el control en un falso positivo.
         run: npm run db:types:check
 
-      - name: Integration Stage 0 + Stage 1 + Stage 6.1–6.6 + Stage 8
+      - name: Integration Stage 0 + Stage 1 + Stage 6.1–6.6 + Stage 8 + Stage 9
         run: |
           eval "$(supabase status -o env)"
           export STAGE0_INTEGRATION=1
@@ -116,6 +116,7 @@ jobs:
           export STAGE65_INTEGRATION=1
           export STAGE66_INTEGRATION=1
           export STAGE8_INTEGRATION=1
+          export STAGE9_INTEGRATION=1
           export STAGE0_SUPABASE_URL="$API_URL"
           export STAGE0_ANON_KEY="$ANON_KEY"
           export STAGE0_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
@@ -140,6 +141,9 @@ jobs:
           export STAGE66_SUPABASE_URL="$API_URL"
           export STAGE66_ANON_KEY="$ANON_KEY"
           export STAGE66_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          export STAGE9_SUPABASE_URL="$API_URL"
+          export STAGE9_ANON_KEY="$ANON_KEY"
+          export STAGE9_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
           # Usuarios de prueba locales (sin PII real)
           # La suite falla si STAGE1=1 y faltan users; se crean vía Admin API
           node <<'NODE'
@@ -221,6 +225,10 @@ jobs:
           export STAGE66_USER_A_PASSWORD='Stage66-Test-Pass-A1!'
           export STAGE66_USER_B_EMAIL=stage66-b@example.com
           export STAGE66_USER_B_PASSWORD='Stage66-Test-Pass-B1!'
+          export STAGE9_USER_A_EMAIL=stage61-a@example.com
+          export STAGE9_USER_A_PASSWORD='Stage61-Test-Pass-A1!'
+          export STAGE9_USER_B_EMAIL=stage61-b@example.com
+          export STAGE9_USER_B_PASSWORD='Stage61-Test-Pass-B1!'
           npm run test:integration
 
   e2e:

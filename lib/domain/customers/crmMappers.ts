@@ -43,11 +43,14 @@ const mapConsent = (value: unknown): CustomerConsent => {
 
 const mapActivity = (value: unknown): CustomerCrmActivity => {
   const row = object(value)
+  const type = row.type === 'return' || row.type === 'order' ? row.type : 'sale'
   return {
     id: string(row.id),
-    type: row.type === 'return' ? 'return' : 'sale',
+    type,
     event_at: string(row.event_at),
-    sale_id: number(row.sale_id),
+    sale_id: row.sale_id == null ? undefined : number(row.sale_id),
+    order_id: row.order_id == null ? undefined : string(row.order_id),
+    order_number: row.order_number == null ? undefined : string(row.order_number),
     amount: number(row.amount),
     status: nullableString(row.status),
     payment_method: nullableString(row.payment_method),
@@ -59,6 +62,7 @@ const mapActivity = (value: unknown): CustomerCrmActivity => {
 export function mapCustomerCrmProfile(value: unknown): CustomerCrmProfile {
   const row = object(value)
   const metrics = object(row.metrics)
+  const catalog = object(row.catalog_orders)
   return {
     metrics: {
       sale_count: number(metrics.sale_count),
@@ -68,6 +72,25 @@ export function mapCustomerCrmProfile(value: unknown): CustomerCrmProfile {
       average_ticket: number(metrics.average_ticket),
       first_purchase_at: nullableString(metrics.first_purchase_at),
       last_purchase_at: nullableString(metrics.last_purchase_at),
+    },
+    catalog_orders: {
+      order_count: number(catalog.order_count),
+      order_total: number(catalog.order_total),
+      last_order_at: nullableString(catalog.last_order_at),
+      pending_count: number(catalog.pending_count),
+      open_count: number(catalog.open_count),
+      completed_count: number(catalog.completed_count),
+      cancelled_count: number(catalog.cancelled_count),
+      recent: (Array.isArray(catalog.recent) ? catalog.recent : []).map((raw) => {
+        const item = object(raw)
+        return {
+          id: string(item.id),
+          order_number: string(item.order_number),
+          status: string(item.status),
+          total: number(item.total),
+          created_at: string(item.created_at),
+        }
+      }),
     },
     tags: (Array.isArray(row.tags) ? row.tags : []).map(mapCustomerCrmTag),
     notes: (Array.isArray(row.notes) ? row.notes : []).map(mapNote),

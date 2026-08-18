@@ -104,6 +104,12 @@ const sensitiveTables = [
   'order_access_capabilities',
   'payment_receipts',
   'payment_expire_runs',
+  // Stage 9 — vínculo CRM, costo de pedido y devoluciones de catálogo
+  'order_customer_link_audit',
+  'order_item_components',
+  'order_returns',
+  'order_return_items',
+  'order_return_events',
 ]
 for (const table of sensitiveTables) {
   const { data, error } = await anon.from(table).select('*').limit(1)

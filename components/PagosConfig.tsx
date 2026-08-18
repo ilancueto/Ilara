@@ -23,6 +23,10 @@ export default function PagosConfig() {
   const [error, setError] = useState<string | null>(null)
   const [fee, setFee] = useState('0.053119')
   const [increment, setIncrement] = useState('100')
+  const [paymentsEnabled, setPaymentsEnabled] = useState(false)
+  const [mpEnabled, setMpEnabled] = useState(false)
+  const [transferEnabled, setTransferEnabled] = useState(false)
+  const [dualPriceVisible, setDualPriceVisible] = useState(false)
   const [bankCbu, setBankCbu] = useState('')
   const [bankAlias, setBankAlias] = useState('')
   const [bankName, setBankName] = useState('')
@@ -45,6 +49,10 @@ export default function PagosConfig() {
       setBoard(nextBoard)
       setFee(String(nextPreview.version.effective_fee_rate))
       setIncrement(String(nextPreview.version.rounding_increment))
+      setPaymentsEnabled(nextPreview.version.payments_enabled)
+      setMpEnabled(nextPreview.version.mercado_pago_enabled)
+      setTransferEnabled(nextPreview.version.bank_transfer_enabled)
+      setDualPriceVisible(nextPreview.version.catalog_dual_price_visible)
       setBankCbu(nextPreview.version.bank_cbu ?? '')
       setBankAlias(nextPreview.version.bank_alias ?? '')
       setBankName(nextPreview.version.bank_name ?? '')
@@ -71,17 +79,17 @@ export default function PagosConfig() {
         rounding_increment: Number(increment),
         listed_fee_rate: 0.0439,
         iva_rate: 0.21,
-        payments_enabled: false,
-        mercado_pago_enabled: false,
-        bank_transfer_enabled: false,
-        catalog_dual_price_visible: false,
+        payments_enabled: paymentsEnabled,
+        mercado_pago_enabled: mpEnabled,
+        bank_transfer_enabled: transferEnabled,
+        catalog_dual_price_visible: dualPriceVisible,
         bank_cbu: bankCbu,
         bank_alias: bankAlias,
         bank_name: bankName,
         bank_account_holder: bankHolder,
         bank_cuit: bankCuit,
         bank_instructions: bankInstructions,
-        notes: 'Borrador Stage 8.3. Flags apagados. Sin datos bancarios de ejemplo.',
+        notes: 'Versión configurada desde panel admin.',
       })
       await load()
     } catch (cause) {
@@ -112,7 +120,7 @@ export default function PagosConfig() {
             Precios y pagos
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            El precio de lista no se pisa. El precio público se calcula sobre una versión y hoy está oculto en el catálogo.
+            Configuración de precios, medios y estado de activación. La operación de cada cobro vive en Pedidos.
           </p>
         </div>
         <button
@@ -225,6 +233,54 @@ export default function PagosConfig() {
           <p className="text-xs text-gray-500">
             Dejá vacío lo que todavía no tengas. No se guardan datos de ejemplo.
           </p>
+
+          <div className="rounded-2xl border border-gray-200 p-4 dark:border-zinc-800 flex flex-col gap-3">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Interruptores de activación (Feature Flags)</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  checked={paymentsEnabled}
+                  onChange={(e) => setPaymentsEnabled(e.target.checked)}
+                />
+                <span className="font-semibold">Habilitar pasarela de pagos online</span>
+              </label>
+
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  checked={mpEnabled}
+                  onChange={(e) => setMpEnabled(e.target.checked)}
+                />
+                <span className="font-semibold">Habilitar Mercado Pago (Checkout Pro)</span>
+              </label>
+
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  checked={transferEnabled}
+                  onChange={(e) => setTransferEnabled(e.target.checked)}
+                />
+                <span className="font-semibold">Habilitar Transferencia Bancaria</span>
+              </label>
+
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  checked={dualPriceVisible}
+                  onChange={(e) => setDualPriceVisible(e.target.checked)}
+                />
+                <span className="font-semibold">Mostrar doble precio en catálogo</span>
+              </label>
+            </div>
+            <p className="text-xs text-gray-500">
+              Al guardar el borrador y activarlo, estos flags determinarán qué opciones verán los clientes en la tienda.
+            </p>
+          </div>
 
           <div className="flex flex-wrap gap-2">
             <button

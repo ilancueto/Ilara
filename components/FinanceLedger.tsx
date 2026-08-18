@@ -13,6 +13,7 @@ import type { FinancialAccount, FinancialAccountKind, FinanceSnapshot } from '@/
 import type { CatalogFinanceSlice } from '@/lib/domain/payments/finance'
 import { paymentMethodLabel, type PaymentMethodCode } from '@/lib/domain/payments/states'
 import { PAYMENT_METHOD_LABELS, type PaymentMethod } from '@/lib/types'
+import { panelHref } from '@/lib/appNavigation'
 
 const METHODS = Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]
 
@@ -203,10 +204,10 @@ export default function FinanceLedger() {
 
       {catalog && (
         <PastelCard className="p-5 sm:p-6" noHover data-testid="catalog-payment-slice">
-          <p className="text-xs font-bold text-pink-600 uppercase tracking-wider">Pedidos online</p>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">Corte aparte del mostrador</h2>
+          <p className="text-xs font-bold text-pink-600 uppercase tracking-wider">Resumen combinado</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">Mostrador, pedidos y total</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Estos cobros no se cargan como otro ingreso. El neto combinado suma mostrador + pedidos.
+            Los cobros online no se cargan como otro ingreso ni se mezclan con la caja del local.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
             <div className="rounded-xl border border-gray-100 px-3 py-3 dark:border-gray-800">
@@ -227,6 +228,10 @@ export default function FinanceLedger() {
             <div>Comisión estimada: <strong>{money(catalog.margin.estimated_fee)}</strong></div>
             <div>Comisión real: <strong>{money(catalog.margin.actual_fee)}</strong></div>
             <div>Reembolsos: <strong>{money(catalog.margin.refunds)}</strong></div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4">
+            <a href={panelHref({ tab: 'orders' })} className="text-xs font-bold text-pink-600">Ver pedidos</a>
+            <a href={panelHref({ tab: 'margin_reports', channel: 'combined' })} className="text-xs font-bold text-pink-600">Ver margen</a>
           </div>
           {catalog.methods.length > 0 && (
             <ul className="mt-4 text-sm space-y-1">

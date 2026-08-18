@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createPortal } from 'react-dom'
 import dynamic from 'next/dynamic'
@@ -22,6 +23,7 @@ const CustomerCrmPanel = dynamic(() => import('@/components/CustomerCrmPanel'), 
 
 type ClienteStats = {
     totalVentas: number
+    totalPedidos: number
     totalGastado: number
     ultimaCompra: string | null
 }
@@ -29,6 +31,7 @@ type ClienteStats = {
 export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
     const { showSuccess, showError } = useToast()
     const { confirm: confirmDialog, confirmProps } = useConfirm()
+    const searchParams = useSearchParams()
     const [clientes, setClientes] = useState<Cliente[]>([])
     const [clientesStats, setClientesStats] = useState<Map<number, ClienteStats>>(new Map())
     const [cargando, setCargando] = useState(true)
@@ -81,9 +84,9 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
             return
         }
 
-        const agg = new Map<number, { totalVentas: number; totalGastado: number; ultimaIso: string | null }>()
+        const agg = new Map<number, { totalVentas: number; totalPedidos: number; totalGastado: number; ultimaIso: string | null }>()
         for (const c of lista) {
-            agg.set(c.id, { totalVentas: 0, totalGastado: 0, ultimaIso: null })
+            agg.set(c.id, { totalVentas: 0, totalPedidos: 0, totalGastado: 0, ultimaIso: null })
         }
 
         const ids = lista.map((c) => c.id)
@@ -108,12 +111,29 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                     a.ultimaIso = iso
                 }
             }
+
+            const { data: orderRows } = await supabase
+                .from('orders')
+                .select('customer_id, total, created_at')
+                .in('customer_id', slice)
+            for (const row of orderRows || []) {
+                const cid = row.customer_id as number
+                const a = agg.get(cid)
+                if (!a) continue
+                a.totalPedidos += 1
+                a.totalGastado += Number(row.total)
+                const iso = row.created_at as string
+                if (!a.ultimaIso || new Date(iso) > new Date(a.ultimaIso)) {
+                    a.ultimaIso = iso
+                }
+            }
         }
 
         for (const c of lista) {
             const a = agg.get(c.id)!
             statsMap.set(c.id, {
                 totalVentas: a.totalVentas,
+                totalPedidos: a.totalPedidos,
                 totalGastado: a.totalGastado,
                 ultimaCompra: a.ultimaIso
                     ? format(new Date(a.ultimaIso), 'dd MMM yyyy', { locale: es })
@@ -318,7 +338,16 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
         return fecha >= subDays(new Date(), 30)
     }).length
 
-    const clientesActivos = Array.from(clientesStats.values()).filter(s => s.totalVentas > 0).length
+    const clientesActivos = Array.from(clientesStats.values()).filter(s => s.totalVentas > 0 || s.totalPedidos > 0).length
+
+    useEffect(() => {
+        const raw = searchParams.get('customerId')
+        if (!raw || clientes.length === 0) return
+        const id = Number(raw)
+        if (!Number.isFinite(id)) return
+        const found = clientes.find((c) => c.id === id)
+        if (found) setClientePerfil(found)
+    }, [searchParams, clientes])
 
     if (cargando) {
         return (
@@ -411,7 +440,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
             {/* 1 col hasta lg: en media pantalla + sidebar, 2 cols aplastaban el nombre a 0px */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {clientesFiltrados.map(cliente => {
-                    const stats = clientesStats.get(cliente.id) || { totalVentas: 0, totalGastado: 0, ultimaCompra: null }
+                    const stats = clientesStats.get(cliente.id) || { totalVentas: 0, totalPedidos: 0, totalGastado: 0, ultimaCompra: null }
 
                     return (
                         <PastelCard key={cliente.id} className="group relative p-0 flex flex-col h-full hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-600 rounded-2xl overflow-hidden">
@@ -459,8 +488,8 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                             </div>
                             <div className="mt-auto border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/50 px-4 sm:px-6 py-4 sm:py-5 grid grid-cols-3 gap-2 sm:gap-4">
                                 <div className="text-center min-w-0">
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Compras</p>
-                                    <p className="text-gray-800 dark:text-gray-100 font-bold tabular-nums">{stats.totalVentas}</p>
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Mostrador / web</p>
+                                    <p className="text-gray-800 dark:text-gray-100 font-bold tabular-nums">{stats.totalVentas} / {stats.totalPedidos}</p>
                                 </div>
                                 <div className="text-center min-w-0 border-x border-gray-100 dark:border-gray-700 px-1">
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Total</p>
@@ -660,7 +689,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                             )}
                             {isAdmin && <CustomerCrmPanel customerId={clientePerfil.id} />}
                             {!isAdmin && (() => {
-                                const stats = clientesStats.get(clientePerfil.id) || { totalVentas: 0, totalGastado: 0, ultimaCompra: null }
+                                const stats = clientesStats.get(clientePerfil.id) || { totalVentas: 0, totalPedidos: 0, totalGastado: 0, ultimaCompra: null }
                                 return (
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="p-5 rounded-xl bg-pink-50/60 dark:bg-pink-900/20 border border-pink-100 dark:border-pink-800/40 text-center">

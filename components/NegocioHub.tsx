@@ -13,6 +13,7 @@ import {
   RotateCcw,
   ChartNoAxesCombined,
   Banknote,
+  Users,
 } from 'lucide-react'
 import ExportarDatos from '@/components/ExportarDatos'
 
@@ -43,7 +44,7 @@ const tiles: Tile[] = [
   {
     id: 'margin_reports',
     title: 'Margen real',
-    description: 'Ganancia por producto con costos, descuentos y devoluciones.',
+    description: 'Mostrador, catálogo y total combinado. Sin inventar costos faltantes.',
     go: 'Ver reporte',
     icon: ChartNoAxesCombined,
     tone: 'emerald',
@@ -54,7 +55,7 @@ const tiles: Tile[] = [
   {
     id: 'payments',
     title: 'Precios y pagos',
-    description: 'Versiones de precio público, vista previa y activación. Sin recargo sorpresa.',
+    description: 'Configuración de precios, medios, activación y alertas. No es operación de pedidos.',
     go: 'Configurar',
     icon: Banknote,
     tone: 'violet',
@@ -64,8 +65,8 @@ const tiles: Tile[] = [
   },
   {
     id: 'incomes',
-    title: 'Ingresos',
-    description: 'Historial de ventas, cuentas por cobrar y otros ingresos.',
+    title: 'Cuentas y caja',
+    description: 'Resumen financiero de mostrador, pedidos online y combinado. Sin duplicar la caja.',
     go: 'Abrir',
     icon: TrendingUp,
     tone: 'emerald',
@@ -87,7 +88,7 @@ const tiles: Tile[] = [
   {
     id: 'orders',
     title: 'Pedidos web',
-    description: 'Pedidos del catálogo: estados, stock y historial.',
+    description: 'Operación, pago, envío, devolución y contacto de la clienta.',
     go: 'Abrir',
     icon: ClipboardList,
     tone: 'sky',
@@ -109,13 +110,24 @@ const tiles: Tile[] = [
   {
     id: 'returns',
     title: 'Devoluciones',
-    description: 'Notas de crédito, reintegros y devolución trazable de stock.',
+    description: 'Ventas en local y pedidos online, con reglas claras según el origen.',
     go: 'Abrir',
     icon: RotateCcw,
     tone: 'pink',
     kind: 'tab',
     tab: 'returns',
     visible: (c) => c.isAdmin,
+  },
+  {
+    id: 'customers',
+    title: 'Clientes',
+    description: 'Historial unificado de mostrador y catálogo.',
+    go: 'Abrir',
+    icon: Users,
+    tone: 'sky',
+    kind: 'tab',
+    tab: 'customers',
+    visible: (c) => c.canUsePos || c.isAdmin,
   },
   {
     id: 'catalogo',
@@ -163,7 +175,7 @@ export default function NegocioHub({ onNavigate, caps }: Props) {
           Negocio
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
-          Finanzas, vitrina y respaldo
+          Pedidos, caja, margen, clientas y devoluciones en un mismo lugar
         </p>
       </div>
 

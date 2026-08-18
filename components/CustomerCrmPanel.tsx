@@ -13,6 +13,8 @@ import {
   setCustomerCrmTags,
 } from '@/lib/domain/customers/browserCustomerCrm'
 import type { CustomerCrmProfile, CustomerCrmTag } from '@/lib/domain/customers/crmTypes'
+import { panelHref } from '@/lib/appNavigation'
+import { orderStatusLabel, isOrderStatus } from '@/lib/domain/orders/states'
 
 const money = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 const dateTime = new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' })
@@ -90,6 +92,38 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
         <div className="rounded-xl bg-sky-50 dark:bg-sky-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Ticket medio</p><p className="font-black text-lg">{money.format(profile.metrics.average_ticket)}</p></div>
       </div>
 
+      <section aria-labelledby="crm-orders-title" className="rounded-xl border border-gray-200 dark:border-gray-700 p-4" data-testid="crm-catalog-orders">
+        <h4 id="crm-orders-title" className="font-extrabold">Pedidos online</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">Pedidos</p><p className="font-black">{profile.catalog_orders.order_count}</p></div>
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">Histórico</p><p className="font-black">{money.format(profile.catalog_orders.order_total)}</p></div>
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">En curso</p><p className="font-black">{profile.catalog_orders.open_count}</p></div>
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">Último</p><p className="font-black text-sm">{profile.catalog_orders.last_order_at ? dateTime.format(new Date(profile.catalog_orders.last_order_at)) : '—'}</p></div>
+        </div>
+        <ul className="mt-3 space-y-2">
+          {profile.catalog_orders.recent.map((order) => (
+            <li key={order.id}>
+              <a
+                href={panelHref({ tab: 'orders', orderId: order.id })}
+                className="flex justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 text-sm hover:bg-pink-50/60 dark:hover:bg-pink-950/20"
+                data-testid={`crm-order-${order.order_number}`}
+              >
+                <span>
+                  <span className="font-bold">{order.order_number}</span>
+                  <span className="text-xs text-gray-500 block">
+                    {isOrderStatus(order.status) ? orderStatusLabel(order.status) : order.status}
+                  </span>
+                </span>
+                <span className="font-black">{money.format(order.total)}</span>
+              </a>
+            </li>
+          ))}
+          {profile.catalog_orders.recent.length === 0 && (
+            <li className="text-xs text-gray-500">Todavía no hay pedidos del catálogo.</li>
+          )}
+        </ul>
+      </section>
+
       <section aria-labelledby="crm-tags-title">
         <h4 id="crm-tags-title" className="font-extrabold flex items-center gap-2"><Tags className="w-4 h-4 text-pink-500" /> Etiquetas</h4>
         <div className="flex flex-wrap gap-2 mt-3">
@@ -140,7 +174,30 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
       <section aria-labelledby="crm-history-title">
         <h4 id="crm-history-title" className="font-extrabold flex items-center gap-2"><History className="w-4 h-4 text-pink-500" /> Historial unificado</h4>
         <ul className="space-y-2 mt-3" data-testid="crm-activity">
-          {profile.activity.map((event) => <li key={event.id} className="rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 flex justify-between gap-3 text-sm"><div><p className="font-bold">{event.type === 'sale' ? `Venta #${event.sale_id}` : `Devolución NC-${String(event.credit_note_number || '').padStart(6, '0')}`}</p><p className="text-xs text-gray-500">{dateTime.format(new Date(event.event_at))}{event.reason ? ` · ${event.reason}` : ''}</p></div><span className={`font-black shrink-0 ${event.amount < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{money.format(event.amount)}</span></li>)}
+          {profile.activity.map((event) => {
+            const title = event.type === 'order'
+              ? `Pedido ${event.order_number || ''}`
+              : event.type === 'return'
+                ? `Devolución NC-${String(event.credit_note_number || '').padStart(6, '0')}`
+                : `Venta en local #${event.sale_id}`
+            const href = event.type === 'order' && event.order_id
+              ? panelHref({ tab: 'orders', orderId: event.order_id })
+              : event.type === 'return'
+                ? panelHref({ tab: 'returns', channel: 'pos' })
+                : null
+            const body = (
+              <>
+                <div>
+                  <p className="font-bold">{title}</p>
+                  <p className="text-xs text-gray-500">{dateTime.format(new Date(event.event_at))}{event.reason ? ` · ${event.reason}` : ''}</p>
+                </div>
+                <span className={`font-black shrink-0 ${event.amount < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{money.format(event.amount)}</span>
+              </>
+            )
+            return href
+              ? <li key={event.id}><a href={href} className="rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 flex justify-between gap-3 text-sm hover:bg-pink-50/50 dark:hover:bg-pink-950/20">{body}</a></li>
+              : <li key={event.id} className="rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 flex justify-between gap-3 text-sm">{body}</li>
+          })}
           {profile.activity.length === 0 && <li className="text-xs text-gray-500">Sin actividad registrada.</li>}
         </ul>
       </section>

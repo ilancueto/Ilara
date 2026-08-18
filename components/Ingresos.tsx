@@ -156,9 +156,9 @@ export default function Ingresos() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-3">
                 <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60 dark:shadow-emerald-900/40">✦</span>
-                Ingresos
+                Cuentas y caja
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium max-w-md mt-2">Ventas del negocio y otros ingresos (regalos, donaciones, etc.).</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium max-w-md mt-2">Mostrador, pedidos online y combinado. Los cobros web no se mezclan con la caja del local.</p>
             </div>
             <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200 shrink-0">
               <Plus size={20} />

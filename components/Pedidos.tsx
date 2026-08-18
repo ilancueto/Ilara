@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Check,
   ChevronRight,
@@ -34,6 +35,8 @@ import {
   type AdminOrderPayment,
 } from '@/app/actions/adminPayments'
 import { PedidoPagosPanel } from '@/components/Pedidos/PedidoPagosPanel'
+import { panelHref } from '@/lib/appNavigation'
+import { catalogReturnLabel, catalogRefundActionLabel } from '@/lib/domain/returns/rules'
 
 const STATUS_FILTERS: Array<OrderStatus | 'all'> = ['all', ...ORDER_STATUSES]
 
@@ -60,9 +63,16 @@ function nextActions(status: OrderStatus): OrderStatus[] {
   return ORDER_STATUSES.filter((s) => s !== status && canTransitionOrder(status, s))
 }
 
+function actorLabel(kind: OrderDetail['events'][number]['actor_kind']): string {
+  if (kind === 'admin') return 'Equipo'
+  if (kind === 'public') return 'Clienta'
+  return 'Automático'
+}
+
 export default function Pedidos() {
   const { showToast } = useToast()
   const { confirm, confirmProps } = useConfirm()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<OrderListItem[]>([])
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
@@ -116,6 +126,11 @@ export default function Pedidos() {
     },
     [showToast]
   )
+
+  useEffect(() => {
+    const fromUrl = searchParams.get('orderId')
+    if (fromUrl) void openDetail(fromUrl)
+  }, [searchParams, openDetail])
 
   const applyTransition = useCallback(
     async (to: OrderStatus, reason: string | null) => {
@@ -221,7 +236,7 @@ export default function Pedidos() {
             Pedidos
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Catálogo público · cotizaciones Envia
+            Operación, pago, envío, devolución y contacto de la clienta
           </p>
         </div>
         <button
@@ -361,8 +376,20 @@ export default function Pedidos() {
 
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <div>
-                  <dt className="text-gray-400 text-xs">Cliente</dt>
-                  <dd className="font-semibold">{detail.customer_name}</dd>
+                  <dt className="text-gray-400 text-xs">Clienta</dt>
+                  <dd className="font-semibold">
+                    {detail.customer_id ? (
+                      <a
+                        href={panelHref({ tab: 'customers', customerId: detail.customer_id })}
+                        className="text-pink-600 dark:text-pink-400 underline-offset-2 hover:underline"
+                        data-testid="pedido-open-customer"
+                      >
+                        {detail.customer_name}
+                      </a>
+                    ) : (
+                      detail.customer_name
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-gray-400 text-xs">Teléfono</dt>
@@ -437,6 +464,45 @@ export default function Pedidos() {
                 </div>
               )}
 
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={panelHref({ tab: 'returns', channel: 'catalog', orderId: detail.id })}
+                  className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800"
+                  data-testid="pedido-open-return"
+                >
+                  Registrar devolución
+                </a>
+                <a
+                  href={panelHref({ tab: 'margin_reports', channel: 'catalog' })}
+                  className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  Ver margen del catálogo
+                </a>
+              </div>
+
+              {detail.returns.length > 0 && (
+                <div data-testid="pedido-returns">
+                  <h4 className="text-sm font-bold mb-2">Devoluciones</h4>
+                  <ul className="space-y-2">
+                    {detail.returns.map((item) => (
+                      <li
+                        key={item.id}
+                        className="rounded-xl border border-gray-100 dark:border-gray-800 px-3 py-2 text-sm"
+                      >
+                        <p className="font-semibold">
+                          {catalogReturnLabel(item.return_number)} · ${formatPesoAR(item.refund_total)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {catalogRefundActionLabel(item.refund_action)}
+                          {item.restock ? ' · stock reintegrado' : ' · sin reintegro de stock'}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{item.reason}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div>
                 <h4 className="text-sm font-bold mb-2">Líneas</h4>
                 <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-100 dark:border-gray-800">
@@ -504,7 +570,7 @@ export default function Pedidos() {
                           ? `${orderStatusLabel(ev.from_status)} → ${orderStatusLabel(ev.to_status)}`
                           : orderStatusLabel(ev.to_status)}
                         {ev.reason ? ` · ${ev.reason}` : ''}
-                        <span className="text-gray-400"> · {ev.actor_kind}</span>
+                        <span className="text-gray-400"> · {actorLabel(ev.actor_kind)}</span>
                       </span>
                     </li>
                   ))}

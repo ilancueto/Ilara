@@ -17,7 +17,7 @@ import { AppError } from '@/lib/domain/errors'
 import { sanitizeOrderSearchQuery } from '@/lib/domain/orders/validation'
 
 const ORDER_SELECT =
-  'id, order_number, status, channel, customer_name, customer_phone, customer_email, notes, subtotal, discount_total, shipping_quote_id, shipping_provider, shipping_carrier, shipping_carrier_description, shipping_service, shipping_service_description, shipping_delivery_estimate, shipping_amount, shipping_currency, shipping_destination_postal_code, shipping_destination_city, shipping_destination_state, shipping_destination_province_id, shipping_destination_locality_id, shipping_destination_street, shipping_destination_number, shipping_destination_formatted_address, shipping_destination_lat, shipping_destination_lon, total, coupon_code, coupon_discount_percentage, stock_reserved, created_at, updated_at, confirmed_at, completed_at, cancelled_at, cancel_reason'
+  'id, order_number, status, channel, customer_id, customer_name, customer_phone, customer_email, notes, subtotal, discount_total, shipping_quote_id, shipping_provider, shipping_carrier, shipping_carrier_description, shipping_service, shipping_service_description, shipping_delivery_estimate, shipping_amount, shipping_currency, shipping_destination_postal_code, shipping_destination_city, shipping_destination_state, shipping_destination_province_id, shipping_destination_locality_id, shipping_destination_street, shipping_destination_number, shipping_destination_formatted_address, shipping_destination_lat, shipping_destination_lon, total, coupon_code, coupon_discount_percentage, stock_reserved, created_at, updated_at, confirmed_at, completed_at, cancelled_at, cancel_reason'
 
 const ITEM_SELECT =
   'id, order_id, line_type, product_id, combo_id, name_snapshot, variant_snapshot, combo_components_snapshot, quantity, unit_price, discount_percentage, line_subtotal, sort_order'
@@ -79,28 +79,36 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail> {
     throw new AppError('not_found', 'Pedido no encontrado.', { message: 'order_not_found' })
   }
 
-  const [{ data: items, error: itemsErr }, { data: events, error: eventsErr }] =
-    await Promise.all([
-      supabase
-        .from('order_items')
-        .select(ITEM_SELECT)
-        .eq('order_id', orderId)
-        .order('sort_order', { ascending: true }),
-      supabase
-        .from('order_status_events')
-        .select(EVENT_SELECT)
-        .eq('order_id', orderId)
-        .order('created_at', { ascending: true }),
-    ])
+  const [
+    { data: items, error: itemsErr },
+    { data: events, error: eventsErr },
+    { data: returns, error: returnsErr },
+  ] = await Promise.all([
+    supabase
+      .from('order_items')
+      .select(ITEM_SELECT)
+      .eq('order_id', orderId)
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('order_status_events')
+      .select(EVENT_SELECT)
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('order_returns')
+      .select('id, return_number, reason, refund_action, refund_total, restock, created_at')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false }),
+  ])
 
-  if (itemsErr || eventsErr) {
+  if (itemsErr || eventsErr || returnsErr) {
     throw new AppError('unknown', 'No se pudo cargar el detalle del pedido.', {
       message: 'order_detail_failed',
       retryable: true,
     })
   }
 
-  return mapOrderDetail(order, items || [], events || [])
+  return mapOrderDetail(order, items || [], events || [], returns || [])
 }
 
 export async function transitionOrder(

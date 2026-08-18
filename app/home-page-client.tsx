@@ -114,7 +114,7 @@ const TAB_TITLES: Record<AppTab, string> = {
   sales: 'Punto de venta',
   customers: 'Clientes',
   expenses: 'Gastos',
-  incomes: 'Ingresos',
+  incomes: 'Cuentas y caja',
   negocio: 'Negocio',
   orders: 'Pedidos',
   stock_alerts: 'Alertas stock',

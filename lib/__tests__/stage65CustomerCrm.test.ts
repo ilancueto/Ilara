@@ -12,9 +12,11 @@ describe('Stage 6.5 CRM de clientes', () => {
       activity: [{ id: 'return-x', type: 'return', event_at: '2026-08-13', sale_id: 9, amount: '-500', credit_note_number: '7' }],
     })
     expect(profile.metrics.net_spent).toBe(2500)
+    expect(profile.catalog_orders.order_count).toBe(0)
     expect(profile.tags[0].id).toBe(3)
     expect(profile.consent.granted).toBe(true)
     expect(profile.activity[0].amount).toBe(-500)
+    expect(profile.activity[0].type).toBe('return')
   })
 
   it('usa defaults seguros ante arrays o consentimiento ausentes', () => {

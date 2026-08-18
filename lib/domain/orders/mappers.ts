@@ -7,6 +7,7 @@ import type {
   OrderDetail,
   OrderItemRow,
   OrderListItem,
+  OrderReturnSummary,
   OrderStatusEvent,
   TransitionOrderResult,
 } from '@/lib/domain/orders/types'
@@ -57,6 +58,7 @@ export function mapOrderListItem(row: unknown): OrderListItem {
     order_number: str(r.order_number),
     status: parseStatus(r.status),
     channel: 'catalog',
+    customer_id: r.customer_id == null || r.customer_id === '' ? null : num(r.customer_id),
     customer_name: str(r.customer_name),
     customer_phone: str(r.customer_phone),
     customer_email: strOrNull(r.customer_email),
@@ -133,15 +135,32 @@ export function mapOrderStatusEvent(row: unknown): OrderStatusEvent {
   }
 }
 
+export function mapOrderReturnSummary(row: unknown): OrderReturnSummary {
+  const r = (row && typeof row === 'object' ? row : {}) as Record<string, unknown>
+  const action = str(r.refund_action, 'none')
+  return {
+    id: str(r.id),
+    return_number: num(r.return_number),
+    reason: str(r.reason),
+    refund_action:
+      action === 'record_manual' || action === 'request_mp' ? action : 'none',
+    refund_total: num(r.refund_total),
+    restock: Boolean(r.restock),
+    created_at: str(r.created_at),
+  }
+}
+
 export function mapOrderDetail(
   order: unknown,
   items: unknown[],
-  events: unknown[]
+  events: unknown[],
+  returns: unknown[] = []
 ): OrderDetail {
   return {
     ...mapOrderListItem(order),
     items: items.map(mapOrderItemRow).sort((a, b) => a.sort_order - b.sort_order),
     events: events.map(mapOrderStatusEvent).sort((a, b) => a.id - b.id),
+    returns: returns.map(mapOrderReturnSummary),
   }
 }
 

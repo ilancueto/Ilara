@@ -3,14 +3,21 @@
 import { getBrowserSupabase } from '@/lib/supabase/browser'
 import { AppError } from '@/lib/domain/errors'
 import {
+  mapOrderReturn,
+  mapReturnableOrders,
   mapReturnableSales,
   mapSaleReturn,
+  parseCreateOrderReturnResult,
   parseCreateSaleReturnResult,
   saleReturnErrorFromRpc,
 } from './mappers'
 import type {
+  CreateOrderReturnInput,
+  CreateOrderReturnResult,
   CreateSaleReturnInput,
   CreateSaleReturnResult,
+  OrderReturnListItem,
+  ReturnableOrder,
   ReturnableSale,
   SaleReturnListItem,
 } from './types'
@@ -73,4 +80,66 @@ export async function createSaleReturn(
   })
   if (error) throw saleReturnErrorFromRpc(error.message || '')
   return parseCreateSaleReturnResult(data)
+}
+
+export async function listReturnableOrders(): Promise<ReturnableOrder[]> {
+  const supabase = getBrowserSupabase()
+  const [{ data: orders, error: ordersError }, { data: returned, error: returnedError }] =
+    await Promise.all([
+      supabase
+        .from('orders')
+        .select(
+          'id, order_number, created_at, customer_name, customer_id, total, status, stock_reserved, order_items(id, product_id, combo_id, name_snapshot, quantity, unit_price, line_subtotal)'
+        )
+        .in('status', ['confirmed', 'preparing', 'ready', 'completed'])
+        .order('created_at', { ascending: false })
+        .limit(150),
+      supabase.from('order_return_items').select('order_item_id, quantity'),
+    ])
+  if (ordersError || returnedError) {
+    throw new AppError('unknown', 'No se pudieron cargar los pedidos disponibles.', {
+      message: 'list_returnable_orders_failed',
+      retryable: true,
+    })
+  }
+  return mapReturnableOrders(orders || [], returned || [])
+}
+
+export async function listOrderReturns(): Promise<OrderReturnListItem[]> {
+  const { data, error } = await getBrowserSupabase()
+    .from('order_returns')
+    .select(
+      'id, return_number, order_id, reason, refund_action, refund_total, restock, created_at, orders(order_number, customer_name), order_return_items(id, order_item_id, product_name, quantity, refund_amount)'
+    )
+    .order('created_at', { ascending: false })
+    .limit(150)
+  if (error) {
+    throw new AppError('unknown', 'No se pudieron cargar las devoluciones de pedidos.', {
+      message: 'list_order_returns_failed',
+      retryable: true,
+    })
+  }
+  return (data || []).map(mapOrderReturn)
+}
+
+export async function createOrderReturn(
+  input: CreateOrderReturnInput
+): Promise<CreateOrderReturnResult> {
+  const { data, error } = await getBrowserSupabase().rpc('create_order_return', {
+    p_payload: {
+      order_id: input.orderId,
+      reason: input.reason.trim(),
+      refund_action: input.refundAction,
+      restock: input.restock,
+      order_payment_id: input.orderPaymentId ?? null,
+      apply_payment_refund: false,
+      idempotency_key: input.idempotencyKey,
+      lines: input.lines.map((line) => ({
+        order_item_id: line.orderItemId,
+        quantity: line.quantity,
+      })),
+    },
+  })
+  if (error) throw saleReturnErrorFromRpc(error.message || '')
+  return parseCreateOrderReturnResult(data)
 }

@@ -1,10 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AlertTriangle, BarChart3, CheckCircle2, RefreshCw } from 'lucide-react'
 import { loadMarginReport } from '@/lib/domain/marginReports/browserMarginReports'
 import { formatMarginMoney, marginPeriodRange } from '@/lib/domain/marginReports/rules'
-import type { MarginPeriod, MarginReport } from '@/lib/domain/marginReports/types'
+import type { MarginChannel, MarginPeriod, MarginReport } from '@/lib/domain/marginReports/types'
+import { panelHref } from '@/lib/appNavigation'
 
 const periods: Array<{ id: MarginPeriod; label: string }> = [
   { id: 'month', label: 'Este mes' },
@@ -25,20 +27,33 @@ function parseLocalDate(value: string) {
   return new Date(year, month - 1, day)
 }
 
+const channels: Array<{ id: MarginChannel; label: string }> = [
+  { id: 'combined', label: 'Combinado' },
+  { id: 'pos', label: 'Venta en local' },
+  { id: 'catalog', label: 'Pedido online' },
+]
+
 export default function ReportesMargen() {
+  const searchParams = useSearchParams()
   const [period, setPeriod] = useState<MarginPeriod>('month')
+  const [channel, setChannel] = useState<MarginChannel>('combined')
   const [report, setReport] = useState<MarginReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const requestId = useRef(0)
 
-  const refresh = useCallback(async (selected: MarginPeriod) => {
+  useEffect(() => {
+    const raw = searchParams.get('channel')
+    if (raw === 'pos' || raw === 'catalog' || raw === 'combined') setChannel(raw)
+  }, [searchParams])
+
+  const refresh = useCallback(async (selected: MarginPeriod, selectedChannel: MarginChannel) => {
     const currentRequest = ++requestId.current
     setLoading(true)
     setError(null)
     try {
       const range = marginPeriodRange(selected)
-      const nextReport = await loadMarginReport(range.from, range.to)
+      const nextReport = await loadMarginReport(range.from, range.to, selectedChannel)
       if (currentRequest === requestId.current) setReport(nextReport)
     } catch (cause) {
       if (currentRequest === requestId.current) {
@@ -50,8 +65,8 @@ export default function ReportesMargen() {
   }, [])
 
   useEffect(() => {
-    void refresh(period)
-  }, [period, refresh])
+    void refresh(period, channel)
+  }, [period, channel, refresh])
 
   const maxDaily = useMemo(
     () => Math.max(1, ...(report?.daily.map((row) => row.net_revenue) ?? [])),
@@ -66,7 +81,7 @@ export default function ReportesMargen() {
             Margen real
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Ventas netas menos costo histórico, descuentos y devoluciones.
+            Margen de mostrador, catálogo y total. Si falta un costo, no se inventa.
           </p>
         </div>
         <div className="flex flex-wrap gap-2" aria-label="Período del reporte">
@@ -88,6 +103,22 @@ export default function ReportesMargen() {
           ))}
         </div>
       </div>
+      <div className="inline-flex flex-wrap gap-1 rounded-xl border border-gray-200 dark:border-gray-700 p-1 bg-white dark:bg-zinc-900" aria-label="Origen del margen">
+        {channels.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            data-testid={`margin-channel-${item.id}`}
+            aria-pressed={channel === item.id}
+            onClick={() => setChannel(item.id)}
+            className={`rounded-lg px-3 py-2 text-xs font-extrabold ${
+              channel === item.id ? 'bg-pink-600 text-white' : 'text-gray-600 dark:text-gray-300'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       {loading && !report && (
         <div className="min-h-56 grid place-items-center rounded-2xl border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900">
@@ -98,7 +129,7 @@ export default function ReportesMargen() {
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3" role="alert">
           <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
-          <button type="button" onClick={() => void refresh(period)} className="text-sm font-extrabold text-red-700 dark:text-red-300">
+          <button type="button" onClick={() => void refresh(period, channel)} className="text-sm font-extrabold text-red-700 dark:text-red-300">
             Reintentar
           </button>
         </div>
@@ -106,6 +137,38 @@ export default function ReportesMargen() {
 
       {report && (
         <>
+          {report.pos && report.catalog && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <article className="rounded-2xl border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-4">
+                <p className="text-xs font-bold uppercase text-gray-500">Margen mostrador</p>
+                <p className="mt-1 text-xl font-black">{formatMarginMoney(report.pos.gross_margin)}</p>
+              </article>
+              <article className="rounded-2xl border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-4">
+                <p className="text-xs font-bold uppercase text-gray-500">Margen catálogo</p>
+                <p className="mt-1 text-xl font-black">{formatMarginMoney(report.catalog.gross_margin)}</p>
+              </article>
+              <article className="rounded-2xl border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-4">
+                <p className="text-xs font-bold uppercase text-gray-500">Margen total</p>
+                <p className="mt-1 text-xl font-black">{formatMarginMoney(report.combined?.gross_margin ?? report.summary.gross_margin)}</p>
+              </article>
+            </div>
+          )}
+
+          {!!report.pending_cost_orders?.length && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30 p-4" data-testid="margin-pending-cost">
+              <p className="text-sm font-extrabold">Pedidos con costo pendiente de revisar</p>
+              <ul className="mt-2 space-y-1 text-sm">
+                {report.pending_cost_orders.map((order) => (
+                  <li key={order.id}>
+                    <a href={panelHref({ tab: 'orders', orderId: order.id })} className="font-bold text-amber-800 dark:text-amber-200 underline-offset-2 hover:underline">
+                      {order.order_number}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               ['Ventas netas', formatMarginMoney(report.summary.net_revenue), 'margin-kpi-net'],
@@ -167,7 +230,7 @@ export default function ReportesMargen() {
                 <tbody className="divide-y divide-gray-100 dark:divide-white/10">
                   {report.items.map((item, index) => (
                     <tr key={`${item.product_id ?? `c${item.combo_id}`}-${index}`} data-testid={`margin-item-${index}`}>
-                      <td className="px-4 py-3"><p className="font-bold text-gray-900 dark:text-gray-100">{item.name}</p><p className={`text-[11px] font-semibold mt-0.5 ${!item.margin_complete ? 'text-amber-600' : item.has_estimated_cost ? 'text-sky-600' : 'text-emerald-600'}`}>{!item.margin_complete ? 'Costo faltante' : item.has_estimated_cost ? 'Costo estimado' : 'Costo histórico'}</p></td>
+                      <td className="px-4 py-3"><p className="font-bold text-gray-900 dark:text-gray-100">{item.name}</p><p className={`text-[11px] font-semibold mt-0.5 ${!item.margin_complete ? 'text-amber-600' : item.has_estimated_cost ? 'text-sky-600' : 'text-emerald-600'}`}>{item.channel === 'catalog' ? 'Pedido online · ' : item.channel === 'pos' ? 'Venta en local · ' : ''}{!item.margin_complete ? 'Costo no disponible' : item.has_estimated_cost ? 'Costo estimado' : 'Costo histórico'}</p></td>
                       <td className="px-4 py-3 text-right font-semibold">{number.format(item.net_units)}</td>
                       <td className="px-4 py-3 text-right font-semibold">{formatMarginMoney(item.net_revenue)}</td>
                       <td className="px-4 py-3 text-right"><p className="font-extrabold">{formatMarginMoney(item.gross_margin)}</p><p className="text-xs text-gray-500">{marginLabel(item.margin_percent)}</p></td>

@@ -60,11 +60,22 @@ export type CreateOrderResult = {
   access_capability?: string
 }
 
+export type OrderReturnSummary = {
+  id: string
+  return_number: number
+  reason: string
+  refund_action: 'none' | 'record_manual' | 'request_mp'
+  refund_total: number
+  restock: boolean
+  created_at: string
+}
+
 export type OrderListItem = {
   id: string
   order_number: string
   status: OrderStatus
   channel: OrderChannel
+  customer_id: number | null
   customer_name: string
   customer_phone: string
   customer_email: string | null
@@ -132,6 +143,7 @@ export type OrderStatusEvent = {
 export type OrderDetail = OrderListItem & {
   items: OrderItemRow[]
   events: OrderStatusEvent[]
+  returns: OrderReturnSummary[]
 }
 
 export type TransitionOrderResult = {

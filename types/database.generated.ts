@@ -528,6 +528,89 @@ export type Database = {
           },
         ]
       }
+      order_customer_link_audit: {
+        Row: {
+          created_at: string
+          customer_phone: string
+          id: number
+          match_count: number
+          order_id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          customer_phone: string
+          id?: number
+          match_count: number
+          order_id: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          customer_phone?: string
+          id?: number
+          match_count?: number
+          order_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_customer_link_audit_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_item_components: {
+        Row: {
+          cost_source: string
+          id: number
+          order_item_id: number
+          product_id: number
+          product_name: string
+          quantity_per_unit: number
+          snapshot_source: string
+          unit_cost: number | null
+        }
+        Insert: {
+          cost_source: string
+          id?: number
+          order_item_id: number
+          product_id: number
+          product_name: string
+          quantity_per_unit: number
+          snapshot_source?: string
+          unit_cost?: number | null
+        }
+        Update: {
+          cost_source?: string
+          id?: number
+          order_item_id?: number
+          product_id?: number
+          product_name?: string
+          quantity_per_unit?: number
+          snapshot_source?: string
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_item_components_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_item_components_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           combo_components_snapshot: Json
@@ -739,6 +822,156 @@ export type Database = {
           },
         ]
       }
+      order_return_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: number
+          meta: Json
+          return_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: number
+          meta?: Json
+          return_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: number
+          meta?: Json
+          return_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_return_events_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "order_returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_return_items: {
+        Row: {
+          id: number
+          order_item_id: number
+          product_id: number | null
+          product_name: string
+          quantity: number
+          refund_amount: number
+          return_id: string
+          unit_price: number
+        }
+        Insert: {
+          id?: number
+          order_item_id: number
+          product_id?: number | null
+          product_name: string
+          quantity: number
+          refund_amount: number
+          return_id: string
+          unit_price: number
+        }
+        Update: {
+          id?: number
+          order_item_id?: number
+          product_id?: number | null
+          product_name?: string
+          quantity?: number
+          refund_amount?: number
+          return_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_return_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "order_returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_returns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          idempotency_key: string
+          order_id: string
+          order_payment_id: string | null
+          reason: string
+          refund_action: string
+          refund_total: number
+          restock: boolean
+          return_number: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key: string
+          order_id: string
+          order_payment_id?: string | null
+          reason: string
+          refund_action: string
+          refund_total: number
+          restock?: boolean
+          return_number?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key?: string
+          order_id?: string
+          order_payment_id?: string | null
+          reason?: string
+          refund_action?: string
+          refund_total?: number
+          restock?: boolean
+          return_number?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_returns_order_payment_id_fkey"
+            columns: ["order_payment_id"]
+            isOneToOne: false
+            referencedRelation: "order_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_status_events: {
         Row: {
           actor_kind: string
@@ -792,6 +1025,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           customer_email: string | null
+          customer_id: number | null
           customer_name: string
           customer_phone: string
           discount_total: number
@@ -839,6 +1073,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_email?: string | null
+          customer_id?: number | null
           customer_name: string
           customer_phone: string
           discount_total?: number
@@ -886,6 +1121,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           customer_email?: string | null
+          customer_id?: number | null
           customer_name?: string
           customer_phone?: string
           discount_total?: number
@@ -923,6 +1159,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_pricing_version_id_fkey"
             columns: ["pricing_version_id"]
@@ -2081,6 +2324,16 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
+      commercial_margin_report: {
+        Args: {
+          p_category_id?: number
+          p_channel?: string
+          p_from?: string
+          p_product_id?: number
+          p_to?: string
+        }
+        Returns: Json
+      }
       complete_transfer_receipt: {
         Args: {
           p_access_capability: string
@@ -2104,6 +2357,7 @@ export type Database = {
         Args: { p_payload: Json }
         Returns: Json
       }
+      create_order_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_with_items: { Args: { p_payload: Json }; Returns: Json }
       current_app_role: {

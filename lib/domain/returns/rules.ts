@@ -31,3 +31,13 @@ export function previewRefundAmount(item: ReturnableSaleItem, quantity: number):
 export function creditNoteLabel(number: number): string {
   return `NC-${String(number).padStart(6, '0')}`
 }
+
+export function catalogReturnLabel(number: number): string {
+  return `DEV-${String(number).padStart(6, '0')}`
+}
+
+export function catalogRefundActionLabel(action: 'none' | 'record_manual' | 'request_mp'): string {
+  if (action === 'record_manual') return 'Reintegro por transferencia registrado'
+  if (action === 'request_mp') return 'Reembolso de pago online pendiente'
+  return 'Sin movimiento de dinero'
+}

@@ -35,6 +35,8 @@ export const ObservabilityEvent = {
   /** Stage 6.3 — devoluciones y notas de crédito (sin motivo/PII). */
   SALE_RETURN_CREATED: 'sale_return_created',
   SALE_RETURN_FAILED: 'sale_return_failed',
+  ORDER_RETURN_CREATED: 'order_return_created',
+  ORDER_RETURN_FAILED: 'order_return_failed',
 } as const
 
 export type ObservabilityEventName =
