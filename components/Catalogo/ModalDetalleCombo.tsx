@@ -43,7 +43,7 @@ export function ModalDetalleCombo({ combo, onClose, onAgregar, disponible }: Mod
             </div>
           </div>
           {combo.description && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{combo.description}</p>}
-          <p className="mt-3 text-2xl font-extrabold text-gray-900 dark:text-gray-100 tabular-nums">${combo.sale_price.toLocaleString()}</p>
+          <p className="mt-3 text-2xl font-extrabold text-gray-900 dark:text-gray-100 tabular-nums">${(combo.public_price ?? combo.sale_price).toLocaleString()}</p>
         </div>
         <div className="p-5 sm:p-6">
           <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">

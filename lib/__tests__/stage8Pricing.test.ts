@@ -115,15 +115,27 @@ describe('Stage 8.1 — dual price detrás de flag', () => {
     discount_percentage: 0,
   }
 
-  it('no agrega precio público si el flag está apagado', () => {
+  it('no agrega precio público si no hay tarifa activa', () => {
     const next = applyProductPublicPricing(product, {
       catalog_dual_price_visible: false,
       version_id: null,
+      effective_fee_rate: null,
+      rounding_increment: null,
+    })
+    expect(next.dual_price_visible).toBe(false)
+    expect(next.public_price).toBeUndefined()
+  })
+
+  it('muestra el precio de Mercado Pago aunque el dual esté oculto', () => {
+    const next = applyProductPublicPricing(product, {
+      catalog_dual_price_visible: false,
+      mercado_pago_enabled: true,
+      version_id: 'v3',
       effective_fee_rate: 0.053119,
       rounding_increment: 100,
     })
     expect(next.dual_price_visible).toBe(false)
-    expect(next.public_price).toBeUndefined()
+    expect(next.public_price).toBe(105700)
   })
 
   it('calcula ambos precios cuando el flag está activo', () => {

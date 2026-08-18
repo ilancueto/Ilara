@@ -15,6 +15,7 @@ import {
 import { validarCuponCatalogo } from '@/app/actions/coupons'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 import { bankTransferSecondaryLine } from '@/lib/domain/payments/labels'
+import { catalogDisplayComboPrice, catalogDisplayUnitPrice } from '@/lib/domain/payments/catalogDisplayPrice'
 import { getShareAbsoluteUrl } from '@/lib/site'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import { useCarrito } from '@/hooks/useCarrito'
@@ -84,13 +85,15 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   } | null>(null)
 
   const getPrecioConDescuento = useCallback(
-    (p: PublicCatalogProduct) => priceWithProductDiscount(p.sale_price, p.discount_percentage),
+    (p: PublicCatalogProduct) => catalogDisplayUnitPrice(p),
     []
   )
 
   const subtotal = cartSubtotal(
     carrito.map(item => ({
-      unitPrice: item.producto ? getPrecioConDescuento(item.producto) : (item.combo?.sale_price ?? 0),
+      unitPrice: item.producto
+        ? getPrecioConDescuento(item.producto)
+        : (item.combo ? catalogDisplayComboPrice(item.combo) : 0),
       quantity: item.cantidad,
     }))
   )
@@ -124,7 +127,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
       '',
       ...carrito.map(item => {
         const nombre = item.producto ? item.producto.name : item.combo!.name
-        const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
+        const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : catalogDisplayComboPrice(item.combo!)
         return `• ${nombre} x${item.cantidad} - $${formatPesoAR(precioUnit * item.cantidad)}`
       }),
       '',
@@ -152,7 +155,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   const isPrimaryLcpImage = activeIdx === 0
   const precio = priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
   const dualVisible = producto.dual_price_visible === true && producto.public_price != null
-  const displayPrice = dualVisible ? producto.public_price! : precio
+  const displayPrice = catalogDisplayUnitPrice(producto)
 
   const compartir = () => {
     const link = getShareAbsoluteUrl(canonicalPath)
@@ -161,7 +164,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
       '',
       `*${producto.name}*`,
       ...(producto.brand ? [producto.brand] : []),
-      `Precio: $${formatPesoAR(precio)}`,
+      `Precio: $${formatPesoAR(displayPrice)}`,
       link,
     ]
     // Misma pestaña: en PC Chrome suele bloquear `target=_blank` programático; el pedido ya usa assign.
@@ -177,7 +180,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
       '',
       `*${producto.name}*`,
       ...(producto.brand ? [producto.brand] : []),
-      `Precio: $${formatPesoAR(precio)}`,
+      `Precio: $${formatPesoAR(displayPrice)}`,
       link,
     ]
     if (!openWhatsApp(lineas.join('\n'), false)) {

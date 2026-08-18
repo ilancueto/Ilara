@@ -14,6 +14,7 @@ export type PricingVersionStatus = 'draft' | 'active' | 'superseded'
 
 export type PublicPricingContext = {
   catalog_dual_price_visible: boolean
+  mercado_pago_enabled?: boolean
   version_id: string | null
   effective_fee_rate: number | null
   rounding_increment: number | null

@@ -131,7 +131,7 @@ export function PedidoPagoClient() {
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={() => startMercadoPago(false)}
+                  onClick={() => startMercadoPago(Boolean(error))}
                   className="rounded-xl bg-pink-600 px-4 py-3 font-bold text-white disabled:opacity-60"
                 >
                   {PUBLIC_PAYMENT_COPY.mercadoPago} · ${formatPesoARExact(publicAmount)}
@@ -141,7 +141,7 @@ export function PedidoPagoClient() {
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={() => startTransfer(false)}
+                  onClick={() => startTransfer(Boolean(error))}
                   className="rounded-xl border border-pink-200 px-4 py-3 font-bold disabled:opacity-60"
                 >
                   {PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)}

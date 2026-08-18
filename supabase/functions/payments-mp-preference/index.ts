@@ -131,7 +131,12 @@ serve(async (req) => {
   const createdJson = asRecord(await created.json().catch(() => ({})))
   if (!created.ok) return json(502, { ok: false }, origin)
 
-  const checkout = String(createdJson.init_point || createdJson.sandbox_init_point || '')
+  const isSandbox = token.startsWith('TEST-')
+  const checkout = String(
+    isSandbox
+      ? (createdJson.sandbox_init_point || createdJson.init_point || '')
+      : (createdJson.init_point || createdJson.sandbox_init_point || '')
+  )
   const preferenceId = String(createdJson.id || '')
   if (!checkout.startsWith('https://') || !preferenceId) return json(502, { ok: false }, origin)
 

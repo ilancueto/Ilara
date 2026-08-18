@@ -2,11 +2,11 @@
 
 import { useMemo, useCallback } from 'react'
 import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
-import { priceWithProductDiscount } from '@/lib/catalogPricing'
+import { catalogDisplayUnitPrice } from '@/lib/domain/payments/catalogDisplayPrice'
 import { PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 
 function getPrecioConDescuento(producto: PublicCatalogProduct): number {
-  return priceWithProductDiscount(producto.sale_price, producto.discount_percentage)
+  return catalogDisplayUnitPrice(producto)
 }
 
 export type CatalogDerivedListsParams = {

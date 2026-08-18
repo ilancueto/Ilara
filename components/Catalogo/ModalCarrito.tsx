@@ -113,7 +113,7 @@ export function ModalCarrito({
                                 const categoria = esProducto
                                     ? (producto!.categories?.name ?? producto!.brand ?? 'Belleza')
                                     : 'Combo Ilara'
-                                const precioUnit = esProducto ? getPrecioConDescuento(producto!) : combo!.sale_price
+                                const precioUnit = esProducto ? getPrecioConDescuento(producto!) : (combo!.public_price ?? combo!.sale_price)
                                 const imagen = esProducto ? getProductImages(producto!)[0] : combo!.image_url
                                 const key = esProducto ? `p-${producto!.id}` : `c-${combo!.id}`
                                 const maxStock = esProducto ? producto!.stock : undefined

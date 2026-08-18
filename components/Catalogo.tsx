@@ -21,6 +21,7 @@ import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/cata
 import { getShareAbsoluteUrl } from '@/lib/site'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import { cartSubtotal, couponDiscountFromPercent, totalAfterCoupon } from '@/lib/catalogPricing'
+import { catalogDisplayComboPrice } from '@/lib/domain/payments/catalogDisplayPrice'
 import { getCatalogBadgesForProduct } from '@/lib/catalogBadges'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 import { CatalogPrice } from '@/components/Catalogo/CatalogPrice'
@@ -175,7 +176,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
         carrito.map(item => ({
             unitPrice: item.producto
                 ? getPrecioConDescuento(item.producto)
-                : (item.combo?.sale_price ?? 0),
+                : (item.combo ? catalogDisplayComboPrice(item.combo) : 0),
             quantity: item.cantidad,
         }))
     )
@@ -207,7 +208,7 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
             '',
             ...carrito.map(item => {
                 const nombre = item.producto ? item.producto.name : item.combo!.name
-                const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : item.combo!.sale_price
+                const precioUnit = item.producto ? getPrecioConDescuento(item.producto) : catalogDisplayComboPrice(item.combo!)
                 return `• ${nombre} x${item.cantidad} - $${formatPesoAR(precioUnit * item.cantidad)}`
             }),
             '',

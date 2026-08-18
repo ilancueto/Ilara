@@ -20,10 +20,11 @@ export function CatalogPrice({
   className,
 }: Props) {
   if (!dual || publicAmount == null || transferAmount == null) {
+    const shown = publicAmount ?? amount
     return (
       <p className={className}>
-        {listAmount != null && listAmount > amount && <s>${formatPesoAR(listAmount)}</s>}
-        ${formatPesoAR(amount)}
+        {listAmount != null && listAmount > shown && <s>${formatPesoAR(listAmount)}</s>}
+        ${formatPesoAR(shown)}
       </p>
     )
   }
