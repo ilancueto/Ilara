@@ -1,14 +1,25 @@
 /**
- * Motor de precios Stage 8 (puro). Espejo de UX/tests.
- * La autoridad es Postgres: public.payment_public_price / payment_quote_totals.
+ * Motor de precios Stage 9.5 (puro). Espejo de UX/tests.
+ * Autoridad: Postgres `payment_transfer_price` / `payment_quote_totals`.
+ *
+ * Lista (`sale_price`) = Mercado Pago.
+ * Transferencia = 10% menos sobre mercadería después del cupón.
+ * El envío no se descuenta.
  */
 import { couponDiscountFromPercent, priceWithProductDiscount } from '@/lib/catalogPricing'
 
+export const DEFAULT_TRANSFER_DISCOUNT_RATE = 0.10
+
+/** Legado: la comisión + redondeo ya no define el precio de la clienta. */
 export const DEFAULT_EFFECTIVE_FEE_RATE = 0.053119
 export const DEFAULT_ROUNDING_INCREMENT = 100
 export const FEE_RATE_SCALE = 100_000_000
 
 export type PricingRates = {
+  transfer_discount_rate: number
+}
+
+export type LegacyFeeRates = {
   effective_fee_rate: number
   rounding_increment: number
 }
@@ -43,7 +54,13 @@ export type OrderQuote = {
   total: PricedMoney
 }
 
-export function assertPricingRates(rates: PricingRates): void {
+export function assertTransferDiscountRate(rate: number): void {
+  if (!Number.isFinite(rate) || rate < 0 || rate >= 1) {
+    throw new Error('invalid_transfer_discount')
+  }
+}
+
+export function assertPricingRates(rates: LegacyFeeRates): void {
   if (!Number.isFinite(rates.effective_fee_rate) || rates.effective_fee_rate < 0 || rates.effective_fee_rate >= 1) {
     throw new Error('invalid_fee_rate')
   }
@@ -77,8 +94,8 @@ export function ceilToIncrement(amount: number, increment: number): number {
 }
 
 /**
- * public = ceil(base / (1 - fee) / increment) * increment
- * Escala de tasa: 8 decimales (numeric(12,8)).
+ * Legado: public = ceil(base / (1 - fee) / increment) * increment.
+ * Ya no se usa para el precio que ve o paga la clienta.
  */
 export function publicPriceFromBase(
   base: number,
@@ -98,9 +115,33 @@ export function publicPriceFromBase(
   return fromCents(ceilDiv(rawCents, incrementCents) * incrementCents)
 }
 
-export function pricedFromBase(base: number, rates?: PricingRates): PricedMoney {
-  const fee = rates?.effective_fee_rate ?? DEFAULT_EFFECTIVE_FEE_RATE
-  const increment = rates?.rounding_increment ?? DEFAULT_ROUNDING_INCREMENT
+/** Transferencia = redondeo al peso de lista × (1 − descuento). */
+export function transferPriceFromList(
+  list: number,
+  discountRate: number = DEFAULT_TRANSFER_DISCOUNT_RATE
+): number {
+  assertTransferDiscountRate(discountRate)
+  if (!Number.isFinite(list) || list < 0) throw new Error('invalid_amount')
+  if (list === 0) return 0
+  return Math.round(list * (1 - discountRate))
+}
+
+export function pricedFromList(list: number, rates?: PricingRates): PricedMoney {
+  const rate = rates?.transfer_discount_rate ?? DEFAULT_TRANSFER_DISCOUNT_RATE
+  const roundedList = Math.round(list)
+  const transfer = transferPriceFromList(roundedList, rate)
+  return {
+    base: transfer,
+    public: roundedList,
+    transfer,
+    saving: roundedList - transfer,
+  }
+}
+
+/** @deprecated Usar pricedFromList. Conservado para espejo del SQL legado. */
+export function pricedFromBase(base: number, feeRates?: LegacyFeeRates): PricedMoney {
+  const fee = feeRates?.effective_fee_rate ?? DEFAULT_EFFECTIVE_FEE_RATE
+  const increment = feeRates?.rounding_increment ?? DEFAULT_ROUNDING_INCREMENT
   const roundedBase = Math.round(base)
   const pub = publicPriceFromBase(roundedBase, fee, increment)
   return {
@@ -117,20 +158,19 @@ export function lineBaseUnit(unitSalePrice: number, discountPercentage?: number 
 
 export function quoteOrderTotals(input: OrderQuoteInput): OrderQuote {
   const rates = input.rates ?? {
-    effective_fee_rate: DEFAULT_EFFECTIVE_FEE_RATE,
-    rounding_increment: DEFAULT_ROUNDING_INCREMENT,
+    transfer_discount_rate: DEFAULT_TRANSFER_DISCOUNT_RATE,
   }
-  assertPricingRates(rates)
+  assertTransferDiscountRate(rates.transfer_discount_rate)
 
   const lines = input.lines.map((line) => {
-    const unit_base =
+    const unit_public =
       line.line_type === 'combo'
         ? Math.round(line.unit_sale_price)
         : lineBaseUnit(line.unit_sale_price, line.discount_percentage)
-    const unit_public = publicPriceFromBase(unit_base, rates.effective_fee_rate, rates.rounding_increment)
+    const unit_base = transferPriceFromList(unit_public, rates.transfer_discount_rate)
     const quantity = line.quantity
-    const base = unit_base * quantity
     const pub = unit_public * quantity
+    const base = unit_base * quantity
     return {
       quantity,
       unit_base,
@@ -142,34 +182,32 @@ export function quoteOrderTotals(input: OrderQuoteInput): OrderQuote {
     }
   })
 
-  const subtotalBase = lines.reduce((sum, line) => sum + line.base, 0)
   const subtotalPublic = lines.reduce((sum, line) => sum + line.public, 0)
   const couponPercent = input.coupon_percent ?? 0
-  const couponBase = couponDiscountFromPercent(subtotalBase, couponPercent)
   const couponPublic = couponDiscountFromPercent(subtotalPublic, couponPercent)
-  const shippingBase = Math.round(((input.shipping_base ?? 0) + Number.EPSILON) * 100) / 100
-  const shippingPublic =
-    shippingBase > 0
-      ? publicPriceFromBase(shippingBase, rates.effective_fee_rate, rates.rounding_increment)
-      : 0
+  const merchPublic = Math.max(0, subtotalPublic - couponPublic)
+  const merchTransfer = transferPriceFromList(merchPublic, rates.transfer_discount_rate)
+  const subtotalTransfer = transferPriceFromList(subtotalPublic, rates.transfer_discount_rate)
+  const couponTransfer = subtotalTransfer - merchTransfer
+  const shipping = Math.round(((input.shipping_base ?? 0) + Number.EPSILON) * 100) / 100
 
-  const totalBase = Math.max(0, subtotalBase - couponBase) + shippingBase
-  const totalPublic = Math.max(0, subtotalPublic - couponPublic) + shippingPublic
+  const totalPublic = merchPublic + shipping
+  const totalTransfer = merchTransfer + shipping
 
-  const pack = (base: number, pub: number): PricedMoney => ({
-    base,
+  const pack = (pub: number, transfer: number): PricedMoney => ({
+    base: transfer,
     public: pub,
-    transfer: base,
-    saving: pub - base,
+    transfer,
+    saving: pub - transfer,
   })
 
   return {
     rates,
     lines,
-    subtotal: pack(subtotalBase, subtotalPublic),
-    coupon: pack(couponBase, couponPublic),
-    shipping: pack(shippingBase, shippingPublic),
-    total: pack(totalBase, totalPublic),
+    subtotal: pack(subtotalPublic, subtotalTransfer),
+    coupon: pack(couponPublic, couponTransfer),
+    shipping: pack(shipping, shipping),
+    total: pack(totalPublic, totalTransfer),
   }
 }
 

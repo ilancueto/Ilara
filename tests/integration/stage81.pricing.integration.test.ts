@@ -94,14 +94,13 @@ describe.skipIf(!canRun)('Stage 8.1 precios autoritativos', () => {
     }
   })
 
-  it('calcula el ejemplo obligatorio en numeric', async () => {
-    const { data, error } = await service.rpc('payment_public_price', {
-      p_base: 100000,
-      p_fee_rate: 0.053119,
-      p_increment: 100,
+  it('calcula el 10% de transferencia en numeric', async () => {
+    const { data, error } = await service.rpc('payment_transfer_price', {
+      p_list: 100000,
+      p_discount_rate: 0.10,
     })
     expect(error).toBeNull()
-    expect(Number(data)).toBe(105700)
+    expect(Number(data)).toBe(90000)
   })
 
   it('rechaza payload con precio manipulado', async () => {
@@ -124,9 +123,9 @@ describe.skipIf(!canRun)('Stage 8.1 precios autoritativos', () => {
     })
     expect(error).toBeNull()
     const row = data as { total_base: number; total_public: number; transfer_saving: number }
-    expect(Number(row.total_base)).toBe(208000)
-    expect(Number(row.total_public)).toBeGreaterThan(Number(row.total_base))
-    expect(Number(row.transfer_saving)).toBe(Number(row.total_public) - Number(row.total_base))
+    expect(Number(row.total_public)).toBe(208000)
+    expect(Number(row.total_base)).toBe(188000)
+    expect(Number(row.transfer_saving)).toBe(20000)
   })
 
   it('anon no lee versiones y el contexto público nace oculto', async () => {
@@ -136,14 +135,14 @@ describe.skipIf(!canRun)('Stage 8.1 precios autoritativos', () => {
     expect(table.error).toBeTruthy()
     const ctx = await anon.rpc('payment_public_pricing_context')
     expect(ctx.error).toBeNull()
-    expect(ctx.data).toEqual({ catalog_dual_price_visible: false })
+    expect((ctx.data as { catalog_dual_price_visible: boolean }).catalog_dual_price_visible).toBe(false)
   })
 
   it('no-admin no ejecuta preview ni save', async () => {
     const preview = await other.rpc('payment_admin_preview_pricing')
     expect(preview.error).toBeTruthy()
     const draft = await other.rpc('payment_admin_save_draft', {
-      p_payload: { effective_fee_rate: 0.053119, rounding_increment: 100 },
+      p_payload: { transfer_discount_rate: 0.10 },
     })
     expect(draft.error).toBeTruthy()
   })
@@ -153,8 +152,7 @@ describe.skipIf(!canRun)('Stage 8.1 precios autoritativos', () => {
     expect(preview.error).toBeNull()
     const draft = await admin.rpc('payment_admin_save_draft', {
       p_payload: {
-        effective_fee_rate: 0.053119,
-        rounding_increment: 100,
+        transfer_discount_rate: 0.10,
         payments_enabled: false,
         catalog_dual_price_visible: false,
       },

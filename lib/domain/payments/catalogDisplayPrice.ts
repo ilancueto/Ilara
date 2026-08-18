@@ -1,7 +1,7 @@
 import { priceWithProductDiscount } from '@/lib/catalogPricing'
 import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 
-/** Precio que ve la clienta. Si Mercado Pago está activo, es el precio público. */
+/** Precio de lista que ve la clienta. Coincide con Mercado Pago. */
 export function catalogDisplayUnitPrice(
   item: Pick<PublicCatalogProduct, 'sale_price' | 'discount_percentage' | 'public_price'>
 ): number {

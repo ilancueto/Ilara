@@ -79,7 +79,24 @@ La capa nace **apagada**. Se enciende de forma atómica en Stage 8.6.
 5. El payload del cliente con `total`, `subtotal`, `unit_price`,
    `public_price` o `amount_due` se rechaza (`client_price_not_allowed`).
 
-### 3.2 Fórmula (versión 1)
+### 3.2 Fórmula (versión 1, reemplazada)
+
+La comisión + redondeo **ya no define** el precio de la clienta. Queda como
+registro histórico. La regla vigente está en 3.2.1.
+
+### 3.2.1 Fórmula vigente (10% transferencia)
+
+```
+list / Mercado Pago = sale_price (después de descuento de producto y cupón)
+transfer            = round(merch_list * (1 - 0.10))
+shipping            = igual en ambos medios
+saving              = list - transfer   (solo mercadería)
+```
+
+Ejemplo: lista `100000` + envío `8000` → Mercado Pago `108000` →
+transferencia `98000`. Pedidos y pagos ya grabados no se reescriben.
+
+### 3.2.2 Fórmula histórica (comisión + redondeo)
 
 ```
 public_raw = base / (1 - effective_fee_rate)

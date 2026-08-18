@@ -20,6 +20,8 @@ function mapVersion(raw: unknown): PricingVersion {
     id: String(v.id ?? ''),
     version_number: num(v.version_number),
     status: v.status === 'draft' || v.status === 'superseded' ? v.status : 'active',
+    transfer_discount_rate:
+      v.transfer_discount_rate == null ? 0.10 : num(v.transfer_discount_rate),
     effective_fee_rate: num(v.effective_fee_rate),
     rounding_increment: num(v.rounding_increment),
     listed_fee_rate: v.listed_fee_rate == null ? null : num(v.listed_fee_rate),

@@ -15,7 +15,9 @@ export type PricingVersionStatus = 'draft' | 'active' | 'superseded'
 export type PublicPricingContext = {
   catalog_dual_price_visible: boolean
   mercado_pago_enabled?: boolean
+  bank_transfer_enabled?: boolean
   version_id: string | null
+  transfer_discount_rate: number | null
   effective_fee_rate: number | null
   rounding_increment: number | null
 }
@@ -24,6 +26,7 @@ export type PricingVersion = {
   id: string
   version_number: number
   status: PricingVersionStatus
+  transfer_discount_rate: number
   effective_fee_rate: number
   rounding_increment: number
   listed_fee_rate: number | null

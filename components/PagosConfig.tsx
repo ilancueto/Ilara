@@ -41,8 +41,7 @@ export default function PagosConfig() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [fee, setFee] = useState('0.053119')
-  const [increment, setIncrement] = useState('100')
+  const [discountPercent, setDiscountPercent] = useState('10')
   const [paymentsEnabled, setPaymentsEnabled] = useState(false)
   const [mpEnabled, setMpEnabled] = useState(false)
   const [transferEnabled, setTransferEnabled] = useState(false)
@@ -67,8 +66,9 @@ export default function PagosConfig() {
       setVersions(list)
       setPreview(nextPreview)
       setBoard(nextBoard)
-      setFee(String(nextPreview.version.effective_fee_rate))
-      setIncrement(String(nextPreview.version.rounding_increment))
+      setDiscountPercent(
+        String(Math.round((nextPreview.version.transfer_discount_rate ?? 0.10) * 1000) / 10)
+      )
       setPaymentsEnabled(nextPreview.version.payments_enabled)
       setMpEnabled(nextPreview.version.mercado_pago_enabled)
       setTransferEnabled(nextPreview.version.bank_transfer_enabled)
@@ -91,14 +91,20 @@ export default function PagosConfig() {
   }, [load])
 
   async function handleSaveDraft() {
+    const rate = Number(discountPercent) / 100
+    if (!Number.isFinite(rate) || rate < 0 || rate >= 1) {
+      setError('El descuento por transferencia tiene que ser un porcentaje entre 0 y 99.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
       await savePricingDraft({
-        effective_fee_rate: Number(fee),
-        rounding_increment: Number(increment),
-        listed_fee_rate: 0.0439,
-        iva_rate: 0.21,
+        transfer_discount_rate: rate,
+        effective_fee_rate: 0,
+        rounding_increment: 1,
+        listed_fee_rate: null,
+        iva_rate: null,
         payments_enabled: paymentsEnabled,
         mercado_pago_enabled: mpEnabled,
         bank_transfer_enabled: transferEnabled,
@@ -182,28 +188,19 @@ export default function PagosConfig() {
         <>
           <div className="grid gap-4 md:grid-cols-3">
             <label className="flex flex-col gap-1 text-sm">
-              Comisión efectiva
+              Descuento por transferencia (%)
               <input
                 className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-                value={fee}
-                onChange={(event) => setFee(event.target.value)}
+                value={discountPercent}
+                onChange={(event) => setDiscountPercent(event.target.value)}
                 inputMode="decimal"
-                aria-describedby="fee-help"
+                aria-describedby="transfer-discount-help"
               />
-              <span id="fee-help" className="text-xs text-gray-500">
-                Ayuda: 4,39% + IVA ≈ 0,053119. No se muestra en el catálogo.
+              <span id="transfer-discount-help" className="text-xs text-gray-500">
+                El precio de lista es el de Mercado Pago. Este % se descuenta de productos y combos, no del envío.
               </span>
             </label>
-            <label className="flex flex-col gap-1 text-sm">
-              Redondeo
-              <input
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-                value={increment}
-                onChange={(event) => setIncrement(event.target.value)}
-                inputMode="numeric"
-              />
-            </label>
-            <div className="rounded-xl border border-gray-200 px-4 py-3 text-sm dark:border-zinc-700">
+            <div className="rounded-xl border border-gray-200 px-4 py-3 text-sm dark:border-zinc-700 md:col-span-2">
               <p>Productos afectados: <strong>{preview.affected_products}</strong></p>
               <p>Combos afectados: <strong>{preview.affected_combos}</strong></p>
               <p>Catálogo dual: <strong>{preview.version.catalog_dual_price_visible ? 'visible' : 'oculto'}</strong></p>
@@ -345,17 +342,17 @@ export default function PagosConfig() {
               <thead className="bg-gray-50 text-left dark:bg-zinc-900">
                 <tr>
                   <th className="px-3 py-2">Artículo</th>
-                  <th className="px-3 py-2">Lista / transferencia</th>
-                  <th className="px-3 py-2">Público</th>
-                  <th className="px-3 py-2">Diferencia</th>
+                  <th className="px-3 py-2">Lista / Mercado Pago</th>
+                  <th className="px-3 py-2">Transferencia</th>
+                  <th className="px-3 py-2">Ahorro</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.samples.map((row) => (
                   <tr key={`${row.kind}-${row.id}`} className="border-t border-gray-100 dark:border-zinc-800">
                     <td className="px-3 py-2">{row.name}</td>
-                    <td className="px-3 py-2">${formatPesoAR(row.transfer_price)}</td>
                     <td className="px-3 py-2">${formatPesoAR(row.public_price)}</td>
+                    <td className="px-3 py-2">${formatPesoAR(row.transfer_price)}</td>
                     <td className="px-3 py-2">${formatPesoAR(row.saving)}</td>
                   </tr>
                 ))}
@@ -412,7 +409,7 @@ export default function PagosConfig() {
               className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-200 px-3 py-2 dark:border-zinc-800"
             >
               <span>
-                v{version.version_number} · {version.status} · tasa {version.effective_fee_rate}
+                v{version.version_number} · {version.status} · {Math.round((version.transfer_discount_rate ?? 0.10) * 100)}% transferencia
               </span>
               {version.status !== 'active' && (
                 <button

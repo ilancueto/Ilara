@@ -1474,6 +1474,7 @@ export type Database = {
           rounding_increment: number
           status: string
           superseded_at: string | null
+          transfer_discount_rate: number
           transfer_reservation_hours: number
           updated_at: string
           version_number: number
@@ -1503,6 +1504,7 @@ export type Database = {
           rounding_increment: number
           status: string
           superseded_at?: string | null
+          transfer_discount_rate?: number
           transfer_reservation_hours?: number
           updated_at?: string
           version_number: number
@@ -1532,6 +1534,7 @@ export type Database = {
           rounding_increment?: number
           status?: string
           superseded_at?: string | null
+          transfer_discount_rate?: number
           transfer_reservation_hours?: number
           updated_at?: string
           version_number?: number
@@ -2500,6 +2503,10 @@ export type Database = {
       payment_quote_totals: {
         Args: { p_fee_rate?: number; p_increment?: number; p_payload: Json }
         Returns: Json
+      }
+      payment_transfer_price: {
+        Args: { p_discount_rate?: number; p_list: number }
+        Returns: number
       }
       prepare_transfer_receipt: {
         Args: { p_access_capability: string; p_extension: string }

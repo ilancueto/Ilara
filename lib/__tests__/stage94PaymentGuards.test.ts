@@ -22,15 +22,16 @@ describe('Stage 9.4 cobros huérfanos y precio visible', () => {
       catalog_dual_price_visible: false,
       mercado_pago_enabled: true,
       version_id: 'v3',
-      effective_fee_rate: '0.053119',
-      rounding_increment: '100',
+      transfer_discount_rate: '0.10',
+      effective_fee_rate: '0',
+      rounding_increment: '1',
     })
     expect(ctx.catalog_dual_price_visible).toBe(false)
-    expect(ctx.effective_fee_rate).toBeCloseTo(0.053119)
+    expect(ctx.transfer_discount_rate).toBeCloseTo(0.10)
     expect(catalogDisplayUnitPrice({
       sale_price: 100000,
       discount_percentage: 0,
-      public_price: 105700,
-    })).toBe(105700)
+      public_price: 100000,
+    })).toBe(100000)
   })
 })

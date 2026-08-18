@@ -27,10 +27,9 @@ No existen señas ni pagos parciales del pedido.
   informativo.
 - Eventos repetidos son idempotentes.
 - Los secretos del proveedor viven solo en Edge Functions.
-- `sale_price` es el precio base / transferencia. El precio público se deriva
-  de una versión de configuración y no se escribe encima del precio de lista.
-- Fórmula inicial: `public = ceil((base / (1 - 0.053119)) / 100) * 100`.
-  Ejemplo: base $100.000 → público $105.700 → ahorro $5.700.
+- `sale_price` es el precio de lista / Mercado Pago. No se reescribe.
+- Transferencia = 10% menos sobre mercadería después del cupón.
+  El envío no se descuenta. Ejemplo: lista $100.000 → transferencia $90.000.
 - El catálogo muestra ambos precios **antes** del checkout cuando el flag
   esté activo. No hay recargo sorpresa al final.
 - Reserva de stock al iniciar el pago. MP 30 min; transferencia 24 h.
