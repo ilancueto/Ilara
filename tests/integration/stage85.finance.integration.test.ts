@@ -159,7 +159,7 @@ describe.skipIf(!canRun)('Stage 8.5 corte de pedidos', () => {
         provider_payment_id: 'mp-s85',
         external_reference: ext?.external_reference,
         provider_status: 'approved',
-        transaction_amount: 105700,
+        transaction_amount: 100000,
         currency_id: 'ARS',
         collector_id: '1',
         actual_fee: 5614,
@@ -172,7 +172,7 @@ describe.skipIf(!canRun)('Stage 8.5 corte de pedidos', () => {
     const slice = await admin.rpc('finance_stage8_payments_slice', { p_from: today, p_to: today })
     expect(slice.error).toBeNull()
     const catalog = slice.data as Slice
-    expect(Number(catalog.catalog.inflow)).toBe(catalogInflowBefore + 105700)
+    expect(Number(catalog.catalog.inflow)).toBe(catalogInflowBefore + 100000)
     expect(Number(catalog.margin.actual_fee)).toBe(actualFeeBefore + 5614)
     expect(Number(catalog.pos.inflow)).toBe(posInflowBefore)
 

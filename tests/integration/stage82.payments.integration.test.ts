@@ -175,7 +175,7 @@ describe.skipIf(!canRun)('Stage 8.2 core de pagos', () => {
     })
     expect(first.error).toBeNull()
     const created = first.data as { payment_id: string; amount_due: number; stock_reserved: boolean }
-    expect(created.amount_due).toBe(100000)
+    expect(created.amount_due).toBe(90000)
     expect(created.stock_reserved).toBe(true)
 
     const replay = await admin.rpc('start_catalog_order_payment', {

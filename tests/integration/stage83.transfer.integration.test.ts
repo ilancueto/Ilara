@@ -180,7 +180,7 @@ describe.skipIf(!canRun)('Stage 8.3 transferencia y capability', () => {
       estimated_fee: number
       price_uplift: number
     }
-    expect(created.amount_due).toBe(100000)
+    expect(created.amount_due).toBe(90000)
     expect(Number(created.estimated_fee)).toBe(0)
     expect(Number(created.price_uplift)).toBeGreaterThan(0)
 

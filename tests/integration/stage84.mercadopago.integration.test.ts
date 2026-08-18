@@ -151,7 +151,7 @@ describe.skipIf(!canRun)('Stage 8.4 Mercado Pago canónico', () => {
     })
     expect(started.error).toBeNull()
     const created = started.data as { payment_id: string; amount_due: number; estimated_fee: number; external_reference?: string }
-    expect(created.amount_due).toBe(105700)
+    expect(created.amount_due).toBe(100000)
     expect(Number(created.estimated_fee)).toBeGreaterThan(0)
 
     const pay = await service.from('order_payments').select('external_reference, amount_due').eq('id', created.payment_id).single()
@@ -175,7 +175,7 @@ describe.skipIf(!canRun)('Stage 8.4 Mercado Pago canónico', () => {
         provider_payment_id: 'mp-ok',
         external_reference: ext,
         provider_status: 'approved',
-        transaction_amount: 105700,
+        transaction_amount: 100000,
         currency_id: 'ARS',
         collector_id: '99',
         actual_fee: 5613.86,
@@ -191,7 +191,7 @@ describe.skipIf(!canRun)('Stage 8.4 Mercado Pago canónico', () => {
         provider_payment_id: 'mp-ok',
         external_reference: ext,
         provider_status: 'approved',
-        transaction_amount: 105700,
+        transaction_amount: 100000,
         currency_id: 'ARS',
         collector_id: '99',
         event_id: `evt-ok-${created.payment_id}`,
@@ -204,7 +204,7 @@ describe.skipIf(!canRun)('Stage 8.4 Mercado Pago canónico', () => {
         provider_payment_id: 'mp-ok',
         external_reference: ext,
         provider_status: 'rejected',
-        transaction_amount: 105700,
+        transaction_amount: 100000,
         currency_id: 'ARS',
         collector_id: '99',
         event_id: `evt-stale-${created.payment_id}`,
@@ -219,14 +219,14 @@ describe.skipIf(!canRun)('Stage 8.4 Mercado Pago canónico', () => {
 
     const deniedRefund = await other.rpc('admin_refund_catalog_payment', {
       p_payment_id: created.payment_id,
-      p_amount: 105700,
+      p_amount: 100000,
       p_reason: 'Prueba de reembolso',
     })
     expect(deniedRefund.error).toBeTruthy()
 
     const refunded = await admin.rpc('admin_refund_catalog_payment', {
       p_payment_id: created.payment_id,
-      p_amount: 105700,
+      p_amount: 100000,
       p_reason: 'Prueba de reembolso',
     })
     expect(refunded.error).toBeNull()

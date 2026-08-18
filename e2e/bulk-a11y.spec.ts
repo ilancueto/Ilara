@@ -302,7 +302,7 @@ test.describe('Bulk dialogs accesibles', () => {
     await ensureE2EAdmin()
     await loginAsE2EAdmin(page)
     await page.goto('/?tab=incomes', { waitUntil: 'domcontentloaded' })
-    await expect(page.getByRole('heading', { name: /ingresos/i }).first()).toBeVisible({
+    await expect(page.getByRole('heading', { name: /cuentas y caja/i }).first()).toBeVisible({
       timeout: 20000,
     })
     await page.getByRole('button', { name: /^ventas$/i }).click()
