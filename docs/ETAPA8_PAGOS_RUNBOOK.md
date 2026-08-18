@@ -79,9 +79,9 @@ commit, deploy). No marcar un ítem si solo compiló.
 - [x] Retorno `/pedido` informativo; no confirma por URL
 - [x] Reembolsos admin; no restauran stock; no tocan `sales`/`incomes`
 - [x] Tests de firma, mismatch, duplicate, stale y reembolso
+- [x] Commit `1a0c8a2` + migración prod `20260818003000`; flags off
 - [ ] E2E sandbox con flags on (8.6)
 - [ ] Deploy de Edge Functions + secreto de webhook del dueño
-- [ ] Commit / flags apagados
 
 ## 8.5 Finanzas y administración
 
@@ -133,3 +133,4 @@ npm run test:smoke
 | 2026-08-17 | 8.1 precios | `19d0cea` | migración prod + flags off | CI `32077144361`; smoke 16/16 |
 | 2026-08-17 | 8.2 core | `ed76100` | migración `20260817225016` | flags off; pg_cron ausente |
 | 2026-08-17 | 8.3 transferencia + cron Vercel | `d6084c8` | migración `20260817231453` | flags off; expire health 0; 0 pagos |
+| 2026-08-17 | 8.4 Mercado Pago | `1a0c8a2` | migración `20260818003000` | flags off; EFs en repo, no desplegadas |
