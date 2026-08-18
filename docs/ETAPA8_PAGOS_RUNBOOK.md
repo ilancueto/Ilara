@@ -89,14 +89,14 @@ commit, deploy). No marcar un ítem si solo compiló.
 - [x] Comisión estimada vs real y reembolsos
 - [x] Hallazgos de conciliación (sin asientos)
 - [x] Tablero en Precios y pagos + corte en Cuentas y caja
-- [ ] Commit / migración prod (esta corrida)
+- [x] Commit `531aec8` + migración prod `20260818014000`; flags off
 
 ## 8.6 Release
 
 - [x] Informe [`ETAPA8_RELEASE_REPORT.md`](./ETAPA8_RELEASE_REPORT.md)
 - [x] Procedimiento de encendido atómico documentado
-- [ ] Reset local + CI de este cierre
-- [ ] Migración 8.5 en prod
+- [x] Reset local + 173 unitarios + 33 integración + RLS + matriz + build
+- [x] Migración 8.5 en prod
 - [ ] Edge Functions: pendientes del secreto de webhook
 - [x] Flags apagados; **no** hay activación ni cobro real
 
@@ -130,3 +130,5 @@ npm run test:smoke
 | 2026-08-17 | 8.2 core | `ed76100` | migración `20260817225016` | flags off; pg_cron ausente |
 | 2026-08-17 | 8.3 transferencia + cron Vercel | `d6084c8` | migración `20260817231453` | flags off; expire health 0; 0 pagos |
 | 2026-08-17 | 8.4 Mercado Pago | `1a0c8a2` | migración `20260818003000` | flags off; EFs en repo, no desplegadas |
+| 2026-08-17 | 8.5 finanzas | `531aec8` | migración `20260818014000` | flags off; 0 pagos |
+| 2026-08-17 | 8.6 cierre | informe | n/a | sin encendido; listo para revisión |

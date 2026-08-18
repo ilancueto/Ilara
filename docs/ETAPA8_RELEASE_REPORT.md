@@ -14,7 +14,7 @@
 | 8.2 | `ed76100` | `20260817225016` | Cerrado; pg_cron ausente |
 | 8.3 | `d6084c8` | `20260817231453` | Cerrado; cron Vercel + capability |
 | 8.4 | `1a0c8a2` | `20260818003000` | Código y SQL en prod; EFs pendientes de secreto webhook |
-| 8.5 | esta corrida | `20260818014000` | Corte de caja + hallazgos |
+| 8.5 | `531aec8` | `20260818014000` | Corte de caja + hallazgos |
 | 8.6 | este informe | — | Verificación y procedimiento de encendido, **sin activar** |
 
 ## Flags (obligatorio: todos false)
