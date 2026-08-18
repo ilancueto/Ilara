@@ -1,0 +1,27 @@
+name: Expire catalog payments
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: expire-catalog-payments
+  cancel-in-progress: false
+
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Expire pending catalog payments
+        env:
+          ILARA_CRON_SECRET: ${{ secrets.ILARA_CRON_SECRET }}
+        run: |
+          test -n "$ILARA_CRON_SECRET"
+          curl --fail-with-body --silent --show-error --max-time 45 \
+            --request GET \
+            --header "Authorization: Bearer $ILARA_CRON_SECRET" \
+            https://ilara.com.ar/api/internal/expire-payments
