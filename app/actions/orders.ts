@@ -10,6 +10,9 @@ import { setOrderFollowCookie } from '@/lib/domain/orders/followSession'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { ObservabilityEvent } from '@/lib/observability/events'
+import { notifyKindFromOrderStatus } from '@/lib/domain/orders/orderNotify'
+import { notifyOrderCustomer } from '@/lib/domain/orders/sendOrderEmail'
+
 export type OrderNotifyVia = 'email' | 'whatsapp' | 'none'
 
 export type CreateCatalogOrderActionResult =
@@ -74,4 +77,14 @@ export async function createCatalogOrderAction(
       retryable: isAppError(err) ? err.retryable : true,
     }
   }
+}
+
+export async function notifyOrderStatusAction(
+  orderNumber: string,
+  status: string
+): Promise<{ ok: true } | { ok: false }> {
+  const kind = notifyKindFromOrderStatus(status)
+  if (!kind) return { ok: true }
+  const sent = await notifyOrderCustomer(orderNumber, kind)
+  return sent ? { ok: true } : { ok: false }
 }

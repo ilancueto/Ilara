@@ -6,7 +6,14 @@ export type OrderNotifyLine = {
   quantity: number
 }
 
-export type OrderNotifyKind = 'payment_pending'
+export type OrderNotifyKind =
+  | 'payment_pending'
+  | 'payment_received'
+  | 'confirmed'
+  | 'preparing'
+  | 'ready'
+  | 'completed'
+  | 'cancelled'
 
 export type OrderNotifyInput = {
   customerName: string
@@ -17,6 +24,53 @@ export type OrderNotifyInput = {
   fulfillmentMode?: FulfillmentMode | string | null
   followUrl: string | null
   kind?: OrderNotifyKind
+}
+
+const KIND_COPY: Record<OrderNotifyKind, { subject: string; lead: string; next: string }> = {
+  payment_pending: {
+    subject: 'Recibimos el pago de tu pedido',
+    lead: 'Recibimos el pago de tu pedido',
+    next: 'Lo estamos confirmando. Te avisamos cuando quede listo.',
+  },
+  payment_received: {
+    subject: 'Pago acreditado de tu pedido',
+    lead: 'Acreditamos el pago de tu pedido',
+    next: 'Ya estamos con tu pedido. Te avisamos cada novedad.',
+  },
+  confirmed: {
+    subject: 'Confirmamos tu pedido',
+    lead: 'Confirmamos tu pedido',
+    next: 'El siguiente paso es prepararlo. Te avisamos cuando avance.',
+  },
+  preparing: {
+    subject: 'Estamos preparando tu pedido',
+    lead: 'Estamos preparando tu pedido',
+    next: 'Te avisamos cuando esté listo.',
+  },
+  ready: {
+    subject: 'Tu pedido está listo',
+    lead: 'Tu pedido está listo',
+    next: 'Ya podés coordinar la entrega o el retiro.',
+  },
+  completed: {
+    subject: 'Entregamos tu pedido',
+    lead: 'Entregamos tu pedido',
+    next: 'Gracias por elegir Ilara Beauty.',
+  },
+  cancelled: {
+    subject: 'Cancelamos tu pedido',
+    lead: 'Cancelamos tu pedido',
+    next: 'Si no fue lo que esperabas, respondé este mail y lo vemos.',
+  },
+}
+
+export function notifyKindFromOrderStatus(status: string): OrderNotifyKind | null {
+  if (status === 'confirmed') return 'confirmed'
+  if (status === 'preparing') return 'preparing'
+  if (status === 'ready') return 'ready'
+  if (status === 'completed') return 'completed'
+  if (status === 'cancelled') return 'cancelled'
+  return null
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -43,16 +97,18 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
     .map((line) => `• ${line.name} x${line.quantity}`)
   const more =
     input.lines.length > 20 ? [`… y ${input.lines.length - 20} ítem(s) más`] : []
+  const kind = input.kind || 'payment_pending'
+  const copy = KIND_COPY[kind]
   const fulfillment = orderNotifyFulfillment(input.fulfillmentMode)
   const statusLine = input.followUrl
     ? `Podés ver el estado acá: ${input.followUrl}`
-    : 'Te vamos a confirmar el pedido cuando revisemos el pago.'
+    : 'Si tenés el enlace de seguimiento, usalo para ver el pedido.'
 
   const text = [
     `Hola ${name},`,
     '',
-    `Recibimos el pago de tu pedido ${input.orderNumber} en Ilara Beauty.`,
-    'Lo estamos confirmando. Te avisamos cuando quede listo.',
+    `${copy.lead} ${input.orderNumber} en Ilara Beauty.`,
+    copy.next,
     fulfillment,
     '',
     ...items,
@@ -78,8 +134,8 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
   const html = `
     <div style="font-family:Outfit,Arial,sans-serif;color:#1A181E;line-height:1.5">
       <p>Hola ${escapeHtml(name)},</p>
-      <p>Recibimos el pago de tu pedido <strong>${escapeHtml(input.orderNumber)}</strong> en Ilara Beauty.</p>
-      <p>Lo estamos confirmando. Te avisamos cuando quede listo.</p>
+      <p>${escapeHtml(copy.lead)} <strong>${escapeHtml(input.orderNumber)}</strong> en Ilara Beauty.</p>
+      <p>${escapeHtml(copy.next)}</p>
       <p>${escapeHtml(fulfillment)}</p>
       <ul>${itemHtml}</ul>
       <p><strong>Total: $${escapeHtml(formatPesoARExact(input.total))}</strong></p>
@@ -94,7 +150,7 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
   `.trim()
 
   return {
-    subject: `Recibimos el pago de tu pedido ${input.orderNumber}`,
+    subject: `${copy.subject} ${input.orderNumber}`,
     text,
     html,
   }

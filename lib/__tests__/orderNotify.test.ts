@@ -23,6 +23,29 @@ describe('aviso de pedido al cliente', () => {
     expect(mail.text).toContain('https://ilara.com.ar/pedido/IL-000123?t=followtoken')
     expect(mail.text).not.toContain('access_capability')
     expect(mail.html).toContain('Ver el estado del pedido')
+    expect(mail.subject).toContain('Recibimos el pago')
+  })
+
+  it('cambia el copy según la novedad', () => {
+    const ready = buildOrderCustomerEmail({
+      customerName: 'María',
+      orderNumber: 'IL-000123',
+      total: 5850,
+      lines: [],
+      followUrl: null,
+      kind: 'ready',
+    })
+    expect(ready.subject).toContain('listo')
+    expect(ready.text).toContain('está listo')
+    const paid = buildOrderCustomerEmail({
+      customerName: 'María',
+      orderNumber: 'IL-000123',
+      total: 5850,
+      lines: [],
+      followUrl: null,
+      kind: 'payment_received',
+    })
+    expect(paid.subject).toContain('Pago acreditado')
   })
 
   it('acepta un email válido y usa el copy de entrega a coordinar', () => {

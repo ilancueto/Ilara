@@ -93,6 +93,8 @@ describe('Stage 8.4 — migración y edge functions', () => {
     expect(preference).toContain('mp_amount_too_low')
     expect(webhook).toContain('x-signature')
     expect(webhook).toContain('/v1/payments/')
+    expect(webhook).toContain('RESEND_API_KEY')
+    expect(webhook).toContain('Pago acreditado')
     expect(webhook).not.toMatch(/NEXT_PUBLIC_/)
     expect(preference).not.toMatch(/NEXT_PUBLIC_/)
   })

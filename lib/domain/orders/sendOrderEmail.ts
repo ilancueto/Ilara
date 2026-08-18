@@ -2,10 +2,24 @@ import 'server-only'
 
 import { createSupabaseServiceClient } from '@/lib/supabase/service'
 import { buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
-import { buildOrderCustomerEmail, isNotifyEmail, type OrderNotifyInput } from '@/lib/domain/orders/orderNotify'
+import { getSiteUrl } from '@/lib/site'
+import {
+  buildOrderCustomerEmail,
+  isNotifyEmail,
+  type OrderNotifyInput,
+  type OrderNotifyKind,
+} from '@/lib/domain/orders/orderNotify'
 
 export async function notifyPaymentPendingByOrderNumber(
   orderNumber: string,
+  followToken?: string | null
+): Promise<boolean> {
+  return notifyOrderCustomer(orderNumber, 'payment_pending', followToken)
+}
+
+export async function notifyOrderCustomer(
+  orderNumber: string,
+  kind: OrderNotifyKind,
   followToken?: string | null
 ): Promise<boolean> {
   try {
@@ -18,6 +32,9 @@ export async function notifyPaymentPendingByOrderNumber(
       .eq('order_number', number)
       .maybeSingle()
     if (error || !data) return false
+    const followUrl = followToken
+      ? buildOrderFollowUrl(data.order_number, followToken)
+      : `${getSiteUrl()}/pedido/${encodeURIComponent(data.order_number)}`
     return sendOrderCustomerEmail({
       customerName: data.customer_name,
       customerEmail: data.customer_email,
@@ -25,8 +42,8 @@ export async function notifyPaymentPendingByOrderNumber(
       total: Number(data.total) || 0,
       lines: [],
       fulfillmentMode: data.fulfillment_mode,
-      followUrl: followToken ? buildOrderFollowUrl(data.order_number, followToken) : null,
-      kind: 'payment_pending',
+      followUrl,
+      kind,
     })
   } catch {
     return false

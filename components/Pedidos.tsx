@@ -23,6 +23,7 @@ import {
   listOrders,
   transitionOrder,
 } from '@/lib/domain/orders/browserOrders'
+import { notifyOrderStatusAction } from '@/app/actions/orders'
 import {
   ORDER_STATUSES,
   canTransitionOrder,
@@ -149,6 +150,9 @@ export default function Pedidos() {
       const requestId = createRequestId()
       try {
         const result = await transitionOrder(detail.id, to, reason)
+        if (!result.idempotent_replay) {
+          await notifyOrderStatusAction(result.order_number, result.status)
+        }
         logStructured({
           event: ObservabilityEvent.ORDER_STATUS_CHANGED,
           level: 'info',

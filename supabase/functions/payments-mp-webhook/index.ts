@@ -136,8 +136,59 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   }
+  const appliedRow = asRecord(applied.data)
+  if (appliedRow.result !== 'duplicate' && appliedRow.status === 'approved') {
+    await notifyCustomerPayment(admin, String(appliedRow.payment_id || ''))
+  }
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   })
 })
+
+async function notifyCustomerPayment(
+  admin: ReturnType<typeof createClient>,
+  paymentId: string
+): Promise<void> {
+  if (!paymentId) return
+  const key = (Deno.env.get('RESEND_API_KEY') || '').trim()
+  const from = (Deno.env.get('ORDER_EMAIL_FROM') || '').trim()
+  if (key.length < 8 || !from.includes('@')) return
+  const pay = await admin.from('order_payments').select('order_id').eq('id', paymentId).maybeSingle()
+  const orderId = String(pay.data?.order_id || '')
+  if (!orderId) return
+  const order = await admin
+    .from('orders')
+    .select('customer_email, customer_name, order_number, total')
+    .eq('id', orderId)
+    .maybeSingle()
+  const to = String(order.data?.customer_email || '').trim()
+  const number = String(order.data?.order_number || '').trim()
+  if (!to.includes('@') || !number) return
+  const name = String(order.data?.customer_name || '').trim() || 'hola'
+  const site = (Deno.env.get('SITE_URL') || 'https://ilara.com.ar').replace(/\/$/, '')
+  const follow = `${site}/pedido/${encodeURIComponent(number)}`
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: `Pago acreditado de tu pedido ${number}`,
+      text: [
+        `Hola ${name},`,
+        '',
+        `Acreditamos el pago de tu pedido ${number} en Ilara Beauty.`,
+        'Ya estamos con tu pedido. Te avisamos cada novedad.',
+        '',
+        `Total: $${order.data?.total ?? ''}`,
+        `Podés ver el estado acá: ${follow}`,
+        '',
+        'Ilara Beauty',
+      ].join('\n'),
+    }),
+  }).catch(() => undefined)
+}

@@ -521,7 +521,7 @@ export function CheckoutPedido({
                 data-testid="checkout-email"
               />
               <p className={styles.fieldHint}>
-                Opcional. Te avisamos por mail cuando recibamos el pago y lo estemos confirmando.
+                Si lo cargás, te mandamos cada novedad: pago, preparación, listo y entrega.
               </p>
             </div>
             <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">
