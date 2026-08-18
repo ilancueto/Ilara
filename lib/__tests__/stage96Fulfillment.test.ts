@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildCreateOrderPayload, createOrderErrorFromRpc } from '@/lib/domain/orders/createOrder'
 import { normalizeCreateOrderInput } from '@/lib/domain/orders/validation'
-import { FULFILLMENT_COPY } from '@/lib/domain/orders/fulfillment'
+import { FULFILLMENT_COPY, fulfillmentPublicLine } from '@/lib/domain/orders/fulfillment'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { AppError } from '@/lib/domain/errors'
 
@@ -37,6 +37,22 @@ describe('Stage 9.6 — retiro y a coordinar', () => {
     expect(FULFILLMENT_COPY.retiro.title).toBe('Retiro en el local')
     expect(FULFILLMENT_COPY.coordinar.title).toBe('A coordinar')
     expect(checkout).not.toContain('Origen: Neuquén')
+    expect(
+      fulfillmentPublicLine({
+        mode: 'coordinar',
+        carrier: 'A coordinar',
+        service: 'Por WhatsApp',
+        estimate: 'Lo coordinamos por WhatsApp',
+      })
+    ).toBe(FULFILLMENT_COPY.coordinar.success)
+    expect(
+      fulfillmentPublicLine({
+        mode: 'retiro',
+        carrier: 'Retiro en el local',
+        service: 'En el local',
+        estimate: 'Horario a coordinar',
+      })
+    ).toBe(FULFILLMENT_COPY.retiro.success)
   })
 
   it('retiro no manda cotización ni importe de envío', () => {

@@ -17,17 +17,18 @@ const TableroVentasChart = dynamic(() => import('@/components/TableroVentasChart
         />
     ),
 })
-import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Settings, Wallet, Store } from 'lucide-react'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Receipt, Banknote, CreditCard, FileText, ArrowUpRight, Settings, Wallet, Store, ClipboardList } from 'lucide-react'
 import { format, subDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useTheme } from '@/context/ThemeContext'
-import type { AppTab } from '@/lib/appTabs'
+import type { PanelNavigate } from '@/lib/appNavigation'
+import { fetchPanelBadges } from '@/lib/domain/panel/browserPanelBadges'
 
 type PeriodoIngresos = 'total' | '7d' | '30d'
 
 type TableroProps = {
-    onNavigate?: (tab: AppTab) => void
+    onNavigate?: PanelNavigate
 }
 
 type DashboardKpi = {
@@ -58,6 +59,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
     const [cargando, setCargando] = useState(true)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
+    const [pedidosAbiertos, setPedidosAbiertos] = useState(0)
 
     const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
     const [detalleVenta, setDetalleVenta] = useState<Venta | null>(null)
@@ -169,7 +171,13 @@ export default function Tablero({ onNavigate }: TableroProps) {
 
     const cargarDatos = async () => {
         setCargando(true)
-        await Promise.all([obtenerProductos(), refrescarMetricas()])
+        await Promise.all([
+            obtenerProductos(),
+            refrescarMetricas(),
+            fetchPanelBadges()
+                .then((b) => setPedidosAbiertos(b.ordersPendingOrConfirmed))
+                .catch(() => setPedidosAbiertos(0)),
+        ])
         setCargando(false)
     }
 
@@ -204,7 +212,6 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const totalIngresos = kpi.sales_total + kpi.incomes_total
     const cantidadVentas = kpi.sales_count
     const totalGastos = kpi.expenses_total
-    const balance = totalIngresos - totalGastos
 
     const etiquetaPeriodo = periodoIngresos === 'total' ? 'Total' : periodoIngresos === '7d' ? '7 días' : '30 días'
 
@@ -294,7 +301,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         onClick={() =>
                             onNavigate ? onNavigate('sales') : router.push('/?tab=sales')
                         }
-                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-bold text-sm shadow-[0_8px_20px_-6px_rgba(219,39,119,0.55)] hover:brightness-105 hover:-translate-y-0.5 transition-all"
+                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-[#CF6B7F] to-[#B85064] text-white font-bold text-sm shadow-[0_8px_20px_-6px_rgba(184,93,111,0.5)] hover:brightness-105 hover:-translate-y-0.5 transition-all"
                     >
                         <Receipt className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                         Nueva venta
@@ -303,7 +310,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
             </div>
 
             {/* KPIs — grilla fluida como mock */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-stretch">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-stretch">
                 <div className="col-span-2 sm:col-span-1">
                     <TarjetaEstadistica
                         icono={<DollarSign className="w-5 h-5" />}
@@ -313,10 +320,14 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         bgIcon="bg-pink-50"
                         subtitulo={`${cantidadVentas} ventas + ${kpi.incomes_count} manuales`}
                         trend={true}
+                        onActivate={onNavigate ? () => onNavigate({ tab: 'incomes', view: 'historial' }) : undefined}
                         selectorPeriodo={
                             <button
                                 type="button"
-                                onClick={() => setMostrarModalPeriodo(true)}
+                                onClick={(event) => {
+                                    event.stopPropagation()
+                                    setMostrarModalPeriodo(true)
+                                }}
                                 className="p-2 rounded-lg bg-white/80 dark:bg-zinc-800 border border-pink-100 dark:border-zinc-700 text-pink-600 dark:text-pink-400 hover:bg-white dark:hover:bg-zinc-700 transition-colors"
                                 aria-label="Cambiar período de ingresos"
                             >
@@ -328,11 +339,12 @@ export default function Tablero({ onNavigate }: TableroProps) {
                 <div>
                     <TarjetaEstadistica
                         icono={<Wallet className="w-5 h-5" />}
-                        etiqueta="Balance"
-                        valor={`$${balance.toLocaleString()}`}
-                        color={balance >= 0 ? 'text-emerald-500' : 'text-red-500'}
-                        bgIcon={balance >= 0 ? 'bg-emerald-50' : 'bg-red-50'}
-                        subtitulo="Ingresos − gastos"
+                        etiqueta="Gastos"
+                        valor={`$${totalGastos.toLocaleString()}`}
+                        color="text-amber-500"
+                        bgIcon="bg-amber-50"
+                        subtitulo="Egresos del período"
+                        onActivate={onNavigate ? () => onNavigate('expenses') : undefined}
                     />
                 </div>
                 <div>
@@ -343,12 +355,10 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         color="text-violet-500"
                         bgIcon="bg-violet-50"
                         subtitulo={productosStockBajo > 0 ? `${productosStockBajo} bajo mínimo` : 'Stock OK'}
+                        onActivate={onNavigate ? () => onNavigate('inventory') : undefined}
                     />
                 </div>
-                <div
-                    className={productosStockBajo > 0 ? 'cursor-pointer' : ''}
-                    onClick={() => productosStockBajo > 0 && setMostrarModalAlertas(true)}
-                >
+                <div>
                     <TarjetaEstadistica
                         icono={<AlertTriangle className="w-5 h-5" />}
                         etiqueta="Stock crítico"
@@ -357,13 +367,43 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         bgIcon="bg-amber-50"
                         alerta={productosStockBajo > 0}
                         subtitulo={`Inv. $${valorTotalInventario.toLocaleString()}`}
+                        onActivate={
+                            onNavigate
+                                ? () => onNavigate('stock_alerts')
+                                : () => setMostrarModalAlertas(true)
+                        }
+                    />
+                </div>
+                <div>
+                    <TarjetaEstadistica
+                        icono={<ClipboardList className="w-5 h-5" />}
+                        etiqueta="Pedidos web"
+                        valor={pedidosAbiertos.toString()}
+                        color="text-sky-500"
+                        bgIcon="bg-sky-50"
+                        subtitulo={pedidosAbiertos > 0 ? 'Pendientes o confirmados' : 'Sin pedidos abiertos'}
+                        alerta={pedidosAbiertos > 0}
+                        onActivate={onNavigate ? () => onNavigate('orders') : undefined}
                     />
                 </div>
             </div>
 
             {/* Atajos */}
             {onNavigate && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                    <button
+                        type="button"
+                        onClick={() => onNavigate('orders')}
+                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                    >
+                        <span className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                            <ClipboardList className="w-5 h-5" />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Pedidos</span>
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Web pendientes</span>
+                        </span>
+                    </button>
                     <button
                         type="button"
                         onClick={() => onNavigate('incomes')}
@@ -701,14 +741,30 @@ interface PropsTarjetaEstadistica {
     alerta?: boolean
     trend?: boolean
     selectorPeriodo?: React.ReactNode
+    onActivate?: () => void
 }
 
-function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, alerta, trend, selectorPeriodo }: PropsTarjetaEstadistica) {
+function TarjetaEstadistica({ icono, etiqueta, valor, color, bgIcon, subtitulo, alerta, trend, selectorPeriodo, onActivate }: PropsTarjetaEstadistica) {
     return (
         <PastelCard
             noHover
+            role={onActivate ? 'button' : undefined}
+            tabIndex={onActivate ? 0 : undefined}
+            aria-label={onActivate ? `Abrir ${etiqueta}` : undefined}
+            onClick={onActivate}
+            onKeyDown={
+                onActivate
+                    ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            onActivate()
+                        }
+                    }
+                    : undefined
+            }
             className={`
-                relative overflow-hidden h-full flex flex-col gap-3 p-4 sm:p-5 min-h-[128px] group cursor-default
+                relative overflow-hidden h-full flex flex-col gap-3 p-4 sm:p-5 min-h-[128px] group
+                ${onActivate ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all' : 'cursor-default'}
                 ${alerta ? 'ring-2 ring-amber-400/80 dark:ring-amber-500/60' : ''}
             `}
         >

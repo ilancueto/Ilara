@@ -14,6 +14,13 @@ export function buildWhatsAppUrl(plainText: string): string | null {
   return `https://wa.me/${phone}?text=${encodeURIComponent(plainText)}`
 }
 
+/** Chat a un teléfono de clienta (no el de la tienda). */
+export function buildWhatsAppUrlTo(phone: string, plainText: string): string | null {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length < 8) return null
+  return `https://wa.me/${digits}?text=${encodeURIComponent(plainText)}`
+}
+
 /**
  * Abre WhatsApp de forma compatible con Chrome:
  * - `newTab: false` → misma pestaña (`location.assign`, no depende de popups).

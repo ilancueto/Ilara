@@ -99,6 +99,7 @@ export default function Devoluciones() {
       const found = orders.find((order) => order.id === orderId)
       if (found) {
         setSelectedOrder(found)
+        setSelected(null)
         setQuantities({})
         setReason('')
         setRefundAction('none')
@@ -106,7 +107,21 @@ export default function Devoluciones() {
         setView('create')
       }
     }
-  }, [searchParams, orders])
+    const saleId = searchParams.get('saleId')
+    if (saleId && sales.length) {
+      const found = sales.find((sale) => String(sale.id) === saleId)
+      if (found) {
+        setChannel('pos')
+        setSelected(found)
+        setSelectedOrder(null)
+        setQuantities({})
+        setReason('')
+        setRefundMethod(defaultRefundMethod(found))
+        setRestock(true)
+        setView('create')
+      }
+    }
+  }, [searchParams, orders, sales])
 
   const filteredSales = useMemo(() => {
     const q = query.trim().toLowerCase()

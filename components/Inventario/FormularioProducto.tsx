@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase, getUser, Producto, Categoria } from '@/lib/supabase'
 import { Loader, X, Upload, Trash2 } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
@@ -14,6 +14,7 @@ interface ProductFormProps {
     productToEdit: Producto | null
     onSuccess: () => void
     categories: Categoria[]
+    focusStock?: boolean
 }
 
 type FormProductoState = {
@@ -31,8 +32,9 @@ type FormProductoState = {
     catalog_badge: '' | CatalogBadgeKey | 'auto'
 }
 
-export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess, categories }: ProductFormProps) {
+export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess, categories, focusStock = false }: ProductFormProps) {
     const { showSuccess, showError } = useToast()
+    const stockInputRef = useRef<HTMLInputElement>(null)
     const [guardando, setGuardando] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [errores, setErrores] = useState<{ [key: string]: string }>({})
@@ -86,6 +88,12 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             setErrores({})
         }
     }, [isOpen, productToEdit])
+
+    useEffect(() => {
+        if (!isOpen || !focusStock) return
+        const id = window.setTimeout(() => stockInputRef.current?.focus(), 80)
+        return () => window.clearTimeout(id)
+    }, [isOpen, focusStock, productToEdit])
 
     const validarFormulario = () => {
         const nuevosErrores: { [key: string]: string } = {}
@@ -352,6 +360,8 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                             <div className="min-w-0">
                                 <label className="form-label">Stock actual <span className="text-pink-500">*</span></label>
                                 <input
+                                    ref={stockInputRef}
+                                    id="producto-stock"
                                     type="number"
                                     min={0}
                                     value={formData.stock}

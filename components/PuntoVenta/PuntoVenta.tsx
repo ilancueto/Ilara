@@ -225,7 +225,7 @@ export default function PuntoVenta() {
     }
 
     return (
-        <div className="grid grid-cols-1 min-[900px]:grid-cols-[1.35fr_1fr] gap-4 max-w-[1200px] mx-auto items-stretch min-h-[min(70dvh,640px)]">
+        <div className="grid grid-cols-1 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] gap-5 max-w-[1200px] mx-auto items-stretch min-h-[min(72dvh,720px)]">
             {/* Catálogo de búsqueda */}
             <div className="min-w-0 min-h-0">
                 <CatalogoPOS

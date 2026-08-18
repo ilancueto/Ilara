@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, Venta, ItemVenta, Cliente } from '@/lib/supabase'
-import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, Scale } from 'lucide-react'
+import { Calendar, DollarSign, Receipt, ChevronDown, CreditCard, Banknote, FileText, FileSpreadsheet, ShoppingBag, Pencil, Trash2, Printer, Clock, Scale, RotateCcw } from 'lucide-react'
+import { panelHref } from '@/lib/appNavigation'
 import { format, startOfDay, startOfWeek, startOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
 import ExportarReporte from './ExportarReporte'
@@ -448,6 +449,17 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                     <Scale className="w-4 h-4" />
                                                     Gestionar cobro
                                                 </button>
+                                            )}
+                                            {venta.status !== 'cancelled' && (
+                                                <a
+                                                    href={panelHref({ tab: 'returns', channel: 'pos', saleId: venta.id })}
+                                                    onClick={(event) => event.stopPropagation()}
+                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-700 text-pink-700 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 border border-pink-200 dark:border-pink-800 font-semibold text-sm transition-colors shadow-sm"
+                                                    data-testid={`venta-return-${venta.id}`}
+                                                >
+                                                    <RotateCcw className="w-4 h-4" />
+                                                    Devolución
+                                                </a>
                                             )}
                                             <button
                                                 type="button"

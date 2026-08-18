@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { createPortal } from 'react-dom'
 import { Income, IncomeFormData, IncomeType, INCOME_TYPE_LABELS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@/lib/types'
@@ -41,6 +42,7 @@ function formatCurrency(amount: number) {
 export default function Ingresos() {
   const { showSuccess, showError } = useToast()
   const { confirm, confirmProps } = useConfirm()
+  const searchParams = useSearchParams()
   const [vistaActiva, setVistaActiva] = useState<'otros' | 'historial' | 'finanzas'>('historial')
   const [incomes, setIncomes] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,6 +80,13 @@ export default function Ingresos() {
   }, [dateFrom, dateTo, typeFilter, showError])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    const view = searchParams.get('view')
+    if (view === 'historial' || view === 'finanzas' || view === 'otros') {
+      setVistaActiva(view)
+    }
+  }, [searchParams])
 
   const openNew = () => {
     setEditing(null)

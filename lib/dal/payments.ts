@@ -12,7 +12,9 @@ const record = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
 
 export async function startMercadoPagoCheckoutServer(input: {
-  access_capability: string
+  access_capability?: string
+  follow_token?: string
+  order_number?: string
   idempotency_key: string
 }): Promise<{ checkout_url: string }> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, '')
@@ -28,7 +30,9 @@ export async function startMercadoPagoCheckoutServer(input: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      access_capability: input.access_capability,
+      ...(input.follow_token
+        ? { follow_token: input.follow_token, order_number: input.order_number }
+        : { access_capability: input.access_capability }),
       idempotency_key: input.idempotency_key,
     }),
     cache: 'no-store',

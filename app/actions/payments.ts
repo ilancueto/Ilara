@@ -85,6 +85,26 @@ export async function getFollowOrderAction(
   }
 }
 
+export async function startFollowMercadoPagoAction(
+  orderNumber: string,
+  idempotencyKey: string
+): Promise<ActionResult<{ checkout_url: string }>> {
+  try {
+    const token = await readOrderFollowCookie(orderNumber)
+    if (!token) {
+      return { ok: false, error: 'Este enlace ya no sirve. Armá el pedido de nuevo si todavía lo querés.' }
+    }
+    const data = await startMercadoPagoCheckoutServer({
+      follow_token: token,
+      order_number: orderNumber,
+      idempotency_key: idempotencyKey,
+    })
+    return { ok: true, data }
+  } catch (error) {
+    return { ok: false, error: toUserMessage(error, 'No se pudo iniciar el pago.') }
+  }
+}
+
 export async function startFollowBankTransferAction(
   orderNumber: string,
   idempotencyKey: string

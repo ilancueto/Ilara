@@ -57,11 +57,24 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center py-6 px-4 bg-gradient-to-br from-rose-200/90 via-pink-150/95 to-rose-300/90 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_60%_at_50%_-30%,rgba(251,207,232,0.4),transparent_50%)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(236,72,153,0.1),transparent)] pointer-events-none z-0" aria-hidden />
-            <div className="glow-orb-1 z-0" aria-hidden />
-            <div className="glow-orb-2 z-0" aria-hidden />
-            <div className="glow-orb-3 z-0" aria-hidden />
+        <div className="min-h-screen grid lg:grid-cols-2 bg-[#FAF8F5] dark:bg-[#0F0E12] relative overflow-hidden">
+            <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_0%_0%,rgba(217,119,134,0.18),transparent_55%),radial-gradient(ellipse_50%_40%_at_100%_100%,rgba(197,168,128,0.16),transparent_50%)]" aria-hidden />
+                <p className="relative font-serif text-3xl tracking-[0.22em] text-[#1A181E] dark:text-zinc-50">ILARA</p>
+                <div className="relative max-w-md">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#A98C64] mb-4">Studio &amp; beauty lab</p>
+                    <h1 className="font-serif text-5xl xl:text-6xl font-medium leading-[0.95] tracking-tight text-[#1A181E] dark:text-zinc-50">
+                        El estudio de belleza, en un solo panel.
+                    </h1>
+                    <p className="mt-6 text-[#635F69] dark:text-zinc-400 text-base leading-relaxed">
+                        Caja, stock, clientas y pedidos web con la misma calma con la que armás un look.
+                    </p>
+                </div>
+                <p className="relative text-sm text-[#95909D]">Neuquén · Argentina</p>
+            </div>
+
+            <div className="flex items-center justify-center py-10 px-4 relative">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(217,119,134,0.12),transparent_55%)] pointer-events-none" aria-hidden />
 
             <div className="fixed top-4 right-4 z-20">
                 <ThemeSwitch />
@@ -69,7 +82,7 @@ export default function Login() {
 
             <div
                 id="login-form-card"
-                className="login-card w-full max-w-[400px] relative z-10 animate-fade-in-scale rounded-3xl border border-white/30 dark:border-white/10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4)] px-8 pt-4 pb-6 sm:px-10 sm:pt-5 sm:pb-7"
+                className="login-card w-full max-w-[400px] relative z-10 animate-fade-in-scale rounded-3xl border border-[#EDE8E1] dark:border-white/10 bg-white/92 dark:bg-[#1B1A22]/92 backdrop-blur-2xl shadow-[0_24px_48px_-8px_rgba(26,24,30,0.12)] px-8 pt-4 pb-6 sm:px-10 sm:pt-5 sm:pb-7"
             >
                 <div className="flex flex-col items-center text-center mb-4">
                     <div className="relative">
@@ -82,8 +95,8 @@ export default function Login() {
                             priority
                         />
                     </div>
-                    <p className="mt-1 text-[13px] font-semibold tracking-[0.2em] uppercase text-gray-900 dark:text-pink-200/90">
-                        Beauty Management
+                    <p className="mt-1 text-[13px] font-semibold tracking-[0.2em] uppercase text-[#A98C64]">
+                        Beauty studio
                     </p>
                 </div>
 
@@ -134,15 +147,16 @@ export default function Login() {
                     <button
                         type="submit"
                         disabled={cargando}
-                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold text-base shadow-lg shadow-pink-300/30 dark:shadow-pink-900/25 hover:from-pink-600 hover:to-rose-600 hover:shadow-xl hover:shadow-pink-400/50 dark:hover:shadow-pink-500/40 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:opacity-60 transition-all duration-300 ease-out mt-1"
+                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-[#CF6B7F] to-[#B85064] text-white font-semibold text-base shadow-lg shadow-[#D97786]/25 hover:brightness-105 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D97786] focus-visible:ring-offset-2 disabled:opacity-60 transition-all duration-300 ease-out mt-1"
                         aria-label="Iniciar sesión"
                     >
                         {cargando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                     </button>
                 </form>
-                <p className="mt-5 text-center text-xs text-gray-500 dark:text-gray-400">
-                    Sistema de gestión de inventario y ventas
+                <p className="mt-5 text-center text-xs text-[#95909D]">
+                    Inventario, caja y catálogo de Ilara
                 </p>
+            </div>
             </div>
         </div>
     )

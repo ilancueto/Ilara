@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   AlertTriangle,
   Check,
@@ -34,6 +35,7 @@ import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { useToast } from '@/context/ToastContext'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { ObservabilityEvent } from '@/lib/observability/events'
+import { panelHref } from '@/lib/appNavigation'
 
 const STATUS_FILTERS: Array<StockAlertStatus | 'active' | 'all'> = [
   'active',
@@ -85,6 +87,7 @@ function nextActions(status: StockAlertStatus): StockAlertStatus[] {
 export default function AlertasReposicion() {
   const { showToast } = useToast()
   const { confirm, confirmProps } = useConfirm()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [alerts, setAlerts] = useState<StockAlertListItem[]>([])
   const [openCount, setOpenCount] = useState(0)
@@ -247,14 +250,7 @@ export default function AlertasReposicion() {
   )
 
   const goInventory = (productId: number) => {
-    window.history.pushState({}, '', `?tab=inventory&product=${productId}`)
-    window.dispatchEvent(new PopStateEvent('popstate'))
-    // Fallback: query param para Inventario si lo soporta; si no, al menos tab inventory
-    const url = new URL(window.location.href)
-    url.searchParams.set('tab', 'inventory')
-    url.searchParams.set('highlight', String(productId))
-    window.history.replaceState({}, '', url.toString())
-    showToast('info', `Producto #${productId} — abrí Inventario para editarlo.`)
+    router.push(panelHref({ tab: 'inventory', productId, focus: 'stock' }), { scroll: false })
   }
 
   return (
@@ -339,12 +335,12 @@ export default function AlertasReposicion() {
           ) : (
             <ul className="divide-y divide-gray-100 dark:divide-gray-800" role="list">
               {alerts.map((a) => (
-                <li key={a.id}>
+                <li key={a.id} className="flex items-stretch">
                   <button
                     type="button"
                     onClick={() => void openDetail(a.id)}
                     className={[
-                      'w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-amber-50/60 dark:hover:bg-amber-950/20 transition-colors',
+                      'min-w-0 flex-1 text-left px-4 py-3 flex items-center gap-3 hover:bg-amber-50/60 dark:hover:bg-amber-950/20 transition-colors',
                       selectedId === a.id ? 'bg-amber-50 dark:bg-amber-950/30' : '',
                     ].join(' ')}
                     data-testid={`alerta-row-${a.product_id}`}
@@ -372,6 +368,14 @@ export default function AlertasReposicion() {
                       </p>
                     </div>
                     <ChevronRight size={18} className="text-gray-400 shrink-0" aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    className="shrink-0 px-3 text-[11px] font-bold text-pink-700 hover:bg-pink-50 dark:text-pink-300 dark:hover:bg-pink-950/30"
+                    onClick={() => goInventory(a.product_id)}
+                    data-testid={`alerta-cargar-stock-${a.product_id}`}
+                  >
+                    Cargar
                   </button>
                 </li>
               ))}
@@ -459,11 +463,12 @@ export default function AlertasReposicion() {
 
               <button
                 type="button"
-                className="self-start text-sm font-bold text-pink-600 dark:text-pink-400 underline-offset-2 hover:underline"
+                className="inline-flex items-center gap-1.5 self-start rounded-xl bg-pink-600 px-3 py-2 text-sm font-bold text-white hover:bg-pink-700"
                 onClick={() => goInventory(detail.product_id)}
                 data-testid="alerta-go-inventory"
               >
-                Ir a inventario (producto #{detail.product_id})
+                <Package size={16} aria-hidden />
+                Cargar stock
               </button>
 
               {noteOpen && (

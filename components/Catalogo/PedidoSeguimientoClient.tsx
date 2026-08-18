@@ -5,12 +5,13 @@ import Link from 'next/link'
 import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/states'
-import { fulfillmentTitle } from '@/lib/domain/orders/fulfillment'
+import { fulfillmentPublicLine } from '@/lib/domain/orders/fulfillment'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import {
   getFollowOrderAction,
   startFollowBankTransferAction,
+  startFollowMercadoPagoAction,
   uploadFollowTransferReceiptAction,
 } from '@/app/actions/payments'
 import type { PublicFollowView } from '@/lib/domain/payments/types'
@@ -46,6 +47,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
   const [pending, startTransition] = useTransition()
   const [fileError, setFileError] = useState<string | null>(null)
   const transferKey = useRef(crypto.randomUUID())
+  const mpKey = useRef(crypto.randomUUID())
 
   function refresh() {
     startTransition(async () => {
@@ -77,6 +79,17 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
     })
   }
 
+  function startMercadoPago() {
+    startTransition(async () => {
+      const result = await startFollowMercadoPagoAction(orderNumber, mpKey.current)
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      window.location.assign(result.data.checkout_url)
+    })
+  }
+
   function onFile(form: FormData) {
     setFileError(null)
     startTransition(async () => {
@@ -96,9 +109,9 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
   const showRetryTransfer = Boolean(view?.can_retry && view.transfer_available)
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-10 text-gray-900 dark:text-zinc-50">
-      <p className="text-sm uppercase tracking-widest text-pink-600">Tu pedido</p>
-      <h1 className="mt-2 text-3xl font-extrabold">{view?.order_number || orderNumber}</h1>
+    <main className="mx-auto max-w-xl px-4 py-10 text-[#1A181E] dark:text-zinc-50">
+      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#A98C64]">Tu pedido</p>
+      <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight">{view?.order_number || orderNumber}</h1>
       {error && (
         <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
           {error}
@@ -107,21 +120,31 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
       {view && (
         <section className="mt-6 flex flex-col gap-4">
           <p className="text-sm font-semibold">{orderStatusCopy(view.order_status)}</p>
-          <p className="text-sm text-gray-600 dark:text-zinc-300">
-            {fulfillmentTitle(view.fulfillment_mode)}
-            {view.shipping_carrier ? ` · ${view.shipping_carrier}` : ''}
-            {view.shipping_service ? ` · ${view.shipping_service}` : ''}
-            {view.shipping_delivery_estimate ? ` · ${view.shipping_delivery_estimate}` : ''}
-            {view.shipping_amount > 0 ? ` · $${formatPesoARExact(view.shipping_amount)}` : ''}
+          <p className="text-sm text-[#635F69] dark:text-zinc-300">
+            {fulfillmentPublicLine({
+              mode: view.fulfillment_mode,
+              carrier: view.shipping_carrier,
+              service: view.shipping_service,
+              estimate: view.shipping_delivery_estimate,
+            })}
+            {view.fulfillment_mode === 'envio' && view.shipping_amount > 0
+              ? ` · $${formatPesoARExact(view.shipping_amount)}`
+              : ''}
           </p>
-          <p className="text-sm text-gray-600 dark:text-zinc-300">{statusLabel(view.payment_status)}</p>
+          <p className="text-sm text-[#635F69] dark:text-zinc-300">{statusLabel(view.payment_status)}</p>
           {showMethodChoice && (
             <div className="flex flex-col gap-3">
               <p className="text-sm font-semibold">{PUBLIC_PAYMENT_COPY.choosePayment}</p>
               {view.mp_available && view.quoted_public_amount != null && (
-                <p className="text-sm text-gray-600 dark:text-zinc-300">
-                  Mercado Pago todavía no está habilitado en esta tienda.
-                </p>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={startMercadoPago}
+                  className="rounded-xl bg-gradient-to-br from-[#CF6B7F] to-[#B85064] px-4 py-3 font-bold text-white disabled:opacity-60"
+                  data-testid="pay-mercadopago"
+                >
+                  {PUBLIC_PAYMENT_COPY.mercadoPago} · ${formatPesoARExact(view.quoted_public_amount)}
+                </button>
               )}
               {transferAmount != null && (
                 view.transfer_available ? (
@@ -157,6 +180,19 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                   </div>
                 )
               )}
+            </div>
+          )}
+          {view.method === 'mercado_pago' && view.payment_status === 'pending' && (
+            <div className="flex flex-col gap-2">
+              {view.amount_due != null && (
+                <p className="text-2xl font-extrabold tabular-nums">${formatPesoARExact(view.amount_due)}</p>
+              )}
+              {view.checkout_url && (
+                <a href={view.checkout_url} className="rounded-xl bg-gradient-to-br from-[#CF6B7F] to-[#B85064] px-4 py-3 text-center font-bold text-white">
+                  Continuar el pago
+                </a>
+              )}
+              <p className="text-sm text-[#635F69] dark:text-zinc-300">{PUBLIC_PAYMENT_COPY.returnInformative}</p>
             </div>
           )}
           {view.method === 'bank_transfer' && transferAmount != null && (

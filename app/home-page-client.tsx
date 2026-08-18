@@ -16,6 +16,8 @@ import {
 import { getUser, signOut } from '@/lib/supabase'
 import ThemeSwitch from '@/components/ThemeSwitch'
 import type { AppTab } from '@/lib/appTabs'
+import { panelHref, toPanelQuery, type PanelNavigate } from '@/lib/appNavigation'
+import { emptyPanelBadges, fetchPanelBadges, type PanelBadges } from '@/lib/domain/panel/browserPanelBadges'
 import {
   loadRoleCapabilities,
   type RoleCapabilities,
@@ -180,6 +182,7 @@ function HomeContent() {
   const [authError, setAuthError] = useState<string | null>(null)
   const [accountOpen, setAccountOpen] = useState(false)
   const [caps, setCaps] = useState<RoleCapabilities | null>(null)
+  const [badges, setBadges] = useState<PanelBadges>(emptyPanelBadges)
 
   useEffect(() => {
     const AUTH_TIMEOUT_MS = 10_000
@@ -247,15 +250,41 @@ function HomeContent() {
     }
   }, [searchParams, caps, tabAllowed])
 
-  const handleTabChange = useCallback(
-    (tabId: AppTab) => {
-      if (caps && !tabAllowed(tabId, caps)) return
-      setActiveTab(tabId)
+  const handleTabChange = useCallback<PanelNavigate>(
+    (dest) => {
+      const query = toPanelQuery(dest)
+      if (caps && !tabAllowed(query.tab, caps)) {
+        if (query.tab === 'stock_alerts' && caps.canManageInventory) {
+          router.push(panelHref({ tab: 'inventory', productId: query.productId, focus: query.focus }), { scroll: false })
+          setActiveTab('inventory')
+        }
+        return
+      }
+      setActiveTab(query.tab)
       setAccountOpen(false)
-      window.history.pushState({}, '', `?tab=${tabId}`)
+      router.push(panelHref(query), { scroll: false })
     },
-    [caps, tabAllowed]
+    [caps, tabAllowed, router]
   )
+
+  useEffect(() => {
+    if (!caps || (!caps.isAdmin && !caps.canManageInventory)) return
+    let cancelled = false
+    const loadBadges = async () => {
+      try {
+        const next = await fetchPanelBadges()
+        if (!cancelled) setBadges(next)
+      } catch {
+        if (!cancelled) setBadges(emptyPanelBadges())
+      }
+    }
+    void loadBadges()
+    const timer = window.setInterval(() => void loadBadges(), 60_000)
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+    }
+  }, [caps, activeTab])
 
   const { confirm, confirmProps } = useConfirm()
 
@@ -443,6 +472,12 @@ function HomeContent() {
           {visibleDockTabs.map((tab) => {
             const Icon = tab.icon
             const isActive = highlight === tab.id
+            const badge =
+              tab.id === 'negocio' && staffCaps.isAdmin
+                ? badges.ordersInOps
+                : tab.id === 'inventory'
+                  ? badges.productsOutOfStock
+                  : 0
             return (
               <button
                 key={tab.id}
@@ -450,12 +485,16 @@ function HomeContent() {
                 onClick={() => handleTabChange(tab.id)}
                 className={`app-dock-item ${tab.pos ? 'app-dock-item--pos' : ''} ${isActive ? 'is-active' : ''}`}
                 aria-current={isActive ? 'page' : undefined}
+                aria-label={badge > 0 ? `${tab.label}, ${badge} pendientes` : tab.label}
               >
                 <span className="app-dock-ico" aria-hidden>
                   <Icon
                     className={tab.pos ? 'w-6 h-6' : 'w-5 h-5'}
                     strokeWidth={isActive || tab.pos ? 2.35 : 2}
                   />
+                  {badge > 0 ? (
+                    <span className="app-dock-badge">{badge > 99 ? '99+' : badge}</span>
+                  ) : null}
                 </span>
                 <span className="app-dock-lbl">{tab.label}</span>
               </button>

@@ -62,12 +62,32 @@ serve(async (req) => {
     return json(400, { ok: false }, origin)
   }
   const access = String(body.access_capability || '').trim()
+  const follow = String(body.follow_token || '').trim()
+  const orderNumber = String(body.order_number || '').trim()
   const idempotency = String(body.idempotency_key || '').trim()
-  if (access.length < 32) return json(401, { ok: false }, origin)
+  const usingFollow = access.length < 32 && follow.length >= 32 && orderNumber.length >= 8
+  if (access.length < 32 && !usingFollow) return json(401, { ok: false }, origin)
+
+  const startPayload = usingFollow
+    ? { follow_token: follow, order_number: orderNumber, method: 'mercado_pago', idempotency_key: idempotency }
+    : { access_capability: access, method: 'mercado_pago', idempotency_key: idempotency }
+  const attachAuth = usingFollow
+    ? { follow_token: follow, order_number: orderNumber }
+    : { access_capability: access }
 
   const admin = supabaseAdmin()
+  async function preferenceContext() {
+    if (usingFollow) {
+      return admin.rpc('mp_preference_context_follow', {
+        p_order_number: orderNumber,
+        p_follow_token: follow,
+      })
+    }
+    return admin.rpc('mp_preference_context', { p_access_capability: access })
+  }
+
   if (!idempotency || idempotency.length < 16) {
-    const existing = await admin.rpc('mp_preference_context', { p_access_capability: access })
+    const existing = await preferenceContext()
     if (existing.error) return json(400, { ok: false, code: 'invalid_access_capability' }, origin)
     const row = asRecord(existing.data)
     if (row.checkout_url) return json(200, { ok: true, checkout_url: row.checkout_url }, origin)
@@ -75,22 +95,20 @@ serve(async (req) => {
   }
 
   const started = await admin.rpc('start_catalog_order_payment', {
-    p_payload: {
-      access_capability: access,
-      method: 'mercado_pago',
-      idempotency_key: idempotency,
-    },
+    p_payload: startPayload,
   })
   if (started.error) {
     const message = started.error.message || ''
     if (message.includes('payments_disabled') || message.includes('method_disabled')) {
       return json(409, { ok: false, code: 'payments_disabled' }, origin)
     }
-    if (message.includes('invalid_access_capability')) return json(401, { ok: false }, origin)
+    if (message.includes('invalid_access_capability') || message.includes('invalid_follow_token')) {
+      return json(401, { ok: false }, origin)
+    }
     return json(400, { ok: false }, origin)
   }
 
-  const ctx = await admin.rpc('mp_preference_context', { p_access_capability: access })
+  const ctx = await preferenceContext()
   if (ctx.error) return json(400, { ok: false }, origin)
   const pay = asRecord(ctx.data)
   if (pay.checkout_url) return json(200, { ok: true, checkout_url: pay.checkout_url }, origin)
@@ -98,6 +116,9 @@ serve(async (req) => {
   const base = siteUrl()
   const supabaseUrl = (Deno.env.get('SUPABASE_URL') || '').replace(/\/$/, '')
   const expiresAt = String(pay.expires_at || '')
+  const returnUrl = usingFollow
+    ? `${base}/pedido/${encodeURIComponent(String(pay.order_number || orderNumber))}`
+    : `${base}/pedido`
   const preferenceBody = {
     items: [
       {
@@ -110,9 +131,9 @@ serve(async (req) => {
     external_reference: String(pay.external_reference || pay.payment_id || ''),
     notification_url: `${supabaseUrl}/functions/v1/payments-mp-webhook`,
     back_urls: {
-      success: `${base}/pedido`,
-      pending: `${base}/pedido`,
-      failure: `${base}/pedido`,
+      success: returnUrl,
+      pending: returnUrl,
+      failure: returnUrl,
     },
     auto_return: 'approved',
     expires: true,
@@ -142,7 +163,7 @@ serve(async (req) => {
 
   const attached = await admin.rpc('attach_mp_preference', {
     p_payload: {
-      access_capability: access,
+      ...attachAuth,
       preference_id: preferenceId,
       checkout_url: checkout,
     },

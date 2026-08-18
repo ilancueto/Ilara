@@ -19,9 +19,10 @@ import ExportarDatos from '@/components/ExportarDatos'
 
 import type { AppTab } from '@/lib/appTabs'
 import type { RoleCapabilities } from '@/lib/auth/roles'
+import type { PanelNavigate } from '@/lib/appNavigation'
 
 type Props = {
-  onNavigate: (tab: AppTab) => void
+  onNavigate: PanelNavigate
   /** Capacidades del rol (UX). La DB sigue siendo la autoridad. */
   caps: RoleCapabilities
 }

@@ -18,10 +18,11 @@ export default function CarritoVenta({ carrito, onUpdateQuantity, onUpdateQuanti
     const cantidadItems = carrito.reduce((total, item) => total + item.cantidad, 0)
 
     return (
-        <div className="flex flex-col h-full min-h-[320px] rounded-[22px] overflow-hidden border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_24px_rgba(190,24,93,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
-            <div className="pos-cart-head px-[1.1rem] py-4 bg-gradient-to-br from-pink-500 to-pink-700 text-white">
-                <h3 className="text-base font-extrabold">Carrito</h3>
-                <p className="text-xs text-white/85 mt-0.5">{cantidadItems === 0 ? 'Sin productos' : `${cantidadItems} ítem${cantidadItems === 1 ? '' : 's'}`}</p>
+        <div className="flex flex-col h-full min-h-[320px] rounded-[22px] overflow-hidden border border-[#EDE8E1] dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_8px_28px_rgba(26,24,30,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+            <div className="pos-cart-head px-5 py-4 border-b border-[#EDE8E1] dark:border-white/10 bg-[#FAF8F5] dark:bg-zinc-950">
+                <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-[#A98C64]">Ticket</p>
+                <h3 className="text-lg font-extrabold text-[#1A181E] dark:text-white leading-tight">Carrito</h3>
+                <p className="text-xs text-[#635F69] dark:text-zinc-400 mt-0.5">{cantidadItems === 0 ? 'Sin productos' : `${cantidadItems} ítem${cantidadItems === 1 ? '' : 's'}`}</p>
             </div>
 
             <div className="flex-1 px-4 py-2.5">

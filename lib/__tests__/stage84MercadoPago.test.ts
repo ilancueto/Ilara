@@ -87,6 +87,8 @@ describe('Stage 8.4 — migración y edge functions', () => {
     expect(preference).toContain('X-Idempotency-Key')
     expect(preference).toContain('auto_return')
     expect(preference).toContain('/pedido')
+    expect(preference).toContain('follow_token')
+    expect(preference).toContain('mp_preference_context_follow')
     expect(webhook).toContain('x-signature')
     expect(webhook).toContain('/v1/payments/')
     expect(webhook).not.toMatch(/NEXT_PUBLIC_/)

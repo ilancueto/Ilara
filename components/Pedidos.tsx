@@ -6,11 +6,14 @@ import {
   Check,
   ChevronRight,
   Loader2,
+  MessageCircle,
   Package,
   RefreshCw,
   Search,
+  UserPlus,
   X,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useConfirm } from '@/hooks/useConfirm'
 import {
@@ -37,6 +40,9 @@ import {
 import { PedidoPagosPanel } from '@/components/Pedidos/PedidoPagosPanel'
 import { panelHref } from '@/lib/appNavigation'
 import { catalogReturnLabel, catalogRefundActionLabel } from '@/lib/domain/returns/rules'
+import { findOrCreateCustomerFromContact } from '@/lib/domain/customers/browserCustomers'
+import { orderWhatsAppMessage, whatsappContactDigits } from '@/lib/domain/orders/orderWhatsApp'
+import { buildWhatsAppUrlTo } from '@/lib/whatsappLink'
 
 const STATUS_FILTERS: Array<OrderStatus | 'all'> = ['all', ...ORDER_STATUSES]
 
@@ -73,6 +79,8 @@ export default function Pedidos() {
   const { showToast } = useToast()
   const { confirm, confirmProps } = useConfirm()
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const [registeringCustomer, setRegisteringCustomer] = useState(false)
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<OrderListItem[]>([])
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
@@ -387,13 +395,66 @@ export default function Pedidos() {
                         {detail.customer_name}
                       </a>
                     ) : (
-                      detail.customer_name
+                      <span className="inline-flex flex-wrap items-center gap-2">
+                        {detail.customer_name}
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-lg border border-pink-200 px-2 py-1 text-xs font-bold text-pink-700 hover:bg-pink-50 dark:border-pink-800 dark:text-pink-300"
+                          disabled={registeringCustomer}
+                          data-testid="pedido-register-customer"
+                          onClick={() => {
+                            void (async () => {
+                              setRegisteringCustomer(true)
+                              try {
+                                const created = await findOrCreateCustomerFromContact({
+                                  name: detail.customer_name,
+                                  phone: detail.customer_phone,
+                                  email: detail.customer_email,
+                                })
+                                router.push(panelHref({ tab: 'customers', customerId: created.id }), { scroll: false })
+                              } catch (err) {
+                                showToast('error', toUserMessage(err, 'No se pudo registrar a la clienta.'))
+                              } finally {
+                                setRegisteringCustomer(false)
+                              }
+                            })()
+                          }}
+                        >
+                          <UserPlus size={14} aria-hidden />
+                          Registrar como clienta
+                        </button>
+                      </span>
                     )}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-gray-400 text-xs">Teléfono</dt>
-                  <dd className="font-semibold">{detail.customer_phone}</dd>
+                  <dd className="font-semibold flex flex-wrap items-center gap-2">
+                    <span>{detail.customer_phone}</span>
+                    {(() => {
+                      const url = buildWhatsAppUrlTo(
+                        whatsappContactDigits(detail.customer_phone),
+                        orderWhatsAppMessage({
+                          customerName: detail.customer_name,
+                          orderNumber: detail.order_number,
+                          status: detail.status,
+                          fulfillmentMode: detail.fulfillment_mode,
+                        })
+                      )
+                      return url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300"
+                          data-testid="pedido-whatsapp"
+                        >
+                          <MessageCircle size={14} aria-hidden />
+                          WhatsApp
+                        </a>
+                      ) : null
+                    })()}
+                  </dd>
                 </div>
                 {detail.customer_email && (
                   <div>
@@ -448,25 +509,38 @@ export default function Pedidos() {
                         ? 'Entrega a coordinar'
                         : 'Envío cotizado'}
                   </p>
-                  <p className="font-semibold">
-                    {detail.shipping_carrier_description} · {detail.shipping_service_description}
-                  </p>
-                  {detail.shipping_destination_street && detail.shipping_destination_number ? (
-                    <div className="space-y-0.5">
-                      <p><span className="text-gray-500">Dirección:</span> {detail.shipping_destination_street} {detail.shipping_destination_number}</p>
-                      <p><span className="text-gray-500">Localidad:</span> {detail.shipping_destination_city}, {detail.shipping_destination_state}</p>
-                      <p><span className="text-gray-500">Código postal:</span> {detail.shipping_destination_postal_code}</p>
-                    </div>
+                  {detail.fulfillment_mode === 'envio' ? (
+                    <>
+                      <p className="font-semibold">
+                        {detail.shipping_carrier_description} · {detail.shipping_service_description}
+                      </p>
+                      {detail.shipping_destination_street && detail.shipping_destination_number ? (
+                        <div className="space-y-0.5">
+                          <p><span className="text-gray-500">Dirección:</span> {detail.shipping_destination_street} {detail.shipping_destination_number}</p>
+                          <p><span className="text-gray-500">Localidad:</span> {detail.shipping_destination_city}, {detail.shipping_destination_state}</p>
+                          <p><span className="text-gray-500">Código postal:</span> {detail.shipping_destination_postal_code}</p>
+                        </div>
+                      ) : (
+                        <p>
+                          {detail.shipping_destination_formatted_address
+                            || `CP ${detail.shipping_destination_postal_code}, ${detail.shipping_destination_city}, ${detail.shipping_destination_state}`}
+                        </p>
+                      )}
+                      <p>
+                        ${formatPesoARExact(detail.shipping_amount)}
+                        {detail.shipping_delivery_estimate ? ` · ${detail.shipping_delivery_estimate}` : ''}
+                      </p>
+                    </>
                   ) : (
-                    <p>
+                    <p className="font-semibold">
+                      {detail.fulfillment_mode === 'retiro'
+                        ? 'Pasás a buscarlo. Coordinamos el horario por WhatsApp.'
+                        : 'Si estás cerca, lo vemos por WhatsApp.'}
                       {detail.shipping_destination_formatted_address
-                        || `CP ${detail.shipping_destination_postal_code}, ${detail.shipping_destination_city}, ${detail.shipping_destination_state}`}
+                        ? ` · ${detail.shipping_destination_formatted_address}`
+                        : ''}
                     </p>
                   )}
-                  <p>
-                    ${formatPesoARExact(detail.shipping_amount)}
-                    {detail.shipping_delivery_estimate ? ` · ${detail.shipping_delivery_estimate}` : ''}
-                  </p>
                 </div>
               )}
 

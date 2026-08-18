@@ -57,7 +57,7 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
 
                 return (
                     <div key={producto.id} className="group h-full relative cursor-pointer" onClick={() => onView(producto)}>
-                        <PastelCard className="!p-0 flex flex-col h-full overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-5px_rgba(236,72,153,0.15)] hover:-translate-y-2 border-transparent bg-white/80 dark:bg-gray-800/90" noHover>
+                        <PastelCard className="!p-0 flex flex-col h-full overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-5px_rgba(184,93,111,0.16)] hover:-translate-y-2 border-[#EDE8E1] bg-white dark:bg-gray-800/90" noHover>
 
                             {/* Image: shorter aspect, less empty space */}
                             <div className="relative aspect-[5/3] w-full overflow-hidden bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700 transition-colors">

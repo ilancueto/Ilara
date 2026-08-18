@@ -1,6 +1,7 @@
 'use client'
 
-import { Plus, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, Trash2, UserRound } from 'lucide-react'
 import { Cliente, PagoDesglose } from '@/lib/supabase'
 import Loader from '../Loader'
 
@@ -37,12 +38,31 @@ export default function PanelPago({
     setMetodoPago,
     paymentBreakdown,
     setPaymentBreakdown,
+    clientes,
+    clienteSeleccionado,
+    setClienteSeleccionado,
+    nombreClienteOtro,
+    setNombreClienteOtro,
+    notas,
+    setNotas,
     cobrarDespues,
     setCobrarDespues,
     onProcesar,
     cargando,
     disabled,
 }: PanelPagoProps) {
+    const [busquedaClienta, setBusquedaClienta] = useState('')
+    const clienta = clientes.find((c) => c.id === clienteSeleccionado) ?? null
+    const coincidencias = useMemo(() => {
+        const q = busquedaClienta.trim().toLowerCase()
+        if (q.length < 2) return []
+        return clientes
+            .filter((c) => {
+                const hay = `${c.first_name} ${c.last_name} ${c.phone ?? ''} ${c.email ?? ''}`.toLowerCase()
+                return hay.includes(q)
+            })
+            .slice(0, 6)
+    }, [busquedaClienta, clientes])
     const pagoMixto = paymentBreakdown !== null
     const sumaDesglose = (paymentBreakdown || []).reduce((suma, pago) => suma + pago.amount, 0)
     const desgloseValido = !pagoMixto || Boolean(paymentBreakdown?.length && Math.abs(sumaDesglose - total) < 0.01)
@@ -76,7 +96,87 @@ export default function PanelPago({
     }
 
     return (
-        <div className="px-[1.1rem] pt-3.5 pb-[1.1rem] border-t border-pink-100/80 dark:border-white/10 bg-[#f8f4f8] dark:bg-zinc-950/55">
+        <div className="px-[1.1rem] pt-3.5 pb-[1.1rem] border-t border-[#EDE8E1] dark:border-white/10 bg-[#FAF8F5] dark:bg-zinc-950/55">
+            <div className="mb-3">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5">
+                    <UserRound className="w-3.5 h-3.5" aria-hidden />
+                    Clienta
+                </label>
+                {clienta ? (
+                    <div className="flex items-start justify-between gap-2 rounded-xl border border-pink-100 bg-white px-3 py-2 dark:border-white/10 dark:bg-zinc-900">
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-gray-900 dark:text-gray-50 truncate">
+                                {clienta.first_name} {clienta.last_name === '.' ? '' : clienta.last_name}
+                            </p>
+                            <p className="text-[11px] text-gray-500 truncate">
+                                {[clienta.phone, clienta.email].filter(Boolean).join(' · ') || 'Sin teléfono'}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            className="text-[11px] font-bold text-pink-600 shrink-0"
+                            onClick={() => {
+                                setClienteSeleccionado(null)
+                                setBusquedaClienta('')
+                            }}
+                        >
+                            Cambiar
+                        </button>
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <input
+                            type="search"
+                            value={busquedaClienta}
+                            onChange={(event) => setBusquedaClienta(event.target.value)}
+                            placeholder="Buscar por nombre o teléfono"
+                            className="w-full h-9 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 text-xs font-semibold"
+                            aria-label="Buscar clienta"
+                        />
+                        {coincidencias.length > 0 && (
+                            <ul className="absolute z-10 mt-1 w-full rounded-xl border border-pink-100 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-900 overflow-hidden">
+                                {coincidencias.map((c) => (
+                                    <li key={c.id}>
+                                        <button
+                                            type="button"
+                                            className="w-full text-left px-3 py-2 text-xs hover:bg-pink-50 dark:hover:bg-pink-950/30"
+                                            onClick={() => {
+                                                setClienteSeleccionado(c.id)
+                                                setNombreClienteOtro('')
+                                                setBusquedaClienta('')
+                                            }}
+                                        >
+                                            <span className="block font-bold truncate">
+                                                {c.first_name} {c.last_name === '.' ? '' : c.last_name}
+                                            </span>
+                                            {c.phone ? <span className="text-gray-500">{c.phone}</span> : null}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <input
+                            type="text"
+                            value={nombreClienteOtro}
+                            onChange={(event) => {
+                                setNombreClienteOtro(event.target.value)
+                                setClienteSeleccionado(null)
+                            }}
+                            placeholder="O anotar un nombre suelto"
+                            className="w-full h-9 mt-1.5 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 text-xs font-semibold"
+                            aria-label="Nombre de clienta esporádica"
+                        />
+                    </div>
+                )}
+                <textarea
+                    value={notas}
+                    onChange={(event) => setNotas(event.target.value)}
+                    rows={2}
+                    placeholder="Notas internas de la venta (opcional)"
+                    className="w-full mt-1.5 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs"
+                    aria-label="Notas de la venta"
+                />
+            </div>
             {!cobrarDespues && (
                 <div className="grid grid-cols-4 gap-1.5 mb-4" aria-label="Método de pago">
                     {METODOS.map((metodo) => {
@@ -87,8 +187,8 @@ export default function PanelPago({
                                 type="button"
                                 onClick={() => elegirMetodo(metodo.id)}
                                 className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${activo
-                                    ? 'border-pink-400 bg-pink-50 text-pink-700 dark:border-pink-500 dark:bg-pink-950/40 dark:text-pink-300'
-                                    : 'border-pink-100/80 bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                                    ? 'border-[#D97786] bg-[#FDF2F4] text-[#A04A5C] dark:border-[#E88B9A] dark:bg-[#2D1B22] dark:text-[#E88B9A]'
+                                    : 'border-[#EDE8E1] bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                                 }`}
                             >
                                 <span className="block truncate">{metodo.label}</span>
@@ -99,8 +199,8 @@ export default function PanelPago({
                         type="button"
                         onClick={elegirMixto}
                         className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${pagoMixto
-                            ? 'border-pink-400 bg-pink-50 text-pink-700 dark:border-pink-500 dark:bg-pink-950/40 dark:text-pink-300'
-                            : 'border-pink-100/80 bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                            ? 'border-[#D97786] bg-[#FDF2F4] text-[#A04A5C] dark:border-[#E88B9A] dark:bg-[#2D1B22] dark:text-[#E88B9A]'
+                            : 'border-[#EDE8E1] bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                         }`}
                     >
                         Mixto
@@ -131,7 +231,7 @@ export default function PanelPago({
                 <strong className="text-[clamp(1.25rem,3vw,1.5rem)] leading-none font-extrabold tracking-tight tabular-nums whitespace-nowrap shrink-0 text-gray-950 dark:text-white">${total.toLocaleString()}</strong>
             </div>
 
-            <button type="button" onClick={onProcesar} disabled={disabled || cargando || !desgloseValido} className="w-full min-h-11 px-4 rounded-[14px] bg-gradient-to-br from-pink-500 to-pink-700 text-white text-sm font-bold shadow-[0_8px_18px_-6px_rgba(219,39,119,0.5)] disabled:opacity-45 disabled:shadow-none">
+            <button type="button" onClick={onProcesar} disabled={disabled || cargando || !desgloseValido} className="w-full min-h-11 px-4 rounded-[14px] bg-gradient-to-br from-[#CF6B7F] to-[#B85064] text-white text-sm font-bold shadow-[0_8px_18px_-6px_rgba(184,93,111,0.45)] disabled:opacity-45 disabled:shadow-none">
                 {cargando ? <Loader variant="dots" size="sm" inline /> : cobrarDespues ? 'Registrar por cobrar' : 'Cobrar ahora'}
             </button>
             <button

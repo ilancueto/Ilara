@@ -47,6 +47,8 @@ describe('Stage 9.7 — link de seguimiento', () => {
     expect(checkout).toContain('buildOrderFollowUrl')
     expect(checkout).toContain('buildOrderFollowPath')
     expect(checkout).toContain('checkout-copy-follow')
+    expect(readFileSync(join(__dirname, '../../components/Catalogo/PedidoSeguimientoClient.tsx'), 'utf8')).toContain('pay-mercadopago')
+    expect(readFileSync(join(__dirname, '../../components/Catalogo/PedidoSeguimientoClient.tsx'), 'utf8')).not.toContain('todavía no está habilitado')
   })
 
   it('WhatsApp incluye el enlace y no la clave de pago', () => {

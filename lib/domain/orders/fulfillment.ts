@@ -29,3 +29,22 @@ export function fulfillmentTitle(mode: FulfillmentMode | string | null | undefin
   if (mode === 'coordinar') return FULFILLMENT_COPY.coordinar.title
   return FULFILLMENT_COPY.envio.title
 }
+
+/** Una sola frase pública. No concatena carrier/servicio/estimación repetidos. */
+export function fulfillmentPublicLine(input: {
+  mode?: string | null
+  carrier?: string | null
+  service?: string | null
+  estimate?: string | null
+}): string {
+  if (input.mode === 'retiro') return FULFILLMENT_COPY.retiro.success
+  if (input.mode === 'coordinar') return FULFILLMENT_COPY.coordinar.success
+  const parts: string[] = []
+  for (const value of [input.carrier, input.service, input.estimate]) {
+    const next = value?.trim() || ''
+    if (!next) continue
+    if (parts.some((part) => part.toLowerCase() === next.toLowerCase())) continue
+    parts.push(next)
+  }
+  return parts.length > 0 ? parts.join(' · ') : FULFILLMENT_COPY.envio.title
+}

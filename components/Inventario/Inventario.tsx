@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle, Eye, EyeOff, Sparkles } from 'lucide-react'
@@ -25,6 +26,7 @@ import {
 export default function Inventario() {
     const { showSuccess, showError } = useToast()
     const { confirm, confirmProps } = useConfirm()
+    const searchParams = useSearchParams()
     const [productos, setProductos] = useState<Producto[]>([])
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [combos, setCombos] = useState<ComboConItems[]>([])
@@ -37,6 +39,7 @@ export default function Inventario() {
     const [gestionCatsAbierto, setGestionCatsAbierto] = useState(false)
     const [gestionCuponesAbierto, setGestionCuponesAbierto] = useState(false)
     const [productoEditar, setProductoEditar] = useState<Producto | null>(null)
+    const [focusStock, setFocusStock] = useState(false)
     const [productoVer, setProductoVer] = useState<Producto | null>(null)
     const [modalComboAbierto, setModalComboAbierto] = useState(false)
     const [comboEditar, setComboEditar] = useState<ComboConItems | null>(null)
@@ -82,6 +85,19 @@ export default function Inventario() {
         obtenerData()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
     }, [])
+
+    useEffect(() => {
+        const raw = searchParams.get('productId')
+        if (!raw || productos.length === 0) return
+        const id = Number(raw)
+        if (!Number.isFinite(id)) return
+        const found = productos.find((p) => p.id === id)
+        if (!found) return
+        setTabActiva('productos')
+        setProductoEditar(found)
+        setModalAbierto(true)
+        setFocusStock(searchParams.get('focus') === 'stock')
+    }, [searchParams, productos])
 
     const obtenerData = async () => {
         setCargando(true)
@@ -596,10 +612,14 @@ export default function Inventario() {
             {/* Modal Formulario */}
             <FormularioProducto
                 isOpen={modalAbierto}
-                onClose={() => setModalAbierto(false)}
+                onClose={() => {
+                    setModalAbierto(false)
+                    setFocusStock(false)
+                }}
                 productToEdit={productoEditar}
                 onSuccess={obtenerProductos}
                 categories={categorias}
+                focusStock={focusStock}
             />
 
             {/* Modal Categorías */}
