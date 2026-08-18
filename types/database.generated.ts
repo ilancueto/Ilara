@@ -1029,6 +1029,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           discount_total: number
+          fulfillment_mode: string
           id: string
           idempotency_key: string
           notes: string | null
@@ -1077,6 +1078,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           discount_total?: number
+          fulfillment_mode?: string
           id?: string
           idempotency_key: string
           notes?: string | null
@@ -1125,6 +1127,7 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           discount_total?: number
+          fulfillment_mode?: string
           id?: string
           idempotency_key?: string
           notes?: string | null

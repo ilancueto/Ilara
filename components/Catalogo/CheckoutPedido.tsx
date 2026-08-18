@@ -18,6 +18,7 @@ import {
 } from '@/lib/domain/shipping/browserShipping'
 import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/types'
 import { toUserMessage } from '@/lib/domain/errors'
+import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { saveOrderAccess } from '@/lib/domain/payments/publicSession'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
@@ -74,6 +75,8 @@ export function CheckoutPedido({
   const [selectedShippingId, setSelectedShippingId] = useState<string | null>(null)
   const [quotePending, setQuotePending] = useState(false)
   const [quoteError, setQuoteError] = useState<string | null>(null)
+  const [fulfillmentMode, setFulfillmentMode] = useState<FulfillmentMode>('envio')
+  const [fulfillmentZone, setFulfillmentZone] = useState('')
   const [fieldError, setFieldError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -127,7 +130,9 @@ export function CheckoutPedido({
   if (!open) return null
 
   const selectedShipping = shippingQuote?.options.find((option) => option.id === selectedShippingId) || null
-  const estimatedTotal = total + (selectedShipping?.amount || 0)
+  const needsShippingQuote = fulfillmentMode === 'envio'
+  const estimatedTotal = total + (needsShippingQuote ? (selectedShipping?.amount || 0) : 0)
+  const canSubmit = carrito.length > 0 && (!needsShippingQuote || Boolean(selectedShippingId))
   const addressComplete = Boolean(
     provinceId && localityId && /^\d{4}$/.test(postalCode)
     && street.trim().length >= 2 && /^\d{1,6}$/.test(streetNumber)
@@ -197,7 +202,7 @@ export function CheckoutPedido({
       setFieldError('Ingresá un teléfono válido (8 a 15 dígitos).')
       return
     }
-    if (!selectedShippingId || !selectedShipping) {
+    if (needsShippingQuote && (!selectedShippingId || !selectedShipping)) {
       setFieldError('Cotizá el envío y elegí una opción antes de confirmar.')
       return
     }
@@ -229,7 +234,9 @@ export function CheckoutPedido({
       try {
         const result = await createCatalogOrderAction({
           idempotency_key: idemRef.current,
-          shipping_quote_id: selectedShippingId,
+          fulfillment_mode: fulfillmentMode,
+          shipping_quote_id: needsShippingQuote ? selectedShippingId : null,
+          fulfillment_zone: fulfillmentMode === 'coordinar' ? fulfillmentZone.trim() || null : null,
           customer_name: trimmedName,
           customer_phone: digits,
           customer_email: email.trim() || null,
@@ -274,6 +281,7 @@ export function CheckoutPedido({
       total: done.total,
       lines,
       customer_name: name.trim(),
+      fulfillment_mode: done.fulfillment_mode ?? fulfillmentMode,
     })
     const ok = openWhatsApp(msg, false)
     if (!ok) {
@@ -329,13 +337,25 @@ export function CheckoutPedido({
               Total: <strong>${formatPesoARExact(done.total)}</strong>
             </p>
             <p className={styles.hint}>
-              Envío: {done.shipping_carrier} · {done.shipping_service}
-              {done.shipping_delivery_estimate ? ` · ${done.shipping_delivery_estimate}` : ''}.<br />
-              Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`} · CP {done.shipping_destination_postal_code}.
+              {done.fulfillment_mode === 'envio' ? (
+                <>
+                  Envío: {done.shipping_carrier} · {done.shipping_service}
+                  {done.shipping_delivery_estimate ? ` · ${done.shipping_delivery_estimate}` : ''}.<br />
+                  Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`}
+                  {done.shipping_destination_postal_code ? ` · CP ${done.shipping_destination_postal_code}` : ''}.
+                </>
+              ) : (
+                FULFILLMENT_COPY[done.fulfillment_mode || fulfillmentMode].success
+              )}
             </p>
             {done.access_capability && (
               <Link href="/pedido" className={styles.primary} data-testid="checkout-continue-payment">
-                Continuar al pago
+                Pagar
+              </Link>
+            )}
+            {done.access_capability && (
+              <Link href="/pedido" className={styles.secondary} data-testid="checkout-pay-transfer">
+                Pagar por transferencia
               </Link>
             )}
             <button
@@ -368,10 +388,16 @@ export function CheckoutPedido({
                 <span>Productos</span>
                 <strong>${formatPesoAR(total)}</strong>
               </div>
-              {selectedShipping && (
+              {needsShippingQuote && selectedShipping && (
                 <div className={styles.summaryRow}>
                   <span>Envío</span>
                   <span>${formatPesoARExact(selectedShipping.amount)}</span>
+                </div>
+              )}
+              {!needsShippingQuote && (
+                <div className={styles.summaryRow}>
+                  <span>{FULFILLMENT_COPY[fulfillmentMode].title}</span>
+                  <span>Sin cargo de envío</span>
                 </div>
               )}
               <div className={styles.summaryTotal}>
@@ -429,6 +455,49 @@ export function CheckoutPedido({
                 data-testid="checkout-email"
               />
             </div>
+            <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">
+              <legend>¿Cómo lo recibís? *</legend>
+              {(Object.keys(FULFILLMENT_COPY) as FulfillmentMode[]).map((mode) => (
+                <label key={mode} className={styles.shippingOption}>
+                  <input
+                    type="radio"
+                    name="fulfillment_mode"
+                    value={mode}
+                    checked={fulfillmentMode === mode}
+                    onChange={() => {
+                      setFulfillmentMode(mode)
+                      setFieldError(null)
+                      if (mode !== 'envio') invalidateQuote()
+                    }}
+                    disabled={pending}
+                    data-testid={`fulfillment-${mode}`}
+                  />
+                  <span className={styles.shippingCopy}>
+                    <strong>{FULFILLMENT_COPY[mode].title}</strong>
+                    <small>{FULFILLMENT_COPY[mode].hint}</small>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+
+            {fulfillmentMode === 'coordinar' && (
+              <div className={styles.field}>
+                <label htmlFor={`${formId}-zone`}>Zona o ciudad (opcional)</label>
+                <input
+                  id={`${formId}-zone`}
+                  name="fulfillment_zone"
+                  type="text"
+                  maxLength={80}
+                  value={fulfillmentZone}
+                  onChange={(e) => setFulfillmentZone(e.target.value)}
+                  disabled={pending}
+                  data-testid="checkout-fulfillment-zone"
+                  placeholder="Ej. centro, Plottier…"
+                />
+              </div>
+            )}
+
+            {needsShippingQuote && (
             <fieldset className={styles.addressFields} disabled={pending || quotePending}>
               <legend>Dirección de entrega *</legend>
               <div className={styles.field}>
@@ -538,6 +607,7 @@ export function CheckoutPedido({
                 </button>
               </div>
             </fieldset>
+            )}
 
             {locationsError && <p className={styles.error} role="alert">{locationsError}</p>}
             {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
@@ -579,7 +649,13 @@ export function CheckoutPedido({
                 onChange={(e) => setNotes(e.target.value)}
                 disabled={pending}
                 data-testid="checkout-notes"
-                placeholder="Horario preferido, retiro, etc."
+                placeholder={
+                  fulfillmentMode === 'retiro'
+                    ? 'Horario en el que podrías pasar'
+                    : fulfillmentMode === 'coordinar'
+                      ? 'Zona, horario o cómo preferís coordinar'
+                      : 'Horario preferido, referencias, etc.'
+                }
               />
             </div>
 
@@ -592,7 +668,7 @@ export function CheckoutPedido({
             <button
               type="submit"
               className={styles.primary}
-              disabled={pending || quotePending || carrito.length === 0 || !selectedShippingId}
+              disabled={pending || quotePending || !canSubmit}
               data-testid="checkout-submit"
               aria-busy={pending}
             >

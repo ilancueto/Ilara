@@ -3,6 +3,7 @@
  * No consulta DB; la autoridad final es Postgres.
  */
 import { AppError } from '@/lib/domain/errors'
+import { isFulfillmentMode, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import type { CreateOrderInput, CreateOrderLineInput } from '@/lib/domain/orders/types'
 
 const NAME_MAX = 80
@@ -70,7 +71,9 @@ export function validateOrderLineInput(line: CreateOrderLineInput, index: number
 /** Valida y normaliza el input de creación. Lanza AppError si falla. */
 export function normalizeCreateOrderInput(input: CreateOrderInput): {
   idempotency_key: string
-  shipping_quote_id: string
+  fulfillment_mode: FulfillmentMode
+  shipping_quote_id: string | null
+  fulfillment_zone: string | null
   customer_name: string
   customer_phone: string
   customer_email: string | null
@@ -85,10 +88,35 @@ export function normalizeCreateOrderInput(input: CreateOrderInput): {
     })
   }
 
+  const requestedMode = input.fulfillment_mode
   const shipping_quote_id = String(input.shipping_quote_id || '').trim().toLowerCase()
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(shipping_quote_id)) {
-    throw new AppError('validation', 'Volvé a cotizar y elegí una opción de envío.', {
-      message: 'invalid_shipping_quote',
+  const fulfillment_mode: FulfillmentMode = isFulfillmentMode(requestedMode)
+    ? requestedMode
+    : shipping_quote_id
+      ? 'envio'
+      : 'envio'
+  if (requestedMode != null && !isFulfillmentMode(requestedMode)) {
+    throw new AppError('validation', 'Elegí cómo querés recibir el pedido.', {
+      message: 'invalid_fulfillment_mode',
+    })
+  }
+
+  if (fulfillment_mode === 'envio') {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(shipping_quote_id)) {
+      throw new AppError('validation', 'Volvé a cotizar y elegí una opción de envío.', {
+        message: 'invalid_shipping_quote',
+      })
+    }
+  } else if (shipping_quote_id) {
+    throw new AppError('validation', 'Ese tipo de entrega no usa cotización de correo.', {
+      message: 'fulfillment_shipping_conflict',
+    })
+  }
+
+  const zoneRaw = input.fulfillment_zone != null ? String(input.fulfillment_zone).trim() : ''
+  if (zoneRaw.length > 80) {
+    throw new AppError('validation', 'La zona no puede superar 80 caracteres.', {
+      message: 'invalid_fulfillment_zone',
     })
   }
 
@@ -145,7 +173,9 @@ export function normalizeCreateOrderInput(input: CreateOrderInput): {
 
   return {
     idempotency_key,
-    shipping_quote_id,
+    fulfillment_mode,
+    shipping_quote_id: fulfillment_mode === 'envio' ? shipping_quote_id : null,
+    fulfillment_zone: fulfillment_mode === 'coordinar' ? (zoneRaw || null) : null,
     customer_name,
     customer_phone,
     customer_email: rawEmail ? rawEmail.toLowerCase() : null,
@@ -160,7 +190,9 @@ export function buildCreateOrderRpcPayload(input: CreateOrderInput): Record<stri
   const n = normalizeCreateOrderInput(input)
   return {
     idempotency_key: n.idempotency_key,
-    shipping_quote_id: n.shipping_quote_id,
+    fulfillment_mode: n.fulfillment_mode,
+    ...(n.shipping_quote_id ? { shipping_quote_id: n.shipping_quote_id } : {}),
+    ...(n.fulfillment_zone ? { fulfillment_zone: n.fulfillment_zone } : {}),
     customer_name: n.customer_name,
     customer_phone: n.customer_phone,
     customer_email: n.customer_email,

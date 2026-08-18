@@ -439,9 +439,15 @@ export default function Pedidos() {
                 />
               </div>
 
-              {detail.shipping_quote_id && (
+              {(detail.shipping_quote_id || detail.fulfillment_mode !== 'envio') && (
                 <div className="rounded-xl bg-pink-50 dark:bg-pink-950/20 px-3 py-2 text-sm">
-                  <p className="text-xs text-gray-400 mb-1">Envío cotizado</p>
+                  <p className="text-xs text-gray-400 mb-1">
+                    {detail.fulfillment_mode === 'retiro'
+                      ? 'Retiro en el local'
+                      : detail.fulfillment_mode === 'coordinar'
+                        ? 'Entrega a coordinar'
+                        : 'Envío cotizado'}
+                  </p>
                   <p className="font-semibold">
                     {detail.shipping_carrier_description} · {detail.shipping_service_description}
                   </p>

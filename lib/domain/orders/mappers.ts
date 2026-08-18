@@ -1,6 +1,7 @@
 /**
  * Mappers de filas admin → DTO (sin campos internos de catálogo).
  */
+import { isFulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { isOrderStatus, type OrderStatus } from '@/lib/domain/orders/states'
 import type {
   ComboComponentSnapshot,
@@ -65,6 +66,7 @@ export function mapOrderListItem(row: unknown): OrderListItem {
     notes: strOrNull(r.notes),
     subtotal: num(r.subtotal),
     discount_total: num(r.discount_total),
+    fulfillment_mode: isFulfillmentMode(r.fulfillment_mode) ? r.fulfillment_mode : 'envio',
     shipping_quote_id: strOrNull(r.shipping_quote_id),
     shipping_provider: strOrNull(r.shipping_provider),
     shipping_carrier: strOrNull(r.shipping_carrier),

@@ -6,6 +6,8 @@ import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/states'
 import { loadOrderAccess, paymentStartKey } from '@/lib/domain/payments/publicSession'
+import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
+import { openWhatsApp } from '@/lib/whatsappLink'
 import {
   getPublicPaymentAction,
   startBankTransferAction,
@@ -124,7 +126,7 @@ export function PedidoPagoClient() {
       {view && (
         <section className="mt-6 flex flex-col gap-4">
           <p className="text-sm text-gray-600 dark:text-zinc-300">{statusLabel(view.payment_status)}</p>
-          {showMethodChoice && (view.mp_available || view.transfer_available) && (
+          {showMethodChoice && (
             <div className="flex flex-col gap-3">
               <p className="text-sm font-semibold">{PUBLIC_PAYMENT_COPY.choosePayment}</p>
               {view.mp_available && publicAmount != null && (
@@ -137,22 +139,48 @@ export function PedidoPagoClient() {
                   {PUBLIC_PAYMENT_COPY.mercadoPago} · ${formatPesoARExact(publicAmount)}
                 </button>
               )}
-              {view.transfer_available && transferAmount != null && (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => startTransfer(Boolean(error))}
-                  className="rounded-xl border border-pink-200 px-4 py-3 font-bold disabled:opacity-60"
-                >
-                  {PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)}
-                </button>
+              {transferAmount != null && (
+                view.transfer_available ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => startTransfer(Boolean(error))}
+                    className="rounded-xl border border-pink-200 px-4 py-3 font-bold disabled:opacity-60"
+                    data-testid="pay-transfer"
+                  >
+                    {PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)}
+                  </button>
+                ) : (
+                  <div className="rounded-2xl border border-pink-100 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+                    <p className="font-semibold">
+                      {PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)}
+                    </p>
+                    <p className="mt-2 text-gray-600 dark:text-zinc-300">
+                      Con transferencia tenés 10% off en productos. Todavía no publicamos los datos de la cuenta: escribinos y te pasamos alias o CBU.
+                    </p>
+                    <button
+                      type="button"
+                      className="mt-3 rounded-xl border border-pink-200 px-4 py-2 font-bold"
+                      data-testid="pay-transfer-whatsapp"
+                      onClick={() => {
+                        const ok = openWhatsApp(buildTransferWhatsAppMessage({
+                          order_number: view.order_number,
+                          amount: transferAmount,
+                        }), false)
+                        if (!ok) setError('No se pudo abrir WhatsApp. Tu pedido ya está registrado.')
+                      }}
+                    >
+                      Pedir datos por WhatsApp
+                    </button>
+                  </div>
+                )
+              )}
+              {!view.mp_available && transferAmount == null && (
+                <p className="text-sm text-gray-600 dark:text-zinc-300">
+                  Tu pedido ya quedó registrado; te vamos a contactar para coordinar el pago.
+                </p>
               )}
             </div>
-          )}
-          {showMethodChoice && !view.transfer_available && !view.mp_available && (
-            <p className="text-sm text-gray-600 dark:text-zinc-300">
-              El pago en línea todavía no está habilitado. Tu pedido ya quedó registrado; te vamos a contactar para coordinar.
-            </p>
           )}
           {view.method === 'mercado_pago' && view.payment_status === 'pending' && (
             <div className="flex flex-col gap-2">

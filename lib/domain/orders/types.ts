@@ -2,7 +2,10 @@
  * Tipos de dominio de pedidos de catálogo (Stage 6.1).
  * Sin columnas internas de productos (purchase_price, min_stock, notes).
  */
+import type { FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import type { OrderStatus } from '@/lib/domain/orders/states'
+
+export type { FulfillmentMode }
 
 export type OrderLineType = 'product' | 'combo'
 
@@ -32,7 +35,9 @@ export type CreateOrderCustomerInput = {
 
 export type CreateOrderInput = CreateOrderCustomerInput & {
   idempotency_key: string
-  shipping_quote_id: string
+  fulfillment_mode?: FulfillmentMode
+  shipping_quote_id?: string | null
+  fulfillment_zone?: string | null
   lines: CreateOrderLineInput[]
   coupon_code?: string | null
 }
@@ -44,6 +49,7 @@ export type CreateOrderResult = {
   status: OrderStatus
   subtotal: number
   discount_total: number
+  fulfillment_mode: FulfillmentMode
   shipping_amount: number
   shipping_currency: string
   shipping_carrier: string
@@ -82,6 +88,7 @@ export type OrderListItem = {
   notes: string | null
   subtotal: number
   discount_total: number
+  fulfillment_mode: FulfillmentMode
   shipping_quote_id: string | null
   shipping_provider: string | null
   shipping_carrier: string | null

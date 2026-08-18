@@ -2,6 +2,7 @@
  * Creación de pedidos de catálogo: payload, parse y errores (puro).
  */
 import { AppError, mapRpcMessageToAppError } from '@/lib/domain/errors'
+import { isFulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { isOrderStatus } from '@/lib/domain/orders/states'
 import type { CreateOrderInput, CreateOrderResult } from '@/lib/domain/orders/types'
 import { buildCreateOrderRpcPayload } from '@/lib/domain/orders/validation'
@@ -25,6 +26,7 @@ export function parseCreateOrderRpcResult(rpcData: unknown): CreateOrderResult {
     status: statusRaw,
     subtotal: Number(r.subtotal) || 0,
     discount_total: Number(r.discount_total) || 0,
+    fulfillment_mode: isFulfillmentMode(r.fulfillment_mode) ? r.fulfillment_mode : 'envio',
     shipping_amount: Number(r.shipping_amount) || 0,
     shipping_currency: String(r.shipping_currency || 'ARS'),
     shipping_carrier: String(r.shipping_carrier || ''),
@@ -60,6 +62,16 @@ export function createOrderErrorFromRpc(message: string): AppError {
   if (m.includes('client_price_not_allowed')) {
     return new AppError('validation', 'No se pudo procesar el pedido. Intentá de nuevo.', {
       message: 'client_price_not_allowed',
+    })
+  }
+  if (m.includes('invalid_fulfillment_mode')) {
+    return new AppError('validation', 'Elegí cómo querés recibir el pedido.', {
+      message: 'invalid_fulfillment_mode',
+    })
+  }
+  if (m.includes('fulfillment_shipping_conflict')) {
+    return new AppError('validation', 'Ese tipo de entrega no usa cotización de correo.', {
+      message: 'fulfillment_shipping_conflict',
     })
   }
   if (m.includes('shipping_quote_required') || m.includes('invalid_shipping_quote')) {
