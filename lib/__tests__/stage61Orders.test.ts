@@ -226,4 +226,19 @@ describe('Stage 9.9 — borrar cancelados', () => {
     expect(sql).toContain('order_has_payment')
     expect(sql).toContain('is_app_admin')
   })
+
+  it('cierra el ciclo de envío al borrar cancelados', () => {
+    const sql = readFileSync(
+      join(__dirname, '../../supabase/migrations/20260818251000_stage99_delete_cancelled_quote_cycle.sql'),
+      'utf8'
+    )
+    expect(sql).toContain('ALTER CONSTRAINT orders_shipping_quote_fkey DEFERRABLE')
+    expect(sql).toContain('SET CONSTRAINTS orders_shipping_quote_fkey, shipping_quotes_order_fkey DEFERRED')
+    const unlink = readFileSync(
+      join(__dirname, '../../supabase/migrations/20260818252000_stage99_delete_cancelled_unlink_quotes.sql'),
+      'utf8'
+    )
+    expect(unlink).toContain('shipping_quote_id = NULL')
+    expect(unlink).toContain('total = o.subtotal - o.discount_total')
+  })
 })

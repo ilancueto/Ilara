@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
+import { startBankTransferAction, startMercadoPagoAction } from '@/app/actions/payments'
 import type { CatalogCartItem } from '@/hooks/useCarrito'
 import type { CreateOrderResult } from '@/lib/domain/orders/types'
 import { buildOrderWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
@@ -18,8 +19,9 @@ import {
 import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/types'
 import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
-import { saveOrderAccess } from '@/lib/domain/payments/publicSession'
+import { paymentStartKey, saveOrderAccess } from '@/lib/domain/payments/publicSession'
 import { buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
+import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -272,29 +274,9 @@ export function CheckoutPedido({
           )
         }
         setDone(result.order)
-        setNotifiedVia(result.notifiedVia)
+        setNotifiedVia('none')
         onOrderCreated(result.order)
         showToast('success', `Pedido ${result.order.order_number} confirmado`)
-        if (result.notifiedVia === 'whatsapp') {
-          const followUrl = result.order.follow_token
-            ? buildOrderFollowUrl(result.order.order_number, result.order.follow_token)
-            : null
-          const msg = buildOrderWhatsAppMessage({
-            order_number: result.order.order_number,
-            total: result.order.total,
-            lines: carrito.map((item) => ({
-              name: item.producto ? item.producto.name : item.combo!.name,
-              quantity: item.cantidad,
-            })),
-            customer_name: name.trim(),
-            fulfillment_mode: result.order.fulfillment_mode ?? fulfillmentMode,
-            follow_url: followUrl,
-          })
-          const ok = openWhatsApp(msg, true)
-          if (!ok) {
-            showToast('warning', 'No se pudo abrir WhatsApp. Tu pedido ya está confirmado.')
-          }
-        }
       } catch {
         setSubmitError('No se pudo crear el pedido. Revisá tu conexión e intentá de nuevo.')
         showToast('error', 'Error de conexión. Tu bolsa se conservó.')
@@ -387,23 +369,70 @@ export function CheckoutPedido({
               )}
             </p>
             <p className={styles.hint} data-testid="checkout-notify">
-              {notifiedVia === 'email'
-                ? 'Te enviamos el detalle y el enlace de pago a tu mail.'
-                : notifiedVia === 'whatsapp'
-                  ? 'Te abrimos WhatsApp con el pedido para coordinar.'
-                  : 'Tu pedido quedó registrado.'}
+              Elegí cómo pagar. El mail te llega cuando el pago esté hecho y lo estemos confirmando.
             </p>
-            {notifiedVia !== 'email' && (
-              <button
-                type="button"
-                className={styles.secondary}
-                onClick={openWa}
-                data-testid="checkout-whatsapp"
-              >
-                <MessageCircle size={18} />
-                Abrir WhatsApp de nuevo
-              </button>
+            {done.access_capability && (
+              <div className={styles.payChoices} data-testid="checkout-pay">
+                <p className={styles.hint}>{PUBLIC_PAYMENT_COPY.choosePayment}</p>
+                <button
+                  type="button"
+                  className={styles.primary}
+                  disabled={pending}
+                  data-testid="checkout-pay-mp"
+                  onClick={() => {
+                    const access = done.access_capability
+                    if (!access) return
+                    startTransition(async () => {
+                      const result = await startMercadoPagoAction(
+                        access,
+                        paymentStartKey('mercado_pago', Boolean(submitError))
+                      )
+                      if (!result.ok) {
+                        setSubmitError(result.error)
+                        showToast('error', result.error)
+                        return
+                      }
+                      window.location.assign(result.data.checkout_url)
+                    })
+                  }}
+                >
+                  {PUBLIC_PAYMENT_COPY.mercadoPago}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  disabled={pending}
+                  data-testid="checkout-pay-transfer"
+                  onClick={() => {
+                    const access = done.access_capability
+                    if (!access) return
+                    startTransition(async () => {
+                      const result = await startBankTransferAction(
+                        access,
+                        paymentStartKey('bank_transfer', Boolean(submitError))
+                      )
+                      if (!result.ok) {
+                        setSubmitError(result.error)
+                        showToast('error', result.error)
+                        return
+                      }
+                      window.location.assign('/pedido')
+                    })
+                  }}
+                >
+                  {PUBLIC_PAYMENT_COPY.bankTransfer}
+                </button>
+              </div>
             )}
+            <button
+              type="button"
+              className={styles.secondary}
+              onClick={openWa}
+              data-testid="checkout-whatsapp"
+            >
+              <MessageCircle size={18} />
+              Coordinar por WhatsApp
+            </button>
             <button type="button" className={styles.primary} onClick={onClose} data-testid="checkout-back-catalog">
               Seguir mirando el catálogo
             </button>
@@ -492,7 +521,7 @@ export function CheckoutPedido({
                 data-testid="checkout-email"
               />
               <p className={styles.fieldHint}>
-                Si lo cargás, te mandamos el pedido y el link de pago. Si no, te abrimos WhatsApp.
+                Opcional. Te avisamos por mail cuando recibamos el pago y lo estemos confirmando.
               </p>
             </div>
             <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">

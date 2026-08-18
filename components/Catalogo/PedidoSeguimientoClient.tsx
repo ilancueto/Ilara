@@ -107,6 +107,8 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
     : view?.quoted_base_amount ?? view?.base_amount ?? null
   const showMethodChoice = Boolean(view && !view.payment_status)
   const showRetryTransfer = Boolean(view?.can_retry && view.transfer_available)
+  const showRetryMp = Boolean(view?.can_retry && view.mp_available)
+  const paying = pending && Boolean(view)
 
   return (
     <main className="mx-auto max-w-xl px-4 py-10 text-[#1A181E] dark:text-zinc-50">
@@ -138,7 +140,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
               {view.mp_available && view.quoted_public_amount != null && (
                 <button
                   type="button"
-                  disabled={pending}
+                  disabled={paying}
                   onClick={startMercadoPago}
                   className="rounded-xl bg-gradient-to-br from-[#CF6B7F] to-[#B85064] px-4 py-3 font-bold text-white disabled:opacity-60"
                   data-testid="pay-mercadopago"
@@ -187,10 +189,19 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
               {view.amount_due != null && (
                 <p className="text-2xl font-extrabold tabular-nums">${formatPesoARExact(view.amount_due)}</p>
               )}
-              {view.checkout_url && (
+              {view.checkout_url ? (
                 <a href={view.checkout_url} className="rounded-xl bg-gradient-to-br from-[#CF6B7F] to-[#B85064] px-4 py-3 text-center font-bold text-white">
                   Continuar el pago
                 </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled={paying}
+                  onClick={startMercadoPago}
+                  className="rounded-xl bg-gradient-to-br from-[#CF6B7F] to-[#B85064] px-4 py-3 font-bold text-white disabled:opacity-60"
+                >
+                  {PUBLIC_PAYMENT_COPY.mercadoPago}
+                </button>
               )}
               <p className="text-sm text-[#635F69] dark:text-zinc-300">{PUBLIC_PAYMENT_COPY.returnInformative}</p>
             </div>
@@ -230,10 +241,24 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
             </form>
           )}
           {view.payment_status === 'requires_review' && <p>{PUBLIC_PAYMENT_COPY.paymentPendingReview}</p>}
-          {showRetryTransfer && (
-            <button type="button" disabled={pending} onClick={startTransfer} className="rounded-xl border border-pink-200 px-4 py-3 font-bold">
-              Intentar de nuevo por transferencia
-            </button>
+          {(showRetryTransfer || showRetryMp) && (
+            <div className="flex flex-col gap-2">
+              {showRetryMp && (
+                <button
+                  type="button"
+                  disabled={paying}
+                  onClick={startMercadoPago}
+                  className="rounded-xl bg-gradient-to-br from-[#CF6B7F] to-[#B85064] px-4 py-3 font-bold text-white disabled:opacity-60"
+                >
+                  Intentar de nuevo con Mercado Pago
+                </button>
+              )}
+              {showRetryTransfer && (
+                <button type="button" disabled={paying} onClick={startTransfer} className="rounded-xl border border-pink-200 px-4 py-3 font-bold">
+                  Intentar de nuevo por transferencia
+                </button>
+              )}
+            </div>
           )}
         </section>
       )}

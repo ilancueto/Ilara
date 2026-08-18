@@ -10,10 +10,6 @@ import { setOrderFollowCookie } from '@/lib/domain/orders/followSession'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { ObservabilityEvent } from '@/lib/observability/events'
-import { isNotifyEmail } from '@/lib/domain/orders/orderNotify'
-import { sendOrderCustomerEmail } from '@/lib/domain/orders/sendOrderEmail'
-import { buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
-
 export type OrderNotifyVia = 'email' | 'whatsapp' | 'none'
 
 export type CreateCatalogOrderActionResult =
@@ -22,7 +18,7 @@ export type CreateCatalogOrderActionResult =
 
 export async function createCatalogOrderAction(
   input: CreateOrderInput,
-  notify?: { lines?: Array<{ name: string; quantity: number }> }
+  _notify?: { lines?: Array<{ name: string; quantity: number }> }
 ): Promise<CreateCatalogOrderActionResult> {
   const requestId = createRequestId()
   const started = Date.now()
@@ -43,29 +39,7 @@ export async function createCatalogOrderAction(
     if (order.follow_token) {
       await setOrderFollowCookie(order.order_number, order.follow_token)
     }
-    let notifiedVia: OrderNotifyVia = 'none'
-    if (!order.idempotent_replay) {
-      notifiedVia = 'whatsapp'
-      if (isNotifyEmail(input.customer_email)) {
-        const sent = await sendOrderCustomerEmail({
-          customerName: input.customer_name,
-          customerEmail: input.customer_email,
-          orderNumber: order.order_number,
-          total: order.total,
-          lines: (notify?.lines && notify.lines.length > 0
-            ? notify.lines
-            : (input.lines || []).map((line) => ({
-                name: line.line_type === 'combo' ? 'Combo' : 'Producto',
-                quantity: line.quantity,
-              }))),
-          fulfillmentMode: order.fulfillment_mode,
-          followUrl: order.follow_token
-            ? buildOrderFollowUrl(order.order_number, order.follow_token)
-            : null,
-        })
-        if (sent) notifiedVia = 'email'
-      }
-    }
+    const notifiedVia: OrderNotifyVia = 'none'
     logStructured({
       event: ObservabilityEvent.ORDER_CREATE_SUCCEEDED,
       level: 'info',

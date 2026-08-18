@@ -177,6 +177,11 @@ export async function uploadTransferReceiptServer(accessCapability: string, file
     p_sha256: sha256,
   })
   if (done.error) throw createOrderErrorFromRpc(done.error.message || '')
+  const view = await getPublicPaymentServer(accessCapability).catch(() => null)
+  if (view?.order_number) {
+    const { notifyPaymentPendingByOrderNumber } = await import('@/lib/domain/orders/sendOrderEmail')
+    await notifyPaymentPendingByOrderNumber(view.order_number)
+  }
   return record(done.data)
 }
 
@@ -220,5 +225,7 @@ export async function uploadTransferReceiptFollowServer(
     p_sha256: sha256,
   })
   if (done.error) throw createOrderErrorFromRpc(done.error.message || '')
+  const { notifyPaymentPendingByOrderNumber } = await import('@/lib/domain/orders/sendOrderEmail')
+  await notifyPaymentPendingByOrderNumber(orderNumber, followToken)
   return record(done.data)
 }

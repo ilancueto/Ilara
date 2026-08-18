@@ -6,6 +6,8 @@ export type OrderNotifyLine = {
   quantity: number
 }
 
+export type OrderNotifyKind = 'payment_pending'
+
 export type OrderNotifyInput = {
   customerName: string
   customerEmail?: string | null
@@ -14,6 +16,7 @@ export type OrderNotifyInput = {
   lines: OrderNotifyLine[]
   fulfillmentMode?: FulfillmentMode | string | null
   followUrl: string | null
+  kind?: OrderNotifyKind
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -41,14 +44,15 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
   const more =
     input.lines.length > 20 ? [`… y ${input.lines.length - 20} ítem(s) más`] : []
   const fulfillment = orderNotifyFulfillment(input.fulfillmentMode)
-  const payLine = input.followUrl
-    ? `Para ver el estado y pagar: ${input.followUrl}`
-    : 'Te escribimos para coordinar el pago.'
+  const statusLine = input.followUrl
+    ? `Podés ver el estado acá: ${input.followUrl}`
+    : 'Te vamos a confirmar el pedido cuando revisemos el pago.'
 
   const text = [
     `Hola ${name},`,
     '',
-    `Recibimos tu pedido ${input.orderNumber} en Ilara Beauty.`,
+    `Recibimos el pago de tu pedido ${input.orderNumber} en Ilara Beauty.`,
+    'Lo estamos confirmando. Te avisamos cuando quede listo.',
     fulfillment,
     '',
     ...items,
@@ -56,7 +60,7 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
     '',
     `Total: $${formatPesoARExact(input.total)}`,
     '',
-    payLine,
+    statusLine,
     '',
     'Si tenés alguna consulta, respondé este mail o escribinos por WhatsApp.',
     '',
@@ -74,14 +78,15 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
   const html = `
     <div style="font-family:Outfit,Arial,sans-serif;color:#1A181E;line-height:1.5">
       <p>Hola ${escapeHtml(name)},</p>
-      <p>Recibimos tu pedido <strong>${escapeHtml(input.orderNumber)}</strong> en Ilara Beauty.</p>
+      <p>Recibimos el pago de tu pedido <strong>${escapeHtml(input.orderNumber)}</strong> en Ilara Beauty.</p>
+      <p>Lo estamos confirmando. Te avisamos cuando quede listo.</p>
       <p>${escapeHtml(fulfillment)}</p>
       <ul>${itemHtml}</ul>
       <p><strong>Total: $${escapeHtml(formatPesoARExact(input.total))}</strong></p>
       ${
         input.followUrl
-          ? `<p><a href="${escapeHtml(input.followUrl)}" style="color:#B85D6F">Ver el pedido y pagar</a></p>`
-          : '<p>Te escribimos para coordinar el pago.</p>'
+          ? `<p><a href="${escapeHtml(input.followUrl)}" style="color:#B85D6F">Ver el estado del pedido</a></p>`
+          : '<p>Te vamos a confirmar el pedido cuando revisemos el pago.</p>'
       }
       <p>Si tenés alguna consulta, respondé este mail o escribinos por WhatsApp.</p>
       <p>Ilara Beauty</p>
@@ -89,7 +94,7 @@ export function buildOrderCustomerEmail(input: OrderNotifyInput): {
   `.trim()
 
   return {
-    subject: `Tu pedido ${input.orderNumber} en Ilara`,
+    subject: `Recibimos el pago de tu pedido ${input.orderNumber}`,
     text,
     html,
   }

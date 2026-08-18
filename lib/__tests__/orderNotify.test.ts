@@ -7,7 +7,7 @@ import {
 import { FULFILLMENT_COPY } from '@/lib/domain/orders/fulfillment'
 
 describe('aviso de pedido al cliente', () => {
-  it('arma un mail con el pedido y el enlace, sin clave de pago', () => {
+  it('arma un mail de pago pendiente de confirmación, sin clave de pago', () => {
     const mail = buildOrderCustomerEmail({
       customerName: 'María',
       customerEmail: 'maria@example.com',
@@ -18,10 +18,11 @@ describe('aviso de pedido al cliente', () => {
       followUrl: 'https://ilara.com.ar/pedido/IL-000123?t=followtoken',
     })
     expect(mail.subject).toContain('IL-000123')
+    expect(mail.text).toContain('Recibimos el pago')
     expect(mail.text).toContain('Labial')
     expect(mail.text).toContain('https://ilara.com.ar/pedido/IL-000123?t=followtoken')
     expect(mail.text).not.toContain('access_capability')
-    expect(mail.html).toContain('Ver el pedido y pagar')
+    expect(mail.html).toContain('Ver el estado del pedido')
   })
 
   it('acepta un email válido y usa el copy de entrega a coordinar', () => {
