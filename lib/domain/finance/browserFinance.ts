@@ -5,6 +5,50 @@ import type { CreatePayableInput, FinanceSnapshot, SettlementInput } from './typ
 import { mapFinanceSnapshot } from './mappers'
 import { mapCatalogFinanceSlice, type CatalogFinanceSlice } from '@/lib/domain/payments/finance'
 
+export type CatalogCollectionItem = {
+  id: string
+  order_number: string
+  customer_name: string
+  method: string
+  status: string
+  amount_due: number
+  approved_at: string | null
+  created_at: string
+}
+
+export type CatalogCollections = {
+  total: number
+  count: number
+  items: CatalogCollectionItem[]
+}
+
+export async function listCatalogCollections(from?: string, to?: string): Promise<CatalogCollections> {
+  const { data, error } = await getBrowserSupabase().rpc('admin_list_catalog_collections', {
+    p_from: from || null,
+    p_to: to || null,
+  })
+  if (error) throw error
+  const raw = data && typeof data === 'object' ? (data as Record<string, unknown>) : {}
+  const items = Array.isArray(raw.items) ? raw.items : []
+  return {
+    total: Number(raw.total) || 0,
+    count: Number(raw.count) || 0,
+    items: items.map((item) => {
+      const row = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
+      return {
+        id: String(row.id || ''),
+        order_number: String(row.order_number || ''),
+        customer_name: String(row.customer_name || ''),
+        method: String(row.method || ''),
+        status: String(row.status || ''),
+        amount_due: Number(row.amount_due) || 0,
+        approved_at: row.approved_at == null ? null : String(row.approved_at),
+        created_at: String(row.created_at || ''),
+      }
+    }),
+  }
+}
+
 export async function getCatalogPaymentSlice(from: string, to: string): Promise<CatalogFinanceSlice> {
   const { data, error } = await getBrowserSupabase().rpc('finance_stage8_payments_slice', {
     p_from: from,

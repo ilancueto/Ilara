@@ -24,8 +24,7 @@ import { PastelCard } from '@/components/ui/PastelCard'
 import { useTheme } from '@/context/ThemeContext'
 import type { PanelNavigate } from '@/lib/appNavigation'
 import { fetchPanelBadges } from '@/lib/domain/panel/browserPanelBadges'
-import { getCatalogPaymentSlice } from '@/lib/domain/finance/browserFinance'
-import { fetchPaymentOpsBoard } from '@/lib/domain/payments/browserPricing'
+import { listCatalogCollections } from '@/lib/domain/finance/browserFinance'
 import { paymentMethodLabel, type PaymentMethodCode } from '@/lib/domain/payments/states'
 
 type PeriodoIngresos = 'total' | '7d' | '30d'
@@ -68,6 +67,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const [catalogRecientes, setCatalogRecientes] = useState<Array<{
         id: string
         order_number: string
+        customer_name: string
         method: string
         amount_due: number
         approved_at: string | null
@@ -114,28 +114,25 @@ export default function Tablero({ onNavigate }: TableroProps) {
         }
 
         const today = new Date()
-        const to = today.toISOString().slice(0, 10)
+        const toLocal = new Date(today.getTime() - today.getTimezoneOffset() * 60_000)
+            .toISOString()
+            .slice(0, 10)
         const from =
             periodoIngresos === '7d'
-                ? subDays(today, 7).toISOString().slice(0, 10)
+                ? new Date(today.getTime() - 7 * 86400000 - today.getTimezoneOffset() * 60_000)
+                    .toISOString()
+                    .slice(0, 10)
                 : periodoIngresos === '30d'
-                  ? subDays(today, 30).toISOString().slice(0, 10)
+                  ? new Date(today.getTime() - 30 * 86400000 - today.getTimezoneOffset() * 60_000)
+                    .toISOString()
+                    .slice(0, 10)
                   : '2016-01-01'
         try {
-            const [slice, board] = await Promise.all([
-                getCatalogPaymentSlice(from, to),
-                fetchPaymentOpsBoard(),
-            ])
-            setKpi((prev) => ({ ...prev, catalog_inflow: slice.catalog.inflow }))
-            const since = corte ? corte.getTime() : 0
-            setCatalogRecientes(
-                board.recent.filter((row) => {
-                    if (!['approved', 'partially_refunded', 'refunded'].includes(row.status)) return false
-                    const stamp = Date.parse(row.approved_at || row.created_at)
-                    return Number.isFinite(stamp) && stamp >= since
-                })
-            )
-        } catch {
+            const collections = await listCatalogCollections(from, toLocal)
+            setKpi((prev) => ({ ...prev, catalog_inflow: collections.total }))
+            setCatalogRecientes(collections.items)
+        } catch (error) {
+            console.warn('[tablero] catalog collections', error)
             setKpi((prev) => ({ ...prev, catalog_inflow: 0 }))
             setCatalogRecientes([])
         }
@@ -536,11 +533,11 @@ export default function Tablero({ onNavigate }: TableroProps) {
                                 {[
                                     ...catalogRecientes.map((row) => ({
                                         key: `web-${row.id}`,
-                                        title: row.order_number,
-                                        subtitle: `${paymentMethodLabel((row.method || 'mercado_pago') as PaymentMethodCode)} · web`,
+                                        title: row.customer_name.trim() || row.order_number,
+                                        subtitle: `${row.order_number} · ${paymentMethodLabel((row.method || 'mercado_pago') as PaymentMethodCode)} · web`,
                                         total: row.amount_due,
                                         at: row.approved_at || row.created_at,
-                                        onClick: () => onNavigate?.('orders'),
+                                        onClick: () => onNavigate?.({ tab: 'orders' }),
                                     })),
                                     ...ultimasVentas.map((venta) => {
                                         const fromCustomer = venta.customers

@@ -15,8 +15,7 @@ import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/context/ToastContext'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
-import { getCatalogPaymentSlice } from '@/lib/domain/finance/browserFinance'
-import { fetchPaymentOpsBoard } from '@/lib/domain/payments/browserPricing'
+import { listCatalogCollections } from '@/lib/domain/finance/browserFinance'
 import { paymentMethodLabel, type PaymentMethodCode } from '@/lib/domain/payments/states'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 
@@ -38,6 +37,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
     const [catalogInflow, setCatalogInflow] = useState(0)
     const [catalogPays, setCatalogPays] = useState<Array<{
         order_number: string
+        customer_name: string
         method: string
         amount_due: number
         approved_at: string | null
@@ -75,25 +75,25 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
 
     useEffect(() => {
         const now = new Date()
-        const to = now.toISOString().slice(0, 10)
-        const from =
+        const to = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+        const fromDate =
             filtroFecha === 'hoy'
-                ? startOfDay(now).toISOString().slice(0, 10)
+                ? startOfDay(now)
                 : filtroFecha === 'semana'
-                  ? startOfWeek(now).toISOString().slice(0, 10)
+                  ? startOfWeek(now)
                   : filtroFecha === 'mes'
-                    ? startOfMonth(now).toISOString().slice(0, 10)
-                    : '2016-01-01'
-        void Promise.all([getCatalogPaymentSlice(from, to), fetchPaymentOpsBoard()])
-            .then(([slice, board]) => {
-                setCatalogInflow(slice.catalog.inflow)
-                setCatalogPays(
-                    board.recent.filter((row) =>
-                        ['approved', 'partially_refunded', 'refunded'].includes(row.status)
-                    )
-                )
+                    ? startOfMonth(now)
+                    : null
+        const from = fromDate
+            ? new Date(fromDate.getTime() - fromDate.getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+            : '2016-01-01'
+        void listCatalogCollections(from, to)
+            .then((collections) => {
+                setCatalogInflow(collections.total)
+                setCatalogPays(collections.items)
             })
-            .catch(() => {
+            .catch((error) => {
+                console.warn('[historial] catalog collections', error)
                 setCatalogInflow(0)
                 setCatalogPays([])
             })
@@ -329,7 +329,10 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                     <ul className="mt-4 divide-y divide-gray-100 dark:divide-zinc-800">
                         {catalogPays.slice(0, 8).map((row) => (
                             <li key={`${row.order_number}-${row.approved_at || row.amount_due}`} className="py-2.5 flex items-center justify-between gap-3 text-sm">
-                                <span className="font-bold">{row.order_number}</span>
+                                <span className="font-bold">
+                                    {row.customer_name?.trim() || row.order_number}
+                                    <span className="ml-2 font-medium text-gray-400">{row.order_number}</span>
+                                </span>
                                 <span className="text-gray-500">
                                     {paymentMethodLabel((row.method || 'mercado_pago') as PaymentMethodCode)}
                                 </span>

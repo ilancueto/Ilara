@@ -55,4 +55,13 @@ describe('Stage 8.5 — migración', () => {
     expect(migration).not.toMatch(/INSERT INTO public\.sales/i)
     expect(migration).not.toMatch(/INSERT INTO public\.incomes/i)
   })
+
+  it('lista cobros de catálogo para el panel', () => {
+    const list = readFileSync(
+      resolve(process.cwd(), 'supabase/migrations/20260818254000_stage85_list_catalog_collections.sql'),
+      'utf8'
+    )
+    expect(list).toContain('admin_list_catalog_collections')
+    expect(list).toContain('America/Argentina/Buenos_Aires')
+  })
 })
