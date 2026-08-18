@@ -24,6 +24,7 @@ import { PastelCard } from '@/components/ui/PastelCard'
 import { useTheme } from '@/context/ThemeContext'
 import type { PanelNavigate } from '@/lib/appNavigation'
 import { fetchPanelBadges } from '@/lib/domain/panel/browserPanelBadges'
+import { getCatalogPaymentSlice } from '@/lib/domain/finance/browserFinance'
 
 type PeriodoIngresos = 'total' | '7d' | '30d'
 
@@ -37,6 +38,7 @@ type DashboardKpi = {
     incomes_total: number
     incomes_count: number
     expenses_total: number
+    catalog_inflow: number
 }
 
 const KPI_ZERO: DashboardKpi = {
@@ -45,6 +47,7 @@ const KPI_ZERO: DashboardKpi = {
     incomes_total: 0,
     incomes_count: 0,
     expenses_total: 0,
+    catalog_inflow: 0,
 }
 
 export default function Tablero({ onNavigate }: TableroProps) {
@@ -90,13 +93,29 @@ export default function Tablero({ onNavigate }: TableroProps) {
         }
         if (!kpiErr && kpiRaw && typeof kpiRaw === 'object') {
             const o = kpiRaw as Record<string, unknown>
-            setKpi({
+            setKpi((prev) => ({
+                ...prev,
                 sales_total: Number(o.sales_total ?? 0),
                 sales_count: Number(o.sales_count ?? 0),
                 incomes_total: Number(o.incomes_total ?? 0),
                 incomes_count: Number(o.incomes_count ?? 0),
                 expenses_total: Number(o.expenses_total ?? 0),
-            })
+            }))
+        }
+
+        const today = new Date()
+        const to = today.toISOString().slice(0, 10)
+        const from =
+            periodoIngresos === '7d'
+                ? subDays(today, 7).toISOString().slice(0, 10)
+                : periodoIngresos === '30d'
+                  ? subDays(today, 30).toISOString().slice(0, 10)
+                  : '2016-01-01'
+        try {
+            const slice = await getCatalogPaymentSlice(from, to)
+            setKpi((prev) => ({ ...prev, catalog_inflow: slice.catalog.inflow }))
+        } catch {
+            setKpi((prev) => ({ ...prev, catalog_inflow: 0 }))
         }
 
         if (periodoIngresos === 'total') {
@@ -209,7 +228,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const productosStockBajo = productosCriticos.length
     const valorTotalInventario = productos.reduce((sum, p) => sum + (p.sale_price * p.stock), 0)
 
-    const totalIngresos = kpi.sales_total + kpi.incomes_total
+    const totalIngresos = kpi.sales_total + kpi.incomes_total + kpi.catalog_inflow
     const cantidadVentas = kpi.sales_count
     const totalGastos = kpi.expenses_total
 
@@ -318,7 +337,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         valor={`$${totalIngresos.toLocaleString()}`}
                         color="text-pink-500"
                         bgIcon="bg-pink-50"
-                        subtitulo={`${cantidadVentas} ventas + ${kpi.incomes_count} manuales`}
+                        subtitulo={`${cantidadVentas} mostrador · ${kpi.incomes_count} manuales${kpi.catalog_inflow > 0 ? ' · web incluida' : ''}`}
                         trend={true}
                         onActivate={onNavigate ? () => onNavigate({ tab: 'incomes', view: 'historial' }) : undefined}
                         selectorPeriodo={

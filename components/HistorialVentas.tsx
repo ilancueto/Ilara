@@ -15,6 +15,10 @@ import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/context/ToastContext'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
+import { getCatalogPaymentSlice } from '@/lib/domain/finance/browserFinance'
+import { fetchPaymentOpsBoard } from '@/lib/domain/payments/browserPricing'
+import { paymentMethodLabel, type PaymentMethodCode } from '@/lib/domain/payments/states'
+import { formatPesoAR } from '@/lib/formatPesoAR'
 
 export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () => void } = {}) {
     const { showSuccess, showError } = useToast()
@@ -31,6 +35,14 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
     const [ventasSeleccionadas, setVentasSeleccionadas] = useState<Set<number>>(new Set())
     const [eliminando, setEliminando] = useState(false)
     const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
+    const [catalogInflow, setCatalogInflow] = useState(0)
+    const [catalogPays, setCatalogPays] = useState<Array<{
+        order_number: string
+        method: string
+        amount_due: number
+        approved_at: string | null
+        status: string
+    }>>([])
 
     const obtenerVentas = useCallback(async () => {
         setCargando(true)
@@ -60,6 +72,32 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
     useEffect(() => {
         obtenerVentas()
     }, [obtenerVentas])
+
+    useEffect(() => {
+        const now = new Date()
+        const to = now.toISOString().slice(0, 10)
+        const from =
+            filtroFecha === 'hoy'
+                ? startOfDay(now).toISOString().slice(0, 10)
+                : filtroFecha === 'semana'
+                  ? startOfWeek(now).toISOString().slice(0, 10)
+                  : filtroFecha === 'mes'
+                    ? startOfMonth(now).toISOString().slice(0, 10)
+                    : '2016-01-01'
+        void Promise.all([getCatalogPaymentSlice(from, to), fetchPaymentOpsBoard()])
+            .then(([slice, board]) => {
+                setCatalogInflow(slice.catalog.inflow)
+                setCatalogPays(
+                    board.recent.filter((row) =>
+                        ['approved', 'partially_refunded', 'refunded'].includes(row.status)
+                    )
+                )
+            })
+            .catch(() => {
+                setCatalogInflow(0)
+                setCatalogPays([])
+            })
+    }, [filtroFecha])
 
     useEffect(() => {
         const cargarClientes = async () => {
@@ -208,7 +246,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
     // Estadísticas: recaudado = cobrado, por cobrar = pendiente
     const totalRecaudado = ventas
         .filter(v => v.status !== 'pending_payment')
-        .reduce((sum, v) => sum + v.total, 0)
+        .reduce((sum, v) => sum + v.total, 0) + catalogInflow
     const totalPorCobrar = ventas
         .filter(v => v.status === 'pending_payment')
         .reduce((sum, v) => sum + v.total, 0)
@@ -268,6 +306,39 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                     </div>
                 </PastelCard>
             </div>
+
+            <PastelCard className="p-5 sm:p-6 mb-historial-block" noHover data-testid="catalog-sales-strip">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <p className="text-[10px] uppercase tracking-wider text-pink-500 font-bold">Pedidos web cobrados</p>
+                        <p className="text-2xl font-black text-gray-800 dark:text-gray-100 tabular-nums">
+                            ${formatPesoAR(catalogInflow)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Mercado Pago y transferencias. No se mezclan con la caja del mostrador.
+                        </p>
+                    </div>
+                    <a
+                        href={panelHref({ tab: 'orders' })}
+                        className="text-sm font-bold text-pink-600 hover:underline"
+                    >
+                        Ver pedidos
+                    </a>
+                </div>
+                {catalogPays.length > 0 && (
+                    <ul className="mt-4 divide-y divide-gray-100 dark:divide-zinc-800">
+                        {catalogPays.slice(0, 8).map((row) => (
+                            <li key={`${row.order_number}-${row.approved_at || row.amount_due}`} className="py-2.5 flex items-center justify-between gap-3 text-sm">
+                                <span className="font-bold">{row.order_number}</span>
+                                <span className="text-gray-500">
+                                    {paymentMethodLabel((row.method || 'mercado_pago') as PaymentMethodCode)}
+                                </span>
+                                <span className="font-black tabular-nums">${formatPesoAR(row.amount_due)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </PastelCard>
 
             {/* Filtros y Exportar */}
             <PastelCard className="p-6 sm:p-8 mb-historial-block" noHover>
