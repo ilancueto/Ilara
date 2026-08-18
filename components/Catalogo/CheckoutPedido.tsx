@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
-import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
@@ -20,7 +19,7 @@ import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/type
 import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { saveOrderAccess } from '@/lib/domain/payments/publicSession'
-import { buildOrderFollowPath, buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
+import { buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -82,6 +81,7 @@ export function CheckoutPedido({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const [done, setDone] = useState<CreateOrderResult | null>(null)
+  const [notifiedVia, setNotifiedVia] = useState<'email' | 'whatsapp' | 'none'>('none')
   const idemRef = useRef<string>(newIdempotencyKey())
   const submittingRef = useRef(false)
   const localityRequestRef = useRef(0)
@@ -233,18 +233,26 @@ export function CheckoutPedido({
 
     startTransition(async () => {
       try {
-        const result = await createCatalogOrderAction({
-          idempotency_key: idemRef.current,
-          fulfillment_mode: fulfillmentMode,
-          shipping_quote_id: needsShippingQuote ? selectedShippingId : null,
-          fulfillment_zone: fulfillmentMode === 'coordinar' ? fulfillmentZone.trim() || null : null,
-          customer_name: trimmedName,
-          customer_phone: digits,
-          customer_email: email.trim() || null,
-          notes: notes.trim() || null,
-          coupon_code: appliedCoupon?.code ?? null,
-          lines,
-        })
+        const result = await createCatalogOrderAction(
+          {
+            idempotency_key: idemRef.current,
+            fulfillment_mode: fulfillmentMode,
+            shipping_quote_id: needsShippingQuote ? selectedShippingId : null,
+            fulfillment_zone: fulfillmentMode === 'coordinar' ? fulfillmentZone.trim() || null : null,
+            customer_name: trimmedName,
+            customer_phone: digits,
+            customer_email: email.trim() || null,
+            notes: notes.trim() || null,
+            coupon_code: appliedCoupon?.code ?? null,
+            lines,
+          },
+          {
+            lines: carrito.map((item) => ({
+              name: item.producto ? item.producto.name : item.combo!.name,
+              quantity: item.cantidad,
+            })),
+          }
+        )
 
         if (!result.ok) {
           setSubmitError(result.error)
@@ -264,8 +272,29 @@ export function CheckoutPedido({
           )
         }
         setDone(result.order)
+        setNotifiedVia(result.notifiedVia)
         onOrderCreated(result.order)
         showToast('success', `Pedido ${result.order.order_number} confirmado`)
+        if (result.notifiedVia === 'whatsapp') {
+          const followUrl = result.order.follow_token
+            ? buildOrderFollowUrl(result.order.order_number, result.order.follow_token)
+            : null
+          const msg = buildOrderWhatsAppMessage({
+            order_number: result.order.order_number,
+            total: result.order.total,
+            lines: carrito.map((item) => ({
+              name: item.producto ? item.producto.name : item.combo!.name,
+              quantity: item.cantidad,
+            })),
+            customer_name: name.trim(),
+            fulfillment_mode: result.order.fulfillment_mode ?? fulfillmentMode,
+            follow_url: followUrl,
+          })
+          const ok = openWhatsApp(msg, true)
+          if (!ok) {
+            showToast('warning', 'No se pudo abrir WhatsApp. Tu pedido ya está confirmado.')
+          }
+        }
       } catch {
         setSubmitError('No se pudo crear el pedido. Revisá tu conexión e intentá de nuevo.')
         showToast('error', 'Error de conexión. Tu bolsa se conservó.')
@@ -357,61 +386,25 @@ export function CheckoutPedido({
                 FULFILLMENT_COPY[done.fulfillment_mode || fulfillmentMode].success
               )}
             </p>
-            {done.follow_token && (
-              <p className={styles.hint} data-testid="checkout-follow-link">
-                Guardá este enlace para ver el estado del pedido:
-                <br />
-                <span className={styles.followUrl}>{buildOrderFollowUrl(done.order_number, done.follow_token)}</span>
-              </p>
-            )}
-            {done.follow_token && (
+            <p className={styles.hint} data-testid="checkout-notify">
+              {notifiedVia === 'email'
+                ? 'Te enviamos el detalle y el enlace de pago a tu mail.'
+                : notifiedVia === 'whatsapp'
+                  ? 'Te abrimos WhatsApp con el pedido para coordinar.'
+                  : 'Tu pedido quedó registrado.'}
+            </p>
+            {notifiedVia !== 'email' && (
               <button
                 type="button"
                 className={styles.secondary}
-                data-testid="checkout-copy-follow"
-                onClick={() => {
-                  const url = buildOrderFollowUrl(done.order_number, done.follow_token!)
-                  void navigator.clipboard?.writeText(url).then(
-                    () => showToast('success', 'Enlace copiado'),
-                    () => showToast('warning', 'No se pudo copiar. Seleccioná el enlace a mano.'),
-                  )
-                }}
+                onClick={openWa}
+                data-testid="checkout-whatsapp"
               >
-                Copiar enlace
+                <MessageCircle size={18} />
+                Abrir WhatsApp de nuevo
               </button>
             )}
-            {(done.follow_token || done.access_capability) && (
-              <Link
-                href={
-                  done.follow_token
-                    ? buildOrderFollowPath(done.order_number, done.follow_token)
-                    : '/pedido'
-                }
-                className={styles.primary}
-                data-testid="checkout-continue-payment"
-              >
-                Pagar
-              </Link>
-            )}
-            {done.follow_token && (
-              <Link
-                href={buildOrderFollowPath(done.order_number, done.follow_token)}
-                className={styles.secondary}
-                data-testid="checkout-pay-transfer"
-              >
-                Pagar por transferencia
-              </Link>
-            )}
-            <button
-              type="button"
-              className={done.access_capability ? styles.secondary : styles.primary}
-              onClick={openWa}
-              data-testid="checkout-whatsapp"
-            >
-              <MessageCircle size={18} />
-              Continuar por WhatsApp
-            </button>
-            <button type="button" className={styles.secondary} onClick={onClose}>
+            <button type="button" className={styles.primary} onClick={onClose} data-testid="checkout-back-catalog">
               Seguir mirando el catálogo
             </button>
           </div>
@@ -486,7 +479,7 @@ export function CheckoutPedido({
               </p>
             </div>
             <div className={styles.field}>
-              <label htmlFor={`${formId}-email`}>Email (opcional)</label>
+              <label htmlFor={`${formId}-email`}>Email</label>
               <input
                 id={`${formId}-email`}
                 name="customer_email"
@@ -498,6 +491,9 @@ export function CheckoutPedido({
                 disabled={pending}
                 data-testid="checkout-email"
               />
+              <p className={styles.fieldHint}>
+                Si lo cargás, te mandamos el pedido y el link de pago. Si no, te abrimos WhatsApp.
+              </p>
             </div>
             <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">
               <legend>¿Cómo lo recibís? *</legend>
