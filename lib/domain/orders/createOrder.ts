@@ -119,6 +119,13 @@ export function createOrderErrorFromRpc(message: string): AppError {
       message: 'payments_disabled',
     })
   }
+  if (m.includes('mp_amount_too_low')) {
+    return new AppError(
+      'validation',
+      'Mercado Pago no acepta un importe tan bajo. Probá con un producto de más valor o pagá por transferencia.',
+      { message: 'mp_amount_too_low' }
+    )
+  }
   if (m.includes('payment_already_open')) {
     return new AppError('conflict', 'Ya hay un pago en curso para este pedido.', {
       message: 'payment_already_open',

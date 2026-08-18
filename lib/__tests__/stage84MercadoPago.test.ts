@@ -89,6 +89,8 @@ describe('Stage 8.4 — migración y edge functions', () => {
     expect(preference).toContain('/pedido')
     expect(preference).toContain('follow_token')
     expect(preference).toContain('mp_preference_context_follow')
+    expect(preference).toContain('customer_email')
+    expect(preference).toContain('mp_amount_too_low')
     expect(webhook).toContain('x-signature')
     expect(webhook).toContain('/v1/payments/')
     expect(webhook).not.toMatch(/NEXT_PUBLIC_/)

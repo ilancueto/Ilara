@@ -41,6 +41,14 @@ function siteUrl(): string {
   return (Deno.env.get('SITE_URL') || 'https://ilara.com.ar').replace(/\/$/, '')
 }
 
+function toMpExpiration(value: unknown): string | null {
+  const raw = String(value || '').trim()
+  if (!raw) return null
+  const parsed = new Date(raw)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed.toISOString()
+}
+
 function supabaseAdmin() {
   const url = Deno.env.get('SUPABASE_URL') || ''
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
@@ -115,19 +123,34 @@ serve(async (req) => {
 
   const base = siteUrl()
   const supabaseUrl = (Deno.env.get('SUPABASE_URL') || '').replace(/\/$/, '')
-  const expiresAt = String(pay.expires_at || '')
+  const expiresAt = toMpExpiration(pay.expires_at)
   const returnUrl = usingFollow
     ? `${base}/pedido/${encodeURIComponent(String(pay.order_number || orderNumber))}`
     : `${base}/pedido`
+  const amountDue = Number(pay.amount_due)
+  if (!Number.isFinite(amountDue) || amountDue < 10) {
+    return json(400, { ok: false, code: 'mp_amount_too_low' }, origin)
+  }
+  const payerEmail = String(pay.customer_email || '').trim().toLowerCase()
+  const payerName = String(pay.customer_name || '').trim()
+  const payerPhone = String(pay.customer_phone || '').replace(/\D/g, '')
   const preferenceBody = {
     items: [
       {
+        id: String(pay.order_number || pay.payment_id || 'pedido'),
         title: `Pedido ${String(pay.order_number || '')}`.slice(0, 80),
+        description: 'Pedido Ilara Beauty',
         quantity: 1,
         currency_id: 'ARS',
-        unit_price: Number(pay.amount_due),
+        unit_price: amountDue,
       },
     ],
+    payer: {
+      ...(payerEmail.includes('@') ? { email: payerEmail } : {}),
+      ...(payerName ? { name: payerName.slice(0, 80) } : {}),
+      ...(payerPhone.length >= 8 ? { phone: { number: payerPhone.slice(-10) } } : {}),
+    },
+    statement_descriptor: 'ILARA',
     external_reference: String(pay.external_reference || pay.payment_id || ''),
     notification_url: `${supabaseUrl}/functions/v1/payments-mp-webhook`,
     back_urls: {

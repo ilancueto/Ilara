@@ -43,6 +43,9 @@ export async function startMercadoPagoCheckoutServer(input: {
     if (payload.code === 'payments_disabled') {
       throw createOrderErrorFromRpc('payments_disabled')
     }
+    if (payload.code === 'mp_amount_too_low') {
+      throw createOrderErrorFromRpc('mp_amount_too_low')
+    }
     throw new AppError('unknown', 'No se pudo abrir Mercado Pago. Intentá de nuevo.', {
       message: 'mp_preference_failed',
       retryable: true,
