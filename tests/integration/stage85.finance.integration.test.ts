@@ -128,6 +128,22 @@ describe.skipIf(!canRun)('Stage 8.5 corte de pedidos', () => {
   })
 
   it('un cobro aprobado entra al corte de pedidos y no al de mostrador', async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    type Slice = {
+      catalog: { inflow: number }
+      pos: { inflow: number }
+      margin: { actual_fee: number }
+    }
+    const baselineSlice = await admin.rpc('finance_stage8_payments_slice', { p_from: today, p_to: today })
+    expect(baselineSlice.error).toBeNull()
+    const baseline = baselineSlice.data as Slice
+    const posInflowBefore = Number(baseline.pos.inflow)
+    const catalogInflowBefore = Number(baseline.catalog.inflow)
+    const actualFeeBefore = Number(baseline.margin.actual_fee)
+    const baselinePosOnly = await admin.rpc('finance_stage66_snapshot', { p_from: today, p_to: today })
+    expect(baselinePosOnly.error).toBeNull()
+    const posOnlyBefore = Number((baselinePosOnly.data as { summary: { period_inflow: number } }).summary.period_inflow)
+
     await service.from('payment_pricing_versions').update({
       payments_enabled: true,
       mercado_pago_enabled: true,
@@ -153,16 +169,15 @@ describe.skipIf(!canRun)('Stage 8.5 corte de pedidos', () => {
     })
     expect(applied.error).toBeNull()
 
-    const today = new Date().toISOString().slice(0, 10)
     const slice = await admin.rpc('finance_stage8_payments_slice', { p_from: today, p_to: today })
     expect(slice.error).toBeNull()
-    const catalog = (slice.data as { catalog: { inflow: number }; pos: { inflow: number }; margin: { actual_fee: number } })
-    expect(Number(catalog.catalog.inflow)).toBe(105700)
-    expect(Number(catalog.margin.actual_fee)).toBe(5614)
-    expect(Number(catalog.pos.inflow)).toBe(0)
+    const catalog = slice.data as Slice
+    expect(Number(catalog.catalog.inflow)).toBe(catalogInflowBefore + 105700)
+    expect(Number(catalog.margin.actual_fee)).toBe(actualFeeBefore + 5614)
+    expect(Number(catalog.pos.inflow)).toBe(posInflowBefore)
 
     const posOnly = await admin.rpc('finance_stage66_snapshot', { p_from: today, p_to: today })
-    expect(Number((posOnly.data as { summary: { period_inflow: number } }).summary.period_inflow)).toBe(0)
+    expect(Number((posOnly.data as { summary: { period_inflow: number } }).summary.period_inflow)).toBe(posOnlyBefore)
 
     const board = await admin.rpc('admin_payment_ops_board')
     expect(board.error).toBeNull()

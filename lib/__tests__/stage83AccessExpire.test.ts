@@ -10,6 +10,10 @@ const migration = readFileSync(
   'utf8'
 )
 const vercel = readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8')
+const expireWorkflow = readFileSync(
+  resolve(process.cwd(), '.github/workflows/expire-catalog-payments.yml'),
+  'utf8'
+)
 const pedido = readFileSync(resolve(process.cwd(), 'components/Catalogo/PedidoPagoClient.tsx'), 'utf8')
 
 describe('Stage 8.3 — clave de seguimiento', () => {
@@ -51,7 +55,7 @@ describe('Stage 8.3 — job interno', () => {
 })
 
 describe('Stage 8.3 — migración y programación', () => {
-  it('exige capability, no order_id, y programa Vercel cada 5 minutos', () => {
+  it('exige capability, no order_id, y programa GitHub Actions cada 5 minutos', () => {
     expect(migration).toContain('order_access_capabilities')
     expect(migration).toContain('access_capability_hash')
     expect(migration).toContain('client_order_id_not_allowed')
@@ -64,8 +68,12 @@ describe('Stage 8.3 — migración y programación', () => {
     expect(migration).toContain('REVOKE ALL ON FUNCTION public.expire_catalog_payments() FROM PUBLIC, anon, authenticated')
     expect(migration).not.toMatch(/resolve_order_access[\s\S]{0,80}STABLE/)
     expect(migration).not.toMatch(/cron\.schedule/)
-    expect(vercel).toContain('/api/internal/expire-payments')
-    expect(vercel).toContain('*/5 * * * *')
+    expect(vercel).not.toContain('*/5 * * * *')
+    expect(vercel).not.toMatch(/"crons"\s*:/)
+    expect(expireWorkflow).toContain("cron: '*/5 * * * *'")
+    expect(expireWorkflow).toContain('/api/internal/expire-payments')
+    expect(expireWorkflow).toContain('ILARA_CRON_SECRET')
+    expect(expireWorkflow).toMatch(/Authorization:\s*Bearer \$ILARA_CRON_SECRET/)
   })
 
   it('el copy público no filtra jerga interna', () => {
