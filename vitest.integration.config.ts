@@ -14,6 +14,8 @@ export default defineConfig({
     exclude: ['node_modules', '.next'],
     testTimeout: 60000,
     hookTimeout: 60000,
+    fileParallelism: false,
+    maxWorkers: 1,
   },
   resolve: {
     alias: { '@': path.resolve(__dirname, '.') },
