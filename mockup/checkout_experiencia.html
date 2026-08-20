@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ilara Beauty — Rediseño Checkout, Mercado Pago & Seguimiento de Pedidos</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & FOUNDATIONS
+       ========================================================================== */
+    :root {
+      /* Warm Cashmere Luxury Palette */
+      --bg-body: #FAF8F5;
+      --bg-surface: #FFFFFF;
+      --bg-surface-elevated: #FFFFFF;
+      --bg-surface-glass: rgba(255, 255, 255, 0.92);
+      --bg-subtle: #F4EFEA;
+      --bg-active: #EFE8DF;
+
+      --text-main: #1A181E;
+      --text-muted: #66616D;
+      --text-subtle: #98939F;
+      --text-white: #FFFFFF;
+
+      --rose-50: #FDF2F4;
+      --rose-100: #FCE7EB;
+      --rose-200: #FBCFE8;
+      --rose-400: #E28292;
+      --rose-500: #D97786;
+      --rose-600: #C25B6C;
+      --rose-700: #A84757;
+
+      --gold-100: #FBF6EE;
+      --gold-400: #D4B68E;
+      --gold-500: #C5A880;
+      --gold-600: #A98C64;
+
+      --mp-blue: #009EE3;
+      --mp-blue-dark: #007EB5;
+      --mp-bg: #E6F7FF;
+
+      --success-green: #1E9E68;
+      --success-bg: #ECFDF5;
+      --success-border: #A7F3D0;
+
+      --border-light: #EBE4DA;
+      --border-medium: #DCD3C7;
+      --border-focus: #D97786;
+
+      --shadow-sm: 0 2px 8px rgba(26, 24, 30, 0.05);
+      --shadow-md: 0 8px 24px -4px rgba(26, 24, 30, 0.08), 0 2px 6px -1px rgba(26, 24, 30, 0.03);
+      --shadow-lg: 0 16px 36px -6px rgba(26, 24, 30, 0.12), 0 4px 14px -2px rgba(26, 24, 30, 0.04);
+      --shadow-glow: 0 0 24px rgba(217, 119, 134, 0.22);
+      --shadow-mp-glow: 0 0 24px rgba(0, 158, 227, 0.25);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-full: 9999px;
+
+      --font-sans: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      /* Obsidian Velvet Luxury Palette */
+      --bg-body: #111015;
+      --bg-surface: #1B1922;
+      --bg-surface-elevated: #24212C;
+      --bg-surface-glass: rgba(27, 25, 34, 0.92);
+      --bg-subtle: #17151D;
+      --bg-active: #2D2937;
+
+      --text-main: #F6F4F8;
+      --text-muted: #A6A0B0;
+      --text-subtle: #726D7D;
+      --text-white: #FFFFFF;
+
+      --rose-50: #291620;
+      --rose-100: #381C2B;
+      --rose-400: #F472B6;
+      --rose-500: #EC4899;
+      --rose-600: #DB2777;
+
+      --gold-100: #2B2319;
+      --gold-500: #E5C396;
+      --gold-600: #CBB07E;
+
+      --mp-blue: #00B2FF;
+      --mp-blue-dark: #009EE3;
+      --mp-bg: #00364F;
+
+      --success-green: #34D399;
+      --success-bg: #064E3B33;
+      --success-border: #065F46;
+
+      --border-light: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.15);
+      --border-focus: #EC4899;
+
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.6);
+      --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* ==========================================================================
+       TOP SHOWCASE CONTROLLER BAR
+       ========================================================================== */
+    .showcase-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--bg-surface-glass);
+      backdrop-filter: blur(20px) saturate(1.3);
+      border-bottom: 1px solid var(--border-light);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .pill-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: var(--rose-50);
+      color: var(--rose-600);
+      border: 1px solid var(--rose-200);
+      letter-spacing: 0.05em;
+    }
+
+    /* Flow Step Selector */
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      background: var(--bg-subtle);
+      padding: 4px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-light);
+      gap: 4px;
+    }
+
+    .flow-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: var(--radius-lg);
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .flow-btn:hover {
+      color: var(--text-main);
+    }
+
+    .flow-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .theme-toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 0.2s;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.06);
+    }
+
+    /* Master Content Layout */
+    .container {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 36px 20px 80px;
+      flex: 1;
+    }
+
+    .view-section {
+      display: none;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       VIEW 1: CHECKOUT EXPERIMENTAL & PROCESO DE COMPRA
+       ========================================================================== */
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+    }
+
+    /* Cards */
+    .panel-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+
+    .panel-title {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--rose-50);
+      color: var(--rose-600);
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-right: 8px;
+    }
+
+    /* Form Fields */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-medium);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--border-focus);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px var(--rose-100);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Delivery Mode Tabs */
+    .delivery-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .delivery-option-btn {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--border-light);
+      background: var(--bg-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .delivery-option-btn:hover {
+      border-color: var(--rose-400);
+    }
+
+    .delivery-option-btn.active {
+      border-color: var(--rose-500);
+      background: var(--rose-50);
+    }
+
+    .delivery-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .delivery-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .delivery-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Order Summary Sidebar */
+    .summary-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 84px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .shipping-bar-wrap {
+      background: var(--gold-100);
+      border: 1px solid var(--gold-400);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+
+    .shipping-bar-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold-600);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      border-radius: var(--radius-full);
+      background: rgba(197, 168, 128, 0.25);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-500), var(--rose-500));
+      border-radius: var(--radius-full);
+      width: 82%;
+      transition: width 0.4s ease;
+    }
+
+    /* Item row */
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .cart-item-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      background: var(--bg-subtle);
+    }
+
+    .cart-item-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cart-item-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-item-shade-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .cart-item-price {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    /* Coupon Box */
+    .coupon-box {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-apply-coupon {
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-medium);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+
+    .btn-apply-coupon:hover {
+      background: var(--rose-500);
+      color: #fff;
+      border-color: var(--rose-500);
+    }
+
+    /* Summary Totals */
+    .summary-totals {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-medium);
+      font-size: 0.88rem;
+    }
+
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    .total-grand {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      padding-top: 6px;
+    }
+
+    /* Main CTA Buttons */
+    .btn-primary-action {
+      width: 100%;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--rose-500) 0%, var(--rose-600) 100%);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(217, 119, 134, 0.35);
+    }
+
+    /* ==========================================================================
+       VIEW 2: MERCADO PAGO & PASARELA DE PAGOS MODERNA
+       ========================================================================== */
+    .payment-methods-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .payment-card {
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 22px;
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+    }
+
+    .payment-card:hover {
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+    }
+
+    .payment-card.selected {
+      border-color: var(--rose-500);
+      background: var(--bg-surface);
+      box-shadow: var(--shadow-md);
+    }
+
+    .payment-card.mp-selected {
+      border-color: var(--mp-blue);
+      box-shadow: var(--shadow-mp-glow);
+    }
+
+    .payment-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .payment-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .payment-radio {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border-medium);
+      display: grid;
+      place-items: center;
+    }
+
+    .payment-card.selected .payment-radio::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--rose-500);
+    }
+
+    .payment-card.mp-selected .payment-radio::after {
+      background: var(--mp-blue);
+    }
+
+    /* Mercado Pago Box */
+    .mp-badge-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--mp-bg);
+      color: var(--mp-blue-dark);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .mp-perks-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .mp-perk-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-subtle);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-mp-pay {
+      width: 100%;
+      padding: 15px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-blue-dark) 100%);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 158, 227, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .btn-mp-pay:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 158, 227, 0.5);
+    }
+
+    /* Bank Transfer Card */
+    .bank-details-box {
+      background: var(--bg-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      border: 1px solid var(--border-light);
+    }
+
+    .bank-data-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .bank-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      letter-spacing: 0.05em;
+    }
+
+    .bank-val-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bank-val {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .btn-copy-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-copy-chip:hover {
+      background: var(--rose-500);
+      color: #fff;
+      border-color: var(--rose-500);
+    }
+
+    /* Receipt Upload Area */
+    .receipt-dropzone {
+      border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg-subtle);
+      transition: all 0.2s;
+    }
+
+    .receipt-dropzone:hover {
+      border-color: var(--rose-500);
+      background: var(--rose-50);
+    }
+
+    /* ==========================================================================
+       VIEW 3: LINK DE SEGUIMIENTO DE PEDIDO (/pedido/[orderNumber])
+       ========================================================================== */
+    .tracking-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Header Banner */
+    .tracking-header-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 30px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tracking-header-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--rose-500), var(--gold-500));
+    }
+
+    .order-number-title {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .status-pill {
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: var(--success-bg);
+      color: var(--success-green);
+      border: 1px solid var(--success-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Interactive Timeline Stepper */
+    .stepper-container {
+      margin-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .stepper-line {
+      position: absolute;
+      top: 18px;
+      left: 30px;
+      right: 30px;
+      height: 3px;
+      background: var(--border-light);
+      z-index: 1;
+    }
+
+    .stepper-line-progress {
+      position: absolute;
+      top: 18px;
+      left: 30px;
+      width: 50%; /* Adjust in JS */
+      height: 3px;
+      background: var(--rose-500);
+      z-index: 2;
+      transition: width 0.4s ease;
+    }
+
+    .step-node {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 3px solid var(--border-light);
+      color: var(--text-subtle);
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .step-node.completed .step-circle {
+      background: var(--rose-500);
+      border-color: var(--rose-500);
+      color: #fff;
+    }
+
+    .step-node.active .step-circle {
+      background: var(--bg-surface);
+      border-color: var(--rose-500);
+      color: var(--rose-500);
+      box-shadow: 0 0 0 4px var(--rose-100);
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .step-node.active .step-label,
+    .step-node.completed .step-label {
+      color: var(--text-main);
+    }
+
+    .step-time {
+      font-size: 0.7rem;
+      color: var(--text-subtle);
+    }
+
+    /* Tracking Delivery Box */
+    .tracking-details-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .tracking-details-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .info-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-title {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-subtle);
+    }
+
+    .info-content {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Actions Bar */
+    .tracking-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-wa-support {
+      flex: 1;
+      min-width: 200px;
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+      background: #25D366;
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+      transition: transform 0.2s;
+    }
+
+    .btn-wa-support:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-download-pdf {
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-download-pdf:hover {
+      background: var(--bg-subtle);
+      border-color: var(--text-main);
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--rose-500);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-msg.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP SHOWCASE NAVIGATION & CONTROLS -->
+  <header class="showcase-nav">
+    <div class="brand-area">
+      <span class="brand-title">ILARA BEAUTY</span>
+      <span class="pill-badge">✨ Overhaul Checkout Pro</span>
+    </div>
+
+    <!-- Step Selector -->
+    <div class="flow-steps">
+      <button class="flow-btn active" id="btn-tab-checkout" onclick="switchView('checkout')">
+        <span>🛒</span>
+        <span>1. Checkout Luxury</span>
+      </button>
+      <button class="flow-btn" id="btn-tab-payment" onclick="switchView('payment')">
+        <span>⚡</span>
+        <span>2. Mercado Pago & Pasarela</span>
+      </button>
+      <button class="flow-btn" id="btn-tab-tracking" onclick="switchView('tracking')">
+        <span>📦</span>
+        <span>3. Link de Seguimiento (/pedido)</span>
+      </button>
+    </div>
+
+    <!-- Theme Switch -->
+    <button class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar Modo Oscuro / Claro">
+      <span id="theme-btn-icon">🌙</span>
+    </button>
+  </header>
+
+  <!-- MASTER CONTAINER -->
+  <main class="container">
+
+    <!-- ====================================================================
+         VIEW 1: CHECKOUT LUXURY (DATOS + ENVÍO + RESUMEN)
+         ==================================================================== -->
+    <section class="view-section active" id="view-checkout">
+      <div class="checkout-grid">
+        
+        <!-- Left: Form & Delivery -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- Section 1: Customer Details -->
+          <div class="panel-card">
+            <h2 class="panel-title">
+              <span><span class="section-num">1</span>Tus Datos de Contacto</span>
+              <span style="font-size: 0.78rem; font-family: var(--font-sans); color: var(--rose-600); font-weight: 600;">✨ Rápido & Seguro</span>
+            </h2>
+
+            <div class="form-group">
+              <label class="form-label">Nombre y Apellido *</label>
+              <input type="text" class="form-input" id="cust-name" value="Valeria Gómez" placeholder="Ej: Valeria Gómez">
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">WhatsApp (para avisos) *</label>
+                <input type="tel" class="form-input" id="cust-phone" value="+54 9 11 5849-2310" placeholder="+54 9 11 ...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email (opcional)</label>
+                <input type="email" class="form-input" id="cust-email" value="valeria.gomez@gmail.com" placeholder="tu@email.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Delivery Method -->
+          <div class="panel-card">
+            <h2 class="panel-title">
+              <span><span class="section-num">2</span>Forma de Entrega</span>
+            </h2>
+
+            <div class="delivery-selector">
+              <div class="delivery-option-btn active" id="del-btn-shipping" onclick="selectDelivery('shipping')">
+                <span class="delivery-icon">🚚</span>
+                <div>
+                  <div class="delivery-name">Envío a Domicilio</div>
+                  <div class="delivery-desc">Andreani Express o Moto en el día</div>
+                </div>
+              </div>
+
+              <div class="delivery-option-btn" id="del-btn-pickup" onclick="selectDelivery('pickup')">
+                <span class="delivery-icon">🛍️</span>
+                <div>
+                  <div class="delivery-name">Retiro en Showroom</div>
+                  <div class="delivery-desc">Gratis en Palermo Soho (CABA)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address Fields -->
+            <div id="address-fields-box" style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px;">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Provincia</label>
+                  <select class="form-select" onchange="calculateShipping()">
+                    <option value="caba">Ciudad Autónoma de Buenos Aires</option>
+                    <option value="gba">Buenos Aires (GBA)</option>
+                    <option value="cordoba">Córdoba</option>
+                    <option value="santafe">Santa Fe</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Código Postal</label>
+                  <input type="text" class="form-input" value="1425" placeholder="Ej: 1425">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Calle y Altura</label>
+                  <input type="text" class="form-input" value="Av. Santa Fe 3240, Piso 4B" placeholder="Calle y número">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Notas para el repartidor</label>
+                  <input type="text" class="form-input" value="Tocar timbre Gómez" placeholder="Ej: Portero 4B">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proceed to Payment CTA -->
+          <button class="btn-primary-action" onclick="switchView('payment')">
+            <span>Continuar al Pago</span>
+            <span>➔</span>
+          </button>
+
+        </div>
+
+        <!-- Right: Order Summary Sidebar -->
+        <aside class="summary-card">
+          <h3 class="panel-title" style="font-size: 1.25rem;">Resumen de tu Bolsa</h3>
+
+          <!-- Free Shipping Tracker -->
+          <div class="shipping-bar-wrap">
+            <div class="shipping-bar-title">
+              <span>🎉 ¡Tenés ENVÍO GRATIS!</span>
+              <span>100%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- Items List -->
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="cart-item-row">
+              <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=200&q=80" alt="Rose Glow Serum" class="cart-item-thumb">
+              <div class="cart-item-details">
+                <div class="cart-item-name">Rose Glow Elixir Sérum</div>
+                <div class="cart-item-shade-tag">
+                  <span class="color-dot" style="background: #E8A598;"></span>
+                  <span>Tono: Radiance Rose · 1x</span>
+                </div>
+              </div>
+              <span class="cart-item-price">$24.900</span>
+            </div>
+
+            <div class="cart-item-row">
+              <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=200&q=80" alt="Velvet Matte Lipstick" class="cart-item-thumb">
+              <div class="cart-item-details">
+                <div class="cart-item-name">Velvet Matte Lipstick</div>
+                <div class="cart-item-shade-tag">
+                  <span class="color-dot" style="background: #B07D62;"></span>
+                  <span>Tono: Dune Nude · 1x</span>
+                </div>
+              </div>
+              <span class="cart-item-price">$18.500</span>
+            </div>
+          </div>
+
+          <!-- Coupon Input -->
+          <div class="coupon-box">
+            <input type="text" class="form-input" id="coupon-input" value="GLOW10" placeholder="Código de cupón">
+            <button class="btn-apply-coupon" onclick="applyCoupon()">Aplicar</button>
+          </div>
+
+          <!-- Totals Calculation -->
+          <div class="summary-totals">
+            <div class="total-line">
+              <span>Subtotal productos</span>
+              <span style="font-family: var(--font-mono); font-weight: 600;">$43.400</span>
+            </div>
+            <div class="total-line" style="color: var(--success-green); font-weight: 600;">
+              <span>Cupón GLOW10 (-10%)</span>
+              <span style="font-family: var(--font-mono);">-$4.340</span>
+            </div>
+            <div class="total-line">
+              <span>Envío Andreani Express</span>
+              <span style="font-family: var(--font-mono); color: var(--success-green); font-weight: 700;">GRATIS</span>
+            </div>
+            <div class="total-grand">
+              <span>Total a Pagar</span>
+              <span id="checkout-total-val">$39.060</span>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 2: MERCADO PAGO & PASARELA DE PAGO MODERNA
+         ==================================================================== -->
+    <section class="view-section" id="view-payment">
+      <div style="max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+        
+        <div class="panel-card">
+          <h2 class="panel-title">
+            <span>Selecciona tu Método de Pago</span>
+            <span style="font-size: 1.1rem; font-family: var(--font-mono); color: var(--rose-600); font-weight: 800;">$39.060</span>
+          </h2>
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: -12px;">
+            Tu pedido está reservado por 15 minutos mientras completás el pago.
+          </p>
+
+          <div class="payment-methods-stack">
+            
+            <!-- OPTION 1: MERCADO PAGO -->
+            <div class="payment-card mp-selected" id="pay-card-mp" onclick="selectPayment('mp')">
+              <div class="payment-head">
+                <div class="payment-title-group">
+                  <div class="payment-radio"></div>
+                  <div>
+                    <strong style="font-size: 1.05rem;">Mercado Pago</strong>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Tarjetas de crédito, débito, dinero en cuenta o cuotas</div>
+                  </div>
+                </div>
+                <span class="mp-badge-logo">⚡ Instantáneo</span>
+              </div>
+
+              <!-- MP Benefits -->
+              <div class="mp-perks-list">
+                <span class="mp-perk-item">💳 Hasta 3 cuotas sin interés</span>
+                <span class="mp-perk-item">🔒 Pago 100% Protegido</span>
+                <span class="mp-perk-item">⚡ Acreditación automática</span>
+              </div>
+
+              <!-- MP Button Trigger -->
+              <button class="btn-mp-pay" onclick="simulateMercadoPagoRedirect()">
+                <span>Pagar con Mercado Pago · $39.060</span>
+                <span>➔</span>
+              </button>
+            </div>
+
+            <!-- OPTION 2: TRANSFERENCIA BANCARIA CON 10% OFF EXTRA -->
+            <div class="payment-card" id="pay-card-transfer" onclick="selectPayment('transfer')">
+              <div class="payment-head">
+                <div class="payment-title-group">
+                  <div class="payment-radio"></div>
+                  <div>
+                    <strong style="font-size: 1.05rem;">Transferencia Bancaria</strong>
+                    <div style="font-size: 0.78rem; color: var(--success-green); font-weight: 700;">✨ 10% OFF EXTRA acumulable</div>
+                  </div>
+                </div>
+                <span class="pill-badge" style="background: var(--gold-100); color: var(--gold-600); border-color: var(--gold-400);">$35.154</span>
+              </div>
+
+              <!-- Bank Account Digital Box -->
+              <div class="bank-details-box" id="bank-box-details">
+                <div class="bank-data-cell">
+                  <span class="bank-label">Banco</span>
+                  <span class="bank-val">Banco Galicia</span>
+                </div>
+                <div class="bank-data-cell">
+                  <span class="bank-label">Titular</span>
+                  <span class="bank-val">Ilara Beauty S.A.S</span>
+                </div>
+                <div class="bank-data-cell">
+                  <span class="bank-label">Alias de Transferencia</span>
+                  <div class="bank-val-row">
+                    <span class="bank-val" id="val-alias">ILARA.BEAUTY.PAGOS</span>
+                    <button class="btn-copy-chip" onclick="copyToClipboard('ILARA.BEAUTY.PAGOS', 'Alias copiado al portapapeles')">Copiar</button>
+                  </div>
+                </div>
+                <div class="bank-data-cell">
+                  <span class="bank-label">CBU / CVU</span>
+                  <div class="bank-val-row">
+                    <span class="bank-val" style="font-size: 0.8rem;">0070123430004567891234</span>
+                    <button class="btn-copy-chip" onclick="copyToClipboard('0070123430004567891234', 'CBU copiado')">Copiar</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Receipt Upload Simulator -->
+              <div class="receipt-dropzone" onclick="simulateUploadReceipt()">
+                <span style="font-size: 1.6rem;">📎</span>
+                <div style="font-weight: 700; font-size: 0.88rem; margin-top: 4px;">Subir Comprobante de Transferencia</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Arrastrá tu captura o hacé clic para adjuntar (JPG, PNG, PDF)</div>
+              </div>
+            </div>
+
+            <!-- OPTION 3: EFECTIVO EN SHOWROOM -->
+            <div class="payment-card" id="pay-card-cash" onclick="selectPayment('cash')">
+              <div class="payment-head">
+                <div class="payment-title-group">
+                  <div class="payment-radio"></div>
+                  <div>
+                    <strong style="font-size: 1.05rem;">Efectivo al Retirar</strong>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Pagás directamente al retirar en el showroom</div>
+                  </div>
+                </div>
+                <span class="pill-badge">Efectivo</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <button style="background: none; border: none; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); cursor: pointer;" onclick="switchView('checkout')">
+              ← Volver a Datos de Envío
+            </button>
+            <button class="btn-primary-action" style="width: auto; padding: 12px 28px;" onclick="switchView('tracking')">
+              <span>Confirmar y Ver Pedido</span>
+              <span>➔</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 3: LINK DE SEGUIMIENTO (/pedido/[orderNumber])
+         ==================================================================== -->
+    <section class="view-section" id="view-tracking">
+      <div class="tracking-wrapper">
+        
+        <!-- Header Order Card -->
+        <div class="tracking-header-card">
+          <div class="order-number-title">
+            <div>
+              <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-600); font-family: var(--font-sans); display: block; font-weight: 800;">
+                Seguimiento Oficial de Compra
+              </span>
+              Pedido #IL-92841
+            </div>
+            <span class="status-pill" id="tracking-status-badge">
+              <span>●</span>
+              <span>Pago Aprobado · En Preparación</span>
+            </span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 6px;">
+            ¡Gracias por tu compra, <strong>Valeria</strong>! Tu pedido fue registrado el <strong>19 de Agosto a las 18:42 hs</strong>.
+          </p>
+
+          <!-- Interactive Stepper -->
+          <div class="stepper-container">
+            <div class="stepper-line"></div>
+            <div class="stepper-line-progress" id="stepper-progress-bar" style="width: 50%;"></div>
+
+            <!-- Step 1 -->
+            <div class="step-node completed" onclick="setOrderStatus(1)">
+              <div class="step-circle">✓</div>
+              <span class="step-label">Recibido</span>
+              <span class="step-time">18:42 hs</span>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-node completed" onclick="setOrderStatus(2)">
+              <div class="step-circle">✓</div>
+              <span class="step-label">Pago Aprobado</span>
+              <span class="step-time">18:43 hs (MP)</span>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-node active" onclick="setOrderStatus(3)">
+              <div class="step-circle">📦</div>
+              <span class="step-label">Empaquetando</span>
+              <span class="step-time">Hoy</span>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-node" onclick="setOrderStatus(4)">
+              <div class="step-circle">🚚</div>
+              <span class="step-label">En Camino</span>
+              <span class="step-time">Andreani</span>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step-node" onclick="setOrderStatus(5)">
+              <div class="step-circle">✨</div>
+              <span class="step-label">Entregado</span>
+              <span class="step-time">Pendiente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tracking & Delivery Details -->
+        <div class="tracking-details-card">
+          <div class="info-block">
+            <span class="info-title">Dirección de Entrega</span>
+            <div class="info-content">Av. Santa Fe 3240, Piso 4B</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Palermo, CABA (CP 1425)</div>
+          </div>
+
+          <div class="info-block">
+            <span class="info-title">Método de Envío</span>
+            <div class="info-content">Andreani Express Puerta a Puerta</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">Guía: #AND-9948102-AR</div>
+          </div>
+
+          <div class="info-block">
+            <span class="info-title">Método de Pago Utilizado</span>
+            <div class="info-content" style="color: var(--mp-blue); font-weight: 700;">⚡ Mercado Pago (Aprobado)</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Comprobante #MP-81923091</div>
+          </div>
+
+          <div class="info-block">
+            <span class="info-title">Total Abonado</span>
+            <div class="info-content" style="font-family: var(--font-mono); font-size: 1.1rem; color: var(--text-main); font-weight: 800;">
+              $39.060
+            </div>
+            <div style="font-size: 0.78rem; color: var(--success-green); font-weight: 600;">Ahorro de $4.340 aplicado</div>
+          </div>
+        </div>
+
+        <!-- Items Breakdown -->
+        <div class="panel-card" style="padding: 22px;">
+          <h3 class="panel-title" style="font-size: 1.15rem;">Productos en este Envío</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="cart-item-row" style="border-bottom: none; padding-bottom: 0;">
+              <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=140&q=80" alt="Rose Glow Serum" class="cart-item-thumb">
+              <div class="cart-item-details">
+                <div class="cart-item-name">Rose Glow Elixir Sérum</div>
+                <div class="cart-item-shade-tag">Tono: Radiance Rose · Cantidad: 1</div>
+              </div>
+              <span class="cart-item-price">$24.900</span>
+            </div>
+
+            <div class="cart-item-row" style="border-bottom: none; padding-bottom: 0;">
+              <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=140&q=80" alt="Velvet Matte Lipstick" class="cart-item-thumb">
+              <div class="cart-item-details">
+                <div class="cart-item-name">Velvet Matte Lipstick</div>
+                <div class="cart-item-shade-tag">Tono: Dune Nude · Cantidad: 1</div>
+              </div>
+              <span class="cart-item-price">$18.500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Action Buttons -->
+        <div class="tracking-actions">
+          <a href="https://wa.me/5491158492310?text=Hola%20Ilara%20Beauty!%20Tengo%20una%20consulta%20sobre%20mi%20pedido%20%23IL-92841" target="_blank" class="btn-wa-support">
+            <span>💬</span>
+            <span>Consultar por WhatsApp</span>
+          </a>
+
+          <button class="btn-download-pdf" onclick="showToast('Descargando comprobante oficial PDF...', 'info')">
+            <span>📄</span>
+            <span>Descargar Ticket Digital</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Toast Notification -->
+  <div class="toast-msg" id="toast-box">
+    <span id="toast-icon">✨</span>
+    <span id="toast-text">Notificación</span>
+  </div>
+
+  <!-- JavaScript Controller -->
+  <script>
+    function switchView(viewId) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.flow-btn').forEach(btn => btn.classList.remove('active'));
+
+      const targetSec = document.getElementById(`view-${viewId}`);
+      const targetBtn = document.getElementById(`btn-tab-${viewId}`);
+
+      if (targetSec) targetSec.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-btn-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+      showToast(`Modo ${next === 'dark' ? 'Oscuro Obsidian' : 'Claro Cashmere'} activado`);
+    }
+
+    function selectDelivery(mode) {
+      document.getElementById('del-btn-shipping').classList.toggle('active', mode === 'shipping');
+      document.getElementById('del-btn-pickup').classList.toggle('active', mode === 'pickup');
+      document.getElementById('address-fields-box').style.display = mode === 'shipping' ? 'flex' : 'none';
+      showToast(mode === 'shipping' ? 'Envío a domicilio seleccionado' : 'Retiro gratis en showroom seleccionado');
+    }
+
+    function selectPayment(method) {
+      document.querySelectorAll('.payment-card').forEach(card => {
+        card.classList.remove('selected', 'mp-selected');
+      });
+
+      const card = document.getElementById(`pay-card-${method}`);
+      if (card) {
+        if (method === 'mp') {
+          card.classList.add('mp-selected');
+        } else {
+          card.classList.add('selected');
+        }
+      }
+    }
+
+    function copyToClipboard(text, successMsg) {
+      navigator.clipboard.writeText(text);
+      showToast(successMsg || 'Copiado al portapapeles', 'copy');
+    }
+
+    function applyCoupon() {
+      const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+      if (code === 'GLOW10') {
+        showToast('¡Cupón GLOW10 aplicado! Descuento del 10% recalculado', 'success');
+      } else {
+        showToast('Cupón inválido o expirado', 'error');
+      }
+    }
+
+    function simulateMercadoPagoRedirect() {
+      showToast('Redirigiendo de forma segura a Mercado Pago Checkout Pro...', 'mp');
+      setTimeout(() => {
+        switchView('tracking');
+        showToast('¡Pago procesado con éxito en Mercado Pago!', 'success');
+      }, 1500);
+    }
+
+    function simulateUploadReceipt() {
+      showToast('Comprobante adjuntado correctamente. Estado: En Revisión', 'success');
+    }
+
+    function setOrderStatus(stepNumber) {
+      const progress = document.getElementById('stepper-progress-bar');
+      const badge = document.getElementById('tracking-status-badge');
+      const steps = document.querySelectorAll('.step-node');
+
+      const percentages = { 1: '0%', 2: '25%', 3: '50%', 4: '75%', 5: '100%' };
+      progress.style.width = percentages[stepNumber] || '50%';
+
+      steps.forEach((s, idx) => {
+        const num = idx + 1;
+        s.classList.remove('completed', 'active');
+        if (num < stepNumber) s.classList.add('completed');
+        else if (num === stepNumber) s.classList.add('active');
+      });
+
+      const labels = {
+        1: 'Pedido Recibido · Pendiente de Pago',
+        2: 'Pago Aprobado · Confirmado',
+        3: 'Pago Aprobado · En Preparación',
+        4: 'Despachado · En Camino Andreani',
+        5: 'Entregado con Éxito ✨'
+      };
+
+      badge.innerHTML = `<span>●</span><span>${labels[stepNumber]}</span>`;
+      showToast(`Estado actualizado a: ${labels[stepNumber]}`, 'info');
+    }
+
+    function showToast(text, type = 'info') {
+      const toast = document.getElementById('toast-box');
+      const icon = document.getElementById('toast-icon');
+      const label = document.getElementById('toast-text');
+
+      icon.textContent = type === 'success' ? '✨' : type === 'mp' ? '⚡' : type === 'copy' ? '📋' : '🌸';
+      label.textContent = text;
+
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>

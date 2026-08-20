@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ilara Beauty — Master Overhaul Visual & Prototipo Interactivo</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & SYSTEM VARIABLES
+       ========================================================================== */
+    :root {
+      /* Light Mode Palette: Warm Alabaster, Cashmere, Rose Gold & Champagne */
+      --bg-primary: #FAF8F5;
+      --bg-secondary: #F3EFEA;
+      --bg-surface: #FFFFFF;
+      --bg-surface-elevated: #FFFFFF;
+      --bg-surface-glass: rgba(255, 255, 255, 0.88);
+      --bg-sidebar: #141318;
+      
+      --text-primary: #1A181E;
+      --text-secondary: #635F6A;
+      --text-muted: #95909E;
+      --text-inverse: #FFFFFF;
+      
+      --accent-rose: #D97786;
+      --accent-rose-dark: #C25B6C;
+      --accent-rose-light: #FDF2F4;
+      --accent-rose-glow: rgba(217, 119, 134, 0.2);
+      
+      --accent-gold: #C5A880;
+      --accent-gold-dark: #A98C64;
+      --accent-gold-light: #FBF7F0;
+      
+      --accent-primary-gradient: linear-gradient(135deg, #CF6B7F 0%, #B85064 100%);
+      --accent-gold-gradient: linear-gradient(135deg, #D4B68E 0%, #B89667 100%);
+      
+      --success: #1E9E68;
+      --success-bg: #ECFDF5;
+      --success-border: #A7F3D0;
+      
+      --warning: #D97706;
+      --warning-bg: #FFFBEB;
+      
+      --danger: #E11D48;
+      --danger-bg: #FFF1F2;
+      
+      --whatsapp: #25D366;
+      --whatsapp-hover: #20BA5A;
+      --whatsapp-bg: #E8FBF0;
+      
+      --border-subtle: #EDE8E1;
+      --border-medium: #DDD6CE;
+      --border-focus: #D97786;
+      
+      --shadow-xs: 0 1px 2px rgba(26, 24, 30, 0.04);
+      --shadow-sm: 0 2px 6px rgba(26, 24, 30, 0.06);
+      --shadow-md: 0 8px 24px -4px rgba(26, 24, 30, 0.08), 0 2px 6px -1px rgba(26, 24, 30, 0.04);
+      --shadow-lg: 0 18px 36px -6px rgba(26, 24, 30, 0.1), 0 6px 16px -2px rgba(26, 24, 30, 0.05);
+      --shadow-xl: 0 28px 56px -10px rgba(26, 24, 30, 0.14);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+      --radius-full: 9999px;
+      
+      --font-sans: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Palette: Obsidian Velvet, Luminous Rose & Plum Glow */
+      --bg-primary: #111015;
+      --bg-secondary: #17151D;
+      --bg-surface: #1E1B24;
+      --bg-surface-elevated: #26222D;
+      --bg-surface-glass: rgba(30, 27, 36, 0.88);
+      --bg-sidebar: #0D0C10;
+      
+      --text-primary: #F5F3F7;
+      --text-secondary: #A8A3B0;
+      --text-muted: #726D7B;
+      --text-inverse: #111015;
+      
+      --accent-rose: #F472B6;
+      --accent-rose-dark: #E85D9E;
+      --accent-rose-light: #2D1823;
+      --accent-rose-glow: rgba(244, 114, 182, 0.25);
+      
+      --accent-gold: #E5C396;
+      --accent-gold-dark: #CBB07E;
+      --accent-gold-light: #2B2319;
+      
+      --accent-primary-gradient: linear-gradient(135deg, #EC4899 0%, #BE185D 100%);
+      
+      --success: #34D399;
+      --success-bg: #064E3B33;
+      --success-border: #065F46;
+      
+      --warning: #FBBF24;
+      --warning-bg: #78350F33;
+      
+      --danger: #FB7185;
+      --danger-bg: #88133733;
+      
+      --whatsapp: #4ADE80;
+      --whatsapp-bg: #064E3B33;
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.14);
+      --border-focus: #F472B6;
+      
+      --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.6);
+      --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Base Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Master Top Header / Control Nav */
+    .master-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--bg-surface-glass);
+      backdrop-filter: blur(20px) saturate(1.2);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 20px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-symbol {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-primary-gradient);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px var(--accent-rose-glow);
+    }
+
+    .brand-name {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+    }
+
+    .brand-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: var(--accent-rose-light);
+      color: var(--accent-rose-dark);
+      border-radius: var(--radius-full);
+      letter-spacing: 0.05em;
+    }
+
+    /* Module Navigation Tabs */
+    .nav-pills-bar {
+      display: flex;
+      align-items: center;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      gap: 3px;
+    }
+
+    .nav-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border-radius: var(--radius-lg);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .nav-pill:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-pill.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-pill .badge-count {
+      background: var(--accent-rose);
+      color: #fff;
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      font-weight: 800;
+    }
+
+    /* Top Controls */
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+
+    .theme-btn:hover {
+      background: var(--bg-secondary);
+      transform: scale(1.05);
+    }
+
+    .btn-quick-sale {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-lg);
+      background: var(--accent-primary-gradient);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.84rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--accent-rose-glow);
+      transition: all 0.2s ease;
+    }
+
+    .btn-quick-sale:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--accent-rose-glow);
+    }
+
+    /* Live Ticker Subheader */
+    .live-ticker {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      gap: 16px;
+      overflow-x: auto;
+    }
+
+    .ticker-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ticker-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .ticker-pill strong {
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* Main Content Container */
+    .main-workspace {
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       VIEW 1: PUNTO DE VENTA (POS DUAL-PANE)
+       ========================================================================== */
+    .pos-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1080px) {
+      .pos-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* POS Catalog Left */
+    .pos-catalog {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .pos-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-rose-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    .category-filter-group {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .cat-btn {
+      padding: 8px 14px;
+      border-radius: var(--radius-lg);
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .cat-btn:hover, .cat-btn.active {
+      background: var(--accent-rose-light);
+      color: var(--accent-rose-dark);
+      border-color: var(--accent-rose);
+    }
+
+    /* POS Products Grid */
+    .pos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent-rose);
+    }
+
+    .product-img-wrap {
+      width: 100%;
+      height: 160px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-secondary);
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .product-card:hover .product-img-wrap img {
+      transform: scale(1.06);
+    }
+
+    .stock-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text-primary);
+      backdrop-filter: blur(4px);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .stock-badge.critical {
+      background: #FFE4E6;
+      color: #E11D48;
+    }
+
+    .product-brand {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold-dark);
+      margin-bottom: 4px;
+    }
+
+    .product-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    /* Swatches for shades */
+    .shade-swatches-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .shade-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 0 0 1px var(--border-medium);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .shade-swatch:hover, .shade-swatch.active {
+      transform: scale(1.3);
+      box-shadow: 0 0 0 2px var(--accent-rose);
+    }
+
+    .product-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .product-price {
+      font-size: 1.1rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+
+    .btn-add-item {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--accent-rose-light);
+      color: var(--accent-rose-dark);
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .btn-add-item:hover {
+      background: var(--accent-rose);
+      color: #fff;
+      transform: scale(1.1);
+    }
+
+    /* POS Ticket Slip Right */
+    .pos-ticket-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 84px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ticket-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .ticket-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .ticket-clear-btn {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--danger);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cart-items-list {
+      max-height: 280px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+    }
+
+    .cart-item-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .cart-item-shade {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+
+    .cart-item-stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .cart-item-price {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    /* Ticket Totals & Payment */
+    .ticket-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border-medium);
+      font-size: 0.88rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-secondary);
+    }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .payment-methods-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .pay-btn {
+      padding: 10px 6px;
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-align: center;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pay-btn.active {
+      background: var(--accent-rose);
+      color: #FFFFFF;
+      border-color: var(--accent-rose);
+    }
+
+    .btn-checkout {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-lg);
+      background: var(--accent-primary-gradient);
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--accent-rose-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-checkout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-rose-glow);
+    }
+
+    /* ==========================================================================
+       VIEW 2: MARGEN REAL & FINANZAS
+       ========================================================================== */
+    .finance-grid-kpi {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent-rose);
+    }
+
+    .kpi-card.gold::before { background: var(--accent-gold); }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.danger::before { background: var(--danger); }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .kpi-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+
+    .kpi-foot {
+      font-size: 0.75rem;
+      color: var(--success);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .finance-chart-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    /* Simulated SVG Chart */
+    .chart-svg-wrap {
+      width: 100%;
+      height: 220px;
+    }
+
+    /* Ledger Table */
+    .ledger-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+
+    table.styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    table.styled-table th {
+      padding: 12px 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+
+    table.styled-table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    table.styled-table tr:hover td {
+      background: var(--bg-secondary);
+    }
+
+    /* ==========================================================================
+       VIEW 3: PEDIDOS & WHATSAPP KANBAN
+       ========================================================================== */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .kanban-board {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kanban-col {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 480px;
+    }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .col-count {
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--bg-surface);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .kanban-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-xs);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
+      cursor: grab;
+    }
+
+    .kanban-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .client-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .order-id {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .order-items-preview {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 4px;
+    }
+
+    .btn-wa-notify {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      background: var(--whatsapp-bg);
+      color: #128C7E;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-wa-notify:hover {
+      background: var(--whatsapp);
+      color: #fff;
+    }
+
+    /* ==========================================================================
+       VIEW 4: CATÁLOGO DIGITAL LUXURY (STOREFRONT)
+       ========================================================================== */
+    .storefront-wrap {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .announcement-bar {
+      background: var(--accent-rose-dark);
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 0.82rem;
+      text-align: center;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .store-hero {
+      background: linear-gradient(135deg, #FBF8F5 0%, #F5EDE6 100%);
+      padding: 60px 40px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    [data-theme="dark"] .store-hero {
+      background: linear-gradient(135deg, #1C1924 0%, #15131C 100%);
+    }
+
+    @media (max-width: 840px) {
+      .store-hero {
+        grid-template-columns: 1fr;
+        padding: 36px 20px;
+      }
+    }
+
+    .hero-tagline {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-rose-dark);
+      margin-bottom: 12px;
+    }
+
+    .hero-headline {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .hero-headline em {
+      font-style: italic;
+      color: var(--accent-rose-dark);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 480px;
+    }
+
+    .hero-hero-img {
+      width: 100%;
+      height: 340px;
+      border-radius: var(--radius-xl);
+      object-fit: cover;
+      box-shadow: var(--shadow-xl);
+    }
+
+    /* Store Products Grid */
+    .store-content-area {
+      padding: 40px 30px;
+    }
+
+    .store-section-title {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       VIEW 5: GALERÍA DE MOCKUPS & OVERHAUL SPECS
+       ========================================================================== */
+    .renders-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    .render-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .render-img-frame {
+      width: 100%;
+      height: 240px;
+      background: var(--bg-secondary);
+      overflow: hidden;
+    }
+
+    .render-img-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+      cursor: zoom-in;
+    }
+
+    .render-img-frame:hover img {
+      transform: scale(1.05);
+    }
+
+    .render-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .render-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .render-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Toast Notification */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--accent-rose);
+      box-shadow: var(--shadow-xl);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-popup.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. MASTER HEADER / TOP COMMAND BAR -->
+  <header class="master-header">
+    <a href="#" class="brand-block" onclick="switchTab('pos')">
+      <div class="brand-symbol">I</div>
+      <div>
+        <div class="brand-name">ILARA BEAUTY</div>
+      </div>
+      <span class="brand-badge">Overhaul 2026</span>
+    </a>
+
+    <!-- Module Switcher -->
+    <nav class="nav-pills-bar">
+      <button class="nav-pill active" id="tab-btn-pos" onclick="switchTab('pos')">
+        <span>🛒</span>
+        <span>Punto de Venta POS</span>
+      </button>
+      <button class="nav-pill" id="tab-btn-finance" onclick="switchTab('finance')">
+        <span>📊</span>
+        <span>Margen Real & Finanzas</span>
+      </button>
+      <button class="nav-pill" id="tab-btn-orders" onclick="switchTab('orders')">
+        <span>📦</span>
+        <span>Pedidos WhatsApp</span>
+        <span class="badge-count">3</span>
+      </button>
+      <button class="nav-pill" id="tab-btn-store" onclick="switchTab('store')">
+        <span>✨</span>
+        <span>Catálogo Luxury</span>
+      </button>
+      <button class="nav-pill" id="tab-btn-gallery" onclick="switchTab('gallery')">
+        <span>🖼️</span>
+        <span>Galería de Renders</span>
+      </button>
+    </nav>
+
+    <!-- Right Controls -->
+    <div class="top-controls">
+      <button class="theme-btn" onclick="toggleTheme()" title="Cambiar Tema Día / Noche">
+        <span id="theme-icon">🌙</span>
+      </button>
+      <button class="btn-quick-sale" onclick="switchTab('pos'); document.getElementById('search-pos-input')?.focus();">
+        <span>+</span>
+        <span>Nueva Venta</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. LIVE STATUS TICKER -->
+  <div class="live-ticker">
+    <div class="ticker-left">
+      <div class="ticker-pill">
+        <span class="status-dot"></span>
+        <span>Caja Abierta #042: <strong>$482.350</strong></span>
+      </div>
+      <div class="ticker-pill">
+        <span>Ventas Hoy: <strong>$184.200</strong> (14 tickets)</span>
+      </div>
+      <div class="ticker-pill">
+        <span>Margen Real Neto: <strong style="color: var(--success);">54.2%</strong></span>
+      </div>
+      <div class="ticker-pill">
+        <span>Stock Crítico: <strong style="color: var(--danger);">2 productos</strong></span>
+      </div>
+    </div>
+    <div class="ticker-pill" style="font-size: 0.75rem; color: var(--text-muted);">
+      <span>✨ Sesión: <strong>Ilan (Admin)</strong></span>
+    </div>
+  </div>
+
+  <!-- 3. MAIN WORKSPACE CONTAINER -->
+  <main class="main-workspace">
+
+    <!-- ====================================================================
+         VIEW 1: PUNTO DE VENTA (POS DUAL-PANE)
+         ==================================================================== -->
+    <section class="view-panel active" id="view-pos">
+      <div class="pos-layout">
+        
+        <!-- Left: Catalog & Search -->
+        <div class="pos-catalog">
+          <div class="pos-toolbar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-pos-input" class="search-input" placeholder="Buscar producto por nombre o tono (ej: Velvet, Sérum, 02)..." oninput="filterPosProducts(this.value)">
+            </div>
+            <div class="category-filter-group">
+              <button class="cat-btn active" onclick="filterCategory('all', this)">Todos</button>
+              <button class="cat-btn" onclick="filterCategory('skincare', this)">🌸 Skincare</button>
+              <button class="cat-btn" onclick="filterCategory('lips', this)">💋 Labiales</button>
+              <button class="cat-btn" onclick="filterCategory('face', this)">✨ Rostro & Base</button>
+              <button class="cat-btn" onclick="filterCategory('sets', this)">🎁 Sets</button>
+            </div>
+          </div>
+
+          <!-- Product Grid -->
+          <div class="pos-grid" id="pos-products-container">
+            <!-- Dynamic Injection from JS -->
+          </div>
+        </div>
+
+        <!-- Right: Digital Slip Checkout -->
+        <div class="pos-ticket-panel">
+          <div class="ticket-head">
+            <div>
+              <h3 class="ticket-title">Ticket Digital</h3>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Mesa / Venta Express</p>
+            </div>
+            <button class="ticket-clear-btn" onclick="clearCart()">Vaciar</button>
+          </div>
+
+          <!-- Cart Items -->
+          <div class="cart-items-list" id="pos-cart-items">
+            <!-- Dynamic Cart Items -->
+          </div>
+
+          <!-- Totals -->
+          <div class="ticket-summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="pos-subtotal" style="font-family: var(--font-mono);">$0</span>
+            </div>
+            <div class="summary-row">
+              <span>Descuento / Cupón</span>
+              <span id="pos-discount" style="font-family: var(--font-mono); color: var(--success);">$0</span>
+            </div>
+            <div class="summary-total">
+              <span>TOTAL</span>
+              <span id="pos-total">$0</span>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">
+              Método de Pago
+            </div>
+            <div class="payment-methods-grid">
+              <button class="pay-btn active" onclick="setPaymentMethod('efectivo', this)">💵 Efectivo</button>
+              <button class="pay-btn" onclick="setPaymentMethod('transferencia', this)">📱 Transferencia</button>
+              <button class="pay-btn" onclick="setPaymentMethod('qr', this)">⚡ QR MercadoPago</button>
+            </div>
+          </div>
+
+          <!-- Final Checkout Action -->
+          <button class="btn-checkout" onclick="confirmSale()">
+            <span>✨</span>
+            <span>Cobrar y Enviar por WhatsApp</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 2: MARGEN REAL & FINANZAS
+         ==================================================================== -->
+    <section class="view-panel" id="view-finance">
+      <div class="finance-grid-kpi">
+        <div class="kpi-card gold">
+          <span class="kpi-label">Ventas Brutas del Mes</span>
+          <div class="kpi-val">$2.840.500</div>
+          <div class="kpi-foot">↑ +14.2% vs mes anterior</div>
+        </div>
+        <div class="kpi-card danger">
+          <span class="kpi-label">Costo de Mercadería (CMV)</span>
+          <div class="kpi-val">$1.180.200</div>
+          <div class="kpi-foot" style="color: var(--text-muted);">41.5% sobre ventas</div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Gastos Operativos</span>
+          <div class="kpi-val">$324.000</div>
+          <div class="kpi-foot" style="color: var(--text-muted);">Packaging, envíos, comisiones</div>
+        </div>
+        <div class="kpi-card success">
+          <span class="kpi-label">Margen Real Neto en Mano</span>
+          <div class="kpi-val" style="color: var(--success);">$1.336.300</div>
+          <div class="kpi-foot">✨ 47.0% Ganancia Neta Real</div>
+        </div>
+      </div>
+
+      <!-- Financial Chart Area -->
+      <div class="finance-chart-section">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Evolución de Ingresos & Margen Semanal</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Visualización interactiva de rentabilidad real</p>
+          </div>
+          <span class="brand-badge">Semana en curso</span>
+        </div>
+
+        <svg class="chart-svg-wrap" viewBox="0 0 800 200" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#D97786" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#D97786" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid Lines -->
+          <line x1="0" y1="50" x2="800" y2="50" stroke="var(--border-subtle)" stroke-dasharray="4"/>
+          <line x1="0" y1="100" x2="800" y2="100" stroke="var(--border-subtle)" stroke-dasharray="4"/>
+          <line x1="0" y1="150" x2="800" y2="150" stroke="var(--border-subtle)" stroke-dasharray="4"/>
+
+          <!-- Area -->
+          <path d="M 0,160 Q 120,80 240,110 T 480,50 T 720,70 L 800,40 L 800,200 L 0,200 Z" fill="url(#chartGrad)"/>
+          <!-- Line -->
+          <path d="M 0,160 Q 120,80 240,110 T 480,50 T 720,70 L 800,40" fill="none" stroke="var(--accent-rose)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Recent Transactions Ledger -->
+      <div class="ledger-card">
+        <h3 class="chart-title">Libro Diario de Ventas Recientes</h3>
+        <div class="table-responsive">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Cliente</th>
+                <th>Productos</th>
+                <th>Método</th>
+                <th>Total</th>
+                <th>Margen Est.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>18:42</td>
+                <td><strong>Valeria Gómez</strong></td>
+                <td>Rose Glow Serum + Velvet Matte (Dune)</td>
+                <td><span class="brand-badge">QR</span></td>
+                <td><strong>$43.400</strong></td>
+                <td style="color: var(--success); font-weight: 700;">58%</td>
+              </tr>
+              <tr>
+                <td>17:15</td>
+                <td><strong>Camila Rossi</strong></td>
+                <td>Radiant Foundation - Tone 02</td>
+                <td><span class="brand-badge">Transferencia</span></td>
+                <td><strong>$32.000</strong></td>
+                <td style="color: var(--success); font-weight: 700;">52%</td>
+              </tr>
+              <tr>
+                <td>15:30</td>
+                <td><strong>Lucía Mendez</strong></td>
+                <td>Set Rutina Glow Botanicals 3 Pasos</td>
+                <td><span class="brand-badge">Efectivo</span></td>
+                <td><strong>$68.900</strong></td>
+                <td style="color: var(--success); font-weight: 700;">61%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 3: PEDIDOS WHATSAPP KANBAN
+         ==================================================================== -->
+    <section class="view-panel" id="view-orders">
+      <div class="kanban-board">
+        
+        <!-- Column 1: Nuevos -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <span>📥 Nuevos Pedidos Web</span>
+            <span class="col-count">3</span>
+          </div>
+
+          <div class="kanban-card">
+            <div class="card-top">
+              <span class="client-name">Sofía Martelli</span>
+              <span class="order-id">#IL-8492</span>
+            </div>
+            <div class="order-items-preview">
+              1x Rose Glow Serum<br>
+              1x Velvet Lipstick (Petal Rose)
+            </div>
+            <div class="card-bottom">
+              <strong style="font-family: var(--font-mono);">$43.400</strong>
+              <button class="btn-wa-notify" onclick="simulateWaNotify('Sofía Martelli', '#IL-8492', 'confirmado')">
+                <span>💬</span> Confirmar
+              </button>
+            </div>
+          </div>
+
+          <div class="kanban-card">
+            <div class="card-top">
+              <span class="client-name">Julieta Perez</span>
+              <span class="order-id">#IL-8491</span>
+            </div>
+            <div class="order-items-preview">
+              1x Radiant Foundation (Tone 01)<br>
+              1x Silk Hydrator Cream
+            </div>
+            <div class="card-bottom">
+              <strong style="font-family: var(--font-mono);">$51.200</strong>
+              <button class="btn-wa-notify" onclick="simulateWaNotify('Julieta Perez', '#IL-8491', 'confirmado')">
+                <span>💬</span> Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Preparación -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <span>📦 En Preparación & Empaque</span>
+            <span class="col-count">2</span>
+          </div>
+
+          <div class="kanban-card">
+            <div class="card-top">
+              <span class="client-name">Martina Castro</span>
+              <span class="order-id">#IL-8488</span>
+            </div>
+            <div class="order-items-preview">
+              1x Set Rutina Glow 3 Pasos<br>
+              <em>Envío Andreani Express</em>
+            </div>
+            <div class="card-bottom">
+              <strong style="font-family: var(--font-mono);">$68.900</strong>
+              <button class="btn-wa-notify" onclick="simulateWaNotify('Martina Castro', '#IL-8488', 'preparado')">
+                <span>💬</span> Avisar Listo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: Enviados -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <span>🚚 Enviados & Entregados</span>
+            <span class="col-count">4</span>
+          </div>
+
+          <div class="kanban-card">
+            <div class="card-top">
+              <span class="client-name">Mariana Sosa</span>
+              <span class="order-id">#IL-8479</span>
+            </div>
+            <div class="order-items-preview">
+              2x Velvet Lipstick (Berry Wine)
+            </div>
+            <div class="card-bottom">
+              <strong style="font-family: var(--font-mono);">$37.000</strong>
+              <span class="brand-badge" style="background: var(--success-bg); color: var(--success);">Entregado</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 4: CATÁLOGO DIGITAL LUXURY (TIENDA CLIENTAS)
+         ==================================================================== -->
+    <section class="view-panel" id="view-store">
+      <div class="storefront-wrap">
+        <div class="announcement-bar">
+          <span>✨ ENVÍOS GRATIS en compras superiores a $50.000</span>
+          <span>•</span>
+          <span>10% OFF en tu primer pedido con cupón <strong>GLOW10</strong></span>
+        </div>
+
+        <div class="store-hero">
+          <div>
+            <div class="hero-tagline">🌸 Cosmética Botánica de Alta Precisión</div>
+            <h1 class="hero-headline">La ciencia del <em>glow natural</em> para tu piel.</h1>
+            <p class="hero-desc">
+              Fórmulas limpias con ceramidas bioidénticas, ácido hialurónico multimolecular y extractos botánicos que transforman la textura de tu piel desde la primera aplicación.
+            </p>
+            <button class="btn-quick-sale" style="padding: 12px 24px; font-size: 0.95rem;" onclick="showToast('¡Explorando la colección destacada!', 'info')">
+              Descubrir Colección
+            </button>
+          </div>
+          <div>
+            <img src="https://images.unsplash.com/photo-1679307658813-da95b901ecd9?auto=format&fit=crop&w=800&q=80" alt="Glow Ritual" class="hero-hero-img">
+          </div>
+        </div>
+
+        <div class="store-content-area">
+          <h2 class="store-section-title">Bestsellers de la Temporada</h2>
+          <div class="pos-grid" id="storefront-grid">
+            <!-- Dynamic Store Products -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 5: GALERÍA DE MOCKUPS & SPECS
+         ==================================================================== -->
+    <section class="view-panel" id="view-gallery">
+      <div style="margin-bottom: 24px;">
+        <h2 class="chart-title" style="font-size: 2rem;">Mockups Conceptuales de Alta Fidelidad</h2>
+        <p style="color: var(--text-secondary);">Representación fotográfica y renderizada de la nueva identidad visual de Ilara Beauty</p>
+      </div>
+
+      <div class="renders-gallery-grid">
+        
+        <!-- Render 1 -->
+        <div class="render-card">
+          <div class="render-img-frame">
+            <img src="C:\Users\ilaan\.gemini\antigravity\brain\71aee7f2-4b75-4225-843c-3506fb733a9b\ilara_overhaul_desktop_1787020759262.jpg" alt="Punto de Venta Desktop Light">
+          </div>
+          <div class="render-body">
+            <span class="brand-badge">Modo Claro · Warm Cashmere</span>
+            <h4 class="render-title">Punto de Venta POS & Centro de Mando</h4>
+            <p class="render-desc">
+              Diseño dual-pane con selector visual de tonos para labiales y bases, ticker en tiempo real de métricas y checkout directo a WhatsApp.
+            </p>
+          </div>
+        </div>
+
+        <!-- Render 2 -->
+        <div class="render-card">
+          <div class="render-img-frame">
+            <img src="C:\Users\ilaan\.gemini\antigravity\brain\71aee7f2-4b75-4225-843c-3506fb733a9b\ilara_dark_mobile_1787020778309.jpg" alt="Dark Mode & Mobile Experience">
+          </div>
+          <div class="render-body">
+            <span class="brand-badge">Modo Oscuro · Obsidian Velvet</span>
+            <h4 class="render-title">Analíticas de Margen & App Móvil</h4>
+            <p class="render-desc">
+              Paleta orgánica libre de fatiga visual con curvas de rentabilidad real, gestión de pedidos y navegación ergonómica para celulares.
+            </p>
+          </div>
+        </div>
+
+        <!-- Render 3 -->
+        <div class="render-card">
+          <div class="render-img-frame">
+            <img src="C:\Users\ilaan\.gemini\antigravity\brain\71aee7f2-4b75-4225-843c-3506fb733a9b\ilara_storefront_luxury_1787020864993.jpg" alt="Luxury Storefront">
+          </div>
+          <div class="render-body">
+            <span class="brand-badge">Catálogo Online · Lookbook</span>
+            <h4 class="render-title">Experiencia de Tienda Digital Luxury</h4>
+            <p class="render-desc">
+              Estética editorial para clientas con barra de progreso de envío gratis dinámico, cupones inteligentes y checkout directo a WhatsApp.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification System -->
+  <div class="toast-popup" id="app-toast">
+    <span id="toast-icon">✨</span>
+    <span id="toast-text">Notificación</span>
+  </div>
+
+  <!-- JavaScript State & Logic -->
+  <script>
+    // Mock Product Database
+    const PRODUCTS = [
+      {
+        id: 1,
+        name: "Rose Glow Elixir Sérum",
+        brand: "Ilara Lab",
+        category: "skincare",
+        price: 24900,
+        stock: 14,
+        image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80",
+        shades: [
+          { name: "Radiance Rose", hex: "#E8A598" },
+          { name: "Golden Glow", hex: "#D4A373" }
+        ]
+      },
+      {
+        id: 2,
+        name: "Velvet Matte Lipstick",
+        brand: "Ilara Studio",
+        category: "lips",
+        price: 18500,
+        stock: 2,
+        isCritical: true,
+        image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
+        shades: [
+          { name: "Dune Nude", hex: "#B07D62" },
+          { name: "Petal Rose", hex: "#D97786" },
+          { name: "Berry Wine", hex: "#7B2838" },
+          { name: "Ruby Crush", hex: "#9E182B" }
+        ]
+      },
+      {
+        id: 3,
+        name: "Radiant Peptide Foundation",
+        brand: "Ilara Studio",
+        category: "face",
+        price: 32000,
+        stock: 8,
+        image: "https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?auto=format&fit=crop&w=400&q=80",
+        shades: [
+          { name: "Tone 01 Porcelain", hex: "#F3D6C1" },
+          { name: "Tone 02 Warm Sand", hex: "#E1BC9B" },
+          { name: "Tone 03 Caramel", hex: "#BA8C63" }
+        ]
+      },
+      {
+        id: 4,
+        name: "Silk Hydrator Barrier Cream",
+        brand: "Ilara Lab",
+        category: "skincare",
+        price: 28500,
+        stock: 18,
+        image: "https://images.unsplash.com/photo-1608248597359-58a4e320f7eb?auto=format&fit=crop&w=400&q=80",
+        shades: []
+      },
+      {
+        id: 5,
+        name: "Luminous Satin Bronzer",
+        brand: "Ilara Studio",
+        category: "face",
+        price: 22000,
+        stock: 6,
+        image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80",
+        shades: [
+          { name: "Sun Kiss", hex: "#C68B59" },
+          { name: "Warm Amber", hex: "#9E6038" }
+        ]
+      },
+      {
+        id: 6,
+        name: "Set Rutina Glow 3 Pasos",
+        brand: "Ilara Rituals",
+        category: "sets",
+        price: 68900,
+        stock: 5,
+        image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80",
+        shades: []
+      }
+    ];
+
+    let cart = [
+      { id: 1, name: "Rose Glow Elixir Sérum", shade: "Radiance Rose", price: 24900, qty: 1 },
+      { id: 2, name: "Velvet Matte Lipstick", shade: "Dune Nude", price: 18500, qty: 1 }
+    ];
+
+    let selectedPayment = 'efectivo';
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+      
+      const targetView = document.getElementById(`view-${tabId}`);
+      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (targetView) targetView.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    // Toggle Light / Dark Theme
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+      showToast(`Tema ${next === 'dark' ? 'Oscuro (Obsidian)' : 'Claro (Cashmere)'} activado`, 'info');
+    }
+
+    // Toast Function
+    function showToast(text, type = 'info') {
+      const toast = document.getElementById('app-toast');
+      const icon = document.getElementById('toast-icon');
+      const label = document.getElementById('toast-text');
+      
+      icon.textContent = type === 'success' ? '✨' : type === 'wa' ? '💬' : '🌸';
+      label.textContent = text;
+      
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    // Render POS Grid
+    function renderPosGrid(productsToRender) {
+      const container = document.getElementById('pos-products-container');
+      const storeContainer = document.getElementById('storefront-grid');
+      if (!container) return;
+
+      const html = productsToRender.map(p => {
+        const swatchesHtml = p.shades.length ? `
+          <div class="shade-swatches-row">
+            ${p.shades.map((s, idx) => `
+              <div class="shade-swatch ${idx === 0 ? 'active' : ''}" style="background: ${s.hex}" title="${s.name}" onclick="event.stopPropagation(); selectShade(this)"></div>
+            `).join('')}
+          </div>
+        ` : '<div style="height: 18px; margin-bottom: 12px;"></div>';
+
+        return `
+          <div class="product-card" onclick="addToCart(${p.id})">
+            <div class="product-img-wrap">
+              <img src="${p.image}" alt="${p.name}" loading="lazy">
+              <span class="stock-badge ${p.isCritical ? 'critical' : ''}">
+                ${p.isCritical ? '⚠️ Stock Crítico: ' + p.stock : 'Stock: ' + p.stock}
+              </span>
+            </div>
+            <div class="product-brand">${p.brand}</div>
+            <div class="product-name">${p.name}</div>
+            ${swatchesHtml}
+            <div class="product-bottom-row">
+              <span class="product-price">$${p.price.toLocaleString('es-AR')}</span>
+              <button class="btn-add-item" title="Agregar al Ticket">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+      if (storeContainer) storeContainer.innerHTML = html;
+    }
+
+    // Swatch Selection
+    function selectShade(el) {
+      el.parentElement.querySelectorAll('.shade-swatch').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // Filter Category
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (cat === 'all') {
+        renderPosGrid(PRODUCTS);
+      } else {
+        renderPosGrid(PRODUCTS.filter(p => p.category === cat));
+      }
+    }
+
+    // Filter Search
+    function filterPosProducts(query) {
+      const q = query.toLowerCase().trim();
+      const filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+      renderPosGrid(filtered);
+    }
+
+    // Cart Functions
+    function addToCart(productId) {
+      const prod = PRODUCTS.find(p => p.id === productId);
+      if (!prod) return;
+
+      const existing = cart.find(item => item.id === productId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        const defaultShade = prod.shades.length ? prod.shades[0].name : '';
+        cart.push({ id: prod.id, name: prod.name, shade: defaultShade, price: prod.price, qty: 1 });
+      }
+      renderCart();
+      showToast(`+1 ${prod.name} agregado al ticket`, 'success');
+    }
+
+    function updateQty(index, delta) {
+      cart[index].qty += delta;
+      if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+      }
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      renderCart();
+      showToast('Ticket vaciado', 'info');
+    }
+
+    function renderCart() {
+      const list = document.getElementById('pos-cart-items');
+      if (!list) return;
+
+      if (cart.length === 0) {
+        list.innerHTML = `
+          <div style="text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 0.85rem;">
+            🛒 No hay productos en el ticket actual
+          </div>
+        `;
+        document.getElementById('pos-subtotal').textContent = '$0';
+        document.getElementById('pos-total').textContent = '$0';
+        return;
+      }
+
+      list.innerHTML = cart.map((item, idx) => `
+        <div class="cart-item">
+          <div style="flex: 1;">
+            <div class="cart-item-title">${item.name}</div>
+            ${item.shade ? `<div class="cart-item-shade">${item.shade}</div>` : ''}
+          </div>
+          <div class="cart-item-stepper">
+            <button class="step-btn" onclick="updateQty(${idx}, -1)">-</button>
+            <span style="font-size: 0.85rem; font-weight: 700; min-width: 16px; text-align: center;">${item.qty}</span>
+            <button class="step-btn" onclick="updateQty(${idx}, 1)">+</button>
+          </div>
+          <div class="cart-item-price">$${(item.price * item.qty).toLocaleString('es-AR')}</div>
+        </div>
+      `).join('');
+
+      const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+      document.getElementById('pos-subtotal').textContent = `$${total.toLocaleString('es-AR')}`;
+      document.getElementById('pos-total').textContent = `$${total.toLocaleString('es-AR')}`;
+    }
+
+    function setPaymentMethod(method, btn) {
+      selectedPayment = method;
+      document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function confirmSale() {
+      if (cart.length === 0) {
+        showToast('Agrega productos antes de cobrar', 'info');
+        return;
+      }
+      const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+      showToast(`¡Venta de $${total.toLocaleString('es-AR')} confirmada! Ticket generado para WhatsApp.`, 'success');
+      clearCart();
+    }
+
+    function simulateWaNotify(client, orderId, type) {
+      showToast(`Mensaje WhatsApp enviado a ${client} (${orderId})`, 'wa');
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPosGrid(PRODUCTS);
+      renderCart();
+    });
+  </script>
+</body>
+</html>

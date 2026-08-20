@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ilara Beauty — Catálogo Exclusivo de Belleza & Skincare</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="styles/design-tokens.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/catalogo.css">
+</head>
+<body class="storefront-app">
+
+  <!-- 1. ANNOUNCEMENT BAR -->
+  <div class="top-announcement-bar">
+    <span>✨ ENVÍOS GRATIS en compras desde $45.000</span>
+    <span>•</span>
+    <span>10% OFF en tu primer pedido con el cupón <strong>GLOW10</strong></span>
+  </div>
+
+  <!-- 2. LUXURY STORE HEADER -->
+  <header class="store-header">
+    <a href="#" class="store-brand">
+      <span class="store-brand-title">ILARA</span>
+      <span class="store-brand-subtitle">STUDIO & BEAUTY LAB</span>
+    </a>
+
+    <nav class="store-nav-links">
+      <span class="store-nav-link active" onclick="filterCatalogCategory('all')">Colecciones</span>
+      <span class="store-nav-link" onclick="filterCatalogCategory('skincare')">Skincare</span>
+      <span class="store-nav-link" onclick="filterCatalogCategory('makeup')">Maquillaje</span>
+      <span class="store-nav-link" onclick="filterCatalogCategory('lips')">Labios</span>
+      <span class="store-nav-link" onclick="filterCatalogCategory('combos')">Rutinas & Sets</span>
+    </nav>
+
+    <div class="store-header-actions">
+      <!-- Search Input -->
+      <div class="input-wrapper" style="max-width: 220px;">
+        <span class="input-icon">🔍</span>
+        <input type="text" id="store-search-input" class="form-control has-icon" placeholder="Buscar sérum, labial..." oninput="StoreState.searchQuery = this.value; renderCatalogGrid();" />
+      </div>
+
+      <!-- Theme Switcher -->
+      <button class="btn-icon btn-secondary" onclick="toggleTheme()" title="Cambiar Tema">
+        <span class="theme-toggle-btn-icon">🌙</span>
+      </button>
+
+      <!-- Cart Trigger Button -->
+      <button class="cart-trigger-btn" onclick="openCartDrawer()">
+        <span>🛍️ Mi Bolsa</span>
+        <span class="cart-count-badge" id="store-cart-count">0</span>
+      </button>
+
+      <!-- Admin Panel Link -->
+      <a href="panel.html" class="btn btn-secondary btn-sm" style="text-decoration: none; font-size: 0.78rem;">
+        ⚙️ Panel POS
+      </a>
+    </div>
+  </header>
+
+  <!-- 3. EDITORIAL HERO BANNER -->
+  <section class="hero-editorial">
+    <div class="hero-container">
+      <div>
+        <div class="hero-tag">🌸 Nueva Colección Primavera · Glow Botanicals</div>
+        <h1 class="hero-title">
+          La ciencia del <em>glow natural</em> para tu piel.
+        </h1>
+        <p class="hero-description">
+          Fórmulas dermatológicas de alta pureza con activos antioxidantes, ceramidas bioidénticas y texturas satinadas. Diseñadas para realzar tu belleza auténtica.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" onclick="filterCatalogCategory('combos'); document.getElementById('catalog-section').scrollIntoView({ behavior: 'smooth' });">
+            Descubrir Sets de Rutina
+          </button>
+          <a href="https://wa.me/5491158492310?text=Hola%20Ilara%20Beauty!%20Me%20gustar%C3%ADa%20un%20asesoramiento%20personalizado%20sobre%20mi%20tipo%20de%20piel" target="_blank" class="btn btn-secondary btn-lg">
+            💬 Asesoramiento por WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-visual-card">
+        <img src="https://images.unsplash.com/photo-1679307658813-da95b901ecd9?auto=format&fit=crop&w=1000&q=85" alt="Ilara Rituals" />
+        <div class="hero-floating-badge">
+          <span style="font-size: 1.8rem;">✨</span>
+          <div>
+            <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">Set Glow Radiance 3 Pasos</div>
+            <div style="font-size: 0.78rem; color: var(--accent-rose-dark); font-weight: 600;">Ahorro especial del 18%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. STORE BENEFITS / PILLARS -->
+  <section class="store-benefits-bar">
+    <div class="benefits-grid">
+      <div class="benefit-item">
+        <div class="benefit-icon-box">📦</div>
+        <div>
+          <div class="benefit-title">Envíos a Todo el País</div>
+          <div class="benefit-subtitle">Andreani Express o Moto CABA</div>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon-box">🐰</div>
+        <div>
+          <div class="benefit-title">100% Cruelty Free</div>
+          <div class="benefit-subtitle">Fórmulas éticas y sin parabenos</div>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon-box">✨</div>
+        <div>
+          <div class="benefit-title">Calidad Dermocosmética</div>
+          <div class="benefit-subtitle">Activos puros con resultados reales</div>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon-box">💬</div>
+        <div>
+          <div class="benefit-title">Atención por WhatsApp</div>
+          <div class="benefit-subtitle">Skin coaches expertas online</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. MAIN CATALOG PRODUCTS & FILTERS -->
+  <main class="catalog-main-section" id="catalog-section">
+    <div class="catalog-header-row">
+      <div>
+        <h2 class="section-editorial-title">Nuestra Selección Exclusiva</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">Explorá los favoritos de skincare, maquillaje y fragancias de autor.</p>
+      </div>
+
+      <!-- Skin type filter selector -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.82rem; color: var(--text-muted);">Tipo de piel:</span>
+        <select class="form-control" style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="filterCatalogSkinType(this.value)">
+          <option value="all">Todas las pieles</option>
+          <option value="Seca">Piel Seca</option>
+          <option value="Mixta">Piel Mixta</option>
+          <option value="Sensible">Piel Sensible</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Category Filter Pills -->
+    <div class="catalog-filters-bar">
+      <div class="category-nav-pills">
+        <button class="cat-pill active" data-category="all" onclick="filterCatalogCategory('all')">✨ Todos</button>
+        <button class="cat-pill" data-category="skincare" onclick="filterCatalogCategory('skincare')">🌸 Skincare Facial</button>
+        <button class="cat-pill" data-category="makeup" onclick="filterCatalogCategory('makeup')">💄 Maquillaje & Rostro</button>
+        <button class="cat-pill" data-category="lips" onclick="filterCatalogCategory('lips')">💋 Labios</button>
+        <button class="cat-pill" data-category="combos" onclick="filterCatalogCategory('combos')">🎁 Combos & Rutinas</button>
+        <button class="cat-pill" data-category="haircare" onclick="filterCatalogCategory('haircare')">✨ Cuidado Capilar</button>
+        <button class="cat-pill" data-category="perfumes" onclick="filterCatalogCategory('perfumes')">🌿 Fragancias</button>
+      </div>
+    </div>
+
+    <!-- Products Grid Container -->
+    <div class="catalog-products-grid" id="catalog-grid-container">
+      <!-- Injected via catalogo.js -->
+    </div>
+  </main>
+
+  <!-- 6. LUXURY SHOPPING CART DRAWER -->
+  <div class="modal-overlay" id="store-cart-backdrop" onclick="closeCartDrawer()"></div>
+  <aside class="drawer" id="store-cart-drawer">
+    <div class="drawer-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 1.2rem;">🛍️</span>
+        <h3 style="font-family: var(--font-serif); font-size: 1.35rem; font-weight: 700;">Tu Bolsa de Compras</h3>
+      </div>
+      <button class="btn-icon" onclick="closeCartDrawer()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Shipping Progress -->
+      <div class="cart-shipping-progress">
+        <div class="shipping-progress-text" id="shipping-progress-text">
+          <span>Agregá para <strong>ENVÍO GRATIS</strong></span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="shipping-progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Items List -->
+      <div id="cart-items-container">
+        <!-- Rendered via catalogo.js -->
+      </div>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="drawer-footer" id="cart-footer-details">
+      <!-- Coupon Section -->
+      <div class="coupon-section">
+        <input type="text" id="cart-coupon-input" class="form-control" placeholder="Código de cupón (Ej: GLOW10)" style="text-transform: uppercase;" />
+        <button class="btn btn-secondary btn-sm" onclick="applyCouponCode()">Aplicar</button>
+      </div>
+
+      <!-- Delivery Method Selector -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+        <button class="btn btn-secondary btn-sm delivery-pill-option active" data-method="envio" onclick="setDeliveryMethod('envio')">
+          🛵 Envío a Domicilio
+        </button>
+        <button class="btn btn-secondary btn-sm delivery-pill-option" data-method="retiro" onclick="setDeliveryMethod('retiro')">
+          📍 Retiro Showroom
+        </button>
+      </div>
+
+      <!-- Totals Breakdown -->
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.88rem; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+          <span>Subtotal</span>
+          <span id="cart-summary-subtotal">$0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: var(--success);">
+          <span>Descuento Cupón</span>
+          <span id="cart-summary-discount">$0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+          <span>Costo de Envío</span>
+          <span id="cart-summary-shipping">$0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; color: var(--accent-rose-dark); border-top: 1px dashed var(--border-medium); padding-top: 8px;">
+          <span>TOTAL ESTIMADO</span>
+          <span id="cart-summary-grand-total">$0</span>
+        </div>
+      </div>
+
+      <!-- WhatsApp Checkout Button -->
+      <button class="btn btn-whatsapp btn-lg" style="width: 100%;" onclick="proceedToWhatsAppCheckout()">
+        💬 Completar Pedido por WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <!-- 7. QUICK VIEW MODAL -->
+  <div class="modal-overlay" id="product-quickview-modal">
+    <div class="modal-container" style="max-width: 680px;">
+      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--accent-gold-dark);">Detalle del Producto</span>
+        <button class="btn-icon" onclick="closeQuickViewModal()">✕</button>
+      </div>
+      <div class="quickview-content" style="padding: 24px;">
+        <!-- Injected via catalogo.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. LUXURY FOOTER -->
+  <footer class="store-footer">
+    <div class="footer-container">
+      <div>
+        <h4 class="footer-brand-title">ILARA BEAUTY</h4>
+        <p style="font-size: 0.88rem; line-height: 1.6; margin-bottom: 16px;">
+          Boutique y laboratorio de cosmética de alta fidelidad. Fórmulas botánicas y tecnología dermocosmética para el cuidado diario de tu piel.
+        </p>
+        <p style="font-size: 0.8rem; color: #7A7584;">📍 Showroom: Av. Libertador 2450, Buenos Aires</p>
+      </div>
+
+      <div>
+        <h5 style="color: #FFFFFF; font-size: 0.9rem; margin-bottom: 14px; font-weight: 700;">Colecciones</h5>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
+          <li><a href="#" onclick="filterCatalogCategory('skincare')">🌸 Skincare Facial</a></li>
+          <li><a href="#" onclick="filterCatalogCategory('makeup')">💄 Bases & Correctores</a></li>
+          <li><a href="#" onclick="filterCatalogCategory('lips')">💋 Tintas & Labiales</a></li>
+          <li><a href="#" onclick="filterCatalogCategory('combos')">🎁 Sets & Regalos</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 style="color: #FFFFFF; font-size: 0.9rem; margin-bottom: 14px; font-weight: 700;">Atención al Cliente</h5>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
+          <li><a href="#">Preguntas Frecuentes</a></li>
+          <li><a href="#">Guía de Tonos de Base</a></li>
+          <li><a href="#">Políticas de Envíos</a></li>
+          <li><a href="#">Cambios y Devoluciones</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 style="color: #FFFFFF; font-size: 0.9rem; margin-bottom: 14px; font-weight: 700;">Contacto Directo</h5>
+        <p style="font-size: 0.85rem; margin-bottom: 10px;">¿Dudas con tu rutina o pedido?</p>
+        <a href="https://wa.me/5491158492310" target="_blank" class="btn btn-whatsapp btn-sm" style="display: inline-flex;">
+          💬 WhatsApp +54 9 11 5849-2310
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+      <span>© 2026 Ilara Beauty Studio. Todos los derechos reservados.</span>
+      <span>Desarrollado con ✨ diseño de alta gama</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="scripts/mock-data.js"></script>
+  <script src="scripts/app.js"></script>
+  <script src="scripts/catalogo.js"></script>
+</body>
+</html>

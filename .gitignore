@@ -57,7 +57,9 @@ public/swe-worker*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-
 # Supabase CLI local branch metadata
 supabase/.branches/
+
+# Local ide & temporary files
+.cursor/
+tmp/

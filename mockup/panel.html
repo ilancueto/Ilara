@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ilara Beauty — Panel de Control Unificado</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="styles/design-tokens.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/panel.css">
+</head>
+<body class="panel-app">
+
+  <!-- 1. TOPBAR & LIVE REAL-TIME METRICS -->
+  <header class="panel-topbar">
+    <div class="brand-section">
+      <span class="brand-logo-text">ILARA</span>
+      <div class="register-status-badge">
+        <span class="dot"></span>
+        <span>Caja Abierta #042 · $482.350</span>
+      </div>
+    </div>
+
+    <!-- Live Ticker -->
+    <div class="live-metrics-ticker">
+      <div class="metric-pill">
+        <span>Ventas Hoy:</span>
+        <strong id="metric-today-revenue">$184.200</strong>
+      </div>
+      <div class="metric-pill">
+        <span>Margen Real:</span>
+        <strong id="metric-net-margin" style="color: var(--success);">54.2%</strong>
+      </div>
+      <div class="metric-pill">
+        <span>Pedidos Catálogo:</span>
+        <strong id="metric-pending-orders" style="color: var(--accent-rose-dark);">3</strong>
+      </div>
+      <div class="metric-pill">
+        <span>Stock Crítico:</span>
+        <strong id="metric-critical-stock" style="color: var(--danger);">2</strong>
+      </div>
+    </div>
+
+    <!-- Topbar Actions -->
+    <div class="topbar-actions">
+      <button class="search-command-btn" onclick="document.getElementById('pos-search-input')?.focus()">
+        <span>🔍 Buscar producto o cliente...</span>
+        <kbd>⌘K</kbd>
+      </button>
+
+      <button class="btn btn-primary btn-sm" onclick="switchWorkspace('pos')">
+        + Nueva Venta
+      </button>
+
+      <button class="btn-icon btn-secondary" onclick="toggleTheme()" title="Cambiar Tema">
+        <span class="theme-toggle-btn-icon">🌙</span>
+      </button>
+
+      <a href="catalogo.html" class="btn btn-gold btn-sm" style="text-decoration: none;">
+        🛍️ Ver Catálogo Web
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. MAIN LAYOUT: SIDEBAR + WORKSPACE -->
+  <div class="panel-body">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="panel-sidebar">
+      <div class="sidebar-nav-group">
+        <div class="sidebar-nav-title">Centro de Mando</div>
+        
+        <div class="sidebar-link active" data-workspace="pos" onclick="switchWorkspace('pos')">
+          <div class="sidebar-link-content">
+            <span>🛒</span>
+            <span class="sidebar-link-title">Punto de Venta (POS)</span>
+          </div>
+        </div>
+
+        <div class="sidebar-link" data-workspace="orders" onclick="switchWorkspace('orders')">
+          <div class="sidebar-link-content">
+            <span>📦</span>
+            <span class="sidebar-link-title">Pedidos & WhatsApp</span>
+          </div>
+          <span class="sidebar-count-badge">3</span>
+        </div>
+
+        <div class="sidebar-link" data-workspace="inventory" onclick="switchWorkspace('inventory')">
+          <div class="sidebar-link-content">
+            <span>🏷️</span>
+            <span class="sidebar-link-title">Inventario & Stock</span>
+          </div>
+        </div>
+
+        <div class="sidebar-link" data-workspace="finance" onclick="switchWorkspace('finance')">
+          <div class="sidebar-link-content">
+            <span>📈</span>
+            <span class="sidebar-link-title">Finanzas & Margen Real</span>
+          </div>
+        </div>
+
+        <div class="sidebar-link" data-workspace="customers" onclick="switchWorkspace('customers')">
+          <div class="sidebar-link-content">
+            <span>👥</span>
+            <span class="sidebar-link-title">Clientes & CRM VIP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="catalogo.html" class="storefront-jump-btn">
+          <span>✨ Vista Tienda Online</span>
+          <span>↗</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Dynamic Content Workspace -->
+    <main class="panel-main-workspace">
+
+      <!-- ====================================================================
+           WORKSPACE 1: PUNTO DE VENTA (POS DUAL-PANE)
+           ==================================================================== -->
+      <section class="workspace-view active" id="view-pos">
+        <div class="pos-container">
+          
+          <!-- Left: Catalog & Search -->
+          <div class="pos-catalog-pane">
+            <div class="pos-toolbar">
+              <div class="pos-category-pills">
+                <button class="pos-pill-btn active" onclick="document.querySelectorAll('.pos-pill-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderPosGrid('all');">Todos</button>
+                <button class="pos-pill-btn" onclick="document.querySelectorAll('.pos-pill-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderPosGrid('skincare');">🌸 Skincare</button>
+                <button class="pos-pill-btn" onclick="document.querySelectorAll('.pos-pill-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderPosGrid('makeup');">💄 Maquillaje</button>
+                <button class="pos-pill-btn" onclick="document.querySelectorAll('.pos-pill-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderPosGrid('lips');">💋 Labios</button>
+                <button class="pos-pill-btn" onclick="document.querySelectorAll('.pos-pill-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); renderPosGrid('combos');">🎁 Combos</button>
+              </div>
+
+              <div class="input-wrapper" style="max-width: 260px;">
+                <span class="input-icon">🔍</span>
+                <input type="text" id="pos-search-input" class="form-control has-icon has-shortcut" placeholder="Buscar por SKU..." oninput="renderPosGrid('all', this.value)" />
+                <span class="input-shortcut">⌘K</span>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="pos-grid" id="pos-products-grid">
+              <!-- Rendered via panel.js -->
+            </div>
+          </div>
+
+          <!-- Right: Live POS Cashier Slip / Cart -->
+          <div class="pos-cart-pane">
+            <div class="pos-cart-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.1rem;">🧾</span>
+                <strong style="font-size: 0.95rem;">Ticket de Venta</strong>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="clearPosCart()" style="font-size: 0.75rem; color: var(--danger);">
+                Vaciar
+              </button>
+            </div>
+
+            <!-- Customer Bar -->
+            <div style="padding: 10px 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 0.8rem;">
+                <span style="color: var(--text-muted);">Cliente:</span>
+                <strong id="pos-selected-customer-name">Cliente Mostrador</strong>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="font-size: 0.72rem; padding: 2px 6px;" onclick="switchWorkspace('customers')">
+                Cambiar ▾
+              </button>
+            </div>
+
+            <!-- Items List -->
+            <div class="pos-cart-items-list" id="pos-cart-items">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Summary & Payment Breakdown -->
+            <div class="pos-cart-summary">
+              <div class="pos-summary-row">
+                <span>Subtotal</span>
+                <span id="pos-cart-subtotal">$0</span>
+              </div>
+              <div class="pos-summary-row" style="color: var(--success);">
+                <span>Descuento Aplicado</span>
+                <span id="pos-cart-discount">$0</span>
+              </div>
+              <div class="pos-summary-row total-row">
+                <span>TOTAL</span>
+                <span id="pos-cart-total" style="color: var(--accent-rose-dark);">$0</span>
+              </div>
+
+              <!-- Payment Methods Selector -->
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; font-weight: 700;">
+                Método de Pago:
+              </div>
+              <div class="pos-payment-methods">
+                <div class="pos-pay-chip active" data-method="efectivo" onclick="handlePaymentMethodSelect('efectivo')">
+                  💵 Efectivo (-5%)
+                </div>
+                <div class="pos-pay-chip" data-method="transferencia" onclick="handlePaymentMethodSelect('transferencia')">
+                  🏦 Transferencia
+                </div>
+                <div class="pos-pay-chip" data-method="tarjeta" onclick="handlePaymentMethodSelect('tarjeta')">
+                  💳 Tarjeta Déb./Créd.
+                </div>
+                <div class="pos-pay-chip" data-method="mercadopago" onclick="handlePaymentMethodSelect('mercadopago')">
+                  📱 QR MercadoPago
+                </div>
+              </div>
+
+              <!-- Cash Change Calculation Row -->
+              <div id="pos-cash-calc-row" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-medium);">
+                <span style="font-size: 0.78rem; color: var(--text-secondary);">Paga con: $</span>
+                <input type="number" id="pos-cash-received" class="form-control" style="width: 90px; padding: 4px 8px; font-size: 0.85rem;" placeholder="0" oninput="renderPosCart()" />
+                <span style="font-size: 0.78rem; color: var(--text-secondary);">Vuelto: <strong id="pos-cash-change" style="color: var(--success);">$0</strong></span>
+              </div>
+
+              <!-- Fast Checkout Action -->
+              <button class="btn btn-primary btn-lg" id="btn-pos-checkout" onclick="executePosSale()" disabled>
+                ✨ Cobrar e Imprimir Ticket
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           WORKSPACE 2: PEDIDOS & WHATSAPP PIPELINE
+           ==================================================================== -->
+      <section class="workspace-view" id="view-orders">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div>
+            <h2 style="font-family: var(--font-serif); font-size: 1.8rem;">Pipeline de Pedidos Catálogo & WhatsApp</h2>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">Gestioná los pedidos web y notificá a las clientas con un solo clic.</p>
+          </div>
+        </div>
+
+        <div class="orders-pipeline-grid" id="orders-pipeline-board">
+          <!-- Rendered via panel.js -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           WORKSPACE 3: INVENTARIO & STOCK INTELIGENTE
+           ==================================================================== -->
+      <section class="workspace-view" id="view-inventory">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-family: var(--font-serif); font-size: 1.8rem;">Inventario & Margen Unitario</h2>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">Control de stock crítico, costos de reposición y margen de ganancia por producto.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary btn-sm" onclick="renderInventoryTable('critical')">
+              ⚠️ Solo Stock Crítico
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('Modal de nuevo producto abierto', 'info')">
+              + Nuevo Producto
+            </button>
+          </div>
+        </div>
+
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Producto / SKU</th>
+                <th>Categoría</th>
+                <th>Costo Compra</th>
+                <th>Precio Venta</th>
+                <th>Margen Unitario</th>
+                <th>Stock Actual</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-tbody">
+              <!-- Rendered via panel.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           WORKSPACE 4: FINANZAS & MARGEN REAL
+           ==================================================================== -->
+      <section class="workspace-view" id="view-finance">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-family: var(--font-serif); font-size: 1.8rem;">Finanzas & Margen Neto Real</h2>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">Ganancia neta real descontando costo de mercadería vendida y gastos operativos.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddExpenseModal()">
+            - Registrar Gasto Operativo
+          </button>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="kpi-metrics-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Ventas Brutas Hoy</span>
+            <div class="kpi-value" id="fin-gross-sales">$0</div>
+            <span class="kpi-delta positive">▲ +18.4% vs ayer</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Costo Mercadería (CMV)</span>
+            <div class="kpi-value" id="fin-cogs" style="color: var(--text-secondary);">$0</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Costo reposición stock</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Gastos Operativos</span>
+            <div class="kpi-value" id="fin-expenses" style="color: var(--danger);">$0</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Envíos + Marketing + Local</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Margen Neto en Mano</span>
+            <div class="kpi-value" id="fin-net-profit" style="color: var(--success);">$0</div>
+            <span class="kpi-delta positive" id="fin-margin-pct">0% Margen</span>
+          </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div style="margin-top: 16px;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Libro de Gastos Recientes</h3>
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Fecha</th>
+                  <th>Categoría</th>
+                  <th>Descripción</th>
+                  <th>Método</th>
+                  <th style="text-align: right;">Monto</th>
+                </tr>
+              </thead>
+              <tbody id="finance-expenses-tbody">
+                <!-- Rendered via panel.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           WORKSPACE 5: CLIENTES & CRM VIP
+           ==================================================================== -->
+      <section class="workspace-view" id="view-customers">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div>
+            <h2 style="font-family: var(--font-serif); font-size: 1.8rem;">Directorio de Clientes & Club VIP</h2>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">Historial de compra (LTV), tonos de piel favoritos y fidelización.</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;" id="customers-crm-grid">
+          <!-- Rendered via panel.js -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: SHADE SELECTOR -->
+  <div class="modal-overlay" id="pos-shade-modal">
+    <div class="modal-container" style="max-width: 440px;">
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="font-weight: 700;">Seleccionar Tono</h4>
+        <button class="btn-icon" onclick="closePosShadeModal()">✕</button>
+      </div>
+      <div class="modal-body-content" style="padding: 24px;">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RECEIPT -->
+  <div class="modal-overlay" id="pos-receipt-modal">
+    <div class="modal-container" style="max-width: 440px;">
+      <div style="padding: 24px;">
+        <div class="modal-receipt-body">
+          <!-- Injected dynamically -->
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+          <button class="btn btn-whatsapp" onclick="sendReceiptWhatsApp()">
+            💬 Enviar Comprobante por WhatsApp
+          </button>
+          <button class="btn btn-secondary" onclick="window.print();">
+            🖨️ Imprimir Ticket Térmico
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="closeReceiptModal()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD EXPENSE -->
+  <div class="modal-overlay" id="modal-add-expense">
+    <div class="modal-container" style="max-width: 440px;">
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="font-weight: 700;">Registrar Nuevo Gasto Operativo</h4>
+        <button class="btn-icon" onclick="closeAddExpenseModal()">✕</button>
+      </div>
+      <form onsubmit="handleSaveExpense(event)" style="padding: 24px; display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Descripción</label>
+          <input type="text" id="exp-desc" class="form-control" placeholder="Ej: Cadetería pedidos zona norte" required />
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Monto en Pesos (ARS)</label>
+          <input type="number" id="exp-amount" class="form-control" placeholder="15000" required />
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Categoría</label>
+          <select id="exp-category" class="form-control">
+            <option value="envios">Envíos y Logística</option>
+            <option value="marketing">Marketing & Pauta Meta</option>
+            <option value="inventario">Compra de Insumos/Packaging</option>
+            <option value="alquiler">Alquiler y Local</option>
+            <option value="servicios">Servicios y Otros</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Método de Pago</label>
+          <select id="exp-method" class="form-control">
+            <option value="efectivo">Efectivo de Caja</option>
+            <option value="transferencia">Transferencia Bancaria</option>
+            <option value="tarjeta">Tarjeta de Débito/Crédito</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeAddExpenseModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar Gasto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="scripts/mock-data.js"></script>
+  <script src="scripts/app.js"></script>
+  <script src="scripts/panel.js"></script>
+</body>
+</html>

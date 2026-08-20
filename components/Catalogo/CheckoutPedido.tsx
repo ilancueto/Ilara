@@ -1,6 +1,5 @@
-'use client'
-
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
@@ -21,7 +20,6 @@ import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { paymentStartKey, saveOrderAccess } from '@/lib/domain/payments/publicSession'
 import { buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
-import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -60,6 +58,7 @@ export function CheckoutPedido({
   const formId = useId()
   useDialogA11y(open, onClose, panelRef)
 
+  const router = useRouter()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -83,7 +82,6 @@ export function CheckoutPedido({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const [done, setDone] = useState<CreateOrderResult | null>(null)
-  const [notifiedVia, setNotifiedVia] = useState<'email' | 'whatsapp' | 'none'>('none')
   const idemRef = useRef<string>(newIdempotencyKey())
   const submittingRef = useRef(false)
   const localityRequestRef = useRef(0)
@@ -274,7 +272,6 @@ export function CheckoutPedido({
           )
         }
         setDone(result.order)
-        setNotifiedVia('none')
         onOrderCreated(result.order)
         showToast('success', `Pedido ${result.order.order_number} confirmado`)
       } catch {
@@ -348,19 +345,25 @@ export function CheckoutPedido({
 
         {done ? (
           <div className={styles.success} data-testid="checkout-success">
-            <CheckCircle2 className={styles.successIcon} size={40} aria-hidden />
-            <p className={styles.orderNumberLabel}>Número de pedido</p>
-            <p className={styles.orderNumber} data-testid="order-number">
-              {done.order_number}
-            </p>
-            <p className={styles.successTotal}>
-              Total: <strong>${formatPesoARExact(done.total)}</strong>
-            </p>
+            <div className={styles.successIconWrap}>
+              <CheckCircle2 size={32} aria-hidden />
+            </div>
+            
+            <div className={styles.orderCardSuccess}>
+              <p className={styles.orderNumberLabel}>Pedido Registrado</p>
+              <p className={styles.orderNumber} data-testid="order-number">
+                {done.order_number}
+              </p>
+              <p className={styles.successTotal}>
+                Total: <strong>${formatPesoARExact(done.total)}</strong>
+              </p>
+            </div>
+
             <p className={styles.hint}>
               {done.fulfillment_mode === 'envio' ? (
                 <>
-                  Envío: {done.shipping_carrier} · {done.shipping_service}
-                  {done.shipping_delivery_estimate ? ` · ${done.shipping_delivery_estimate}` : ''}.<br />
+                  Envío: <strong>{done.shipping_carrier} · {done.shipping_service}</strong>
+                  {done.shipping_delivery_estimate ? ` (${done.shipping_delivery_estimate})` : ''}.<br />
                   Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`}
                   {done.shipping_destination_postal_code ? ` · CP ${done.shipping_destination_postal_code}` : ''}.
                 </>
@@ -368,15 +371,16 @@ export function CheckoutPedido({
                 FULFILLMENT_COPY[done.fulfillment_mode || fulfillmentMode].success
               )}
             </p>
-            <p className={styles.hint} data-testid="checkout-notify">
-              Elegí cómo pagar. El mail te llega cuando el pago esté hecho y lo estemos confirmando.
+
+            <p className={styles.hint} data-testid="checkout-notify" style="color: var(--text-muted); font-size: 0.78rem;">
+              Elegí cómo pagar para que preparemos tu paquete. Te enviaremos el comprobante y el seguimiento.
             </p>
+
             {done.access_capability && (
               <div className={styles.payChoices} data-testid="checkout-pay">
-                <p className={styles.hint}>{PUBLIC_PAYMENT_COPY.choosePayment}</p>
                 <button
                   type="button"
-                  className={styles.primary}
+                  className={styles.payMpBtn}
                   disabled={pending}
                   data-testid="checkout-pay-mp"
                   onClick={() => {
@@ -396,11 +400,11 @@ export function CheckoutPedido({
                     })
                   }}
                 >
-                  {PUBLIC_PAYMENT_COPY.mercadoPago}
+                  <span>⚡ Pagar con Mercado Pago</span>
                 </button>
                 <button
                   type="button"
-                  className={styles.secondary}
+                  className={styles.payTransferBtn}
                   disabled={pending}
                   data-testid="checkout-pay-transfer"
                   onClick={() => {
@@ -416,317 +420,337 @@ export function CheckoutPedido({
                         showToast('error', result.error)
                         return
                       }
-                      window.location.assign('/pedido')
+                      router.push('/pedido')
                     })
                   }}
                 >
-                  {PUBLIC_PAYMENT_COPY.bankTransfer}
+                  <span>🏦 Pagar por Transferencia (10% OFF)</span>
                 </button>
               </div>
             )}
+
             <button
               type="button"
-              className={styles.secondary}
+              className={styles.waBtn}
               onClick={openWa}
               data-testid="checkout-whatsapp"
             >
               <MessageCircle size={18} />
-              Coordinar por WhatsApp
+              <span>Coordinar por WhatsApp</span>
             </button>
-            <button type="button" className={styles.primary} onClick={onClose} data-testid="checkout-back-catalog">
+
+            <button type="button" className={styles.secondary} onClick={onClose} data-testid="checkout-back-catalog" style="margin-top: 0.25rem;">
               Seguir mirando el catálogo
             </button>
           </div>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <section className={styles.summary} aria-label="Resumen">
-              <div className={styles.summaryRow}>
-                <span>Subtotal</span>
-                <span>${formatPesoAR(subtotal)}</span>
+            
+            {/* Section 1: Customer Details */}
+            <div className={styles.sectionCard}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionNum}>1</span>
+                <span>Tus Datos de Contacto</span>
               </div>
-              {appliedCoupon && (
-                <div className={styles.summaryRow}>
-                  <span>Cupón {appliedCoupon.code}</span>
-                  <span>−${formatPesoAR(descuentoCupon)}</span>
-                </div>
-              )}
-              <div className={styles.summaryTotal}>
-                <span>Productos</span>
-                <strong>${formatPesoAR(total)}</strong>
-              </div>
-              {needsShippingQuote && selectedShipping && (
-                <div className={styles.summaryRow}>
-                  <span>Envío</span>
-                  <span>${formatPesoARExact(selectedShipping.amount)}</span>
-                </div>
-              )}
-              {!needsShippingQuote && (
-                <div className={styles.summaryRow}>
-                  <span>{FULFILLMENT_COPY[fulfillmentMode].title}</span>
-                  <span>Sin cargo de envío</span>
-                </div>
-              )}
-              <div className={styles.summaryTotal}>
-                <span>Total</span>
-                <strong>${formatPesoARExact(estimatedTotal)}</strong>
-              </div>
-            </section>
 
-            <div className={styles.field}>
-              <label htmlFor={`${formId}-name`}>Nombre *</label>
-              <input
-                id={`${formId}-name`}
-                name="customer_name"
-                type="text"
-                autoComplete="name"
-                maxLength={80}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                disabled={pending}
-                data-testid="checkout-name"
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor={`${formId}-phone`}>Teléfono / WhatsApp *</label>
-              <input
-                id={`${formId}-phone`}
-                name="customer_phone"
-                type="tel"
-                autoComplete="tel"
-                inputMode="tel"
-                maxLength={20}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                disabled={pending}
-                data-testid="checkout-phone"
-                aria-describedby={`${formId}-phone-hint`}
-              />
-              <p id={`${formId}-phone-hint`} className={styles.fieldHint}>
-                Solo números, con código de área (ej. 299…)
-              </p>
-            </div>
-            <div className={styles.field}>
-              <label htmlFor={`${formId}-email`}>Email</label>
-              <input
-                id={`${formId}-email`}
-                name="customer_email"
-                type="email"
-                autoComplete="email"
-                maxLength={120}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={pending}
-                data-testid="checkout-email"
-              />
-              <p className={styles.fieldHint}>
-                Si lo cargás, te mandamos cada novedad: pago, preparación, listo y entrega.
-              </p>
-            </div>
-            <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">
-              <legend>¿Cómo lo recibís? *</legend>
-              {(Object.keys(FULFILLMENT_COPY) as FulfillmentMode[]).map((mode) => (
-                <label key={mode} className={styles.shippingOption}>
-                  <input
-                    type="radio"
-                    name="fulfillment_mode"
-                    value={mode}
-                    checked={fulfillmentMode === mode}
-                    onChange={() => {
-                      setFulfillmentMode(mode)
-                      setFieldError(null)
-                      if (mode !== 'envio') invalidateQuote()
-                    }}
-                    disabled={pending}
-                    data-testid={`fulfillment-${mode}`}
-                  />
-                  <span className={styles.shippingCopy}>
-                    <strong>{FULFILLMENT_COPY[mode].title}</strong>
-                    <small>{FULFILLMENT_COPY[mode].hint}</small>
-                  </span>
-                </label>
-              ))}
-            </fieldset>
-
-            {fulfillmentMode === 'coordinar' && (
               <div className={styles.field}>
-                <label htmlFor={`${formId}-zone`}>Zona o ciudad (opcional)</label>
+                <label htmlFor={`${formId}-name`}>Nombre y Apellido *</label>
                 <input
-                  id={`${formId}-zone`}
-                  name="fulfillment_zone"
+                  id={`${formId}-name`}
+                  name="customer_name"
                   type="text"
+                  autoComplete="name"
                   maxLength={80}
-                  value={fulfillmentZone}
-                  onChange={(e) => setFulfillmentZone(e.target.value)}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ej: Valeria Gómez"
+                  required
                   disabled={pending}
-                  data-testid="checkout-fulfillment-zone"
-                  placeholder="Ej. centro, Plottier…"
+                  data-testid="checkout-name"
                 />
               </div>
-            )}
 
-            {needsShippingQuote && (
-            <fieldset className={styles.addressFields} disabled={pending || quotePending}>
-              <legend>Dirección de entrega *</legend>
               <div className={styles.field}>
-                <label htmlFor={`${formId}-province`}>Provincia</label>
-                <select
-                  id={`${formId}-province`}
-                  name="province"
-                  value={provinceId}
-                  onChange={(e) => void handleProvinceChange(e.target.value)}
-                  required
-                  data-testid="checkout-province"
-                >
-                  <option value="">Elegí una provincia</option>
-                  {provinces.map((province) => (
-                    <option key={province.id} value={province.id}>{province.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className={styles.field}>
-                <label htmlFor={`${formId}-locality`}>Ciudad / localidad</label>
-                <select
-                  id={`${formId}-locality`}
-                  name="locality"
-                  value={localityId}
-                  onChange={(e) => {
-                    setLocalityId(e.target.value)
-                    invalidateQuote()
-                  }}
-                  required
-                  disabled={!provinceId || locationsPending || pending || quotePending}
-                  data-testid="checkout-locality"
-                >
-                  <option value="">{locationsPending ? 'Cargando…' : 'Elegí una localidad'}</option>
-                  {localities.map((locality) => (
-                    <option key={locality.id} value={locality.id}>
-                      {locality.name}{locality.department ? ` · ${locality.department}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className={styles.addressRow}>
-                <div className={styles.field}>
-                  <label htmlFor={`${formId}-street`}>Calle</label>
-                  <input
-                    id={`${formId}-street`}
-                    name="street"
-                    type="text"
-                    autoComplete="address-line1"
-                    maxLength={120}
-                    value={street}
-                    onChange={(e) => {
-                      setStreet(e.target.value)
-                      invalidateQuote()
-                    }}
-                    required
-                    data-testid="checkout-street"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor={`${formId}-street-number`}>Altura</label>
-                  <input
-                    id={`${formId}-street-number`}
-                    name="street_number"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]{1,6}"
-                    maxLength={6}
-                    value={streetNumber}
-                    onChange={(e) => {
-                      setStreetNumber(e.target.value.replace(/\D/g, '').slice(0, 6))
-                      invalidateQuote()
-                    }}
-                    required
-                    data-testid="checkout-street-number"
-                  />
-                </div>
-              </div>
-              <div className={styles.field}>
-                <label htmlFor={`${formId}-postal-code`}>Código postal</label>
+                <label htmlFor={`${formId}-phone`}>Teléfono / WhatsApp *</label>
                 <input
-                  id={`${formId}-postal-code`}
-                  name="postal_code"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="postal-code"
-                  pattern="[0-9]{4}"
-                  maxLength={4}
-                  value={postalCode}
-                  onChange={(e) => {
-                    setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 4))
-                    invalidateQuote()
-                  }}
+                  id={`${formId}-phone`}
+                  name="customer_phone"
+                  type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  maxLength={20}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Ej: 11 5849-2310"
                   required
-                  data-testid="checkout-postal-code"
+                  disabled={pending}
+                  data-testid="checkout-phone"
+                  aria-describedby={`${formId}-phone-hint`}
+                />
+                <p id={`${formId}-phone-hint`} className={styles.fieldHint}>
+                  Te enviaremos avisos y el comprobante por WhatsApp.
+                </p>
+              </div>
+
+              <div className={styles.field}>
+                <label htmlFor={`${formId}-email`}>Email (opcional)</label>
+                <input
+                  id={`${formId}-email`}
+                  name="customer_email"
+                  type="email"
+                  autoComplete="email"
+                  maxLength={120}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  disabled={pending}
+                  data-testid="checkout-email"
                 />
               </div>
-              <div className={styles.quoteRow}>
-                <button
-                  type="button"
-                  className={styles.quoteButton}
-                  onClick={() => void handleQuote()}
-                  disabled={pending || quotePending || locationsPending || !addressComplete}
-                  data-testid="checkout-quote-shipping"
-                >
-                  {quotePending ? <Loader2 size={16} className={styles.spin} aria-hidden /> : <Truck size={16} aria-hidden />}
-                  {quotePending ? 'Buscando…' : 'Ver envíos'}
-                </button>
+            </div>
+
+            {/* Section 2: Delivery Method */}
+            <div className={styles.sectionCard}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionNum}>2</span>
+                <span>Forma de Entrega</span>
               </div>
-            </fieldset>
-            )}
 
-            {locationsError && <p className={styles.error} role="alert">{locationsError}</p>}
-            {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
-
-            {shippingQuote && (
-              <fieldset className={styles.shippingOptions} data-testid="shipping-options">
-                <legend>Elegí el envío *</legend>
-                <p className={styles.destination}>
-                  {shippingQuote.destination.formattedAddress} · CP {shippingQuote.destination.postalCode}
-                </p>
-                {shippingQuote.options.map((option) => (
-                  <label key={option.id} className={styles.shippingOption}>
+              <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">
+                {(Object.keys(FULFILLMENT_COPY) as FulfillmentMode[]).map((mode) => (
+                  <label key={mode} className={styles.shippingOption}>
                     <input
                       type="radio"
-                      name="shipping_option"
-                      value={option.id}
-                      checked={selectedShippingId === option.id}
-                      onChange={() => setSelectedShippingId(option.id)}
+                      name="fulfillment_mode"
+                      value={mode}
+                      checked={fulfillmentMode === mode}
+                      onChange={() => {
+                        setFulfillmentMode(mode)
+                        setFieldError(null)
+                        if (mode !== 'envio') invalidateQuote()
+                      }}
                       disabled={pending}
+                      data-testid={`fulfillment-${mode}`}
                     />
                     <span className={styles.shippingCopy}>
-                      <strong>{option.carrier} · {option.service}</strong>
-                      <small>{option.deliveryEstimate || 'Plazo a confirmar'}</small>
+                      <strong>{FULFILLMENT_COPY[mode].title}</strong>
+                      <small>{FULFILLMENT_COPY[mode].hint}</small>
                     </span>
-                    <strong>${formatPesoARExact(option.amount)}</strong>
                   </label>
                 ))}
               </fieldset>
-            )}
 
+              {fulfillmentMode === 'coordinar' && (
+                <div className={styles.field} style="margin-top: 0.5rem;">
+                  <label htmlFor={`${formId}-zone`}>Zona o ciudad (opcional)</label>
+                  <input
+                    id={`${formId}-zone`}
+                    name="fulfillment_zone"
+                    type="text"
+                    maxLength={80}
+                    value={fulfillmentZone}
+                    onChange={(e) => setFulfillmentZone(e.target.value)}
+                    disabled={pending}
+                    data-testid="checkout-fulfillment-zone"
+                    placeholder="Ej. centro, Plottier…"
+                  />
+                </div>
+              )}
+
+              {needsShippingQuote && (
+                <fieldset className={styles.addressFields} disabled={pending || quotePending}>
+                  <legend>Dirección de entrega *</legend>
+                  <div className={styles.field}>
+                    <label htmlFor={`${formId}-province`}>Provincia</label>
+                    <select
+                      id={`${formId}-province`}
+                      name="province"
+                      value={provinceId}
+                      onChange={(e) => void handleProvinceChange(e.target.value)}
+                      required
+                      data-testid="checkout-province"
+                    >
+                      <option value="">Elegí una provincia</option>
+                      {provinces.map((province) => (
+                        <option key={province.id} value={province.id}>{province.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor={`${formId}-locality`}>Ciudad / localidad</label>
+                    <select
+                      id={`${formId}-locality`}
+                      name="locality"
+                      value={localityId}
+                      onChange={(e) => {
+                        setLocalityId(e.target.value)
+                        invalidateQuote()
+                      }}
+                      required
+                      disabled={!provinceId || locationsPending || pending || quotePending}
+                      data-testid="checkout-locality"
+                    >
+                      <option value="">{locationsPending ? 'Cargando…' : 'Elegí una localidad'}</option>
+                      {localities.map((locality) => (
+                        <option key={locality.id} value={locality.id}>
+                          {locality.name}{locality.department ? ` · ${locality.department}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={styles.addressRow}>
+                    <div className={styles.field}>
+                      <label htmlFor={`${formId}-street`}>Calle</label>
+                      <input
+                        id={`${formId}-street`}
+                        name="street"
+                        type="text"
+                        autoComplete="address-line1"
+                        maxLength={120}
+                        value={street}
+                        onChange={(e) => {
+                          setStreet(e.target.value)
+                          invalidateQuote()
+                        }}
+                        placeholder="Calle"
+                        required
+                        data-testid="checkout-street"
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <label htmlFor={`${formId}-street-number`}>Altura</label>
+                      <input
+                        id={`${formId}-street-number`}
+                        name="street_number"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]{1,6}"
+                        maxLength={6}
+                        value={streetNumber}
+                        onChange={(e) => {
+                          setStreetNumber(e.target.value.replace(/\D/g, '').slice(0, 6))
+                          invalidateQuote()
+                        }}
+                        placeholder="Nro"
+                        required
+                        data-testid="checkout-street-number"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor={`${formId}-postal-code`}>Código postal</label>
+                    <input
+                      id={`${formId}-postal-code`}
+                      name="postal_code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      pattern="[0-9]{4}"
+                      maxLength={4}
+                      value={postalCode}
+                      onChange={(e) => {
+                        setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 4))
+                        invalidateQuote()
+                      }}
+                      placeholder="Ej: 1425"
+                      required
+                      data-testid="checkout-postal-code"
+                    />
+                  </div>
+                  <div className={styles.quoteRow}>
+                    <button
+                      type="button"
+                      className={styles.quoteButton}
+                      onClick={() => void handleQuote()}
+                      disabled={pending || quotePending || locationsPending || !addressComplete}
+                      data-testid="checkout-quote-shipping"
+                    >
+                      {quotePending ? <Loader2 size={16} className={styles.spin} aria-hidden /> : <Truck size={16} aria-hidden />}
+                      {quotePending ? 'Cotizando…' : 'Calcular opciones de envío'}
+                    </button>
+                  </div>
+                </fieldset>
+              )}
+
+              {locationsError && <p className={styles.error} role="alert">{locationsError}</p>}
+              {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
+
+              {shippingQuote && (
+                <fieldset className={styles.shippingOptions} data-testid="shipping-options" style="margin-top: 0.5rem;">
+                  <legend>Opciones de Envío Disponibles *</legend>
+                  <p className={styles.destination}>
+                    {shippingQuote.destination.formattedAddress} · CP {shippingQuote.destination.postalCode}
+                  </p>
+                  {shippingQuote.options.map((option) => (
+                    <label key={option.id} className={styles.shippingOption}>
+                      <input
+                        type="radio"
+                        name="shipping_option"
+                        value={option.id}
+                        checked={selectedShippingId === option.id}
+                        onChange={() => setSelectedShippingId(option.id)}
+                        disabled={pending}
+                      />
+                      <span className={styles.shippingCopy}>
+                        <strong>{option.carrier} · {option.service}</strong>
+                        <small>{option.deliveryEstimate || 'Plazo a confirmar'}</small>
+                      </span>
+                      <strong style="font-family: var(--font-mono);">${formatPesoARExact(option.amount)}</strong>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
+            </div>
+
+            {/* Notes */}
             <div className={styles.field}>
-              <label htmlFor={`${formId}-notes`}>Notas (opcional)</label>
+              <label htmlFor={`${formId}-notes`}>Notas o aclaraciones (opcional)</label>
               <textarea
                 id={`${formId}-notes`}
                 name="notes"
                 maxLength={500}
-                rows={3}
+                rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 disabled={pending}
                 data-testid="checkout-notes"
                 placeholder={
                   fulfillmentMode === 'retiro'
-                    ? 'Horario en el que podrías pasar'
-                    : fulfillmentMode === 'coordinar'
-                      ? 'Zona, horario o cómo preferís coordinar'
-                      : 'Horario preferido, referencias, etc.'
+                    ? 'Horario estimado para retirar...'
+                    : 'Piso, depto, timbre o indicaciones...'
                 }
               />
             </div>
+
+            {/* Summary Box */}
+            <section className={styles.summary} aria-label="Resumen">
+              <div className={styles.summaryRow}>
+                <span>Subtotal productos</span>
+                <span style="font-family: var(--font-mono); font-weight: 600;">${formatPesoAR(subtotal)}</span>
+              </div>
+              {appliedCoupon && (
+                <div className={styles.summaryRow} style="color: var(--success-green, #1E9E68); font-weight: 600;">
+                  <span>Cupón {appliedCoupon.code}</span>
+                  <span style="font-family: var(--font-mono);">−${formatPesoAR(descuentoCupon)}</span>
+                </div>
+              )}
+              {needsShippingQuote && selectedShipping && (
+                <div className={styles.summaryRow}>
+                  <span>Costo de Envío</span>
+                  <span style="font-family: var(--font-mono);">${formatPesoARExact(selectedShipping.amount)}</span>
+                </div>
+              )}
+              {!needsShippingQuote && (
+                <div className={styles.summaryRow}>
+                  <span>{FULFILLMENT_COPY[fulfillmentMode].title}</span>
+                  <span style="color: var(--success-green, #1E9E68); font-weight: 700;">Sin costo</span>
+                </div>
+              )}
+              <div className={styles.summaryTotal}>
+                <span>Total a pagar</span>
+                <strong>${formatPesoARExact(estimatedTotal)}</strong>
+              </div>
+            </section>
 
             {(fieldError || submitError) && (
               <p className={styles.error} role="alert" data-testid="checkout-error">
@@ -744,10 +768,10 @@ export function CheckoutPedido({
               {pending ? (
                 <>
                   <Loader2 size={18} className={styles.spin} aria-hidden />
-                  Confirmando…
+                  <span>Procesando pedido…</span>
                 </>
               ) : (
-                'Confirmar pedido'
+                <span>Confirmar Pedido y Elegir Pago ➔</span>
               )}
             </button>
           </form>

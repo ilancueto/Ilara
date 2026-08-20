@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ilara Beauty — Overhaul Estético & Showcase Interactivo</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="styles/design-tokens.css">
+  <link rel="stylesheet" href="styles/components.css">
+  
+  <style>
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Showcase Top Bar */
+    .showcase-header {
+      height: 60px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .showcase-title-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-showcase {
+      padding: 3px 8px;
+      background: var(--accent-primary-subtle);
+      color: var(--accent-rose-dark);
+      border: 1px solid var(--accent-rose);
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .view-switcher-group {
+      display: flex;
+      align-items: center;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      gap: 4px;
+    }
+
+    .switch-btn {
+      padding: 6px 14px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .switch-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .device-switcher {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: var(--radius-md);
+    }
+
+    .device-btn {
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .device-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* Showcase Frame Area */
+    .showcase-viewport-container {
+      flex: 1;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 16px;
+      position: relative;
+    }
+
+    .preview-frame-wrapper {
+      width: 100%;
+      height: 100%;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-frame-wrapper.desktop {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    .preview-frame-wrapper.tablet {
+      width: 820px;
+      height: 94%;
+      border-radius: 24px;
+      box-shadow: var(--shadow-xl);
+      border: 10px solid #1A181E;
+      background: #1A181E;
+    }
+
+    .preview-frame-wrapper.mobile {
+      width: 390px;
+      height: 96%;
+      border-radius: 40px;
+      box-shadow: var(--shadow-xl);
+      border: 12px solid #1A181E;
+      background: #1A181E;
+      position: relative;
+    }
+
+    .preview-frame-wrapper.mobile::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 20px;
+      background: #000000;
+      border-radius: 12px;
+      z-index: 100;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: var(--bg-primary);
+      border-radius: inherit;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Showcase Navigation -->
+  <header class="showcase-header">
+    <div class="showcase-title-area">
+      <strong style="font-family: var(--font-serif); font-size: 1.3rem; letter-spacing: 0.05em;">ILARA BEAUTY</strong>
+      <span class="badge-showcase">✨ PROTOTIPO INTERACTIVO 2026</span>
+    </div>
+
+    <!-- Main View Switcher -->
+    <div class="view-switcher-group">
+      <div class="switch-btn active" id="btn-view-checkout" onclick="setPreviewView('checkout_experiencia.html', 'btn-view-checkout')">
+        💳 Checkout + MP + Seguimiento
+      </div>
+      <div class="switch-btn" id="btn-view-overhaul" onclick="setPreviewView('overhaul_completo.html', 'btn-view-overhaul')">
+        💎 Master POS & Panel
+      </div>
+      <div class="switch-btn" id="btn-view-catalogo" onclick="setPreviewView('catalogo.html', 'btn-view-catalogo')">
+        🛍️ Catálogo Digital Luxury
+      </div>
+    </div>
+
+    <!-- Device Screen Switcher -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="device-switcher">
+        <button class="device-btn active" id="dev-desktop" onclick="setDeviceMode('desktop')">🖥️ Desktop</button>
+        <button class="device-btn" id="dev-tablet" onclick="setDeviceMode('tablet')">📱 iPad Pro</button>
+        <button class="device-btn" id="dev-mobile" onclick="setDeviceMode('mobile')">📲 iPhone</button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button class="btn-icon btn-secondary" onclick="toggleShowcaseTheme()" title="Cambiar Tema Dark/Light">
+        <span class="theme-toggle-btn-icon">🌙</span>
+      </button>
+
+      <!-- Direct Open Links -->
+      <a href="checkout_experiencia.html" target="_blank" class="btn btn-primary btn-sm" title="Abrir Experiencia Checkout en pantalla completa">
+        ✨ Ver Checkout Completo
+      </a>
+    </div>
+  </header>
+
+  <!-- Interactive Live Viewport -->
+  <div class="showcase-viewport-container">
+    <div class="preview-frame-wrapper desktop" id="frame-wrapper">
+      <iframe src="checkout_experiencia.html" id="preview-iframe"></iframe>
+    </div>
+  </div>
+
+  <script src="scripts/app.js"></script>
+  <script>
+    function setPreviewView(url, activeBtnId) {
+      document.getElementById('preview-iframe').src = url;
+      document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(activeBtnId).classList.add('active');
+    }
+
+    function setDeviceMode(mode) {
+      const wrapper = document.getElementById('frame-wrapper');
+      wrapper.className = `preview-frame-wrapper ${mode}`;
+      document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`dev-${mode}`).classList.add('active');
+    }
+
+    function toggleShowcaseTheme() {
+      toggleTheme();
+      // Sync iframe theme if accessible
+      try {
+        const iframe = document.getElementById('preview-iframe');
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (iframe && iframe.contentDocument) {
+          iframe.contentDocument.documentElement.setAttribute('data-theme', theme);
+        }
+      } catch (e) {
+        // cross-origin protection if any
+      }
+    }
+  </script>
+</body>
+</html>
