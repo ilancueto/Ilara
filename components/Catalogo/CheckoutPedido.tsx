@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
@@ -372,7 +374,7 @@ export function CheckoutPedido({
               )}
             </p>
 
-            <p className={styles.hint} data-testid="checkout-notify" style="color: var(--text-muted); font-size: 0.78rem;">
+            <p className={styles.hint} data-testid="checkout-notify" style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
               Elegí cómo pagar para que preparemos tu paquete. Te enviaremos el comprobante y el seguimiento.
             </p>
 
@@ -439,7 +441,7 @@ export function CheckoutPedido({
               <span>Coordinar por WhatsApp</span>
             </button>
 
-            <button type="button" className={styles.secondary} onClick={onClose} data-testid="checkout-back-catalog" style="margin-top: 0.25rem;">
+            <button type="button" className={styles.secondary} onClick={onClose} data-testid="checkout-back-catalog" style={{ marginTop: '0.25rem' }}>
               Seguir mirando el catálogo
             </button>
           </div>
@@ -541,7 +543,7 @@ export function CheckoutPedido({
               </fieldset>
 
               {fulfillmentMode === 'coordinar' && (
-                <div className={styles.field} style="margin-top: 0.5rem;">
+                <div className={styles.field} style={{ marginTop: '0.5rem' }}>
                   <label htmlFor={`${formId}-zone`}>Zona o ciudad (opcional)</label>
                   <input
                     id={`${formId}-zone`}
@@ -676,7 +678,7 @@ export function CheckoutPedido({
               {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
 
               {shippingQuote && (
-                <fieldset className={styles.shippingOptions} data-testid="shipping-options" style="margin-top: 0.5rem;">
+                <fieldset className={styles.shippingOptions} data-testid="shipping-options" style={{ marginTop: '0.5rem' }}>
                   <legend>Opciones de Envío Disponibles *</legend>
                   <p className={styles.destination}>
                     {shippingQuote.destination.formattedAddress} · CP {shippingQuote.destination.postalCode}
@@ -695,7 +697,7 @@ export function CheckoutPedido({
                         <strong>{option.carrier} · {option.service}</strong>
                         <small>{option.deliveryEstimate || 'Plazo a confirmar'}</small>
                       </span>
-                      <strong style="font-family: var(--font-mono);">${formatPesoARExact(option.amount)}</strong>
+                      <strong style={{ fontFamily: 'var(--font-mono)' }}>${formatPesoARExact(option.amount)}</strong>
                     </label>
                   ))}
                 </fieldset>
@@ -726,24 +728,24 @@ export function CheckoutPedido({
             <section className={styles.summary} aria-label="Resumen">
               <div className={styles.summaryRow}>
                 <span>Subtotal productos</span>
-                <span style="font-family: var(--font-mono); font-weight: 600;">${formatPesoAR(subtotal)}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>${formatPesoAR(subtotal)}</span>
               </div>
               {appliedCoupon && (
-                <div className={styles.summaryRow} style="color: var(--success-green, #1E9E68); font-weight: 600;">
+                <div className={styles.summaryRow} style={{ color: 'var(--success-green, #1E9E68)', fontWeight: 600 }}>
                   <span>Cupón {appliedCoupon.code}</span>
-                  <span style="font-family: var(--font-mono);">−${formatPesoAR(descuentoCupon)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>−${formatPesoAR(descuentoCupon)}</span>
                 </div>
               )}
               {needsShippingQuote && selectedShipping && (
                 <div className={styles.summaryRow}>
                   <span>Costo de Envío</span>
-                  <span style="font-family: var(--font-mono);">${formatPesoARExact(selectedShipping.amount)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>${formatPesoARExact(selectedShipping.amount)}</span>
                 </div>
               )}
               {!needsShippingQuote && (
                 <div className={styles.summaryRow}>
                   <span>{FULFILLMENT_COPY[fulfillmentMode].title}</span>
-                  <span style="color: var(--success-green, #1E9E68); font-weight: 700;">Sin costo</span>
+                  <span style={{ color: 'var(--success-green, #1E9E68)', fontWeight: 700 }}>Sin costo</span>
                 </div>
               )}
               <div className={styles.summaryTotal}>
