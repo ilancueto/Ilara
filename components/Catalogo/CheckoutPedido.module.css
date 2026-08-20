@@ -81,7 +81,7 @@
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #C5A880;
+  color: #8C6D3F;
   font-weight: 800;
 }
 
@@ -550,8 +550,12 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #C5A880;
+  color: #8C6D3F;
   font-weight: 800;
+}
+
+:global(.dark) .orderNumberLabel {
+  color: #D4AF7A;
 }
 
 .orderNumber {
@@ -560,7 +564,7 @@
   font-size: 1.85rem;
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: #C25B6C;
+  color: #B83A53;
 }
 
 :global(.dark) .orderNumber {
@@ -576,7 +580,7 @@
 .hint {
   margin: 0;
   font-size: 0.82rem;
-  color: #635F6A;
+  color: #4A4652;
   line-height: 1.45;
 }
 
@@ -621,7 +625,7 @@
   justify-content: center;
   gap: 0.5rem;
   background: #FDF2F4;
-  color: #C25B6C;
+  color: #9E2B43;
   border: 1.5px solid #FBCFE8;
   border-radius: 0.95rem;
   padding: 0.95rem 1.25rem;
@@ -650,8 +654,8 @@
   justify-content: center;
   gap: 0.5rem;
   background: #E8FBF0;
-  color: #128C7E;
-  border: 1px solid rgba(37, 211, 102, 0.35);
+  color: #065F46;
+  border: 1.5px solid #25D366;
   border-radius: 0.95rem;
   padding: 0.9rem 1.25rem;
   font: inherit;
@@ -659,6 +663,12 @@
   font-size: 0.92rem;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+:global(.dark) .waBtn {
+  background: #064E3B33;
+  color: #34D399;
+  border-color: #065F46;
 }
 
 .waBtn:hover {
