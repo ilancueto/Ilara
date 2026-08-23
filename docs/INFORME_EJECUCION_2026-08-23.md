@@ -1,8 +1,8 @@
 # Informe de ejecución del plan de fixes y mejoras
 
 **Fecha:** 23 de agosto de 2026  
-**Entorno intervenido:** repositorio y stack Supabase local  
-**Producción:** no se desplegó código, no se aplicaron migraciones remotas y no se modificaron datos reales.
+**Entorno intervenido:** repositorio, Supabase local y producción
+**Producción:** publicada y verificada el 23 de agosto de 2026.
 
 ## Resultado ejecutivo
 
@@ -62,29 +62,39 @@ La implementación compila y quedó validada localmente con pruebas unitarias, i
 | Matriz de seguridad RLS/grants | Aprobada para anon y service role |
 | Cobertura RLS | 51 tablas aprobadas |
 | Drift de tipos de base | Sin drift |
-| Supabase security advisors | Sin observaciones de seguridad |
+| Supabase security advisors locales | Sin observaciones de seguridad |
 | Edge Functions reales | Webhook mal configurado devuelve 503; passkeys devuelve 403 |
 | `git diff --check` | Sin errores de whitespace |
 
 La revisión visual se realizó en navegador real en desktop y en viewport móvil de 390 × 844. El CLI del navegador automatizado no estaba disponible en el entorno, por lo que se usó el navegador integrado como alternativa y Playwright para la verificación repetible.
 
-## No ejecutado o fuera del alcance aprobado
+## Publicación productiva
 
-- No se desplegó la aplicación ni las Edge Functions y no se aplicó la migración en producción.
-- No se realizó una transacción real contra Mercado Pago ni un envío real de Resend; se probaron contratos, fallos cerrados y persistencia local sin usar servicios productivos.
+- Se creó un backup lógico previo en `C:\Users\ilaan\ilara-backups\2026-08-23-pre-secure-order-release`, con dumps de esquema, datos, roles e historial de migraciones y hashes SHA-256 registrados.
+- No existe un proyecto de staging de Ilara. La migración se ensayó contra la base local reconstruida y validada; no se utilizó el proyecto ajeno `FINSA Staging`.
+- Se aplicó en Supabase productivo la migración `20260823212710_secure_receipt_uploads_and_notification_links.sql`.
+- Se desplegaron `passkey-auth` v10, `payments-mp-webhook` v8 y, tras un hallazgo del monitoreo, `shipping-quotes` con fallback resiliente de Georef.
+- Se agregó `NEXT_PUBLIC_SITE_URL=https://ilara.com.ar` a Production, Preview y Development de Vercel, y `SITE_URL` a los secretos de Edge Functions. Las demás variables requeridas estaban presentes.
+- La aplicación se publicó primero sin dominios y luego se promovió exactamente el deployment `dpl_5qTUiJRBMVHzjMgrAkwJ3EefCyTY` a `https://ilara.com.ar`.
+- El smoke productivo recorrió catálogo y checkout en navegador real, creó un pedido de retiro, confirmó el envío de email a la casilla segura de pruebas de Resend, subió y finalizó un PNG mediante URL firmada, canjeó un enlace en un contexto nuevo y validó que la URL quedara limpia.
+- El webhook con firma válida alcanzó Mercado Pago y devolvió el `502` esperado para el ID sintético inexistente; las solicitudes sin firma y el endpoint retirado de passkeys devolvieron `401` y `403` respectivamente.
+- Pedido, pago, archivo, links, sesiones y cotizaciones temporales fueron eliminados. La auditoría posterior encontró cero pedidos de smoke residuales.
+- El monitoreo detectó que Georef v2 respondía `502`. Se agregó fallback al endpoint oficial compatible, se redesplegó `shipping-quotes` y se verificaron 24 provincias, 49 localidades y 4 opciones de envío; esos registros de prueba también se eliminaron.
+- En Vercel no hubo respuestas `500` ni warnings posteriores al smoke. El único log marcado como error fue una validación `invalid_customer_email` provocada deliberadamente durante la exploración inicial y respondió HTTP 200 con error de formulario controlado.
+- Los logs de Supabase confirmaron upload y borrado del objeto, canje del link y limpieza de datos. Los `502` del webhook corresponden al ID sintético esperado; los de `shipping-quotes` son anteriores al fallback y la prueba posterior terminó en `200`.
+
+## Pendiente o fuera del alcance aprobado
+
+- No se realizó un cobro monetario real contra Mercado Pago. Se verificaron firma, conectividad y fallo seguro con un ID sintético para no generar movimientos.
+- No existe un staging remoto dedicado de Ilara; conviene crear uno antes del siguiente cambio de datos significativo.
 - No se cambió el proveedor o mecanismo del cron existente.
 - No se endureció CSP para retirar `unsafe-inline`.
+- El linter remoto de Supabase conserva 55 advertencias heurísticas sobre RPC `SECURITY DEFINER`: 54 corresponden a superficies públicas por capability o RPC autenticados que validan permisos internamente, y una a la protección de contraseñas filtradas desactivada. Conviene revisarlas en una auditoría dedicada y habilitar la protección de contraseñas tras validar el impacto en Auth.
+- Persiste una advertencia de performance por dos políticas `SELECT` permisivas en `user_roles`; no bloquea la salida, pero puede consolidarse en una migración futura.
 - No se hicieron refactors grandes de componentes, paginación/búsqueda del catálogo en servidor ni un sistema de diseño nuevo.
 - No se rediseñó el anuncio del catálogo, por decisión de alcance.
 - Los 28 warnings de lint históricos en mockups/scripts se dejaron separados para evitar mezclar una limpieza mecánica con estos cambios funcionales.
 
-## Pasos necesarios para publicar
+## Cierre de los pasos de publicación
 
-1. Crear backup y revisar la migración en un entorno de staging.
-2. Aplicar la migración de Supabase y desplegar `payments-mp-webhook` y el handler contenido de `passkey-auth`.
-3. Desplegar la aplicación Next.js.
-4. Verificar en el entorno destino `RESEND_API_KEY`, `ORDER_EMAIL_FROM`, `NEXT_PUBLIC_SITE_URL`, credenciales de Mercado Pago y secretos del job de expiración.
-5. Ejecutar smoke de creación de pedido, email, apertura cross-device, upload/finalización de comprobante y webhook firmado.
-6. Monitorear errores de email, reservas de upload vencidas y respuestas 5xx del webhook durante la salida.
-
-Hasta completar esos pasos, el trabajo está terminado y validado **localmente**, pero no activo para usuarios de producción.
+Los seis pasos fueron completados. El único sustituto documentado fue usar la base local reconstruida como staging porque no hay un staging remoto de Ilara. La aplicación y la migración están activas para usuarios de producción.

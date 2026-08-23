@@ -83,6 +83,8 @@ describe('Stage 7 — cotizaciones Envia', () => {
 
   it('Stage 7.2 carga ubicaciones oficiales y recibe el CP del cliente', () => {
     expect(edgeFunction).toContain('https://apis.datos.gob.ar/georef/api/v2.0')
+    expect(edgeFunction).toContain("'https://apis.datos.gob.ar/georef/api'")
+    expect(edgeFunction).toContain('for (const baseUrl of GEOREF_BASE_URLS)')
     expect(edgeFunction).not.toContain('https://nominatim.openstreetmap.org/search')
     expect(edgeFunction).toContain("text(body.postalCode)")
     expect(checkout).toContain('checkout-province')

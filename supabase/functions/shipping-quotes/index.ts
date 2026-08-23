@@ -18,7 +18,12 @@ type StructuredAddress = {
 
 const ENVIA_RATE_URL = 'https://api.envia.com/ship/rate/'
 const ENVIA_GEOCODE_URL = 'https://geocodes.envia.com/zipcode/AR'
-const GEOREF_BASE_URL = 'https://apis.datos.gob.ar/georef/api/v2.0'
+const GEOREF_BASE_URLS = [
+  'https://apis.datos.gob.ar/georef/api/v2.0',
+  // El endpoint sin versión sigue siendo oficial y funciona como respaldo
+  // durante caídas transitorias de v2 (observado en producción el 2026-08-23).
+  'https://apis.datos.gob.ar/georef/api',
+] as const
 const QUOTE_TTL_MS = 15 * 60 * 1000
 const REQUEST_TIMEOUT_MS = 12_000
 const LOCATIONS_CACHE_MS = 24 * 60 * 60 * 1000
@@ -136,9 +141,17 @@ async function enviaFetch(url: string, token: string, init?: RequestInit): Promi
 }
 
 async function georefFetch(path: string, params: URLSearchParams): Promise<JsonRecord> {
-  return asRecord(await fetchJson(`${GEOREF_BASE_URL}/${path}?${params.toString()}`, {
-    headers: { Accept: 'application/json' },
-  }))
+  let lastError: unknown
+  for (const baseUrl of GEOREF_BASE_URLS) {
+    try {
+      return asRecord(await fetchJson(`${baseUrl}/${path}?${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+      }))
+    } catch (error) {
+      lastError = error
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('georef_unavailable')
 }
 
 function parseLocations(value: unknown, key: 'provincias' | 'localidades'): LocationItem[] {

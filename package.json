@@ -15,6 +15,7 @@
     "test:integration": "vitest run tests/integration --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "test:smoke": "node scripts/postdeploy-smoke.mjs",
+    "test:smoke:production-release": "node scripts/production-release-smoke.mjs",
     "test:smoke:local": "node -e \"process.env.SMOKE_BASE_URL=process.env.SMOKE_BASE_URL||'http://127.0.0.1:3000';require('child_process').execSync('node scripts/postdeploy-smoke.mjs',{stdio:'inherit',env:process.env})\"",
     "test:db-security": "node scripts/db-security-matrix.mjs",
     "test:db-rls": "node scripts/check-rls-coverage.mjs",
