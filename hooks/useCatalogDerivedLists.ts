@@ -4,6 +4,7 @@ import { useMemo, useCallback } from 'react'
 import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { catalogDisplayUnitPrice } from '@/lib/domain/payments/catalogDisplayPrice'
 import { PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
+import { isPublicCatalogComboAvailable } from '@/lib/domain/catalog/publicAvailability'
 
 function getPrecioConDescuento(producto: PublicCatalogProduct): number {
   return catalogDisplayUnitPrice(producto)
@@ -82,6 +83,7 @@ export function useCatalogDerivedLists({
 
   const combosFiltrados = useMemo(() => {
     return combos.filter((c) => {
+      if (!isPublicCatalogComboAvailable(c)) return false
       if (categoriaFiltro !== 'all') return false
       if (busqueda) {
         const t = busqueda.toLowerCase()

@@ -19,6 +19,7 @@ import {
 import { applyComboPublicPricing, applyProductPublicPricing } from '@/lib/domain/payments/applyPublicPricing'
 import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
 import type { PublicPricingContext } from '@/lib/domain/payments/types'
+import { PUBLIC_CATALOG_MIN_STOCK } from '@/lib/domain/catalog/publicAvailability'
 
 export type PublicCatalogSnapshot = {
   productos: PublicCatalogProduct[]
@@ -34,7 +35,7 @@ export async function fetchPublicCatalogSnapshot(
     client
       .from('products')
       .select(CATALOG_PRODUCT_SELECT)
-      .gte('stock', 0)
+      .gte('stock', PUBLIC_CATALOG_MIN_STOCK)
       .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
       .order('created_at', { ascending: false }),
     client.from('combos').select(CATALOG_COMBO_SELECT).eq('is_active', true).order('created_at', {

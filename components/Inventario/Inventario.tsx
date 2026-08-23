@@ -310,6 +310,7 @@ export default function Inventario() {
     const productosParaReposicion = productos.filter(
         p => p.stock < p.min_stock || (umbralStockCritico != null && p.stock <= umbralStockCritico)
     )
+    const productosAgotados = productos.filter((p) => p.stock <= 0).length
 
     return (
         <div className="max-w-7xl mx-auto flex flex-col gap-12">
@@ -413,6 +414,16 @@ export default function Inventario() {
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                         Mostrando <span className="font-bold text-gray-900 dark:text-gray-100">{productosFiltrados.length}</span> producto{productosFiltrados.length !== 1 ? 's' : ''}
                     </p>
+                    {productosAgotados > 0 && (
+                        <span
+                            className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                            title="Los productos con stock cero se ocultan y vuelven a mostrarse al reponer stock."
+                            data-testid="inventory-out-of-stock-auto-hidden"
+                        >
+                            <EyeOff className="h-3.5 w-3.5" aria-hidden />
+                            {productosAgotados} agotado{productosAgotados !== 1 ? 's' : ''}: oculto{productosAgotados !== 1 ? 's' : ''} automáticamente
+                        </span>
+                    )}
                 </div>
                 {productosFiltrados.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2">

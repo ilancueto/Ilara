@@ -16,6 +16,7 @@ import { priceWithProductDiscount } from '@/lib/catalogPricing'
 import { buildProductJsonLd } from '@/lib/productStructuredData'
 import { formatPesoAR } from '@/lib/formatPesoAR'
 import { serializeJsonLd } from '@/lib/security/serializeJsonLd'
+import { PUBLIC_CATALOG_MIN_STOCK } from '@/lib/domain/catalog/publicAvailability'
 
 export const revalidate = 120
 
@@ -31,7 +32,7 @@ export async function generateStaticParams(): Promise<Array<{ id: string }>> {
     const { data, error } = await supabase
         .from('products')
         .select('id')
-        .gte('stock', 0)
+        .gte('stock', PUBLIC_CATALOG_MIN_STOCK)
         .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
 
     if (error) {

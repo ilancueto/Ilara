@@ -22,6 +22,7 @@ import {
 import { applyComboPublicPricing, applyProductPublicPricing } from '@/lib/domain/payments/applyPublicPricing'
 import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
 import type { PublicPricingContext } from '@/lib/domain/payments/types'
+import { PUBLIC_CATALOG_MIN_STOCK, isPublicCatalogProductVisible } from '@/lib/domain/catalog/publicAvailability'
 
 export { CATALOG_PRODUCT_SELECT } from '@/lib/catalog/publicCatalogSelect'
 
@@ -53,7 +54,7 @@ export async function fetchCatalogProductsServer(
   const { data, error } = await supabase
     .from('products')
     .select(CATALOG_PRODUCT_SELECT)
-    .gte('stock', 0)
+    .gte('stock', PUBLIC_CATALOG_MIN_STOCK)
     .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
     .order('created_at', { ascending: false })
 
@@ -116,7 +117,7 @@ export async function fetchCatalogProductByIdServer(
   }
   if (!data) return { status: 'not_found' }
   const p = mapPublicCatalogProduct(data)
-  if (p.stock < 0 || p.visible_in_catalog === false) return { status: 'not_found' }
+  if (!isPublicCatalogProductVisible(p)) return { status: 'not_found' }
   return { status: 'ok', product: p }
 }
 
@@ -147,7 +148,7 @@ export async function fetchCatalogRelatedProductsServer(
         .select(CATALOG_PRODUCT_SELECT)
         .neq('id', excludeId)
         .eq('category_id', categoryId)
-        .gte('stock', 0)
+        .gte('stock', PUBLIC_CATALOG_MIN_STOCK)
         .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
         .order('created_at', { ascending: false })
         .limit(limit)
@@ -160,7 +161,7 @@ export async function fetchCatalogRelatedProductsServer(
         .from('products')
         .select(CATALOG_PRODUCT_SELECT)
         .neq('id', excludeId)
-        .gte('stock', 0)
+        .gte('stock', PUBLIC_CATALOG_MIN_STOCK)
         .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
         .order('created_at', { ascending: false })
         .limit(limit * 2)
