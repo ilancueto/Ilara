@@ -103,6 +103,9 @@ const sensitiveTables = [
   // Stage 8.3 — capability, comprobantes y evidencia de expiración
   'order_access_capabilities',
   'order_follow_tokens',
+  'order_follow_sessions',
+  'order_notification_links',
+  'payment_receipt_uploads',
   'payment_receipts',
   'payment_expire_runs',
   // Stage 9 — vínculo CRM, costo de pedido y devoluciones de catálogo
@@ -253,6 +256,9 @@ if (serviceKey) {
     'payment_access_tokens',
     'order_access_capabilities',
     'order_follow_tokens',
+    'order_follow_sessions',
+    'order_notification_links',
+    'payment_receipt_uploads',
     'payment_receipts',
     'payment_expire_runs',
   ]

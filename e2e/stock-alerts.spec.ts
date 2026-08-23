@@ -102,7 +102,6 @@ test.describe('Stage 6.2 alertas de reposición', () => {
     const axe = await new AxeBuilder({ page })
       .include('[data-testid="alertas-reposicion-panel"]')
       .withTags(['wcag2a', 'wcag2aa'])
-      .disableRules(['color-contrast']) // residual chrome; critical a11y via keyboard/dialogs
       .analyze()
     const critical = axe.violations.filter((v) => v.impact === 'critical')
     expect(critical, JSON.stringify(critical.map((v) => v.id))).toEqual([])

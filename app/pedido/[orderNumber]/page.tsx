@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type PageProps = {
   params: Promise<{ orderNumber: string }>
-  searchParams: Promise<{ t?: string | string[] }>
+  searchParams: Promise<{ t?: string | string[]; n?: string | string[] }>
 }
 
 export default async function PedidoSeguimientoPage({ params, searchParams }: PageProps) {
@@ -22,6 +22,10 @@ export default async function PedidoSeguimientoPage({ params, searchParams }: Pa
   if (!isOrderNumber(orderNumber)) notFound()
 
   const query = await searchParams
+  const notification = Array.isArray(query.n) ? query.n[0] : query.n
+  if (notification && notification.trim().length >= 32) {
+    return <ConsumeFollowToken orderNumber={orderNumber} token={notification.trim()} mode="notification" />
+  }
   const token = Array.isArray(query.t) ? query.t[0] : query.t
   if (token && token.trim().length >= 32) {
     return <ConsumeFollowToken orderNumber={orderNumber} token={token.trim()} />

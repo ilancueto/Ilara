@@ -2,21 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { claimFollowSessionAction } from '@/app/actions/payments'
+import { claimFollowSessionAction, claimNotificationSessionAction } from '@/app/actions/payments'
 import { buildOrderFollowCleanPath } from '@/lib/domain/orders/followLink'
 
 type Props = {
   orderNumber: string
   token: string
+  mode?: 'follow' | 'notification'
 }
 
-export function ConsumeFollowToken({ orderNumber, token }: Props) {
+export function ConsumeFollowToken({ orderNumber, token, mode = 'follow' }: Props) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    void claimFollowSessionAction(orderNumber, token).then((result) => {
+    const claim = mode === 'notification' ? claimNotificationSessionAction : claimFollowSessionAction
+    void claim(orderNumber, token).then((result) => {
       if (cancelled) return
       if (!result.ok) {
         setError(result.error)
@@ -27,7 +29,7 @@ export function ConsumeFollowToken({ orderNumber, token }: Props) {
     return () => {
       cancelled = true
     }
-  }, [orderNumber, token, router])
+  }, [mode, orderNumber, token, router])
 
   if (error) {
     return (

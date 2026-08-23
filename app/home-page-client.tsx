@@ -164,12 +164,9 @@ function dockHighlight(tab: AppTab): AppTab {
   return tab
 }
 
-function getSaludo(email: string | null): string {
-  if (!email) return 'Cuenta Activa'
-  const e = email.toLowerCase()
-  if (e === 'ilaancueto@gmail.com') return 'Hola Ilan'
-  if (e === 'marubaidal28@gmail.com') return 'Hola Mara'
-  return 'Cuenta Activa'
+function getSaludo(displayName: string | null): string {
+  const firstName = (displayName || '').trim().split(/\s+/)[0]?.replace(/[^\p{L}'-]/gu, '').slice(0, 32)
+  return firstName ? `Hola ${firstName}` : 'Cuenta Activa'
 }
 
 function HomeContent() {
@@ -178,6 +175,7 @@ function HomeContent() {
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard')
   const [cargando, setCargando] = useState(true)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userDisplayName, setUserDisplayName] = useState<string | null>(null)
   const [logoError, setLogoError] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -203,6 +201,9 @@ function HomeContent() {
         }
 
         setUserEmail(user.email || null)
+        const metadata = user.user_metadata || {}
+        const displayName = metadata.display_name || metadata.full_name || metadata.name
+        setUserDisplayName(typeof displayName === 'string' ? displayName : null)
         const roleCaps = await loadRoleCapabilities()
         setCaps(roleCaps)
         if (!roleCaps.canUsePos && !roleCaps.isAdmin) {
@@ -419,7 +420,7 @@ function HomeContent() {
                   <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-2xl border border-pink-100 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl shadow-pink-200/30 dark:shadow-black/40 p-3 animate-fade-in">
                     <div className="px-2 py-2 mb-2 border-b border-gray-100 dark:border-gray-800">
                       <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
-                        {getSaludo(userEmail)}
+                        {getSaludo(userDisplayName)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-mono mt-0.5">
                         {userEmail}

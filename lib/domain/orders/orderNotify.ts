@@ -7,6 +7,7 @@ export type OrderNotifyLine = {
 }
 
 export type OrderNotifyKind =
+  | 'created'
   | 'payment_pending'
   | 'payment_received'
   | 'confirmed'
@@ -27,6 +28,11 @@ export type OrderNotifyInput = {
 }
 
 const KIND_COPY: Record<OrderNotifyKind, { subject: string; lead: string; next: string }> = {
+  created: {
+    subject: 'Recibimos tu pedido',
+    lead: 'Recibimos tu pedido',
+    next: 'Podés elegir cómo pagarlo y seguir cada novedad desde el enlace seguro.',
+  },
   payment_pending: {
     subject: 'Recibimos el pago de tu pedido',
     lead: 'Recibimos el pago de tu pedido',

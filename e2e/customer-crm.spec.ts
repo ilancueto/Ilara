@@ -61,7 +61,7 @@ test.describe('Stage 6.5 CRM', () => {
     await page.getByTestId('crm-consent-grant').click()
     await expect(page.getByTestId('crm-consent-status')).toContainText('Autorizado')
 
-    const axe = await new AxeBuilder({ page }).include('[data-testid="customer-crm-panel"]').withTags(['wcag2a', 'wcag2aa']).disableRules(['color-contrast']).analyze()
+    const axe = await new AxeBuilder({ page }).include('[data-testid="customer-crm-panel"]').withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(axe.violations.filter((violation) => violation.impact === 'critical')).toEqual([])
   })
 })

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
-import { startBankTransferAction, startMercadoPagoAction } from '@/app/actions/payments'
+import { createFollowShareLinkAction, startBankTransferAction, startMercadoPagoAction } from '@/app/actions/payments'
 import type { CatalogCartItem } from '@/hooks/useCarrito'
 import type { CreateOrderResult } from '@/lib/domain/orders/types'
 import { buildOrderWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
@@ -21,7 +21,6 @@ import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/type
 import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { paymentStartKey, saveOrderAccess } from '@/lib/domain/payments/publicSession'
-import { buildOrderFollowUrl } from '@/lib/domain/orders/followLink'
 import styles from '@/components/Catalogo/CheckoutPedido.module.css'
 
 type Props = {
@@ -84,6 +83,7 @@ export function CheckoutPedido({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const [done, setDone] = useState<CreateOrderResult | null>(null)
+  const [notifiedVia, setNotifiedVia] = useState<'email' | 'whatsapp' | 'none'>('none')
   const idemRef = useRef<string>(newIdempotencyKey())
   const submittingRef = useRef(false)
   const localityRequestRef = useRef(0)
@@ -274,6 +274,7 @@ export function CheckoutPedido({
           )
         }
         setDone(result.order)
+        setNotifiedVia(result.notifiedVia)
         onOrderCreated(result.order)
         showToast('success', `Pedido ${result.order.order_number} confirmado`)
       } catch {
@@ -287,25 +288,24 @@ export function CheckoutPedido({
 
   const openWa = () => {
     if (!done) return
-    const lines = carrito.map((item) => ({
-      name: item.producto ? item.producto.name : item.combo!.name,
-      quantity: item.cantidad,
-    }))
-    const followUrl = done.follow_token
-      ? buildOrderFollowUrl(done.order_number, done.follow_token)
-      : null
-    const msg = buildOrderWhatsAppMessage({
-      order_number: done.order_number,
-      total: done.total,
-      lines,
-      customer_name: name.trim(),
-      fulfillment_mode: done.fulfillment_mode ?? fulfillmentMode,
-      follow_url: followUrl,
+    startTransition(async () => {
+      const link = await createFollowShareLinkAction(done.order_number)
+      const lines = carrito.map((item) => ({
+        name: item.producto ? item.producto.name : item.combo!.name,
+        quantity: item.cantidad,
+      }))
+      const msg = buildOrderWhatsAppMessage({
+        order_number: done.order_number,
+        total: done.total,
+        lines,
+        customer_name: name.trim(),
+        fulfillment_mode: done.fulfillment_mode ?? fulfillmentMode,
+        follow_url: link.ok ? link.data.url : null,
+      })
+      if (!openWhatsApp(msg, false)) {
+        showToast('warning', 'No se pudo abrir WhatsApp. Tu pedido ya está confirmado.')
+      }
     })
-    const ok = openWhatsApp(msg, false)
-    if (!ok) {
-      showToast('warning', 'No se pudo abrir WhatsApp. Tu pedido ya está confirmado.')
-    }
   }
 
   return (
@@ -375,7 +375,9 @@ export function CheckoutPedido({
             </p>
 
             <p className={styles.hint} data-testid="checkout-notify" style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-              Elegí cómo pagar para que preparemos tu paquete. Te enviaremos el comprobante y el seguimiento.
+              {notifiedVia === 'email'
+                ? 'Te enviamos por email una confirmación con un enlace seguro de seguimiento.'
+                : 'Elegí cómo pagar. También podés guardar este pedido o coordinarlo por WhatsApp.'}
             </p>
 
             {done.access_capability && (
@@ -435,6 +437,7 @@ export function CheckoutPedido({
               type="button"
               className={styles.waBtn}
               onClick={openWa}
+              disabled={pending}
               data-testid="checkout-whatsapp"
             >
               <MessageCircle size={18} />
@@ -490,7 +493,7 @@ export function CheckoutPedido({
                   aria-describedby={`${formId}-phone-hint`}
                 />
                 <p id={`${formId}-phone-hint`} className={styles.fieldHint}>
-                  Te enviaremos avisos y el comprobante por WhatsApp.
+                  Lo usamos para coordinar por WhatsApp si lo necesitás.
                 </p>
               </div>
 
@@ -507,7 +510,11 @@ export function CheckoutPedido({
                   placeholder="tu@email.com"
                   disabled={pending}
                   data-testid="checkout-email"
+                  aria-describedby={`${formId}-email-hint`}
                 />
+                <p id={`${formId}-email-hint`} className={styles.fieldHint}>
+                  Si lo completás, te enviaremos confirmación y seguimiento por email.
+                </p>
               </div>
             </div>
 

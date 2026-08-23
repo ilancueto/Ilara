@@ -66,7 +66,7 @@ test.describe('Stage 6.6 cuentas y conciliación', () => {
     expect(stored.error).toBeNull()
     expect(stored.data).toEqual(expect.objectContaining({ payment_method: 'transferencia' }))
 
-    const axe = await new AxeBuilder({ page }).include('[data-testid="finance-ledger"]').withTags(['wcag2a', 'wcag2aa']).disableRules(['color-contrast']).analyze()
+    const axe = await new AxeBuilder({ page }).include('[data-testid="finance-ledger"]').withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(axe.violations.filter((violation) => violation.impact === 'critical')).toEqual([])
   })
 })

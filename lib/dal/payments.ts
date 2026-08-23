@@ -5,6 +5,14 @@ import { createSupabaseServiceClient } from '@/lib/supabase/service'
 import { createOrderErrorFromRpc } from '@/lib/domain/orders/createOrder'
 import { AppError } from '@/lib/domain/errors'
 import type { PublicFollowView, PublicPaymentView } from '@/lib/domain/payments/types'
+import {
+  PAYMENT_RECEIPT_MAX_BYTES,
+  detectPaymentReceiptMime,
+  receiptExtensionForMime,
+  validatePaymentReceiptMetadata,
+  type PaymentReceiptFileMetadata,
+} from '@/lib/domain/payments/receiptFile'
+import type { PreparedReceiptUpload } from '@/lib/domain/payments/browserReceiptUpload'
 
 export type { PublicPaymentView }
 
@@ -137,98 +145,155 @@ export async function getPublicFollowServer(
   }
 }
 
-function extensionFor(file: File): string {
-  const fromName = (file.name.split('.').pop() || '').toLowerCase()
-  if (['jpg', 'jpeg', 'png', 'webp', 'pdf'].includes(fromName)) return fromName
-  if (file.type === 'application/pdf') return 'pdf'
-  if (file.type === 'image/png') return 'png'
-  if (file.type === 'image/webp') return 'webp'
-  return 'jpg'
+function receiptValidationError(error: unknown): AppError {
+  const code = error instanceof Error ? error.message : 'invalid_receipt'
+  return new AppError('validation', 'Elegí un JPG, PNG, WebP o PDF de hasta 5 MB.', { message: code })
 }
 
-export async function uploadTransferReceiptServer(accessCapability: string, file: File) {
-  if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
-    throw new AppError('validation', 'El comprobante no puede superar 5 MB.', { message: 'invalid_receipt_size' })
-  }
-  const publicClient = createSupabasePublicClient()
-  const prepared = await publicClient.rpc('prepare_transfer_receipt', {
-    p_access_capability: accessCapability,
-    p_extension: extensionFor(file),
-  })
+async function createSignedReceiptUpload(
+  prepared: { data: unknown; error: { message?: string } | null },
+  metadata: PaymentReceiptFileMetadata
+): Promise<PreparedReceiptUpload> {
   if (prepared.error) throw createOrderErrorFromRpc(prepared.error.message || '')
-  const path = String(record(prepared.data).storage_path || '')
-  if (!path) throw new AppError('unknown', 'No se pudo guardar el comprobante.', { message: 'receipt_path' })
-
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  const digest = await crypto.subtle.digest('SHA-256', bytes)
-  const sha256 = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
-
-  const service = createSupabaseServiceClient()
-  const upload = await service.storage.from('payment-receipts').upload(path, bytes, {
-    contentType: file.type || 'application/octet-stream',
-    upsert: false,
-  })
-  if (upload.error) {
-    throw new AppError('unknown', 'No se pudo guardar el comprobante.', { message: 'receipt_upload' })
+  const row = record(prepared.data)
+  const path = String(row.storage_path || '')
+  const expectedMime = String(row.expected_mime || '')
+  if (!path || expectedMime !== metadata.type.toLowerCase()) {
+    throw new AppError('unknown', 'No se pudo preparar el comprobante.', { message: 'receipt_path' })
   }
+  const service = createSupabaseServiceClient()
+  const signed = await service.storage.from('payment-receipts').createSignedUploadUrl(path)
+  if (signed.error || !signed.data?.token) {
+    await service.from('payment_receipt_uploads').delete().eq('storage_path', path)
+    throw new AppError('unknown', 'No se pudo preparar el comprobante.', { message: 'receipt_sign' })
+  }
+  return {
+    path,
+    token: signed.data.token,
+    contentType: expectedMime,
+    maxBytes: PAYMENT_RECEIPT_MAX_BYTES,
+  }
+}
 
-  const done = await publicClient.rpc('complete_transfer_receipt', {
+export async function prepareTransferReceiptUploadServer(
+  accessCapability: string,
+  metadata: PaymentReceiptFileMetadata
+): Promise<PreparedReceiptUpload> {
+  let valid: ReturnType<typeof validatePaymentReceiptMetadata>
+  try {
+    valid = validatePaymentReceiptMetadata(metadata)
+  } catch (error) {
+    throw receiptValidationError(error)
+  }
+  const service = createSupabaseServiceClient()
+  const prepared = await service.rpc('prepare_transfer_receipt', {
+    p_access_capability: accessCapability,
+    p_extension: valid.extension,
+  })
+  return createSignedReceiptUpload(prepared, { ...metadata, type: valid.mime })
+}
+
+export async function prepareTransferReceiptFollowUploadServer(
+  orderNumber: string,
+  followToken: string,
+  metadata: PaymentReceiptFileMetadata
+): Promise<PreparedReceiptUpload> {
+  let valid: ReturnType<typeof validatePaymentReceiptMetadata>
+  try {
+    valid = validatePaymentReceiptMetadata(metadata)
+  } catch (error) {
+    throw receiptValidationError(error)
+  }
+  const service = createSupabaseServiceClient()
+  const prepared = await service.rpc('prepare_transfer_receipt_follow', {
+    p_order_number: orderNumber,
+    p_follow_token: followToken,
+    p_extension: valid.extension,
+  })
+  return createSignedReceiptUpload(prepared, { ...metadata, type: valid.mime })
+}
+
+async function inspectAndCompleteReceipt(
+  path: string,
+  complete: (input: { mime: string; size: number; sha256: string }) => Promise<{ data: unknown; error: { message?: string } | null }>
+): Promise<Record<string, unknown>> {
+  if (!/^[0-9a-f-]{36}\/[0-9a-f]{32}\.(jpg|png|webp|pdf)$/.test(path)) {
+    throw receiptValidationError(new Error('invalid_receipt_path'))
+  }
+  const service = createSupabaseServiceClient()
+  const reservation = await service
+    .from('payment_receipt_uploads')
+    .select('payment_id, expected_mime, expires_at, completed_at')
+    .eq('storage_path', path)
+    .maybeSingle()
+  if (reservation.error || !reservation.data || reservation.data.completed_at
+    || new Date(reservation.data.expires_at).getTime() <= Date.now()) {
+    throw receiptValidationError(new Error('invalid_receipt_upload'))
+  }
+  const downloaded = await service.storage.from('payment-receipts').download(path)
+  if (downloaded.error || !downloaded.data) {
+    throw new AppError('unknown', 'No se pudo leer el comprobante.', { message: 'receipt_download' })
+  }
+  const bytes = new Uint8Array(await downloaded.data.arrayBuffer())
+  const mime = detectPaymentReceiptMime(bytes)
+  const expectedExtension = mime ? receiptExtensionForMime(mime) : ''
+  const actualExtension = path.split('.').pop() || ''
+  if (!mime || mime !== reservation.data.expected_mime || expectedExtension !== actualExtension
+    || bytes.length <= 0 || bytes.length > PAYMENT_RECEIPT_MAX_BYTES) {
+    await service.storage.from('payment-receipts').remove([path])
+    throw receiptValidationError(new Error('invalid_receipt_contents'))
+  }
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  const sha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
+  const previous = await service
+    .from('payment_receipts')
+    .select('storage_path')
+    .eq('payment_id', reservation.data.payment_id)
+    .maybeSingle()
+  const done = await complete({ mime, size: bytes.length, sha256 })
+  if (done.error) {
+    await service.storage.from('payment-receipts').remove([path])
+    throw createOrderErrorFromRpc(done.error.message || '')
+  }
+  const oldPath = previous.data?.storage_path
+  if (oldPath && oldPath !== path) {
+    await service.storage.from('payment-receipts').remove([oldPath])
+  }
+  return record(done.data)
+}
+
+export async function completeTransferReceiptUploadServer(accessCapability: string, path: string) {
+  const service = createSupabaseServiceClient()
+  const data = await inspectAndCompleteReceipt(path, async ({ mime, size, sha256 }) => await service.rpc('complete_transfer_receipt', {
     p_access_capability: accessCapability,
     p_storage_path: path,
-    p_mime_type: file.type || 'application/octet-stream',
-    p_byte_size: file.size,
+    p_mime_type: mime,
+    p_byte_size: size,
     p_sha256: sha256,
-  })
-  if (done.error) throw createOrderErrorFromRpc(done.error.message || '')
+  }))
   const view = await getPublicPaymentServer(accessCapability).catch(() => null)
   if (view?.order_number) {
     const { notifyPaymentPendingByOrderNumber } = await import('@/lib/domain/orders/sendOrderEmail')
     await notifyPaymentPendingByOrderNumber(view.order_number)
   }
-  return record(done.data)
+  return data
 }
 
-export async function uploadTransferReceiptFollowServer(
+export async function completeTransferReceiptFollowUploadServer(
   orderNumber: string,
   followToken: string,
-  file: File
+  path: string
 ) {
-  if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
-    throw new AppError('validation', 'El comprobante no puede superar 5 MB.', { message: 'invalid_receipt_size' })
-  }
-  const publicClient = createSupabasePublicClient()
-  const prepared = await publicClient.rpc('prepare_transfer_receipt_follow', {
-    p_order_number: orderNumber,
-    p_follow_token: followToken,
-    p_extension: extensionFor(file),
-  })
-  if (prepared.error) throw createOrderErrorFromRpc(prepared.error.message || '')
-  const path = String(record(prepared.data).storage_path || '')
-  if (!path) throw new AppError('unknown', 'No se pudo guardar el comprobante.', { message: 'receipt_path' })
-
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  const digest = await crypto.subtle.digest('SHA-256', bytes)
-  const sha256 = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
-
   const service = createSupabaseServiceClient()
-  const upload = await service.storage.from('payment-receipts').upload(path, bytes, {
-    contentType: file.type || 'application/octet-stream',
-    upsert: false,
-  })
-  if (upload.error) {
-    throw new AppError('unknown', 'No se pudo guardar el comprobante.', { message: 'receipt_upload' })
-  }
-
-  const done = await publicClient.rpc('complete_transfer_receipt_follow', {
+  const data = await inspectAndCompleteReceipt(path, async ({ mime, size, sha256 }) => await service.rpc('complete_transfer_receipt_follow', {
     p_order_number: orderNumber,
     p_follow_token: followToken,
     p_storage_path: path,
-    p_mime_type: file.type || 'application/octet-stream',
-    p_byte_size: file.size,
+    p_mime_type: mime,
+    p_byte_size: size,
     p_sha256: sha256,
-  })
-  if (done.error) throw createOrderErrorFromRpc(done.error.message || '')
+  }))
   const { notifyPaymentPendingByOrderNumber } = await import('@/lib/domain/orders/sendOrderEmail')
-  await notifyPaymentPendingByOrderNumber(orderNumber, followToken)
-  return record(done.data)
+  await notifyPaymentPendingByOrderNumber(orderNumber)
+  return data
 }

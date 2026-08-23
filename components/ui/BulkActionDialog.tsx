@@ -145,7 +145,7 @@ export function BulkSelectList({
                 {item.label}
               </span>
               {item.meta ? (
-                <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 tabular-nums max-w-[45%] truncate">
+                <span className="text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 tabular-nums max-w-[45%] truncate">
                   {item.meta}
                 </span>
               ) : null}

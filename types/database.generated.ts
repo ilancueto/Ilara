@@ -563,6 +563,47 @@ export type Database = {
           },
         ]
       }
+      order_follow_sessions: {
+        Row: {
+          can_pay: boolean
+          created_at: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          order_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          can_pay?: boolean
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          order_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          can_pay?: boolean
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          order_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_follow_sessions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_follow_tokens: {
         Row: {
           can_pay: boolean
@@ -718,6 +759,47 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_notification_links: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          order_id: string
+          redeemed_at: string | null
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          kind: string
+          order_id: string
+          redeemed_at?: string | null
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          order_id?: string
+          redeemed_at?: string | null
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notification_links_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1582,6 +1664,44 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_receipt_uploads: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expected_mime: string
+          expires_at: string
+          id: string
+          payment_id: string
+          storage_path: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expected_mime: string
+          expires_at: string
+          id?: string
+          payment_id: string
+          storage_path: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expected_mime?: string
+          expires_at?: string
+          id?: string
+          payment_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipt_uploads_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "order_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_receipts: {
         Row: {
           byte_size: number
@@ -2424,6 +2544,10 @@ export type Database = {
         Args: { p_payload: Json }
         Returns: Json
       }
+      create_order_notification_link: {
+        Args: { p_kind: string; p_order_number: string }
+        Returns: Json
+      }
       create_order_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_return: { Args: { p_payload: Json }; Returns: Json }
       create_sale_with_items: { Args: { p_payload: Json }; Returns: Json }
@@ -2594,6 +2718,10 @@ export type Database = {
           p_follow_token: string
           p_order_number: string
         }
+        Returns: Json
+      }
+      redeem_order_notification_link: {
+        Args: { p_order_number: string; p_plain: string }
         Returns: Json
       }
       sales_margin_report: {

@@ -542,9 +542,6 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                         <article key={`producto-${producto.id}`} className={`${styles.productCard} group content-visibility-auto`}>
                                             <div
                                                 className={styles.productMedia}
-                                                onClick={() => startTransition(() => {
-                                                    if (images.length > 0) setImagenPrevia({ images, index: idx })
-                                                })}
                                                 onTouchStart={event => {
                                                     if (images.length > 1) {
                                                         touchSwipeRef.current = { productId: producto.id, x: event.targetTouches[0].clientX, count: images.length }
@@ -565,14 +562,22 @@ export default function Catalogo({ initialCatalog = null }: CatalogoProps) {
                                                 }}
                                             >
                                                 {currentImage ? (
-                                                    <Image
-                                                        src={currentImage}
-                                                        alt={producto.name}
-                                                        fill
-                                                        sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw"
-                                                        priority={esPrioridadLcp}
-                                                        loading={esPrioridadLcp ? 'eager' : undefined}
-                                                    />
+                                                    <>
+                                                        <Image
+                                                            src={currentImage}
+                                                            alt={producto.name}
+                                                            fill
+                                                            sizes="(max-width: 680px) 50vw, (max-width: 980px) 33vw, 25vw"
+                                                            priority={esPrioridadLcp}
+                                                            loading={esPrioridadLcp ? 'eager' : undefined}
+                                                        />
+                                                        <button
+                                                            className={styles.mediaPreviewButton}
+                                                            type="button"
+                                                            aria-label={`Ampliar imágenes de ${producto.name}`}
+                                                            onClick={() => startTransition(() => setImagenPrevia({ images, index: idx }))}
+                                                        />
+                                                    </>
                                                 ) : (
                                                     <div
                                                         className={styles.mediaPlaceholder}

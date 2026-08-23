@@ -13,3 +13,7 @@
   font-weight: 500;
   color: var(--ilara-muted, #6b5b63);
 }
+
+:global(.dark) .transfer {
+  color: #d8cbd2;
+}

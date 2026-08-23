@@ -110,7 +110,6 @@ test.describe('Stage 6.3 devoluciones', () => {
     const axe = await new AxeBuilder({ page })
       .include('[data-testid="devoluciones-panel"]')
       .withTags(['wcag2a', 'wcag2aa'])
-      .disableRules(['color-contrast'])
       .analyze()
     expect(axe.violations.filter((v) => v.impact === 'critical')).toEqual([])
 

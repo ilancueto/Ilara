@@ -23,8 +23,8 @@ async function login(page: Page) {
   const emailInput = page.locator('#login-form-card input[type="email"]')
   const passwordInput = page.locator('#login-form-card input[type="password"]')
   await expect(emailInput).toBeVisible({ timeout: 15_000 })
-  await emailInput.fill(email)
-  await passwordInput.fill(password)
+  await emailInput.pressSequentially(email, { delay: 10 })
+  await passwordInput.pressSequentially(password, { delay: 10 })
   await page.locator('#login-form-card form').evaluate((form) => (form as HTMLFormElement).requestSubmit())
   await expect(page).not.toHaveURL(/\/login/, { timeout: 25_000 })
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { deriveOrderAccessSecret, deriveOrderFollowSecret, hashOrderAccessSecret } from '@/lib/domain/payments/orderAccess'
-import { buildOrderFollowPath, isOrderNumber } from '@/lib/domain/orders/followLink'
+import { buildOrderFollowPath, buildOrderNotificationPath, isOrderNumber } from '@/lib/domain/orders/followLink'
 import { buildOrderWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 
 const migration = readFileSync(
@@ -11,6 +11,10 @@ const migration = readFileSync(
 )
 const checkout = readFileSync(
   join(__dirname, '../../components/Catalogo/CheckoutPedido.tsx'),
+  'utf8'
+)
+const secureMigration = readFileSync(
+  join(__dirname, '../../supabase/migrations/20260823212710_secure_receipt_uploads_and_notification_links.sql'),
   'utf8'
 )
 
@@ -44,7 +48,11 @@ describe('Stage 9.7 — link de seguimiento', () => {
     expect(path).toContain('/pedido/IL-000123')
     expect(path).toContain('t=abc123token')
     expect(path).not.toContain('order_id')
-    expect(checkout).toContain('buildOrderFollowUrl')
+    const notificationPath = buildOrderNotificationPath('IL-000123', 'notification-token')
+    expect(notificationPath).toContain('n=notification-token')
+    expect(checkout).toContain('createFollowShareLinkAction')
+    expect(secureMigration).toContain('public.order_notification_links')
+    expect(secureMigration).toContain('public.redeem_order_notification_link')
     expect(checkout).not.toContain('checkout-continue-payment')
     expect(checkout).not.toContain('catalog-last-order')
     expect(readFileSync(join(__dirname, '../../components/Catalogo/PedidoSeguimientoClient.tsx'), 'utf8')).toContain('pay-mercadopago')

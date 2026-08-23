@@ -1,61 +1,13 @@
-# Login por biometría (Passkeys)
+# Passkeys retiradas
 
-Permite iniciar sesión con huella dactilar, Face ID, Windows Hello, etc. usando **supakeys**.
+La implementación histórica de passkeys fue eliminada el 23 de agosto de 2026.
 
-## Requisitos
+- La interfaz no ofrece registro, vinculación ni login WebAuthn.
+- No existe cliente `lib/passkeyAuth.ts` ni dependencia `supakeys`.
+- La Edge Function `passkey-auth` conserva únicamente una respuesta de contención
+  `403 PASSKEYS_DISABLED`, para que cualquier cliente viejo falle de forma explícita.
+- Las tablas históricas permanecen cerradas por RLS hasta una migración de limpieza
+  separada; no exponen endpoints operativos ni contienen secretos nuevos.
 
-- HTTPS (o `localhost` en desarrollo)
-- Navegador con soporte WebAuthn (Chrome, Safari, Edge, Firefox)
-
-## Paso 1: Migración en Supabase
-
-Ejecutá el SQL en **Supabase → SQL Editor**:
-
-**Archivo:** `supabase/sql/supabase_passkey_auth.sql`
-
-Ese script crea las tablas `passkey_credentials`, `passkey_challenges`, `passkey_rate_limits`, `passkey_audit_log` y las funciones necesarias.
-
-## Paso 2: Edge Function
-
-Tenés que crear y desplegar la Edge Function `passkey-auth`. **Debe tener JWT desactivado** (la función maneja auth internamente). Hay dos formas:
-
-### Opción A: Con Supabase CLI
-
-```bash
-npx supakeys init
-```
-
-Cuando pregunte:
-- Crear directorio supabase? **Y**
-- Relying Party ID: **localhost** (dev) o tu dominio en producción
-- Application name: **Ilara**
-
-Luego (el config.toml ya tiene `verify_jwt = false`):
-
-```bash
-supabase functions deploy passkey-auth
-```
-
-Si desplegás desde el Dashboard, **desactivá "Verify JWT"** en la función.
-
-### Opción B: Desde el Dashboard
-
-1. En Supabase → **Edge Functions** → **Create a new function** → **Deploy via Editor**
-2. Nombre: `passkey-auth`
-3. **Importante:** desactivá "Verify JWT" (o "Enforce JWT") — la función valida auth internamente
-4. Copiá el contenido de `supabase/functions/passkey-auth/index.ts` y pegálo en el editor
-5. Hacé clic en **Deploy**
-
-## Paso 3: Configuración
-
-La app usa:
-- **rpId:** `localhost` en dev, o el hostname actual en producción
-- **rpName:** Ilara
-
-Si desplegás en un dominio (ej. `ilara.vercel.app`), el rpId debe coincidir. En `lib/passkeyAuth.ts` se usa `window.location.hostname`.
-
-## Uso
-
-1. **Primera vez:** iniciá sesión con email y contraseña
-2. **Agregar passkey:** después del login, hacé clic en "Agregar huella / Face ID" (o similar)
-3. **Próximos inicios:** en el login, ingresá tu email y usá "Iniciar con huella / Face ID"
+No desplegar una implementación de passkeys desde documentación o SQL antiguos. Una
+eventual versión futura debe diseñarse y auditarse como funcionalidad nueva.

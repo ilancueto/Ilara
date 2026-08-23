@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   PASSKEYS_CONTAINED,
@@ -49,19 +49,7 @@ describe('passkeys contención (Etapa 1)', () => {
     expect(blob).not.toMatch(/user_not_found|email_exists|no such user/i)
   })
 
-  it('cliente passkeyAuth corta signIn/link/list en contención', () => {
-    const src = readFileSync(join(process.cwd(), 'lib', 'passkeyAuth.ts'), 'utf8')
-    expect(src).toMatch(/PASSKEYS_CONTAINED/)
-    expect(src).toMatch(/async signIn\(/)
-    expect(src).toMatch(/async linkPasskey\(/)
-    expect(src).toMatch(/async listPasskeys\(/)
-    expect(src).toMatch(/PASSKEY_DISABLED_CODE/)
-    // Cada método cliente guarda con contención antes de llamar a supakeys
-    const methods = ['signIn', 'linkPasskey', 'listPasskeys'] as const
-    for (const m of methods) {
-      const re = new RegExp(`async ${m}\\([\\s\\S]*?PASSKEYS_CONTAINED[\\s\\S]*?PASSKEY_DISABLED_CODE`)
-      expect(src, `método ${m} debe cortar con contención`).toMatch(re)
-    }
-    expect(src).toMatch(/if \(PASSKEYS_CONTAINED\) return false/)
+  it('no conserva el cliente histórico de passkeys', () => {
+    expect(existsSync(join(process.cwd(), 'lib', 'passkeyAuth.ts'))).toBe(false)
   })
 })

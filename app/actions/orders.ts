@@ -42,7 +42,8 @@ export async function createCatalogOrderAction(
     if (order.follow_token) {
       await setOrderFollowCookie(order.order_number, order.follow_token)
     }
-    const notifiedVia: OrderNotifyVia = 'none'
+    const emailed = await notifyOrderCustomer(order.order_number, 'created', _notify?.lines)
+    const notifiedVia: OrderNotifyVia = emailed ? 'email' : 'none'
     logStructured({
       event: ObservabilityEvent.ORDER_CREATE_SUCCEEDED,
       level: 'info',

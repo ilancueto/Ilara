@@ -22,6 +22,14 @@ export function buildOrderFollowUrl(orderNumber: string, token: string): string 
   return getShareAbsoluteUrl(buildOrderFollowPath(orderNumber, token))
 }
 
+export function buildOrderNotificationPath(orderNumber: string, token: string): string {
+  return `/pedido/${encodeURIComponent(orderNumber.trim())}?n=${encodeURIComponent(token)}`
+}
+
+export function buildOrderNotificationUrl(orderNumber: string, token: string): string {
+  return getShareAbsoluteUrl(buildOrderNotificationPath(orderNumber, token))
+}
+
 export function buildOrderFollowCleanPath(orderNumber: string): string {
   return `/pedido/${encodeURIComponent(orderNumber.trim())}`
 }

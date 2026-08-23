@@ -60,7 +60,6 @@ async function assertNoSeriousAxeInDialog(page: Page, dialogTestId: string) {
   const results = await new AxeBuilder({ page })
     .include(`[data-testid="${dialogTestId}"]`)
     .withTags(['wcag2a', 'wcag2aa'])
-    .disableRules(['color-contrast'])
     .analyze()
   const critical = results.violations.filter(
     (v) => v.impact === 'critical' || v.impact === 'serious'

@@ -6,7 +6,6 @@ test.describe('Accesibilidad (axe + teclado)', () => {
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
-      .disableRules(['color-contrast'])
       .analyze()
     const critical = results.violations.filter(
       (v) => v.impact === 'critical' || v.impact === 'serious'
@@ -19,12 +18,26 @@ test.describe('Accesibilidad (axe + teclado)', () => {
     await expect(page.locator('#catalogo-titulo-principal')).toBeVisible({ timeout: 15000 })
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
-      .disableRules(['color-contrast'])
       .analyze()
     const critical = results.violations.filter(
       (v) => v.impact === 'critical' || v.impact === 'serious'
     )
     expect(critical, JSON.stringify(critical, null, 2)).toEqual([])
+  })
+
+  test('catálogo: la galería o su placeholder son accesibles', async ({ page }) => {
+    await page.goto('/catalogo', { waitUntil: 'domcontentloaded' })
+    const preview = page.getByRole('button', { name: /Ampliar imágenes de/ }).first()
+    if (await preview.count() === 0) {
+      await expect(page.getByRole('img', { name: /sin imagen/ }).first()).toBeVisible()
+      return
+    }
+    await preview.focus()
+    await expect(preview).toBeFocused()
+    await preview.press('Enter')
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await page.getByRole('button', { name: 'Cerrar' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
   })
 
   test('login: recorrido teclado enfoca email y envía con Enter', async ({ page }) => {

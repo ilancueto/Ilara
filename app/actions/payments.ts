@@ -3,15 +3,21 @@
 import {
   getPublicFollowServer,
   getPublicPaymentServer,
+  completeTransferReceiptFollowUploadServer,
+  completeTransferReceiptUploadServer,
+  prepareTransferReceiptFollowUploadServer,
+  prepareTransferReceiptUploadServer,
   startBankTransferPaymentServer,
   startMercadoPagoCheckoutServer,
-  uploadTransferReceiptFollowServer,
-  uploadTransferReceiptServer,
 } from '@/lib/dal/payments'
 import type { PublicFollowView, PublicPaymentView } from '@/lib/domain/payments/types'
+import type { PaymentReceiptFileMetadata } from '@/lib/domain/payments/receiptFile'
+import type { PreparedReceiptUpload } from '@/lib/domain/payments/browserReceiptUpload'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { isOrderNumber } from '@/lib/domain/orders/followLink'
 import { readOrderFollowCookie, setOrderFollowCookie } from '@/lib/domain/orders/followSession'
+import { createSupabaseServiceClient } from '@/lib/supabase/service'
+import { createOrderNotificationUrl } from '@/lib/domain/orders/sendOrderEmail'
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
@@ -71,6 +77,47 @@ export async function claimFollowSessionAction(
   }
 }
 
+export async function claimNotificationSessionAction(
+  orderNumber: string,
+  token: string
+): Promise<ActionResult<PublicFollowView>> {
+  try {
+    if (!isOrderNumber(orderNumber) || token.trim().length < 32) {
+      return { ok: false, error: 'Este enlace venció o ya fue usado.' }
+    }
+    const redeemed = await createSupabaseServiceClient().rpc('redeem_order_notification_link', {
+      p_order_number: orderNumber.trim(),
+      p_plain: token.trim(),
+    })
+    const row = redeemed.data && typeof redeemed.data === 'object'
+      ? redeemed.data as Record<string, unknown>
+      : {}
+    const followToken = String(row.follow_token || '')
+    if (redeemed.error || followToken.length < 32) {
+      return { ok: false, error: 'Este enlace venció o ya fue usado.' }
+    }
+    const data = await getPublicFollowServer(orderNumber.trim(), followToken)
+    await setOrderFollowCookie(orderNumber.trim(), followToken)
+    return { ok: true, data }
+  } catch {
+    return { ok: false, error: 'Este enlace venció o ya fue usado.' }
+  }
+}
+
+export async function createFollowShareLinkAction(
+  orderNumber: string
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const token = await readOrderFollowCookie(orderNumber)
+    if (!token) return { ok: false, error: 'Volvé a abrir el seguimiento del pedido.' }
+    await getPublicFollowServer(orderNumber, token)
+    const url = await createOrderNotificationUrl(orderNumber, 'whatsapp_manual')
+    return url ? { ok: true, data: { url } } : { ok: false, error: 'No se pudo preparar el enlace.' }
+  } catch {
+    return { ok: false, error: 'No se pudo preparar el enlace.' }
+  }
+}
+
 export async function getFollowOrderAction(
   orderNumber: string
 ): Promise<ActionResult<PublicFollowView>> {
@@ -125,20 +172,16 @@ export async function startFollowBankTransferAction(
   }
 }
 
-export async function uploadFollowTransferReceiptAction(
+export async function prepareFollowTransferReceiptUploadAction(
   orderNumber: string,
-  formData: FormData
-): Promise<ActionResult<Record<string, unknown>>> {
+  metadata: PaymentReceiptFileMetadata
+): Promise<ActionResult<PreparedReceiptUpload>> {
   try {
     const token = await readOrderFollowCookie(orderNumber)
     if (!token) {
       return { ok: false, error: 'Este enlace ya no sirve. Armá el pedido de nuevo si todavía lo querés.' }
     }
-    const file = formData.get('file')
-    if (!(file instanceof File)) {
-      return { ok: false, error: 'Elegí una imagen o un PDF.' }
-    }
-    return { ok: true, data: await uploadTransferReceiptFollowServer(orderNumber, token, file) }
+    return { ok: true, data: await prepareTransferReceiptFollowUploadServer(orderNumber, token, metadata) }
   } catch (error) {
     return {
       ok: false,
@@ -147,20 +190,40 @@ export async function uploadFollowTransferReceiptAction(
   }
 }
 
-export async function uploadTransferReceiptAction(
-  accessCapability: string,
-  formData: FormData
+export async function completeFollowTransferReceiptUploadAction(
+  orderNumber: string,
+  path: string
 ): Promise<ActionResult<Record<string, unknown>>> {
   try {
-    const file = formData.get('file')
-    if (!(file instanceof File)) {
-      return { ok: false, error: 'Elegí una imagen o un PDF.' }
-    }
-    return { ok: true, data: await uploadTransferReceiptServer(accessCapability, file) }
+    const token = await readOrderFollowCookie(orderNumber)
+    if (!token) return { ok: false, error: 'Este enlace ya no sirve. Armá el pedido de nuevo si todavía lo querés.' }
+    return { ok: true, data: await completeTransferReceiptFollowUploadServer(orderNumber, token, path) }
+  } catch (error) {
+    return { ok: false, error: isAppError(error) ? error.userMessage : 'No se pudo enviar el comprobante.' }
+  }
+}
+
+export async function prepareTransferReceiptUploadAction(
+  accessCapability: string,
+  metadata: PaymentReceiptFileMetadata
+): Promise<ActionResult<PreparedReceiptUpload>> {
+  try {
+    return { ok: true, data: await prepareTransferReceiptUploadServer(accessCapability, metadata) }
   } catch (error) {
     return {
       ok: false,
       error: isAppError(error) ? error.userMessage : 'No se pudo enviar el comprobante.',
     }
+  }
+}
+
+export async function completeTransferReceiptUploadAction(
+  accessCapability: string,
+  path: string
+): Promise<ActionResult<Record<string, unknown>>> {
+  try {
+    return { ok: true, data: await completeTransferReceiptUploadServer(accessCapability, path) }
+  } catch (error) {
+    return { ok: false, error: isAppError(error) ? error.userMessage : 'No se pudo enviar el comprobante.' }
   }
 }

@@ -70,6 +70,13 @@ serve(async (req) => {
   }
   const secret = Deno.env.get('MERCADOPAGO_WEBHOOK_SECRET')?.trim() || ''
   const token = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN')?.trim() || ''
+  if (secret.length < 16 || token.length < 16) {
+    console.error('payments_mp_webhook_not_configured')
+    return new Response(JSON.stringify({ ok: false, code: 'mp_not_configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    })
+  }
   const url = new URL(req.url)
   let body: JsonRecord = {}
   try {
@@ -87,13 +94,6 @@ serve(async (req) => {
 
   const topic = String(url.searchParams.get('type') || body.type || body.topic || '')
   if (topic && !/payment/i.test(topic)) {
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-    })
-  }
-
-  if (token.length < 16) {
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
@@ -167,12 +167,20 @@ async function notifyCustomerPayment(
   if (!to.includes('@') || !number) return
   const name = String(order.data?.customer_name || '').trim() || 'hola'
   const site = (Deno.env.get('SITE_URL') || 'https://ilara.com.ar').replace(/\/$/, '')
-  const follow = `${site}/pedido/${encodeURIComponent(number)}`
+  const issued = await admin.rpc('create_order_notification_link', {
+    p_order_number: number,
+    p_kind: 'payment_received',
+  })
+  const issuedData = asRecord(issued.data)
+  const notificationToken = String(issuedData.token || '')
+  if (issued.error || notificationToken.length < 32) return
+  const follow = `${site}/pedido/${encodeURIComponent(number)}?n=${encodeURIComponent(notificationToken)}`
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
+      'Idempotency-Key': `ilara-${number}-payment_received`,
     },
     body: JSON.stringify({
       from,

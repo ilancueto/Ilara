@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition, type FormEvent } from 'react'
 import Link from 'next/link'
 import {
   Check,
@@ -24,11 +24,13 @@ import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessag
 import { openWhatsApp } from '@/lib/whatsappLink'
 import {
   getFollowOrderAction,
+  completeFollowTransferReceiptUploadAction,
+  prepareFollowTransferReceiptUploadAction,
   startFollowBankTransferAction,
   startFollowMercadoPagoAction,
-  uploadFollowTransferReceiptAction,
 } from '@/app/actions/payments'
 import type { PublicFollowView } from '@/lib/domain/payments/types'
+import { uploadPaymentReceiptDirect } from '@/lib/domain/payments/browserReceiptUpload'
 
 function statusLabel(status: string | null): string {
   if (!status) return 'Pendiente de pago'
@@ -114,14 +116,27 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
     })
   }
 
-  function onFile(form: FormData) {
+  function onFile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const input = form.elements.namedItem('file')
+    const file = input instanceof HTMLInputElement ? input.files?.[0] : null
+    if (!file) {
+      setFileError('Elegí una imagen o un PDF.')
+      return
+    }
     setFileError(null)
     startTransition(async () => {
-      const result = await uploadFollowTransferReceiptAction(orderNumber, form)
+      const result = await uploadPaymentReceiptDirect(
+        file,
+        (metadata) => prepareFollowTransferReceiptUploadAction(orderNumber, metadata),
+        (path) => completeFollowTransferReceiptUploadAction(orderNumber, path)
+      )
       if (!result.ok) {
         setFileError(result.error)
         return
       }
+      form.reset()
       refresh()
     })
   }
@@ -450,7 +465,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
               {view.payment_status && ['pending', 'requires_review'].includes(view.payment_status) && (
                 <form
                   className="mt-4 flex flex-col gap-2.5 border-t border-[#EBE4DA] pt-4 dark:border-white/10"
-                  action={(formData) => onFile(formData)}
+                  onSubmit={onFile}
                 >
                   <label className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300" htmlFor="comprobante">
                     Adjuntar Comprobante de Pago

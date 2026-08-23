@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition, type FormEvent } from 'react'
 import Link from 'next/link'
 import { Check, Copy, CreditCard, ExternalLink, FileText, Loader2, MessageCircle, ShieldCheck, Upload, Zap } from 'lucide-react'
 import { formatPesoARExact } from '@/lib/formatPesoAR'
@@ -12,11 +12,13 @@ import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessag
 import { openWhatsApp } from '@/lib/whatsappLink'
 import {
   getPublicPaymentAction,
+  completeTransferReceiptUploadAction,
+  prepareTransferReceiptUploadAction,
   startBankTransferAction,
   startMercadoPagoAction,
-  uploadTransferReceiptAction,
 } from '@/app/actions/payments'
 import type { PublicPaymentView } from '@/lib/domain/payments/types'
+import { uploadPaymentReceiptDirect } from '@/lib/domain/payments/browserReceiptUpload'
 
 function statusLabel(status: string | null): string {
   if (!status) return 'Pendiente de pago'
@@ -97,15 +99,28 @@ export function PedidoPagoClient() {
     })
   }
 
-  function onFile(form: FormData) {
+  function onFile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     if (!access) return
+    const form = event.currentTarget
+    const input = form.elements.namedItem('file')
+    const file = input instanceof HTMLInputElement ? input.files?.[0] : null
+    if (!file) {
+      setFileError('Elegí una imagen o un PDF.')
+      return
+    }
     setFileError(null)
     startTransition(async () => {
-      const result = await uploadTransferReceiptAction(access, form)
+      const result = await uploadPaymentReceiptDirect(
+        file,
+        (metadata) => prepareTransferReceiptUploadAction(access, metadata),
+        (path) => completeTransferReceiptUploadAction(access, path)
+      )
       if (!result.ok) {
         setFileError(result.error)
         return
       }
+      form.reset()
       refresh(access)
     })
   }
@@ -375,7 +390,7 @@ export function PedidoPagoClient() {
                 {view.payment_status && ['pending', 'requires_review'].includes(view.payment_status) && (
                   <form
                     className="mt-4 flex flex-col gap-2.5 border-t border-[#EBE4DA] pt-4 dark:border-white/10"
-                    action={(formData) => onFile(formData)}
+                    onSubmit={onFile}
                   >
                     <label className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300" htmlFor="comprobante">
                       Adjuntar Comprobante de Pago

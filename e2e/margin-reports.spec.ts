@@ -7,8 +7,8 @@ async function login(page: Page) {
   const { email, password } = getE2EEnv()
   await ensureE2EAdmin()
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('#login-form-card input[type="email"]').fill(email)
-  await page.locator('#login-form-card input[type="password"]').fill(password)
+  await page.locator('#login-form-card input[type="email"]').pressSequentially(email, { delay: 10 })
+  await page.locator('#login-form-card input[type="password"]').pressSequentially(password, { delay: 10 })
   await page.locator('#login-form-card form').evaluate((form) => (form as HTMLFormElement).requestSubmit())
   await expect(page).not.toHaveURL(/\/login/, { timeout: 25_000 })
 }
@@ -17,6 +17,7 @@ test.describe('Stage 6.4 margen real', () => {
   let productId: number | null = null
   let saleId: number | null = null
   let itemId: number | null = null
+  let apiUserId: string | null = null
   test.beforeEach(() => requireE2E())
   test.afterAll(async () => {
     const service = serviceClient()
@@ -27,10 +28,11 @@ test.describe('Stage 6.4 margen real', () => {
       await service.from('sales').delete().eq('id', saleId)
     }
     if (productId) await service.from('products').delete().eq('id', productId)
+    if (apiUserId) await service.auth.admin.deleteUser(apiUserId)
   })
 
   test('muestra margen histórico y pasa accesibilidad crítica', async ({ page }) => {
-    const { url, anon, email, password } = getE2EEnv()
+    const { url, anon, password } = getE2EEnv()
     await ensureE2EAdmin()
     const service = serviceClient()
     const category = await service.from('categories').select('id').limit(1).single()
@@ -39,8 +41,22 @@ test.describe('Stage 6.4 margen real', () => {
     const product = await service.from('products').insert({ name, category_id: category.data.id, sale_price: 1000, purchase_price: 400, stock: 10, min_stock: 1, visible_in_catalog: false }).select('id').single()
     if (product.error) throw product.error
     productId = product.data.id
+    const apiEmail = 'e2e-margin-api@example.com'
+    const users = await service.auth.admin.listUsers({ page: 1, perPage: 200 })
+    let apiUser = users.data?.users.find((user) => user.email === apiEmail)
+    if (!apiUser) {
+      const createdUser = await service.auth.admin.createUser({ email: apiEmail, password, email_confirm: true })
+      if (createdUser.error) throw createdUser.error
+      apiUser = createdUser.data.user
+    }
+    apiUserId = apiUser.id
+    const role = await service.from('user_roles').upsert(
+      { user_id: apiUser.id, role: 'admin', updated_by: apiUser.id },
+      { onConflict: 'user_id' }
+    )
+    if (role.error) throw role.error
     const signed = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } })
-    const auth = await signed.auth.signInWithPassword({ email, password })
+    const auth = await signed.auth.signInWithPassword({ email: apiEmail, password })
     if (auth.error) throw auth.error
     const created = await signed.rpc('create_sale_with_items', { p_payload: { sale: { sale_date: new Date().toISOString(), payment_method: 'efectivo', customer_name: 'E2E Margin', status: 'completed' }, lines: [{ line_type: 'product', product_id: productId, quantity: 1 }] } })
     if (created.error) throw created.error
@@ -54,7 +70,7 @@ test.describe('Stage 6.4 margen real', () => {
     await expect(page.getByTestId('margin-report-panel')).toBeVisible({ timeout: 20_000 })
     await expect(page.getByText(name)).toBeVisible({ timeout: 20_000 })
     await expect(page.getByTestId('margin-kpi-net')).toBeVisible()
-    const axe = await new AxeBuilder({ page }).include('[data-testid="margin-report-panel"]').withTags(['wcag2a', 'wcag2aa']).disableRules(['color-contrast']).analyze()
+    const axe = await new AxeBuilder({ page }).include('[data-testid="margin-report-panel"]').withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(axe.violations.filter((violation) => violation.impact === 'critical')).toEqual([])
   })
 })
