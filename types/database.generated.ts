@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
@@ -802,6 +802,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "order_notification_links_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_notification_outbox: {
+        Row: {
+          attempts: number
+          available_at: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          kind: string
+          last_code: string | null
+          lease_token: string | null
+          leased_until: string | null
+          order_id: string
+          payload: Json | null
+          state: string
+        }
+        Insert: {
+          attempts?: number
+          available_at?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          last_code?: string | null
+          lease_token?: string | null
+          leased_until?: string | null
+          order_id: string
+          payload?: Json | null
+          state?: string
+        }
+        Update: {
+          attempts?: number
+          available_at?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          last_code?: string | null
+          lease_token?: string | null
+          leased_until?: string | null
+          order_id?: string
+          payload?: Json | null
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notification_outbox_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
@@ -2496,6 +2549,29 @@ export type Database = {
         }
         Returns: boolean
       }
+      claim_order_notifications: {
+        Args: { p_kind?: string; p_limit?: number; p_order_id?: string }
+        Returns: {
+          attempts: number
+          available_at: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          kind: string
+          last_code: string | null
+          lease_token: string | null
+          leased_until: string | null
+          order_id: string
+          payload: Json | null
+          state: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "order_notification_outbox"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       cleanup_expired_passkey_challenges: { Args: never; Returns: number }
       commercial_margin_report: {
         Args: {
@@ -2655,6 +2731,15 @@ export type Database = {
       finance_stage8_payments_slice: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
+      }
+      finish_order_notification: {
+        Args: {
+          p_code?: string
+          p_id: string
+          p_lease: string
+          p_state: string
+        }
+        Returns: boolean
       }
       get_catalog_order_follow: {
         Args: { p_follow_token: string; p_order_number: string }
@@ -2940,4 +3025,3 @@ export const Constants = {
     },
   },
 } as const
-

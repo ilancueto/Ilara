@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { cleanupFinancialFixtures } from './cleanupFinancialFixtures'
 
 const PROD_PROJECT_REFS = ['qbbnvdmadgomfmrsfxlo'] as const
 const enabled = process.env.STAGE65_INTEGRATION === '1'
@@ -58,7 +59,7 @@ describe.skipIf(!canRun)('Stage 6.5 CRM integración', () => {
 
   async function sale(status = 'completed', quantity = 1) {
     const result = await admin.rpc('create_sale_with_items', { p_payload: {
-      sale: { sale_date: new Date().toISOString(), payment_method: status === 'pending_payment' ? 'credito' : 'efectivo', customer_id: customerId, customer_name: 'Stage 65', status },
+      sale: { sale_date: '2020-01-01T12:00:00.000Z', payment_method: status === 'pending_payment' ? 'credito' : 'efectivo', customer_id: customerId, customer_name: 'Stage 65', status },
       lines: [{ line_type: 'product', product_id: productId, quantity }],
     } })
     if (result.error) throw result.error
@@ -106,7 +107,9 @@ describe.skipIf(!canRun)('Stage 6.5 CRM integración', () => {
       if (itemIds.length) await service.from('sale_item_components').delete().in('sale_item_id', itemIds)
       await service.from('stock_movements').delete().in('reference_id', saleIds)
       await service.from('sale_items').delete().in('sale_id', saleIds)
-      await service.from('sales').delete().in('id', saleIds)
+      await cleanupFinancialFixtures(service, saleIds)
+      const deletedSales = await service.from('sales').delete().in('id', saleIds)
+      if (deletedSales.error) throw deletedSales.error
     }
     if (productId) await service.from('products').delete().eq('id', productId)
     if (customerId) await service.from('customers').delete().eq('id', customerId)

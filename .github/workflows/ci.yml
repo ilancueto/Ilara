@@ -99,6 +99,9 @@ jobs:
       - name: RLS coverage on public tables
         run: npm run test:db-rls
 
+      - name: Durable notification outbox on cloud staging (rollback)
+        run: node scripts/check-cloud-outbox.mjs
+
       - name: Security matrix anon/service
         run: npm run test:db-security
         env:

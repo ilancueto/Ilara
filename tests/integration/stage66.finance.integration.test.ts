@@ -51,6 +51,7 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
   const expenseIds: string[] = []
   const testDate = '2036-06-16'
   const testTime = `${testDate}T15:00:00.000Z`
+  let initialSummary: Snapshot['summary']
 
   async function snapshot(): Promise<Snapshot> {
     const result = await admin.rpc('finance_stage66_snapshot', { p_from: testDate, p_to: testDate })
@@ -68,6 +69,7 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
     previousOtherRole = (await service.from('user_roles').select('role').eq('user_id', otherId).maybeSingle()).data?.role ?? null
     await service.from('user_roles').upsert({ user_id: adminId, role: 'admin', updated_by: adminId })
     await service.from('user_roles').upsert({ user_id: otherId, role: 'vendedor', updated_by: adminId })
+    initialSummary = (await snapshot()).summary
     const category = await service.from('categories').insert({ name: `s66-cat-${Date.now()}` }).select('id').single()
     if (category.error) throw category.error
     categoryId = category.data.id
@@ -198,10 +200,10 @@ describe.skipIf(!canRun)('Stage 6.6 finanzas integración', () => {
     expenseIds.push(expenseId)
     expect((await service.from('expenses').select('amount, payment_method').eq('id', expenseId).single()).data).toEqual(expect.objectContaining({ payment_method: 'mercadopago' }))
     const value = await snapshot()
-    expect(Number(value.summary.receivable_open)).toBe(0)
-    expect(Number(value.summary.payable_open)).toBe(0)
-    expect(Number(value.summary.period_inflow)).toBe(2000)
-    expect(Number(value.summary.period_outflow)).toBe(1600)
+    expect(Number(value.summary.receivable_open)).toBe(Number(initialSummary.receivable_open))
+    expect(Number(value.summary.payable_open)).toBe(Number(initialSummary.payable_open))
+    expect(Number(value.summary.period_inflow) - Number(initialSummary.period_inflow)).toBe(2000)
+    expect(Number(value.summary.period_outflow) - Number(initialSummary.period_outflow)).toBe(1600)
     expect(Number(value.reconciliation.find((line) => line.payment_method === 'efectivo')!.outflow)).toBe(1000)
   })
 })

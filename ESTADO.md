@@ -2,7 +2,7 @@
 
 Fecha de revisión: 29–30 de septiembre de 2026. Esta es la fuente de estado actual. Los informes de agosto y del 5 de septiembre conservan evidencia histórica; no describen por sí solos la versión desplegada hoy.
 
-Continuación del 30/09: cola transaccional de notificaciones y monitor operativo implementados localmente, aún sin publicar. 263 unitarias en 55 archivos, lint y TypeScript aprobados; build de 74 páginas/rutas; 57 migraciones y 52 tablas con RLS aprobadas en SQL aislado. Staging y restauración permanecen bloqueados por cupo y credencial vigente de DB; ver [evidencia operativa](docs/OPERACION_2026-09-30.md). El propietario excluyó la protección de contraseñas filtradas del cierre.
+Continuación del 30/09: FinningCAT pausado con autorización explícita del propietario; `ilara-staging` (`pwbgwzrilbgozwzfzegn`) creado y saludable. CLI conectada a la cuenta correcta y seis secrets cloud configurados en GitHub. Integración cloud 105/105; RLS 52/52, control negativo con rollback, matriz anon/service, advisors y drift de tipos aprobados. Outbox real cloud aprobado con fixture transaccional: encolado, lease exclusivo, fencing, reintento persistente y deduplicación. SQL aislado: 58 migraciones; 263 unitarias en 55 archivos. Backup cifrado y restauración en DB separada de staging: hashes idénticos en 89 tablas; excepciones del proveedor y estado de publicación en [evidencia operativa](docs/OPERACION_2026-09-30.md). Navegador final y CI aún en validación. El propietario excluyó la protección de contraseñas filtradas del cierre.
 
 ## Correcciones y comprobaciones de esta revisión
 

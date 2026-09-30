@@ -9,6 +9,8 @@ const env = { ...process.env, NEXT_PUBLIC_SUPABASE_URL: url, NEXT_PUBLIC_SUPABAS
   SUPABASE_SERVICE_ROLE_KEY: service, E2E_SUPABASE_URL: url, E2E_ANON_KEY: anon, E2E_SERVICE_ROLE_KEY: service,
   ORDER_ACCESS_SECRET: process.env.ORDER_ACCESS_SECRET || 'cloud-staging-order-access-32chars',
   CRON_SECRET: process.env.CRON_SECRET || 'cloud-staging-cron-secret-32chars' }
+// Next reads .env.local too. Prevent tests from inheriting live provider secrets.
+Object.assign(env, { RESEND_API_KEY: '', ORDER_EMAIL_FROM: '', MERCADOPAGO_ACCESS_TOKEN: '', MERCADOPAGO_WEBHOOK_SECRET: '' })
 const client = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } })
 let catalogProductId
 try {

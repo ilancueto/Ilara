@@ -21,6 +21,7 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "test-results/**",
     "backups/**",
+    "tmp/**",
   ]),
 ]);
 

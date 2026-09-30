@@ -1,10 +1,8 @@
 /** Negative control is transactionally rolled back; never changes the cloud project's policies. */
 import assert from 'node:assert/strict'
-import pg from 'pg'
-import { cloudTestEnv } from './lib/cloud-test-env.mjs'
+import { cloudDbClient } from './lib/cloud-db-client.mjs'
 
-const { dbUrl } = cloudTestEnv({ database: true })
-const client = new pg.Client({ connectionString: dbUrl, connectionTimeoutMillis: 10_000 })
+const client = cloudDbClient()
 try {
   await client.connect()
   await client.query('BEGIN')

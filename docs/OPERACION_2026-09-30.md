@@ -22,17 +22,20 @@ Después de publicar en main, ejecutar manualmente el monitor y el worker, verif
 
 ## Backup y restauración
 
-No se pudo generar el backup de producción: el archivo privado contiene un valor de un solo carácter y no proporciona una credencial válida; PostgreSQL rechazó la autenticación (`28P01`). Se descargó el certificado CA del panel del proyecto y se verificó TLS; no se deshabilitó la validación ni se cambió la contraseña.
+Backup de producción generado con PostgreSQL 17.11 mediante login temporal oficial de la CLI (TTL 300 segundos), usando el rol postgres con `default_transaction_read_only=on`. TLS verificado con la CA oficial. No se cambió la contraseña de producción ni se crearon datos de prueba allí. El rol temporal limitado `read_only:true` no permitió el dump de tablas protegidas; el dump exitoso utilizó el login temporal normal y transacciones forzadas a sólo lectura.
 
-Herramientas portátiles oficiales de PostgreSQL 17.11 disponibles en `tmp/postgres-tools`, fuera de Git y deploy, sin Docker ni instalación de un servicio. El dump debe conservarse cifrado fuera del repositorio; la restauración se ejecutará únicamente en un destino aislado, nunca sobre producción. Falta una credencial vigente antes de ejecutar y documentar este ejercicio. Los RPO/RTO históricos siguen siendo propuestas, no garantías verificadas.
+Archivo cifrado con AES-256-GCM en `backups/`, excluido de Git y deploy. Tamaño sin cifrar: 961726 bytes; SHA-256 `182f62ac52f41b4a2b9f9fe32e5585387c2bb90dd2c444b2de769d36faa98c3c`. Descifrado autenticado comprobado contra el archivo original. Restauración en una base separada y sin CONNECT público de ilara-staging: 85.8 segundos para pg_restore. Comparación por tabla de todas las filas serializadas con COPY: 89 tablas con hashes idénticos, incluidos datos de aplicación, Auth, Storage y migraciones. Ningún servicio de la aplicación se conectó a esa base.
+
+Exclusiones de la restauración: datos de Vault, event triggers administrados por Supabase y `realtime.list_changes`, que requieren permisos internos del proveedor. No se restauraron propietarios ni ACL del sistema (`--no-owner --no-privileges`); las migraciones de la aplicación reproducen sus permisos en staging. Este ejercicio valida recuperación de datos y funciones restauradas, no el encendido de todos los servicios de un proyecto reemplazante. La prueba de archivos binarios de Storage está en ejecución. Los RPO/RTO históricos siguen siendo propuestas; 85.8 segundos es tiempo de restore de esta muestra, no un SLA.
 
 ## Evidencia local y bloqueos
 
-- 57 migraciones completas y 52 tablas públicas con RLS aprobadas en PGlite.
+- 58 migraciones completas y 52 tablas públicas con RLS aprobadas en PGlite.
 - Pruebas reales de outbox: deduplicación, lease exclusivo, fencing, backoff persistido y no recuperación de trabajos enviados.
 - Prueba del worker: cuerpo persistido antes del envío y reutilizado tras una ejecución fallida.
 - 263 pruebas unitarias en 55 archivos, lint limpio y TypeScript aprobados.
 - Build Next.js 16.3.7 aprobado, 74 páginas/rutas incluidas las dos rutas internas nuevas.
-- Supabase cloud aún no ejecutado: FINSA Staging ya está pausado; FinningCAT e Ilara son los dos proyectos activos. Se requiere identificar que FinningCAT puede quedar temporalmente fuera de servicio antes de pausar otra aplicación.
-- La CLI local sigue conectada a otra cuenta (Ilara Finanzas++/PaxIlara); el conector y el navegador sí acceden a Ilara. Los secrets de CI deben pertenecer a la cuenta y proyecto de staging correctos.
+- FinningCAT pausado con autorización explícita; ilara-staging creado en la organización de producción. FINSA Staging no fue modificado. Cuenta CLI correcta y secrets de GitHub configurados; pooler de sesión IPv4 verificado con TLS para Actions.
+- Integración cloud: 105/105 en 15 archivos. Advisors, matriz anon/service, RLS 52/52, control negativo con rollback y tipos/drift aprobados. Outbox cloud aprobado con rollback de fixture.
+- Primera E2E cloud: 49/51; corregido contraste real del botón de pago y dos assertions antiguas de loopback. Segunda: 50/51; la prueba esperaba un botón de cierre eliminado por el diseño actual. Ahora usa «Volver a la bolsa» y verifica desmontaje. Validación final y CI pendientes.
 - Por decisión del propietario, la protección de contraseñas filtradas queda fuera del cierre; no se contrató Pro.

@@ -1,8 +1,6 @@
-import pg from 'pg'
-import { cloudTestEnv } from './lib/cloud-test-env.mjs'
+import { cloudDbClient } from './lib/cloud-db-client.mjs'
 
-const { dbUrl } = cloudTestEnv({ database: true })
-const client = new pg.Client({ connectionString: dbUrl, connectionTimeoutMillis: 10_000 })
+const client = cloudDbClient()
 try {
   await client.connect()
   const { rows } = await client.query(`SELECT c.relname, c.relrowsecurity FROM pg_class c

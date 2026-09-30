@@ -4,6 +4,8 @@ Decisión vigente desde el 29/09/2026: no usar Docker. El proyecto de producció
 
 ## Configuración
 
+Staging vigente: `ilara-staging`, referencia `pwbgwzrilbgozwzfzegn`, en la organización de producción. FinningCAT quedó pausado con autorización del propietario para liberar el cupo Free. Mientras CI use este staging debe permanecer activo; reactivar FinningCAT requiere liberar nuevamente el cupo o ampliar el plan. No se contrató Pro.
+
 Crear un proyecto dedicado de staging en la cuenta correcta de Supabase. Copiar `.env.test.example` a `.env.test.local`, que está excluido de Git y del deploy. Completar:
 
 | Variable | Uso |
@@ -28,6 +30,7 @@ node --env-file=.env.test.local scripts/cloud-db.mjs prepare
 node --env-file=.env.test.local scripts/cloud-db.mjs security
 node --env-file=.env.test.local scripts/check-rls-coverage.mjs
 node --env-file=.env.test.local scripts/detect-insecure-anon-policy.mjs
+node --env-file=.env.test.local scripts/check-cloud-outbox.mjs
 node --env-file=.env.test.local scripts/gen-db-types.mjs
 node --env-file=.env.test.local scripts/check-db-types-drift.mjs
 npm run test:cloud:integration
@@ -39,6 +42,8 @@ npm run test:cloud:e2e
 El runner crea exclusivamente cuentas ficticias de prueba. El runner E2E genera un build con staging, antes de ejecutar Playwright contra `next start`. Las suites existentes conservan sus verificaciones de precios, stock, pagos, roles, Storage y limpieza de fixtures. No ejecutar dos sesiones mutantes simultáneas sobre el mismo staging; CI serializa los workflows y ejecuta E2E después de la matriz de DB.
 
 El control negativo de RLS crea la política permisiva dentro de una transacción y hace ROLLBACK antes de comprobar la denegación restaurada. No publica esa política en PostgREST.
+
+Los chequeos PostgreSQL verifican TLS con la CA oficial versionada en `scripts/certs/supabase-root.crt` (vence en 2031). No deshabilitan la validación. El runner bloquea las credenciales de Resend y Mercado Pago para evitar heredar proveedores reales desde `.env.local`. Las APIs de proveedores en las suites se simulan; este resultado no valida un cobro real.
 
 ## Comprobaciones independientes
 
