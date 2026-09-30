@@ -1,8 +1,10 @@
 # Auditoría técnica y funcional — Ilara
 
+> Estado actualizado: [ESTADO.md](./ESTADO.md), revisado el 29/09/2026. Este documento conserva la auditoría y planificación histórica; las fechas y estados de release de sus secciones no reemplazan la evidencia actual.
+
 - **Fecha de corte:** 9 de agosto de 2026
 - **Aplicación revisada:** Ilara App / Ilara Beauty
-- **Estado del documento:** vigente
+- **Estado del documento:** histórico; estado actual en ESTADO.md
 
 **Documento de ejecución asociado:** [`PLAN.md`](./PLAN.md)
 

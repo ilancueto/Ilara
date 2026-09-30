@@ -5,6 +5,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { cleanupFinancialFixtures } from './cleanupFinancialFixtures'
 
 function withAccess<T extends { idempotency_key: string }>(payload: T) {
   return {
@@ -186,7 +187,9 @@ describe.skipIf(!canRun)('Stage 9 integración operativa', () => {
       const itemIds = (items || []).map((i) => i.id)
       if (itemIds.length) await service.from('sale_item_components').delete().in('sale_item_id', itemIds)
       await service.from('sale_items').delete().in('sale_id', saleIds)
-      await service.from('sales').delete().in('id', saleIds)
+      await cleanupFinancialFixtures(service, saleIds)
+      const deletedSales = await service.from('sales').delete().in('id', saleIds)
+      if (deletedSales.error) throw deletedSales.error
     }
     if (productIds.length) await service.from('products').delete().in('id', productIds)
     if (customerIds.length) await service.from('customers').delete().in('id', customerIds)

@@ -1,6 +1,6 @@
 /**
  * E2E Stage 6.2 — alertas de reposición.
- * Solo Supabase local (E2E_* loopback).
+ * Solo staging cloud explícito; producción bloqueada por el guard compartido.
  */
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
@@ -8,6 +8,7 @@ import {
   requireE2E,
   ensureE2EAdmin,
   getE2EEnv,
+  assertAllowedE2ESupabaseUrl,
   serviceClient,
 } from './helpers/fixtures'
 
@@ -130,6 +131,6 @@ test.describe('Stage 6.2 alertas de reposición', () => {
     await page.getByTestId('alertas-search').focus()
     await expect(page.getByTestId('alertas-search')).toBeFocused()
 
-    expect(getE2EEnv().url).toMatch(/127\.0\.0\.1|localhost/)
+    expect(() => assertAllowedE2ESupabaseUrl(getE2EEnv().url)).not.toThrow()
   })
 })

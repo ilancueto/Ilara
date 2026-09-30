@@ -137,7 +137,7 @@ async function main() {
   // not-found público
   {
     const res = await get('/catalogo/p/999999991')
-    if (res.status === 404 || res.status === 200) {
+    if (res.status === 404) {
       ok('catalog product not-found responds', String(res.status))
     } else fail('catalog product not-found', String(res.status))
   }
@@ -145,7 +145,8 @@ async function main() {
   // Ruta privada desconocida: proxy redirige a login sin sesión
   {
     const res = await get('/ruta-smoke-404-ilara')
-    if (res.status === 307 || res.status === 302 || res.status === 404 || res.status === 200) {
+    const location = res.headers.get('location') || ''
+    if ([302, 307].includes(res.status) && new URL(location, BASE).pathname === '/login') {
       ok('unknown private path gated', String(res.status))
     } else fail('unknown private path gated', String(res.status))
   }

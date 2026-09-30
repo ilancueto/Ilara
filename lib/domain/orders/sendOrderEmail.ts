@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createSupabaseServiceClient } from '@/lib/supabase/service'
+import { logStructured } from '@/lib/observability/logger'
 import { buildOrderNotificationUrl } from '@/lib/domain/orders/followLink'
 import {
   buildOrderCustomerEmail,
@@ -31,8 +32,7 @@ export async function createOrderNotificationUrl(
 
 export async function notifyOrderCustomer(
   orderNumber: string,
-  kind: OrderNotifyKind,
-  providedLines?: Array<{ name: string; quantity: number }>
+  kind: OrderNotifyKind
 ): Promise<boolean> {
   try {
     const number = orderNumber.trim()
@@ -40,66 +40,69 @@ export async function notifyOrderCustomer(
     const service = createSupabaseServiceClient()
     const { data, error } = await service
       .from('orders')
-      .select('id, customer_email, customer_name, order_number, total, fulfillment_mode')
+      .select('id, status, customer_email, customer_name, order_number, total, fulfillment_mode')
       .eq('order_number', number)
       .maybeSingle()
     if (error || !data) return false
+    if (['confirmed', 'preparing', 'ready', 'completed', 'cancelled'].includes(kind) && data.status !== kind) return false
     if (!isNotifyEmail(data.customer_email)) return false
-    const followUrl = await createOrderNotificationUrl(data.order_number, kind)
-    if (!followUrl) return false
-    let lines = providedLines || []
-    if (lines.length === 0) {
-      const items = await service
-        .from('order_items')
-        .select('name_snapshot, quantity')
-        .eq('order_id', data.id)
-        .order('sort_order')
-      if (!items.error) {
-        lines = (items.data || []).map((item) => ({ name: item.name_snapshot, quantity: item.quantity }))
-      }
-    }
-    return sendOrderCustomerEmail({
-      customerName: data.customer_name,
-      customerEmail: data.customer_email,
-      orderNumber: data.order_number,
-      total: Number(data.total) || 0,
-      lines,
-      fulfillmentMode: data.fulfillment_mode,
-      followUrl,
-      kind,
-    })
+    const { dispatchOrderNotifications } = await import('./notificationOutbox')
+    return (await dispatchOrderNotifications(data.id, kind)).sent > 0
   } catch {
     return false
   }
 }
 
-export async function sendOrderCustomerEmail(input: OrderNotifyInput): Promise<boolean> {
+export function prepareOrderCustomerEmail(input: OrderNotifyInput): string {
+  const mail = buildOrderCustomerEmail(input)
+  return JSON.stringify({ from: process.env.ORDER_EMAIL_FROM?.trim() || '', to: [(input.customerEmail || '').trim()], subject: mail.subject, text: mail.text, html: mail.html })
+}
+
+export async function sendOrderCustomerEmail(input: OrderNotifyInput, deliveryId?: string, preparedBody?: string): Promise<boolean> {
   const to = (input.customerEmail || '').trim()
   if (!isNotifyEmail(to)) return false
   const key = process.env.RESEND_API_KEY?.trim() || ''
   const from = process.env.ORDER_EMAIL_FROM?.trim() || ''
-  if (key.length < 8 || !from.includes('@')) return false
-
-  const mail = buildOrderCustomerEmail(input)
-  try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'Idempotency-Key': `ilara-${input.orderNumber}-${input.kind || 'status'}`.slice(0, 256),
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        subject: mail.subject,
-        text: mail.text,
-        html: mail.html,
-      }),
-      cache: 'no-store',
-    })
-    return response.ok
-  } catch {
+  if (key.length < 8 || !from.includes('@')) {
+    logStructured({ event: 'order_notification_failed', level: 'warn', code: 'email_not_configured' })
     return false
   }
+
+  const body = preparedBody || prepareOrderCustomerEmail(input)
+  const deadline = Date.now() + 8_000
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let retryDelay = 250 * (2 ** attempt)
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': (deliveryId ? `ilara-outbox-${deliveryId}` : `ilara-${input.orderNumber}-${input.kind || 'status'}`).slice(0, 256),
+        },
+        body,
+        cache: 'no-store',
+        signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
+      })
+      if (response.ok) return true
+      const retryable = response.status === 429 || response.status >= 500
+      const retryAfter = response.headers.get('retry-after')
+      if (retryAfter) {
+        const seconds = Number(retryAfter)
+        const waitMs = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now()
+        if (Number.isFinite(waitMs)) retryDelay = Math.max(retryDelay, waitMs)
+      }
+      if (!retryable || attempt === 2 || Date.now() + retryDelay >= deadline) {
+        logStructured({ event: 'order_notification_failed', level: 'warn', status: response.status })
+        return false
+      }
+    } catch {
+      if (attempt === 2 || Date.now() + retryDelay >= deadline) {
+        logStructured({ event: 'order_notification_failed', level: 'warn', code: 'email_unavailable' })
+        return false
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, retryDelay))
+  }
+  return false
 }

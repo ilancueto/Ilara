@@ -22,6 +22,9 @@ import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/st
 import { fulfillmentPublicLine } from '@/lib/domain/orders/fulfillment'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
+import { StorefrontShell } from '@/components/storefront/StorefrontShell'
+import { StorefrontHeader } from '@/components/storefront/StorefrontHeader'
+import styles from '@/components/storefront/storefront.module.css'
 import {
   getFollowOrderAction,
   completeFollowTransferReceiptUploadAction,
@@ -168,27 +171,14 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
     : '5%'
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8 sm:py-12 text-[#1A181E] dark:text-[#F6EEF3]">
-      
-      {/* Header Tracking Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-[#EBE4DA] bg-white p-6 sm:p-8 shadow-sm dark:border-white/10 dark:bg-[#1C1924]">
-        
-        {/* Top Gradient Stripe */}
-        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#D97786] via-[#C5A880] to-[#E28292]" />
-
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#C5A880]">
-              Seguimiento Oficial de Pedido
-            </p>
-            <h1 className="mt-1 font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#1A181E] dark:text-[#F6EEF3]">
-              {view?.order_number || orderNumber}
-            </h1>
-          </div>
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold shadow-2xs ${badgeInfo.colorClass}`}>
-            <span className="h-2 w-2 rounded-full bg-current" />
-            <span>{badgeInfo.label}</span>
-          </span>
+    <StorefrontShell header={<StorefrontHeader simple />}>
+    <main className={`${styles.center} ${styles.wrap}`}>
+      <div className={styles.box}>
+        <div>
+          <span className={styles.status}>{badgeInfo.label}</span>
+          <h1 className="mt-3">
+            {view?.order_number || orderNumber}
+          </h1>
         </div>
 
         {error && (
@@ -549,5 +539,6 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
       )}
 
     </main>
+    </StorefrontShell>
   )
 }

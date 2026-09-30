@@ -8,6 +8,7 @@ import {
   type PublicCatalogProduct,
 } from '@/lib/domain/catalog/publicDto'
 import { fetchPublicCatalogSnapshot } from '@/lib/domain/catalog/publicQueries'
+import { readAllCatalogRows } from '@/lib/domain/catalog/readAllRows'
 
 export type CatalogInitialSnapshot = {
   productos: PublicCatalogProduct[]
@@ -15,11 +16,13 @@ export type CatalogInitialSnapshot = {
   categorias: PublicCatalogCategory[]
   /** Fallo SSR: reintentar carga en el cliente */
   serverFetchFailed?: boolean
+  /** Aggregated public sales used for the initial server-rendered ranking. */
+  sales?: Array<[number, number]>
 }
 
 /**
  * Carga productos, combos y categorías del catálogo público (DTO Stage 5).
- * Si `initial` viene del servidor (SSR/ISR), no repite el fetch inicial en el cliente.
+ * Si `initial` viene del servidor, no repite el fetch inicial en el cliente.
  */
 export function useCatalogData(ordenamiento: string, initial: CatalogInitialSnapshot | null = null) {
   const [productos, setProductos] = useState<PublicCatalogProduct[]>(initial?.productos ?? [])
@@ -27,7 +30,7 @@ export function useCatalogData(ordenamiento: string, initial: CatalogInitialSnap
   const [categorias, setCategorias] = useState<PublicCatalogCategory[]>(initial?.categorias ?? [])
   const [cargando, setCargando] = useState(!initial || Boolean(initial.serverFetchFailed))
   const [catalogLoadError, setCatalogLoadError] = useState(false)
-  const [ventasPorProducto, setVentasPorProducto] = useState<Map<number, number>>(new Map())
+  const [ventasPorProducto, setVentasPorProducto] = useState<Map<number, number>>(new Map(initial?.sales))
 
   const obtenerProductos = useCallback(async () => {
     const snap = await fetchPublicCatalogSnapshot(getBrowserSupabase())
@@ -89,11 +92,13 @@ export function useCatalogData(ordenamiento: string, initial: CatalogInitialSnap
 
   useEffect(() => {
     if (ordenamiento !== 'vendidos-desc') return
+    if (initial?.sales) return
+    let cancelled = false
     const fetchVentas = async () => {
-      const { data, error } = await getBrowserSupabase().rpc('catalog_sales_by_product')
+      const { data, error } = await readAllCatalogRows((from, to) => getBrowserSupabase().rpc('catalog_sales_by_product', {}, { count: 'exact' }).order('product_id').range(from, to))
+      if (cancelled) return
       const map = new Map<number, number>()
       if (error) {
-        console.warn('[catálogo] catalog_sales_by_product:', error.message)
         setVentasPorProducto(map)
         return
       }
@@ -104,7 +109,8 @@ export function useCatalogData(ordenamiento: string, initial: CatalogInitialSnap
       setVentasPorProducto(map)
     }
     void fetchVentas()
-  }, [ordenamiento])
+    return () => { cancelled = true }
+  }, [ordenamiento, initial?.sales])
 
   return {
     productos,

@@ -3,6 +3,8 @@
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Loader2, MessageCircle, Truck } from 'lucide-react'
+import { OrderSummary } from '@/components/storefront/OrderSummary'
+import { catalogDisplayComboPrice, catalogDisplayUnitPrice } from '@/lib/domain/payments/catalogDisplayPrice'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { createCatalogOrderAction } from '@/app/actions/orders'
 import { createFollowShareLinkAction, startBankTransferAction, startMercadoPagoAction } from '@/app/actions/payments'
@@ -10,7 +12,7 @@ import type { CatalogCartItem } from '@/hooks/useCarrito'
 import type { CreateOrderResult } from '@/lib/domain/orders/types'
 import { buildOrderWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
-import { formatPesoAR, formatPesoARExact } from '@/lib/formatPesoAR'
+import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { normalizePhoneDigits } from '@/lib/domain/orders/validation'
 import {
   listShippingLocalities,
@@ -21,7 +23,7 @@ import type { ShippingLocation, ShippingQuote } from '@/lib/domain/shipping/type
 import { toUserMessage } from '@/lib/domain/errors'
 import { FULFILLMENT_COPY, type FulfillmentMode } from '@/lib/domain/orders/fulfillment'
 import { paymentStartKey, saveOrderAccess } from '@/lib/domain/payments/publicSession'
-import styles from '@/components/Catalogo/CheckoutPedido.module.css'
+import styles from '@/components/storefront/storefront.module.css'
 
 type Props = {
   open: boolean
@@ -51,10 +53,11 @@ export function CheckoutPedido({
   appliedCoupon,
   subtotal,
   descuentoCupon,
-  total,
+  total: _total,
   onOrderCreated,
   showToast,
 }: Props) {
+  void _total
   const panelRef = useRef<HTMLElement>(null)
   const formId = useId()
   useDialogA11y(open, onClose, panelRef)
@@ -134,7 +137,6 @@ export function CheckoutPedido({
 
   const selectedShipping = shippingQuote?.options.find((option) => option.id === selectedShippingId) || null
   const needsShippingQuote = fulfillmentMode === 'envio'
-  const estimatedTotal = total + (needsShippingQuote ? (selectedShipping?.amount || 0) : 0)
   const canSubmit = carrito.length > 0 && (!needsShippingQuote || Boolean(selectedShippingId))
   const addressComplete = Boolean(
     provinceId && localityId && /^\d{4}$/.test(postalCode)
@@ -199,10 +201,12 @@ export function CheckoutPedido({
     const digits = normalizePhoneDigits(phone)
     if (!trimmedName) {
       setFieldError('Ingresá tu nombre.')
+      document.getElementById(`${formId}-name`)?.focus()
       return
     }
     if (digits.length < 8 || digits.length > 15) {
       setFieldError('Ingresá un teléfono válido (8 a 15 dígitos).')
+      document.getElementById(`${formId}-phone`)?.focus()
       return
     }
     if (needsShippingQuote && (!selectedShippingId || !selectedShipping)) {
@@ -276,7 +280,7 @@ export function CheckoutPedido({
         setDone(result.order)
         setNotifiedVia(result.notifiedVia)
         onOrderCreated(result.order)
-        showToast('success', `Pedido ${result.order.order_number} confirmado`)
+        showToast('success', `Pedido ${result.order.order_number} creado`)
       } catch {
         setSubmitError('No se pudo crear el pedido. Revisá tu conexión e intentá de nuevo.')
         showToast('error', 'Error de conexión. Tu bolsa se conservó.')
@@ -308,155 +312,153 @@ export function CheckoutPedido({
     })
   }
 
+  const summaryItems = carrito.map((item) => ({
+    name: item.producto ? item.producto.name : item.combo!.name,
+    quantity: item.cantidad,
+    unitPrice: item.producto ? catalogDisplayUnitPrice(item.producto) : catalogDisplayComboPrice(item.combo!),
+  }))
+  const shippingKnown = !needsShippingQuote || Boolean(selectedShipping)
+  const shippingLabel = !needsShippingQuote
+    ? FULFILLMENT_COPY[fulfillmentMode].title
+    : selectedShipping
+      ? `${selectedShipping.carrier} · ${selectedShipping.service}`
+      : 'A calcular'
+  const summary = (
+    <OrderSummary
+      items={summaryItems}
+      productsTotal={subtotal}
+      couponCode={appliedCoupon?.code}
+      couponDiscount={descuentoCupon}
+      shippingLabel={shippingLabel}
+      shippingAmount={!needsShippingQuote ? 0 : selectedShipping?.amount ?? null}
+      showFinalTotal={shippingKnown}
+      note="Se crea un pedido. El pago es el paso siguiente."
+    />
+  )
+
   return (
-    <div className={styles.overlay}>
-      <button
-        className={styles.backdrop}
-        type="button"
-        onClick={pending ? undefined : onClose}
-        aria-label="Cerrar pedido"
-        disabled={pending}
-      />
-      <aside
+    <div className={`storefront ${styles.checkoutOverlay}`}>
+      <section
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${formId}-title`}
-        className={styles.drawer}
+        className={styles.checkoutPage}
         data-testid="checkout-pedido"
       >
-        <header className={styles.head}>
-          {!done && (
-            <button
-              type="button"
-              className={styles.back}
-              onClick={onBack}
-              disabled={pending}
-              aria-label="Volver a la bolsa"
-            >
-              <ArrowLeft size={18} />
+        <p className={styles.crumb}>
+          {!done ? (
+            <button type="button" className={styles.comboLink} onClick={onBack} disabled={pending} aria-label="Volver a la bolsa">
+              <ArrowLeft size={16} /> Volver a la bolsa
             </button>
-          )}
-          <div>
-            <p className={styles.eyebrow}>{done ? 'Confirmación' : 'Tu pedido'}</p>
-            <h2 id={`${formId}-title`} className={styles.title}>
-              {done ? '¡Pedido confirmado!' : 'Datos del pedido'}
-            </h2>
-          </div>
-        </header>
+          ) : null}
+        </p>
+        <h1 id={`${formId}-title`}>{done ? 'Elegí cómo pagar' : 'Completemos tu pedido'}</h1>
+        <p className={styles.steps}>
+          {done ? <>1. Datos y entrega &nbsp; → &nbsp; <b>2. Pago</b></> : <><b>1. Datos y entrega</b> &nbsp; → &nbsp; 2. Pago</>}
+        </p>
 
         {done ? (
-          <div className={styles.success} data-testid="checkout-success">
-            <div className={styles.successIconWrap}>
-              <CheckCircle2 size={32} aria-hidden />
-            </div>
-            
-            <div className={styles.orderCardSuccess}>
-              <p className={styles.orderNumberLabel}>Pedido Registrado</p>
-              <p className={styles.orderNumber} data-testid="order-number">
+          <div className={styles.center} data-testid="checkout-success">
+            <div className={styles.box}>
+              <CheckCircle2 size={28} aria-hidden />
+              <p className={styles.muted}>Pedido creado</p>
+              <p data-testid="order-number" style={{ fontSize: 28, fontWeight: 550, margin: '8px 0' }}>
                 {done.order_number}
               </p>
-              <p className={styles.successTotal}>
-                Total: <strong>${formatPesoARExact(done.total)}</strong>
+              <p>Importe: <strong>${formatPesoARExact(done.total)}</strong></p>
+              <p className={styles.muted}>
+                {done.fulfillment_mode === 'envio' ? (
+                  <>
+                    Envío: <strong>{done.shipping_carrier} · {done.shipping_service}</strong>
+                    {done.shipping_delivery_estimate ? ` (${done.shipping_delivery_estimate})` : ''}.{' '}
+                    Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`}
+                    {done.shipping_destination_postal_code ? ` · CP ${done.shipping_destination_postal_code}` : ''}.
+                  </>
+                ) : (
+                  FULFILLMENT_COPY[done.fulfillment_mode || fulfillmentMode].success
+                )}
               </p>
-            </div>
-
-            <p className={styles.hint}>
-              {done.fulfillment_mode === 'envio' ? (
-                <>
-                  Envío: <strong>{done.shipping_carrier} · {done.shipping_service}</strong>
-                  {done.shipping_delivery_estimate ? ` (${done.shipping_delivery_estimate})` : ''}.<br />
-                  Destino: {done.shipping_destination_formatted_address || `${done.shipping_destination_city}, ${done.shipping_destination_state}`}
-                  {done.shipping_destination_postal_code ? ` · CP ${done.shipping_destination_postal_code}` : ''}.
-                </>
-              ) : (
-                FULFILLMENT_COPY[done.fulfillment_mode || fulfillmentMode].success
+              <p className={styles.muted} data-testid="checkout-notify">
+                {notifiedVia === 'email'
+                  ? 'Te enviamos por email una confirmación con un enlace seguro de seguimiento.'
+                  : 'El pedido ya está creado. Elegí cómo pagar. Si el email no llegó, no vuelvas a enviarlo.'}
+              </p>
+              {done.access_capability && (
+                <div data-testid="checkout-pay">
+                  <button
+                    type="button"
+                    className={`${styles.primaryBtn} ${styles.wide}`}
+                    disabled={pending}
+                    data-testid="checkout-pay-mp"
+                    onClick={() => {
+                      const access = done.access_capability
+                      if (!access) return
+                      startTransition(async () => {
+                        const result = await startMercadoPagoAction(
+                          access,
+                          paymentStartKey('mercado_pago', Boolean(submitError))
+                        )
+                        if (!result.ok) {
+                          setSubmitError(result.error)
+                          showToast('error', result.error)
+                          return
+                        }
+                        window.location.assign(result.data.checkout_url)
+                      })
+                    }}
+                  >
+                    Pagar con Mercado Pago
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.secondaryBtn} ${styles.wide}`}
+                    disabled={pending}
+                    data-testid="checkout-pay-transfer"
+                    style={{ marginTop: 10 }}
+                    onClick={() => {
+                      const access = done.access_capability
+                      if (!access) return
+                      startTransition(async () => {
+                        const result = await startBankTransferAction(
+                          access,
+                          paymentStartKey('bank_transfer', Boolean(submitError))
+                        )
+                        if (!result.ok) {
+                          setSubmitError(result.error)
+                          showToast('error', result.error)
+                          return
+                        }
+                        router.push('/pedido')
+                      })
+                    }}
+                  >
+                    Pagar por transferencia
+                  </button>
+                </div>
               )}
-            </p>
-
-            <p className={styles.hint} data-testid="checkout-notify" style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-              {notifiedVia === 'email'
-                ? 'Te enviamos por email una confirmación con un enlace seguro de seguimiento.'
-                : 'Elegí cómo pagar. También podés guardar este pedido o coordinarlo por WhatsApp.'}
-            </p>
-
-            {done.access_capability && (
-              <div className={styles.payChoices} data-testid="checkout-pay">
-                <button
-                  type="button"
-                  className={styles.payMpBtn}
-                  disabled={pending}
-                  data-testid="checkout-pay-mp"
-                  onClick={() => {
-                    const access = done.access_capability
-                    if (!access) return
-                    startTransition(async () => {
-                      const result = await startMercadoPagoAction(
-                        access,
-                        paymentStartKey('mercado_pago', Boolean(submitError))
-                      )
-                      if (!result.ok) {
-                        setSubmitError(result.error)
-                        showToast('error', result.error)
-                        return
-                      }
-                      window.location.assign(result.data.checkout_url)
-                    })
-                  }}
-                >
-                  <span>⚡ Pagar con Mercado Pago</span>
-                </button>
-                <button
-                  type="button"
-                  className={styles.payTransferBtn}
-                  disabled={pending}
-                  data-testid="checkout-pay-transfer"
-                  onClick={() => {
-                    const access = done.access_capability
-                    if (!access) return
-                    startTransition(async () => {
-                      const result = await startBankTransferAction(
-                        access,
-                        paymentStartKey('bank_transfer', Boolean(submitError))
-                      )
-                      if (!result.ok) {
-                        setSubmitError(result.error)
-                        showToast('error', result.error)
-                        return
-                      }
-                      router.push('/pedido')
-                    })
-                  }}
-                >
-                  <span>🏦 Pagar por Transferencia (10% OFF)</span>
-                </button>
-              </div>
-            )}
-
-            <button
-              type="button"
-              className={styles.waBtn}
-              onClick={openWa}
-              disabled={pending}
-              data-testid="checkout-whatsapp"
-            >
-              <MessageCircle size={18} />
-              <span>Coordinar por WhatsApp</span>
-            </button>
-
-            <button type="button" className={styles.secondary} onClick={onClose} data-testid="checkout-back-catalog" style={{ marginTop: '0.25rem' }}>
-              Seguir mirando el catálogo
-            </button>
+              <button
+                type="button"
+                className={`${styles.secondaryBtn} ${styles.wide}`}
+                onClick={openWa}
+                disabled={pending}
+                data-testid="checkout-whatsapp"
+                style={{ marginTop: 10 }}
+              >
+                <MessageCircle size={18} />
+                Coordinar por WhatsApp
+              </button>
+              <button type="button" className={`${styles.comboLink}`} onClick={onClose} data-testid="checkout-back-catalog">
+                Seguir mirando el catálogo
+              </button>
+            </div>
           </div>
         ) : (
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <form className={styles.checkoutGrid} onSubmit={handleSubmit} noValidate>
             
-            {/* Section 1: Customer Details */}
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <span className={styles.sectionNum}>1</span>
-                <span>Tus Datos de Contacto</span>
-              </div>
+            <div>
+            <div className={styles.box}>
+              <h2>Tus datos</h2>
 
               <div className={styles.field}>
                 <label htmlFor={`${formId}-name`}>Nombre y Apellido *</label>
@@ -492,7 +494,7 @@ export function CheckoutPedido({
                   data-testid="checkout-phone"
                   aria-describedby={`${formId}-phone-hint`}
                 />
-                <p id={`${formId}-phone-hint`} className={styles.fieldHint}>
+                <p id={`${formId}-phone-hint`} className={styles.muted}>
                   Lo usamos para coordinar por WhatsApp si lo necesitás.
                 </p>
               </div>
@@ -512,22 +514,19 @@ export function CheckoutPedido({
                   data-testid="checkout-email"
                   aria-describedby={`${formId}-email-hint`}
                 />
-                <p id={`${formId}-email-hint`} className={styles.fieldHint}>
+                <p id={`${formId}-email-hint`} className={styles.muted}>
                   Si lo completás, te enviaremos confirmación y seguimiento por email.
                 </p>
               </div>
             </div>
 
             {/* Section 2: Delivery Method */}
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <span className={styles.sectionNum}>2</span>
-                <span>Forma de Entrega</span>
-              </div>
+            <div className={styles.box} style={{ marginTop: 18 }}>
+              <h2>¿Cómo lo recibís?</h2>
 
-              <fieldset className={styles.shippingOptions} data-testid="fulfillment-options">
+              <fieldset data-testid="fulfillment-options">
                 {(Object.keys(FULFILLMENT_COPY) as FulfillmentMode[]).map((mode) => (
-                  <label key={mode} className={styles.shippingOption}>
+                  <label key={mode} className={styles.choice}>
                     <input
                       type="radio"
                       name="fulfillment_mode"
@@ -541,7 +540,7 @@ export function CheckoutPedido({
                       disabled={pending}
                       data-testid={`fulfillment-${mode}`}
                     />
-                    <span className={styles.shippingCopy}>
+                    <span>
                       <strong>{FULFILLMENT_COPY[mode].title}</strong>
                       <small>{FULFILLMENT_COPY[mode].hint}</small>
                     </span>
@@ -567,7 +566,7 @@ export function CheckoutPedido({
               )}
 
               {needsShippingQuote && (
-                <fieldset className={styles.addressFields} disabled={pending || quotePending}>
+                <fieldset disabled={pending || quotePending}>
                   <legend>Dirección de entrega *</legend>
                   <div className={styles.field}>
                     <label htmlFor={`${formId}-province`}>Provincia</label>
@@ -607,7 +606,7 @@ export function CheckoutPedido({
                       ))}
                     </select>
                   </div>
-                  <div className={styles.addressRow}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 7rem', gap: 12 }}>
                     <div className={styles.field}>
                       <label htmlFor={`${formId}-street`}>Calle</label>
                       <input
@@ -666,10 +665,10 @@ export function CheckoutPedido({
                       data-testid="checkout-postal-code"
                     />
                   </div>
-                  <div className={styles.quoteRow}>
+                  <div>
                     <button
                       type="button"
-                      className={styles.quoteButton}
+                      className={styles.secondaryBtn}
                       onClick={() => void handleQuote()}
                       disabled={pending || quotePending || locationsPending || !addressComplete}
                       data-testid="checkout-quote-shipping"
@@ -681,17 +680,17 @@ export function CheckoutPedido({
                 </fieldset>
               )}
 
-              {locationsError && <p className={styles.error} role="alert">{locationsError}</p>}
-              {quoteError && <p className={styles.error} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
+              {locationsError && <p className={styles.errorText} role="alert">{locationsError}</p>}
+              {quoteError && <p className={styles.errorText} role="alert" data-testid="shipping-quote-error">{quoteError}</p>}
 
               {shippingQuote && (
-                <fieldset className={styles.shippingOptions} data-testid="shipping-options" style={{ marginTop: '0.5rem' }}>
-                  <legend>Opciones de Envío Disponibles *</legend>
-                  <p className={styles.destination}>
+                <fieldset data-testid="shipping-options" style={{ marginTop: '0.5rem' }}>
+                  <legend>Opciones de envío</legend>
+                  <p className={styles.muted}>
                     {shippingQuote.destination.formattedAddress} · CP {shippingQuote.destination.postalCode}
                   </p>
                   {shippingQuote.options.map((option) => (
-                    <label key={option.id} className={styles.shippingOption}>
+                    <label key={option.id} className={styles.choice}>
                       <input
                         type="radio"
                         name="shipping_option"
@@ -700,7 +699,7 @@ export function CheckoutPedido({
                         onChange={() => setSelectedShippingId(option.id)}
                         disabled={pending}
                       />
-                      <span className={styles.shippingCopy}>
+                      <span>
                         <strong>{option.carrier} · {option.service}</strong>
                         <small>{option.deliveryEstimate || 'Plazo a confirmar'}</small>
                       </span>
@@ -731,45 +730,17 @@ export function CheckoutPedido({
               />
             </div>
 
-            {/* Summary Box */}
-            <section className={styles.summary} aria-label="Resumen">
-              <div className={styles.summaryRow}>
-                <span>Subtotal productos</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>${formatPesoAR(subtotal)}</span>
-              </div>
-              {appliedCoupon && (
-                <div className={styles.summaryRow} style={{ color: 'var(--success-green, #1E9E68)', fontWeight: 600 }}>
-                  <span>Cupón {appliedCoupon.code}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>−${formatPesoAR(descuentoCupon)}</span>
-                </div>
-              )}
-              {needsShippingQuote && selectedShipping && (
-                <div className={styles.summaryRow}>
-                  <span>Costo de Envío</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>${formatPesoARExact(selectedShipping.amount)}</span>
-                </div>
-              )}
-              {!needsShippingQuote && (
-                <div className={styles.summaryRow}>
-                  <span>{FULFILLMENT_COPY[fulfillmentMode].title}</span>
-                  <span style={{ color: 'var(--success-green, #1E9E68)', fontWeight: 700 }}>Sin costo</span>
-                </div>
-              )}
-              <div className={styles.summaryTotal}>
-                <span>Total a pagar</span>
-                <strong>${formatPesoARExact(estimatedTotal)}</strong>
-              </div>
-            </section>
-
             {(fieldError || submitError) && (
-              <p className={styles.error} role="alert" data-testid="checkout-error">
+              <p className={styles.errorText} role="alert" data-testid="checkout-error">
                 {fieldError || submitError}
               </p>
             )}
 
+            <p className={styles.notice}>Se crea un pedido. El pago es el paso siguiente.</p>
+
             <button
               type="submit"
-              className={styles.primary}
+              className={`${styles.primaryBtn} ${styles.wide}`}
               disabled={pending || quotePending || !canSubmit}
               data-testid="checkout-submit"
               aria-busy={pending}
@@ -777,15 +748,23 @@ export function CheckoutPedido({
               {pending ? (
                 <>
                   <Loader2 size={18} className={styles.spin} aria-hidden />
-                  <span>Procesando pedido…</span>
+                  <span>Creando pedido…</span>
                 </>
               ) : (
-                <span>Confirmar Pedido y Elegir Pago ➔</span>
+                <span>Crear pedido y continuar al pago</span>
               )}
             </button>
+            </div>
+
+            <aside className={`${styles.box} ${styles.side}`} aria-label="Resumen">
+              <details open>
+                <summary>Resumen del pedido</summary>
+                {summary}
+              </details>
+            </aside>
           </form>
         )}
-      </aside>
+      </section>
     </div>
   )
 }

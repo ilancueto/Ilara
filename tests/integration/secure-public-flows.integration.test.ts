@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { isAllowedTestSupabaseUrl } from '@/lib/security/testSupabaseTarget.mjs'
 
 const enabled = process.env.SECURE_PUBLIC_FLOWS_INTEGRATION === '1'
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
-const isLocal = Boolean(url && /^http:\/\/(127\.0\.0\.1|localhost):54321\/?$/.test(url))
-const canRun = Boolean(enabled && isLocal && anonKey && serviceKey)
+const canRun = Boolean(enabled && url && isAllowedTestSupabaseUrl(url) && anonKey && serviceKey)
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 const hashBytes = (value: Uint8Array) => createHash('sha256').update(value).digest('hex')
 

@@ -2,7 +2,8 @@
 
 /**
  * Server Actions de pedidos de catálogo (Stage 6.1).
- * Creación pública vía DAL + RPC. Sin service role. Sin PII en logs.
+ * Creación pública vía DAL + RPC. Notificaciones privilegiadas sólo en servidor.
+ * Sin PII en logs.
  */
 import { createCatalogOrderServer } from '@/lib/dal/orders'
 import type { CreateOrderInput, CreateOrderResult } from '@/lib/domain/orders/types'
@@ -12,6 +13,8 @@ import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { ObservabilityEvent } from '@/lib/observability/events'
 import { notifyKindFromOrderStatus } from '@/lib/domain/orders/orderNotify'
 import { notifyOrderCustomer } from '@/lib/domain/orders/sendOrderEmail'
+import { requireAdmin } from '@/lib/dal/auth'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export type OrderNotifyVia = 'email' | 'whatsapp' | 'none'
 
@@ -23,6 +26,8 @@ export async function createCatalogOrderAction(
   input: CreateOrderInput,
   _notify?: { lines?: Array<{ name: string; quantity: number }> }
 ): Promise<CreateCatalogOrderActionResult> {
+  // Keep the old action signature for open clients; email content comes only from persisted items.
+  void _notify
   const requestId = createRequestId()
   const started = Date.now()
 
@@ -42,7 +47,7 @@ export async function createCatalogOrderAction(
     if (order.follow_token) {
       await setOrderFollowCookie(order.order_number, order.follow_token)
     }
-    const emailed = await notifyOrderCustomer(order.order_number, 'created', _notify?.lines)
+    const emailed = await notifyOrderCustomer(order.order_number, 'created')
     const notifiedVia: OrderNotifyVia = emailed ? 'email' : 'none'
     logStructured({
       event: ObservabilityEvent.ORDER_CREATE_SUCCEEDED,
@@ -84,8 +89,21 @@ export async function notifyOrderStatusAction(
   orderNumber: string,
   status: string
 ): Promise<{ ok: true } | { ok: false }> {
-  const kind = notifyKindFromOrderStatus(status)
-  if (!kind) return { ok: true }
-  const sent = await notifyOrderCustomer(orderNumber, kind)
-  return sent ? { ok: true } : { ok: false }
+  try {
+    await requireAdmin()
+    const client = await createSupabaseServerClient()
+    const { data: order, error } = await client.from('orders')
+      .select('id, status').eq('order_number', orderNumber).maybeSingle()
+    if (error || !order || order.status !== status) return { ok: false }
+    const kind = notifyKindFromOrderStatus(order.status)
+    if (!kind) return { ok: false }
+    const { data: event, error: eventError } = await client.from('order_status_events')
+      .select('id').eq('order_id', order.id).eq('to_status', order.status)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (eventError || !event) return { ok: false }
+    const sent = await notifyOrderCustomer(orderNumber, kind)
+    return { ok: sent }
+  } catch {
+    return { ok: false }
+  }
 }

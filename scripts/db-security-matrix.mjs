@@ -7,6 +7,7 @@
  *   o con vars STAGE2_* / STAGE0_* / NEXT_PUBLIC_* / SUPABASE_SERVICE_ROLE_KEY
  */
 import { createClient } from '@supabase/supabase-js'
+import { assertTestSupabaseUrl } from '../lib/security/testSupabaseTarget.mjs'
 
 const PROD_REFS = ['qbbnvdmadgomfmrsfxlo']
 
@@ -57,6 +58,7 @@ if (!url || !anonKey) {
 if (isProd(url)) {
   fail('Rechazado: no ejecutar matriz mutante/probe contra proyecto productivo')
 }
+assertTestSupabaseUrl(url)
 
 const anon = createClient(url, anonKey, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -105,6 +107,7 @@ const sensitiveTables = [
   'order_follow_tokens',
   'order_follow_sessions',
   'order_notification_links',
+  'order_notification_outbox',
   'payment_receipt_uploads',
   'payment_receipts',
   'payment_expire_runs',

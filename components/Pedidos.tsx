@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   Check,
@@ -48,6 +48,7 @@ import { orderWhatsAppMessage, whatsappContactDigits } from '@/lib/domain/orders
 import { buildWhatsAppUrlTo } from '@/lib/whatsappLink'
 
 const STATUS_FILTERS: Array<OrderStatus | 'all'> = ['all', ...ORDER_STATUSES]
+const ORDER_PAGE_SIZE = 50
 
 function statusBadgeClass(status: OrderStatus): string {
   switch (status) {
@@ -88,6 +89,11 @@ export default function Pedidos() {
   const [orders, setOrders] = useState<OrderListItem[]>([])
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(0)
+  const [hasNextPage, setHasNextPage] = useState(false)
+  const [listError, setListError] = useState<string | null>(null)
+  const listRequest = useRef(0)
+  const detailRequest = useRef(0)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detail, setDetail] = useState<OrderDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
@@ -98,41 +104,54 @@ export default function Pedidos() {
   const [payments, setPayments] = useState<AdminOrderPayment[]>([])
 
   const loadList = useCallback(async () => {
+    const request = ++listRequest.current
     setLoading(true)
+    setListError(null)
     try {
       const rows = await listOrders({
         status: statusFilter,
         query,
-        limit: 100,
+        limit: ORDER_PAGE_SIZE + 1,
+        offset: page * ORDER_PAGE_SIZE,
       })
-      setOrders(rows)
+      if (request !== listRequest.current) return
+      if (!rows.length && page > 0) { setPage(page - 1); return }
+      setOrders(rows.slice(0, ORDER_PAGE_SIZE))
+      setHasNextPage(rows.length > ORDER_PAGE_SIZE)
     } catch (err) {
-      showToast('error', toUserMessage(err, 'No se pudieron cargar los pedidos.'))
+      if (request === listRequest.current) setListError(toUserMessage(err, 'No se pudieron cargar los pedidos.'))
     } finally {
-      setLoading(false)
+      if (request === listRequest.current) setLoading(false)
     }
-  }, [statusFilter, query, showToast])
+  }, [statusFilter, query, page])
 
   useEffect(() => {
-    void loadList()
+    const counter = listRequest
+    const timer = setTimeout(() => void loadList(), 250)
+    return () => { clearTimeout(timer); ++counter.current }
   }, [loadList])
+
+  useEffect(() => () => { ++detailRequest.current }, [])
 
   const openDetail = useCallback(
     async (id: string) => {
+      const request = ++detailRequest.current
       setSelectedId(id)
       setDetailLoading(true)
       setDetail(null)
       setPayments([])
       try {
-        const d = await getOrderDetail(id)
+        const [d, pay] = await Promise.all([getOrderDetail(id), adminOrderPaymentsAction(id)])
+        if (request !== detailRequest.current) return
         setDetail(d)
-        const pay = await adminOrderPaymentsAction(id)
         if (pay.ok) setPayments(pay.data)
+        else showToast('warning', 'No se pudieron actualizar los pagos de este pedido.')
       } catch (err) {
+        if (request !== detailRequest.current) return
         showToast('error', toUserMessage(err, 'No se pudo cargar el detalle.'))
         setSelectedId(null)
       } finally {
-        setDetailLoading(false)
+        if (request === detailRequest.current) setDetailLoading(false)
       }
     },
     [showToast]
@@ -151,7 +170,8 @@ export default function Pedidos() {
       try {
         const result = await transitionOrder(detail.id, to, reason)
         if (!result.idempotent_replay) {
-          await notifyOrderStatusAction(result.order_number, result.status)
+          const notification = await notifyOrderStatusAction(result.order_number, result.status)
+          if (!notification.ok) showToast('warning', 'El estado se guardó, pero no se pudo enviar el aviso por email.')
         }
         logStructured({
           event: ObservabilityEvent.ORDER_STATUS_CHANGED,
@@ -349,7 +369,7 @@ export default function Pedidos() {
           <input
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => { ++listRequest.current; setLoading(true); setPage(0); setQuery(e.target.value) }}
             placeholder="Número, nombre o teléfono"
             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-3 py-2.5 text-sm"
             data-testid="pedidos-search"
@@ -359,7 +379,7 @@ export default function Pedidos() {
           <span className="sr-only">Filtrar por estado</span>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as OrderStatus | 'all')}
+            onChange={(e) => { ++listRequest.current; setLoading(true); setPage(0); setStatusFilter(e.target.value as OrderStatus | 'all') }}
             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm"
             data-testid="pedidos-status-filter"
           >
@@ -379,6 +399,11 @@ export default function Pedidos() {
               <Loader2 className="animate-spin" size={20} />
               Cargando…
             </div>
+          ) : listError ? (
+            <div role="alert" className="p-6 text-center text-rose-700 dark:text-rose-300">
+              {listError}
+              <button type="button" onClick={() => void loadList()} className="block mx-auto mt-3 underline">Reintentar</button>
+            </div>
           ) : orders.length === 0 ? (
             <div className="py-16 px-6 text-center text-gray-500">
               <Package className="mx-auto mb-2 opacity-50" />
@@ -391,6 +416,7 @@ export default function Pedidos() {
                   <button
                     type="button"
                     onClick={() => void openDetail(o.id)}
+                    disabled={actionLoading}
                     className={[
                       'w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-pink-50/60 dark:hover:bg-pink-950/20 transition-colors',
                       selectedId === o.id ? 'bg-pink-50 dark:bg-pink-950/30' : '',
@@ -422,6 +448,13 @@ export default function Pedidos() {
               ))}
             </ul>
           )}
+          <nav aria-label="Páginas de pedidos" className="flex items-center justify-between gap-2 border-t p-3 text-sm">
+            <button type="button" disabled={page === 0 || loading} className="rounded-lg border px-3 py-2 disabled:opacity-40"
+              onClick={() => { ++listRequest.current; setLoading(true); setPage(p => Math.max(0, p - 1)) }}>Anterior</button>
+            <span aria-live="polite">Página {page + 1}</span>
+            <button type="button" disabled={!hasNextPage || loading || Boolean(listError)} className="rounded-lg border px-3 py-2 disabled:opacity-40"
+              onClick={() => { ++listRequest.current; setLoading(true); setPage(p => p + 1) }}>Siguiente</button>
+          </nav>
         </div>
 
         <div className="lg:col-span-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-4 sm:p-5 min-h-[320px]">

@@ -1114,3 +1114,60 @@ select:disabled {
 .dark .ilara-pdp .ilara-pdp-related-section {
   border-top-color: rgba(244, 114, 182, 0.14);
 }
+
+/* Public storefront: light tokens even when html has .dark (panel theme). */
+.storefront {
+  --sf-bg: #FFFEFA;
+  --sf-surface: #FFFFFF;
+  --sf-muted-bg: #F4F2EE;
+  --sf-text: #242222;
+  --sf-text-2: #68615C;
+  --sf-action: #A42447;
+  --sf-action-hover: #861B39;
+  --sf-accent: #F6E6E8;
+  --sf-border: #D6D0CA;
+  --sf-line: #E9E5E1;
+  --sf-error: #A51D27;
+  --sf-success: #236044;
+  --sf-focus: #924365;
+  --sf-radius-sm: 8px;
+  --sf-radius: 12px;
+  --color-bg-main: #FFFEFA;
+  --color-text-main: #242222;
+  --color-text-muted: #68615C;
+  --ilara-muted: #68615C;
+  color-scheme: light;
+  background: #FFFEFA;
+  color: #242222;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.dark .storefront,
+.dark .storefront h1,
+.dark .storefront h2,
+.dark .storefront h3,
+.dark .storefront h4,
+.dark .storefront h5,
+.dark .storefront h6,
+.dark .storefront p {
+  color: #242222;
+}
+
+.dark .storefront {
+  background: #FFFEFA;
+}
+
+.storefront [class*="dark:text"] {
+  color: var(--sf-text, #242222);
+}
+
+.storefront [class*="dark:bg-[#1C1924]"],
+.storefront [class*="dark:bg-zinc"],
+.storefront [class*="dark:bg-gray"] {
+  background-color: var(--sf-surface, #fff);
+}
+
+.storefront [class*="dark:border"] {
+  border-color: var(--sf-line, #E9E5E1);
+}

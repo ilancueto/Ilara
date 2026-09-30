@@ -3,7 +3,7 @@
  *
  * En CI: E2E_SUPABASE_URL + keys obligatorias (fail, no skip).
  * Local sin config: requireE2E() → skip explícito.
- * Mutaciones: solo loopback (ver urlGuard.ts).
+ * Mutaciones: solo staging en la nube explícitamente configurado (ver urlGuard.ts).
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
@@ -33,10 +33,10 @@ export function requireE2E(): void {
   }
   if (process.env.CI) {
     throw new Error(
-      'CI E2E requiere E2E_SUPABASE_URL, E2E_ANON_KEY y E2E_SERVICE_ROLE_KEY (Supabase local del runner).'
+      'CI E2E requiere E2E_SUPABASE_URL, E2E_ANON_KEY y E2E_SERVICE_ROLE_KEY del staging en la nube.'
     )
   }
-  test.skip(true, 'Requiere E2E_SUPABASE_URL + E2E_ANON_KEY + E2E_SERVICE_ROLE_KEY (local)')
+  test.skip(true, 'Requiere E2E_SUPABASE_URL + E2E_ANON_KEY + E2E_SERVICE_ROLE_KEY (staging en la nube)')
 }
 
 export function getE2EEnv() {

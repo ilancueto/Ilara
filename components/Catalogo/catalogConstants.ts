@@ -1,8 +1,10 @@
+import { CATALOG_PAGE_SIZE, CATALOG_SORT_DEFAULT } from '@/lib/domain/catalog/catalogView'
+
 /** Paginación del grid del catálogo público */
-export const PRODUCTOS_POR_PAGINA = 15
+export const PRODUCTOS_POR_PAGINA = CATALOG_PAGE_SIZE
 
 /** Orden inicial: más recientes arriba */
-export const ORDEN_DEFAULT = 'nuevo-desc'
+export const ORDEN_DEFAULT = CATALOG_SORT_DEFAULT
 
 export const ORDEN_OPTIONS: { value: string; label: string }[] = [
     { value: 'nuevo-desc', label: 'Más nuevo primero' },

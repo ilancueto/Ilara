@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { cleanupFinancialFixtures } from './cleanupFinancialFixtures'
 
 const PROD_PROJECT_REFS = ['qbbnvdmadgomfmrsfxlo'] as const
 const enabled = process.env.STAGE64_INTEGRATION === '1'
@@ -101,7 +102,9 @@ describe.skipIf(!canRun)('Stage 6.4 margen real integración', () => {
       if (itemIds.length) await service.from('sale_item_components').delete().in('sale_item_id', itemIds)
       await service.from('stock_movements').delete().in('reference_id', saleIds)
       await service.from('sale_items').delete().in('sale_id', saleIds)
-      await service.from('sales').delete().in('id', saleIds)
+      await cleanupFinancialFixtures(service, saleIds)
+      const deletedSales = await service.from('sales').delete().in('id', saleIds)
+      if (deletedSales.error) throw deletedSales.error
     }
     if (comboIds.length) {
       await service.from('combo_items').delete().in('combo_id', comboIds)

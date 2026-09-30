@@ -1,8 +1,10 @@
 # Plan de implementación por etapas — Ilara
 
+> Estado actualizado: [ESTADO.md](./ESTADO.md), revisado el 29/09/2026. Este documento conserva la auditoría y planificación histórica; las fechas y estados de release de sus secciones no reemplazan la evidencia actual.
+
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
-- **Estado:** Etapas 0–7 cerradas en producción; Etapa 8.0 (ADR) documentada; implementación 8.1–8.6 pendiente
+- **Estado:** planificación histórica; ejecución y comprobaciones actuales en ESTADO.md
 - **Horizonte técnico estimado:** 3 a 5 semanas para una persona dedicada
 - **Unidad de esfuerzo:** día-persona, sin incluir funcionalidades nuevas de negocio
 

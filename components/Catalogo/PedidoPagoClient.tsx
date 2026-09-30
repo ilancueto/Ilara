@@ -10,6 +10,9 @@ import { loadOrderAccess, paymentStartKey, storedFollow } from '@/lib/domain/pay
 import { buildOrderFollowPath } from '@/lib/domain/orders/followLink'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
+import { StorefrontShell } from '@/components/storefront/StorefrontShell'
+import { StorefrontHeader } from '@/components/storefront/StorefrontHeader'
+import styles from '@/components/storefront/storefront.module.css'
 import {
   getPublicPaymentAction,
   completeTransferReceiptUploadAction,
@@ -142,22 +145,22 @@ export function PedidoPagoClient() {
   const showRetryMp = Boolean(view?.can_retry && view.mp_available)
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-8 sm:py-12 text-[#1A181E] dark:text-[#F6EEF3]">
+    <StorefrontShell header={<StorefrontHeader simple />}>
+    <main className={`${styles.center} ${styles.wrap}`}>
       
       {/* Header Banner */}
-      <div className="rounded-3xl border border-[#EBE4DA] bg-white p-6 sm:p-8 shadow-sm dark:border-white/10 dark:bg-[#1C1924]">
+      <div className={styles.box}>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#C5A880]">
-              Pasarela de Pago Segura
+            <p className={styles.steps}>
+              1. Datos y entrega &nbsp; → &nbsp; <b>2. Pago</b>
             </p>
-            <h1 className="mt-1 font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#1A181E] dark:text-[#F6EEF3]">
+            <h1 className="mt-1">
               {view?.order_number || 'Pedido'}
             </h1>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-200 bg-[#FDF2F4] px-3.5 py-1 text-xs font-bold text-[#C25B6C] dark:border-pink-900/40 dark:bg-pink-950/30 dark:text-[#F472B6]">
-            <span>●</span>
-            <span>{statusLabel(view?.payment_status ?? null)}</span>
+          <span className={styles.status}>
+            {statusLabel(view?.payment_status ?? null)}
           </span>
         </div>
 
@@ -453,15 +456,13 @@ export function PedidoPagoClient() {
           </section>
         )}
 
-        <div className="mt-8 flex justify-center border-t border-[#EBE4DA] pt-4 dark:border-white/10">
-          <Link
-            href="/catalogo"
-            className="text-xs font-bold uppercase tracking-wider text-[#C25B6C] hover:underline dark:text-[#F472B6]"
-          >
-            ← Volver al catálogo de productos
+        <div className="mt-8 flex justify-center border-t pt-4" style={{ borderColor: 'var(--sf-line, #E9E5E1)' }}>
+          <Link href="/catalogo" className={styles.comboLink}>
+            ← Volver al catálogo
           </Link>
         </div>
       </div>
     </main>
+    </StorefrontShell>
   )
 }

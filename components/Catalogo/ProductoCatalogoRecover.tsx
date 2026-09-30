@@ -2,50 +2,26 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, RefreshCw } from 'lucide-react'
-import ThemeSwitch from '@/components/ThemeSwitch'
+import { StorefrontShell } from '@/components/storefront/StorefrontShell'
+import { StorefrontHeader } from '@/components/storefront/StorefrontHeader'
+import styles from '@/components/storefront/storefront.module.css'
 
-export function ProductoCatalogoRecover() {
+export function ProductoCatalogoRecover({ onRetry }: { onRetry?: () => void } = {}) {
   const router = useRouter()
+  const retry = onRetry ?? (() => router.refresh())
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-[#08080b] dark:via-[#060609] dark:to-[#08080b]">
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#08080b]/80 backdrop-blur-md border-b border-pink-100/40 dark:border-gray-800/30">
-        <div className="w-full px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
-          <Link
-            href="/catalogo"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-pink-600 dark:text-pink-400 hover:underline min-w-0"
-          >
-            <ChevronLeft className="w-5 h-5 shrink-0" />
-            <span className="truncate">Catálogo</span>
-          </Link>
-          <ThemeSwitch />
-        </div>
-      </header>
-      <main className="w-full max-w-lg mx-auto px-4 sm:px-6 py-16 text-center">
-          <h1 className="text-gray-800 dark:text-gray-100 font-semibold mb-2">
-            Producto no encontrado
-          </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-          No pudimos mostrar este producto. Podés intentar nuevamente o volver al catálogo.
+    <StorefrontShell header={<StorefrontHeader simple />}>
+      <main className={`${styles.wrap} ${styles.empty}`}>
+        <h1>No pudimos cargar este producto</h1>
+        <p>Puede ser un problema de conexión. Probá de nuevo en unos segundos.</p>
+        <button type="button" className={styles.primaryBtn} onClick={retry}>
+          Reintentar
+        </button>
+        <p>
+          <Link href="/catalogo" className={styles.comboLink}>Ir al catálogo</Link>
         </p>
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
-          <button
-            type="button"
-            onClick={() => router.refresh()}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-pink-500 text-white font-semibold text-sm hover:bg-pink-600 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Reintentar
-          </button>
-          <Link
-            href="/catalogo"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-pink-200 dark:border-gray-600 text-pink-600 dark:text-pink-400 font-semibold text-sm hover:bg-pink-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Ir al catálogo
-          </Link>
-        </div>
       </main>
-    </div>
+    </StorefrontShell>
   )
 }

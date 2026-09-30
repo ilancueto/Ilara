@@ -1,6 +1,6 @@
 /**
  * E2E Stage 6.1 — checkout de catálogo y panel de pedidos.
- * Solo Supabase local (E2E_* loopback). Sin mutaciones a producción.
+ * Solo staging cloud explícito. Sin mutaciones a producción.
  */
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
@@ -8,6 +8,7 @@ import {
   requireE2E,
   ensureE2EAdmin,
   getE2EEnv,
+  assertAllowedE2ESupabaseUrl,
   serviceClient,
   seedCatalogProduct,
   cleanupProduct,
@@ -258,7 +259,8 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
     await page.getByTestId('cart-checkout').click()
     await expect(page.getByTestId('checkout-submit')).toBeVisible()
     await expect(page.getByTestId('checkout-success')).toHaveCount(0)
-    await page.getByRole('button', { name: /cerrar pedido/i }).click()
+    await page.getByRole('button', { name: 'Volver a la bolsa', exact: true }).click()
+    await expect(page.getByTestId('checkout-pedido')).toHaveCount(0)
 
     const { email, password } = await ensureE2EAdmin()
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
@@ -293,7 +295,6 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
       page.getByTestId('pedido-detail').getByText('Confirmado', { exact: true })
     ).toBeVisible({ timeout: 15_000 })
 
-    // sanity env local
-    expect(getE2EEnv().url).toMatch(/127\.0\.0\.1|localhost/)
+    expect(() => assertAllowedE2ESupabaseUrl(getE2EEnv().url)).not.toThrow()
   })
 })

@@ -6,6 +6,18 @@ on:
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: ilara-cloud-staging
+  cancel-in-progress: false
+
+env:
+  SUPABASE_TEST_PROJECT_REF: ${{ secrets.SUPABASE_TEST_PROJECT_REF }}
+  SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
+  SUPABASE_TEST_ANON_KEY: ${{ secrets.SUPABASE_TEST_ANON_KEY }}
+  SUPABASE_TEST_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_TEST_SERVICE_ROLE_KEY }}
+  SUPABASE_TEST_DB_URL: ${{ secrets.SUPABASE_TEST_DB_URL }}
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
 jobs:
   lint-test-build:
     runs-on: ubuntu-latest
@@ -26,6 +38,9 @@ jobs:
 
       - name: Unit tests
         run: npm run test
+
+      - name: Isolated SQL transactions and authorization (no Docker)
+        run: npm run test:db-isolated
 
       - name: Typecheck
         run: npx tsc --noEmit --incremental false
@@ -58,33 +73,34 @@ jobs:
         with:
           version: 2.113.0
 
-      - name: Start Supabase (migrations from zero)
-        # La matriz usa Auth + PostgREST; `supabase db start` levanta solo Postgres.
-        run: supabase start
+      - name: Validate cloud staging target
+        run: npm run db:check:test-env
 
-      - name: Migration list (local)
-        run: supabase migration list --local
+      - name: Apply cloud staging migrations and fictitious seed
+        run: npm run db:prepare:test
 
-      - name: Security advisors (fail on warn+)
-        run: supabase db advisors --local --type security --level warn --fail-on warn
+      - name: Deploy staging functions without Docker
+        run: supabase functions deploy passkey-auth shipping-quotes --project-ref "$SUPABASE_TEST_PROJECT_REF" --use-api --no-verify-jwt
 
-      - name: Performance advisors (report only)
-        run: supabase db advisors --local --type performance --level info
+      - name: Security advisors
+        run: npm run db:advisors:security
 
-      - name: Export local API keys (no print secrets)
-        id: keys
+      - name: Performance advisors
+        run: npm run db:advisors
+
+      - name: Export cloud test keys
         run: |
-          eval "$(supabase status -o env)"
-          echo "::add-mask::${ANON_KEY}"
-          echo "::add-mask::${SERVICE_ROLE_KEY}"
           {
-            echo "API_URL=${API_URL}"
-            echo "ANON_KEY=${ANON_KEY}"
-            echo "SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
+            echo "API_URL=$SUPABASE_TEST_URL"
+            echo "ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
           } >> "$GITHUB_ENV"
 
       - name: RLS coverage on public tables
         run: npm run test:db-rls
+
+      - name: Durable notification outbox on cloud staging (rollback)
+        run: node scripts/check-cloud-outbox.mjs
 
       - name: Security matrix anon/service
         run: npm run test:db-security
@@ -105,135 +121,11 @@ jobs:
         run: npm run db:types:check
 
       - name: Integration Stage 0 + Stage 1 + Stage 6.1–6.6 + Stage 8 + Stage 9
-        run: |
-          eval "$(supabase status -o env)"
-          export STAGE0_INTEGRATION=1
-          export STAGE1_INTEGRATION=1
-          export STAGE61_INTEGRATION=1
-          export STAGE62_INTEGRATION=1
-          export STAGE63_INTEGRATION=1
-          export STAGE64_INTEGRATION=1
-          export STAGE65_INTEGRATION=1
-          export STAGE66_INTEGRATION=1
-          export STAGE8_INTEGRATION=1
-          export STAGE9_INTEGRATION=1
-          export STAGE0_SUPABASE_URL="$API_URL"
-          export STAGE0_ANON_KEY="$ANON_KEY"
-          export STAGE0_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE1_SUPABASE_URL="$API_URL"
-          export STAGE1_ANON_KEY="$ANON_KEY"
-          export STAGE1_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE61_SUPABASE_URL="$API_URL"
-          export STAGE61_ANON_KEY="$ANON_KEY"
-          export STAGE61_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE62_SUPABASE_URL="$API_URL"
-          export STAGE62_ANON_KEY="$ANON_KEY"
-          export STAGE62_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE63_SUPABASE_URL="$API_URL"
-          export STAGE63_ANON_KEY="$ANON_KEY"
-          export STAGE63_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE64_SUPABASE_URL="$API_URL"
-          export STAGE64_ANON_KEY="$ANON_KEY"
-          export STAGE64_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE65_SUPABASE_URL="$API_URL"
-          export STAGE65_ANON_KEY="$ANON_KEY"
-          export STAGE65_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE66_SUPABASE_URL="$API_URL"
-          export STAGE66_ANON_KEY="$ANON_KEY"
-          export STAGE66_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          export STAGE9_SUPABASE_URL="$API_URL"
-          export STAGE9_ANON_KEY="$ANON_KEY"
-          export STAGE9_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          # Usuarios de prueba locales (sin PII real)
-          # La suite falla si STAGE1=1 y faltan users; se crean vía Admin API
-          node <<'NODE'
-          const { createClient } = require('@supabase/supabase-js')
-          const url = process.env.STAGE0_SUPABASE_URL
-          const service = createClient(url, process.env.STAGE0_SERVICE_ROLE_KEY, {
-            auth: { persistSession: false, autoRefreshToken: false },
-          })
-          async function ensureUser(email, password) {
-            const list = await service.auth.admin.listUsers({ page: 1, perPage: 200 })
-            if (list.error) throw list.error
-            const existing = (list.data?.users || []).find((u) => u.email === email)
-            if (existing) return existing.id
-            const created = await service.auth.admin.createUser({
-              email,
-              password,
-              email_confirm: true,
-            })
-            if (created.error) throw created.error
-            return created.data.user.id
-          }
-          ;(async () => {
-            const a = await ensureUser('stage0-a@example.com', 'Stage0-Test-Pass-A1!')
-            const b = await ensureUser('stage0-b@example.com', 'Stage0-Test-Pass-B1!')
-            const a61 = await ensureUser('stage61-a@example.com', 'Stage61-Test-Pass-A1!')
-            await ensureUser('stage61-b@example.com', 'Stage61-Test-Pass-B1!')
-            await ensureUser('stage62-a@example.com', 'Stage62-Test-Pass-A1!')
-            await ensureUser('stage62-b@example.com', 'Stage62-Test-Pass-B1!')
-            await ensureUser('stage63-a@example.com', 'Stage63-Test-Pass-A1!')
-            await ensureUser('stage63-b@example.com', 'Stage63-Test-Pass-B1!')
-            await ensureUser('stage64-a@example.com', 'Stage64-Test-Pass-A1!')
-            await ensureUser('stage64-b@example.com', 'Stage64-Test-Pass-B1!')
-            await ensureUser('stage65-a@example.com', 'Stage65-Test-Pass-A1!')
-            await ensureUser('stage65-b@example.com', 'Stage65-Test-Pass-B1!')
-            await ensureUser('stage66-a@example.com', 'Stage66-Test-Pass-A1!')
-            await ensureUser('stage66-b@example.com', 'Stage66-Test-Pass-B1!')
-            const bootstrap = await service.rpc('bootstrap_first_admin', { p_user_id: a })
-            if (bootstrap.error) throw bootstrap.error
-            const role61 = await service.from('user_roles').upsert(
-              { user_id: a61, role: 'admin', updated_by: a },
-              { onConflict: 'user_id' }
-            )
-            if (role61.error) throw role61.error
-            console.log('users ready')
-          })().catch((e) => {
-            console.error('user bootstrap failed', e?.message || e)
-            process.exit(1)
-          })
-          NODE
-          export STAGE0_USER_A_EMAIL=stage0-a@example.com
-          export STAGE0_USER_A_PASSWORD='Stage0-Test-Pass-A1!'
-          export STAGE0_USER_B_EMAIL=stage0-b@example.com
-          export STAGE0_USER_B_PASSWORD='Stage0-Test-Pass-B1!'
-          export STAGE1_USER_A_EMAIL="$STAGE0_USER_A_EMAIL"
-          export STAGE1_USER_A_PASSWORD="$STAGE0_USER_A_PASSWORD"
-          export STAGE1_USER_B_EMAIL="$STAGE0_USER_B_EMAIL"
-          export STAGE1_USER_B_PASSWORD="$STAGE0_USER_B_PASSWORD"
-          export STAGE61_USER_A_EMAIL=stage61-a@example.com
-          export STAGE61_USER_A_PASSWORD='Stage61-Test-Pass-A1!'
-          export STAGE61_USER_B_EMAIL=stage61-b@example.com
-          export STAGE61_USER_B_PASSWORD='Stage61-Test-Pass-B1!'
-          export STAGE62_USER_A_EMAIL=stage62-a@example.com
-          export STAGE62_USER_A_PASSWORD='Stage62-Test-Pass-A1!'
-          export STAGE62_USER_B_EMAIL=stage62-b@example.com
-          export STAGE62_USER_B_PASSWORD='Stage62-Test-Pass-B1!'
-          export STAGE63_USER_A_EMAIL=stage63-a@example.com
-          export STAGE63_USER_A_PASSWORD='Stage63-Test-Pass-A1!'
-          export STAGE63_USER_B_EMAIL=stage63-b@example.com
-          export STAGE63_USER_B_PASSWORD='Stage63-Test-Pass-B1!'
-          export STAGE64_USER_A_EMAIL=stage64-a@example.com
-          export STAGE64_USER_A_PASSWORD='Stage64-Test-Pass-A1!'
-          export STAGE64_USER_B_EMAIL=stage64-b@example.com
-          export STAGE64_USER_B_PASSWORD='Stage64-Test-Pass-B1!'
-          export STAGE65_USER_A_EMAIL=stage65-a@example.com
-          export STAGE65_USER_A_PASSWORD='Stage65-Test-Pass-A1!'
-          export STAGE65_USER_B_EMAIL=stage65-b@example.com
-          export STAGE65_USER_B_PASSWORD='Stage65-Test-Pass-B1!'
-          export STAGE66_USER_A_EMAIL=stage66-a@example.com
-          export STAGE66_USER_A_PASSWORD='Stage66-Test-Pass-A1!'
-          export STAGE66_USER_B_EMAIL=stage66-b@example.com
-          export STAGE66_USER_B_PASSWORD='Stage66-Test-Pass-B1!'
-          export STAGE9_USER_A_EMAIL=stage61-a@example.com
-          export STAGE9_USER_A_PASSWORD='Stage61-Test-Pass-A1!'
-          export STAGE9_USER_B_EMAIL=stage61-b@example.com
-          export STAGE9_USER_B_PASSWORD='Stage61-Test-Pass-B1!'
-          npm run test:integration
+        run: node scripts/run-cloud-tests.mjs integration
 
   e2e:
     runs-on: ubuntu-latest
-    needs: [lint-test-build]
+    needs: [lint-test-build, db-security]
     steps:
       - uses: actions/checkout@v4
 
@@ -251,31 +143,28 @@ jobs:
         with:
           version: 2.113.0
 
-      - name: Start Supabase local (E2E mutante aislado)
-        run: supabase start
+      - name: Validate cloud staging target
+        run: npm run db:check:test-env
 
-      - name: Export local keys for E2E (masked)
+      - name: Export cloud E2E keys
         run: |
-          eval "$(supabase status -o env)"
-          echo "::add-mask::${ANON_KEY}"
-          echo "::add-mask::${SERVICE_ROLE_KEY}"
           {
-            echo "API_URL=${API_URL}"
-            echo "ANON_KEY=${ANON_KEY}"
-            echo "SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
-            echo "NEXT_PUBLIC_SUPABASE_URL=${API_URL}"
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}"
-            echo "E2E_SUPABASE_URL=${API_URL}"
-            echo "E2E_ANON_KEY=${ANON_KEY}"
-            echo "E2E_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
-            echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
+            echo "API_URL=$SUPABASE_TEST_URL"
+            echo "ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_TEST_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "E2E_SUPABASE_URL=$SUPABASE_TEST_URL"
+            echo "E2E_ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "E2E_SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
             echo "E2E_USER_EMAIL=e2e-admin@example.com"
             echo "E2E_USER_PASSWORD=E2E-Test-Pass-A1!"
             echo "ORDER_ACCESS_SECRET=e2e-order-access-secret-32"
             echo "CRON_SECRET=e2e-cron-secret-32chars"
           } >> "$GITHUB_ENV"
 
-      - name: Bootstrap E2E admin (local only)
+      - name: Bootstrap E2E admin (cloud staging only)
         run: |
           node <<'NODE'
           const fs = require('node:fs')
@@ -383,9 +272,9 @@ jobs:
           ORDER_ACCESS_SECRET: ${{ env.ORDER_ACCESS_SECRET }}
           CRON_SECRET: ${{ env.CRON_SECRET }}
 
-      - name: Run E2E (local Supabase only — webServer arranca next start)
+      - name: Run E2E (cloud staging only — webServer arranca next start)
         run: |
-          # Fail-closed: sin keys locales no se corre (no skip silencioso).
+          # Fail-closed: sin keys de staging no se corre (no skip silencioso).
           test -n "$E2E_SUPABASE_URL"
           test -n "$E2E_ANON_KEY"
           test -n "$E2E_SERVICE_ROLE_KEY"
@@ -395,7 +284,7 @@ jobs:
           CI: 'true'
           PLAYWRIGHT_TEST: '1'
           PLAYWRIGHT_REUSE: '0'
-          # CSP de next start permite loopback solo si NEXT_PUBLIC apunta a local
+          # NEXT_PUBLIC y E2E apuntan al mismo staging en la nube
           NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           E2E_SUPABASE_URL: ${{ env.E2E_SUPABASE_URL }}
