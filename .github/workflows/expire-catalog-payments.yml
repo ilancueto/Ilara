@@ -21,17 +21,21 @@ jobs:
           ILARA_CRON_SECRET: ${{ secrets.ILARA_CRON_SECRET }}
         run: |
           test -n "$ILARA_CRON_SECRET"
-          curl --fail-with-body --silent --show-error --max-time 45 \
+          status=$(curl --fail-with-body --silent --show-error --max-time 45 \
             --request GET \
             --header "Authorization: Bearer $ILARA_CRON_SECRET" \
-            https://ilara.com.ar/api/internal/expire-payments
+            https://ilara.com.ar/api/internal/expire-payments --output "$RUNNER_TEMP/ilara-expire.json" --write-out '%{http_code}')
+          test "$status" = '200'
+          node -e "const fs=require('fs');if(JSON.parse(fs.readFileSync(process.argv[1],'utf8')).ok!==true)process.exit(1)" "$RUNNER_TEMP/ilara-expire.json"
 
       - name: Drain durable notification outbox
         env:
           ILARA_CRON_SECRET: ${{ secrets.ILARA_CRON_SECRET }}
         run: |
           test -n "$ILARA_CRON_SECRET"
-          curl --fail-with-body --silent --show-error --max-time 55 \
+          status=$(curl --fail-with-body --silent --show-error --max-time 55 \
             --request POST \
             --header "Authorization: Bearer $ILARA_CRON_SECRET" \
-            https://ilara.com.ar/api/internal/order-notifications
+            https://ilara.com.ar/api/internal/order-notifications --output "$RUNNER_TEMP/ilara-worker.json" --write-out '%{http_code}')
+          test "$status" = '200'
+          node -e "const fs=require('fs');if(JSON.parse(fs.readFileSync(process.argv[1],'utf8')).ok!==true)process.exit(1)" "$RUNNER_TEMP/ilara-worker.json"

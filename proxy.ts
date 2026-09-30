@@ -11,6 +11,9 @@ const PUBLIC_EXACT_ROUTES = new Set([
     '/sitemap-xml',
     '/robots.txt',
     '/api/internal/expire-payments',
+    // These exact endpoints authenticate the cron secret in their handlers.
+    '/api/internal/operations-health',
+    '/api/internal/order-notifications',
 ]);
 
 /** Rutas públicas por prefijo: el catálogo público incluye subrutas como /catalogo/p/[id]. */
