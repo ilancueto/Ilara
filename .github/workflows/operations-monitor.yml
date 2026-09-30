@@ -25,10 +25,13 @@ jobs:
           ILARA_CRON_SECRET: ${{ secrets.ILARA_CRON_SECRET }}
         run: |
           test -n "$ILARA_CRON_SECRET"
-          curl --fail --silent --show-error --max-time 30 https://ilara.com.ar/catalogo --output /dev/null
-          curl --fail --silent --show-error --max-time 30 \
+          status=$(curl --fail --silent --show-error --max-time 30 https://ilara.com.ar/catalogo --output /dev/null --write-out '%{http_code}')
+          test "$status" = '200'
+          status=$(curl --fail --silent --show-error --max-time 30 \
             --header "Authorization: Bearer $ILARA_CRON_SECRET" \
-            https://ilara.com.ar/api/internal/operations-health --output /dev/null
+            https://ilara.com.ar/api/internal/operations-health --output "$RUNNER_TEMP/ilara-health.json" --write-out '%{http_code}')
+          test "$status" = '200'
+          node -e "const fs=require('fs');if(JSON.parse(fs.readFileSync(process.argv[1],'utf8')).ok!==true)process.exit(1)" "$RUNNER_TEMP/ilara-health.json"
 
       - name: Open or resolve an operational incident
         uses: actions/github-script@v7

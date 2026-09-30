@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test'
 
+test('operational health rejects missing cron credentials with 401', async ({ request }) => {
+  expect((await request.get('/api/internal/operations-health', { maxRedirects: 0 })).status()).toBe(401)
+})
+
+test('notification worker rejects missing cron credentials with 401', async ({ request }) => {
+  expect((await request.post('/api/internal/order-notifications', { maxRedirects: 0 })).status()).toBe(401)
+})
+
 test.describe('Auth y redirecciones', () => {
   test('raíz sin sesión redirige al catálogo', async ({ page }) => {
     await page.goto('/', { waitUntil: 'commit', timeout: 15000 })
