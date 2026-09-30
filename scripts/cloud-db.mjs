@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { cloudTestEnv } from './lib/cloud-test-env.mjs'
 
 try {
@@ -19,8 +20,19 @@ try {
     commands[mode].unshift(binary)
     binary = process.execPath
   }
-  const result = spawnSync(binary, commands[mode], { encoding: 'utf8', shell: false })
+  const result = spawnSync(binary, commands[mode], { encoding: 'utf8', shell: false,
+    env: { ...process.env, PGSSLROOTCERT: fileURLToPath(new URL('./certs/supabase-root.crt', import.meta.url)) },
+  })
   // CLI errors may contain connection strings. Report only the operation and exit status.
-  if (result.status !== 0) throw new Error(`Cloud ${mode} failed; verify staging access and connection`)
+  if (result.status !== 0) {
+    let detail = result.stderr || result.error?.code || ''
+    const password = decodeURIComponent(new URL(dbUrl).password)
+    for (const secret of [dbUrl, password, ...Object.entries(process.env)
+      .filter(([name]) => /TOKEN|SECRET|KEY|DB_URL/.test(name)).map(([, value]) => value)]) {
+      if (secret?.length > 7) detail = detail.replaceAll(secret, '[redacted]')
+    }
+    detail = detail.replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted-db-url]')
+    throw new Error(`Cloud ${mode} failed (exit ${result.status}): ${detail.slice(0, 1500).trim()}`)
+  }
   console.log(`PASS: cloud staging ${mode}`)
 } catch (error) { console.error(error.message); process.exitCode = 1 }
