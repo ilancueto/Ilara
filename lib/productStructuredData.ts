@@ -1,9 +1,6 @@
 import { getProductImages } from '@/lib/domain/images'
 import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 
-/** Marca en schema cuando el producto no tiene marca en DB (identificador para Google). */
-export const SCHEMA_FALLBACK_BRAND = 'Ilara Beauty'
-
 const MERCHANT_NAME = 'Ilara Beauty'
 
 function absoluteFromSite(pathOrUrl: string, siteOrigin: string): string {
@@ -14,57 +11,10 @@ function absoluteFromSite(pathOrUrl: string, siteOrigin: string): string {
 }
 
 /**
- * Política de devoluciones (Offer → hasMerchantReturnPolicy).
- * Debe coincidir con el texto visible en la ficha de producto.
+ * Offer.price es el importe público principal (`catalogDisplayUnitPrice`):
+ * lista con descuento de producto, no el de transferencia ni un cupón.
+ * La transferencia es condicional y se muestra aparte en la ficha.
  */
-function merchantReturnPolicyForOffer(): object {
-    return {
-        '@type': 'MerchantReturnPolicy',
-        applicableCountry: 'AR',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 3,
-        returnMethod: [
-            'https://schema.org/ReturnInStore',
-            'https://schema.org/ReturnByMail',
-        ],
-        returnFees: 'https://schema.org/FreeReturn',
-    }
-}
-
-/**
- * Envío (Offer → shippingDetails): Argentina, sin cargo; alineado al texto visible de la ficha.
- * Plazos orientativos; coordinación por WhatsApp.
- */
-function offerShippingDetailsArgentina(): object {
-    return {
-        '@type': 'OfferShippingDetails',
-        shippingRate: {
-            '@type': 'MonetaryAmount',
-            value: 0,
-            currency: 'ARS',
-        },
-        shippingDestination: {
-            '@type': 'DefinedRegion',
-            addressCountry: 'AR',
-        },
-        deliveryTime: {
-            '@type': 'ShippingDeliveryTime',
-            handlingTime: {
-                '@type': 'QuantitativeValue',
-                minValue: 0,
-                maxValue: 2,
-                unitCode: 'DAY',
-            },
-            transitTime: {
-                '@type': 'QuantitativeValue',
-                minValue: 1,
-                maxValue: 7,
-                unitCode: 'DAY',
-            },
-        },
-    }
-}
-
 export function buildProductJsonLd(
     p: PublicCatalogProduct,
     canonical: string,
@@ -72,26 +22,22 @@ export function buildProductJsonLd(
     precioFinal: number
 ): Record<string, unknown> {
     const images = getProductImages(p).map(src => absoluteFromSite(src, siteOrigin)).filter(Boolean)
-    // Sin min_stock en DTO público: solo InStock / OutOfStock.
     const availability =
         p.stock <= 0
             ? 'https://schema.org/OutOfStock'
             : 'https://schema.org/InStock'
 
-    const brandName = p.brand?.trim() || SCHEMA_FALLBACK_BRAND
-    // Sin notes internas en superficie pública.
-    const description = `${p.name} — ${MERCHANT_NAME}, Neuquén.`
+    const brandName = p.brand?.trim()
+    const description = p.brand?.trim()
+        ? `${p.name} · ${p.brand.trim()}`
+        : p.name
 
-    return {
+    const product: Record<string, unknown> = {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: p.name,
         description,
         image: images.length ? images : undefined,
-        brand: {
-            '@type': 'Brand',
-            name: brandName,
-        },
         sku: String(p.id),
         offers: {
             '@type': 'Offer',
@@ -104,8 +50,38 @@ export function buildProductJsonLd(
                 '@type': 'Organization',
                 name: MERCHANT_NAME,
             },
-            hasMerchantReturnPolicy: merchantReturnPolicyForOffer(),
-            shippingDetails: offerShippingDetailsArgentina(),
         },
+    }
+
+    if (brandName) {
+        product.brand = { '@type': 'Brand', name: brandName }
+    }
+
+    return product
+}
+
+export function buildProductBreadcrumbJsonLd(
+    canonical: string,
+    siteOrigin: string,
+    productName: string
+): Record<string, unknown> {
+    const origin = siteOrigin.replace(/\/$/, '')
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Catálogo',
+                item: `${origin}/catalogo`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: productName,
+                item: canonical,
+            },
+        ],
     }
 }

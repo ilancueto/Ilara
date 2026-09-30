@@ -6,6 +6,18 @@ on:
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: ilara-cloud-staging
+  cancel-in-progress: false
+
+env:
+  SUPABASE_TEST_PROJECT_REF: ${{ secrets.SUPABASE_TEST_PROJECT_REF }}
+  SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
+  SUPABASE_TEST_ANON_KEY: ${{ secrets.SUPABASE_TEST_ANON_KEY }}
+  SUPABASE_TEST_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_TEST_SERVICE_ROLE_KEY }}
+  SUPABASE_TEST_DB_URL: ${{ secrets.SUPABASE_TEST_DB_URL }}
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
 jobs:
   lint-test-build:
     runs-on: ubuntu-latest
@@ -26,6 +38,9 @@ jobs:
 
       - name: Unit tests
         run: npm run test
+
+      - name: Isolated SQL transactions and authorization (no Docker)
+        run: npm run test:db-isolated
 
       - name: Typecheck
         run: npx tsc --noEmit --incremental false
@@ -58,29 +73,27 @@ jobs:
         with:
           version: 2.113.0
 
-      - name: Start Supabase (migrations from zero)
-        # La matriz usa Auth + PostgREST; `supabase db start` levanta solo Postgres.
-        run: supabase start
+      - name: Validate cloud staging target
+        run: npm run db:check:test-env
 
-      - name: Migration list (local)
-        run: supabase migration list --local
+      - name: Apply cloud staging migrations and fictitious seed
+        run: npm run db:prepare:test
 
-      - name: Security advisors (fail on warn+)
-        run: supabase db advisors --local --type security --level warn --fail-on warn
+      - name: Deploy staging functions without Docker
+        run: supabase functions deploy passkey-auth shipping-quotes --project-ref "$SUPABASE_TEST_PROJECT_REF" --use-api --no-verify-jwt
 
-      - name: Performance advisors (report only)
-        run: supabase db advisors --local --type performance --level info
+      - name: Security advisors
+        run: npm run db:advisors:security
 
-      - name: Export local API keys (no print secrets)
-        id: keys
+      - name: Performance advisors
+        run: npm run db:advisors
+
+      - name: Export cloud test keys
         run: |
-          eval "$(supabase status -o env)"
-          echo "::add-mask::${ANON_KEY}"
-          echo "::add-mask::${SERVICE_ROLE_KEY}"
           {
-            echo "API_URL=${API_URL}"
-            echo "ANON_KEY=${ANON_KEY}"
-            echo "SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
+            echo "API_URL=$SUPABASE_TEST_URL"
+            echo "ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
           } >> "$GITHUB_ENV"
 
       - name: RLS coverage on public tables
@@ -106,7 +119,10 @@ jobs:
 
       - name: Integration Stage 0 + Stage 1 + Stage 6.1–6.6 + Stage 8 + Stage 9
         run: |
-          eval "$(supabase status -o env)"
+          export NEXT_PUBLIC_SUPABASE_URL="$API_URL"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY"
+          export SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          export SECURE_PUBLIC_FLOWS_INTEGRATION=1
           export STAGE0_INTEGRATION=1
           export STAGE1_INTEGRATION=1
           export STAGE61_INTEGRATION=1
@@ -144,7 +160,7 @@ jobs:
           export STAGE9_SUPABASE_URL="$API_URL"
           export STAGE9_ANON_KEY="$ANON_KEY"
           export STAGE9_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
-          # Usuarios de prueba locales (sin PII real)
+          # Usuarios ficticios de staging (sin PII real)
           # La suite falla si STAGE1=1 y faltan users; se crean vía Admin API
           node <<'NODE'
           const { createClient } = require('@supabase/supabase-js')
@@ -233,7 +249,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    needs: [lint-test-build]
+    needs: [lint-test-build, db-security]
     steps:
       - uses: actions/checkout@v4
 
@@ -251,31 +267,28 @@ jobs:
         with:
           version: 2.113.0
 
-      - name: Start Supabase local (E2E mutante aislado)
-        run: supabase start
+      - name: Validate cloud staging target
+        run: npm run db:check:test-env
 
-      - name: Export local keys for E2E (masked)
+      - name: Export cloud E2E keys
         run: |
-          eval "$(supabase status -o env)"
-          echo "::add-mask::${ANON_KEY}"
-          echo "::add-mask::${SERVICE_ROLE_KEY}"
           {
-            echo "API_URL=${API_URL}"
-            echo "ANON_KEY=${ANON_KEY}"
-            echo "SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
-            echo "NEXT_PUBLIC_SUPABASE_URL=${API_URL}"
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}"
-            echo "E2E_SUPABASE_URL=${API_URL}"
-            echo "E2E_ANON_KEY=${ANON_KEY}"
-            echo "E2E_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
-            echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
+            echo "API_URL=$SUPABASE_TEST_URL"
+            echo "ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_TEST_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "E2E_SUPABASE_URL=$SUPABASE_TEST_URL"
+            echo "E2E_ANON_KEY=$SUPABASE_TEST_ANON_KEY"
+            echo "E2E_SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_TEST_SERVICE_ROLE_KEY"
             echo "E2E_USER_EMAIL=e2e-admin@example.com"
             echo "E2E_USER_PASSWORD=E2E-Test-Pass-A1!"
             echo "ORDER_ACCESS_SECRET=e2e-order-access-secret-32"
             echo "CRON_SECRET=e2e-cron-secret-32chars"
           } >> "$GITHUB_ENV"
 
-      - name: Bootstrap E2E admin (local only)
+      - name: Bootstrap E2E admin (cloud staging only)
         run: |
           node <<'NODE'
           const fs = require('node:fs')
@@ -383,9 +396,9 @@ jobs:
           ORDER_ACCESS_SECRET: ${{ env.ORDER_ACCESS_SECRET }}
           CRON_SECRET: ${{ env.CRON_SECRET }}
 
-      - name: Run E2E (local Supabase only — webServer arranca next start)
+      - name: Run E2E (cloud staging only — webServer arranca next start)
         run: |
-          # Fail-closed: sin keys locales no se corre (no skip silencioso).
+          # Fail-closed: sin keys de staging no se corre (no skip silencioso).
           test -n "$E2E_SUPABASE_URL"
           test -n "$E2E_ANON_KEY"
           test -n "$E2E_SERVICE_ROLE_KEY"
@@ -395,7 +408,7 @@ jobs:
           CI: 'true'
           PLAYWRIGHT_TEST: '1'
           PLAYWRIGHT_REUSE: '0'
-          # CSP de next start permite loopback solo si NEXT_PUBLIC apunta a local
+          # NEXT_PUBLIC y E2E apuntan al mismo staging en la nube
           NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           E2E_SUPABASE_URL: ${{ env.E2E_SUPABASE_URL }}

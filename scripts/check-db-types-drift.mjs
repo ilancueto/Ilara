@@ -1,8 +1,8 @@
 /**
- * Compara types/database.generated.ts con tipos regenerados desde Supabase local.
+ * Compara types/database.generated.ts con tipos regenerados desde staging en la nube.
  * Exit 1 si hay drift. No imprime secretos.
  */
-import { spawnSync } from 'node:child_process'
+import { generateCloudTypes } from './lib/cloud-types.mjs'
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -15,18 +15,10 @@ if (!existsSync(committed)) {
   process.exit(1)
 }
 
-const gen = spawnSync(
-  'npx supabase gen types typescript --local --schema public',
-  { cwd: root, encoding: 'utf8', shell: true }
-)
-
-if (gen.status !== 0) {
-  console.error('FAIL: supabase gen types --local')
-  console.error(gen.stderr || gen.stdout || 'sin detalle')
-  process.exit(1)
-}
-
-writeFileSync(tmp, gen.stdout, 'utf8')
+let types
+try { types = generateCloudTypes(root) }
+catch (error) { console.error(error.message); process.exit(1) }
+writeFileSync(tmp, types, 'utf8')
 
 function normalize(s) {
   return s.replace(/\r\n/g, '\n').trim() + '\n'
@@ -46,4 +38,4 @@ if (a !== b) {
   process.exit(1)
 }
 
-console.log('OK: types/database.generated.ts coincide con el esquema local')
+console.log('OK: types/database.generated.ts coincide con el esquema de staging en la nube')

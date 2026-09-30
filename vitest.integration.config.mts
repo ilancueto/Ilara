@@ -9,7 +9,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ['./vitest.setup.ts', './tests/integration/cloud-target.setup.ts'],
     include: ['tests/integration/**/*.test.ts'],
     exclude: ['node_modules', '.next'],
     testTimeout: 60000,
@@ -18,6 +18,6 @@ export default defineConfig({
     maxWorkers: 1,
   },
   resolve: {
-    alias: { '@': path.resolve(__dirname, '.') },
+    alias: { '@': path.resolve(import.meta.dirname, '.') },
   },
 })

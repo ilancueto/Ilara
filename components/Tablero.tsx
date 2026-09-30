@@ -62,6 +62,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const [ventasChartEsMensual, setVentasChartEsMensual] = useState(false)
     const [periodoIngresos, setPeriodoIngresos] = useState<PeriodoIngresos>('total')
     const [cargando, setCargando] = useState(true)
+    const [dashboardError, setDashboardError] = useState<string | null>(null)
     const [mostrarAlertas, setMostrarModalAlertas] = useState(false)
     const [pedidosAbiertos, setPedidosAbiertos] = useState(0)
     const [catalogRecientes, setCatalogRecientes] = useState<Array<{
@@ -100,6 +101,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
         })
         if (kpiErr) {
             console.warn('[tablero] dashboard_finance_kpis', kpiErr.message)
+            setDashboardError('No se pudieron actualizar los totales del negocio.')
         }
         if (!kpiErr && kpiRaw && typeof kpiRaw === 'object') {
             const o = kpiRaw as Record<string, unknown>
@@ -133,8 +135,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
             setCatalogRecientes(collections.items)
         } catch (error) {
             console.warn('[tablero] catalog collections', error)
-            setKpi((prev) => ({ ...prev, catalog_inflow: 0 }))
-            setCatalogRecientes([])
+            setDashboardError('No se pudieron actualizar los cobros del catálogo.')
         }
 
         if (periodoIngresos === 'total') {
@@ -142,7 +143,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
             const { data: monthlyRaw, error: monthlyErr } = await supabase.rpc('dashboard_sales_monthly_total_span')
             if (monthlyErr) {
                 console.warn('[tablero] dashboard_sales_monthly_total_span', monthlyErr.message)
-                setVentasPorDia([])
+                setDashboardError('No se pudo actualizar el gráfico de ventas.')
             } else {
                 const rows = (monthlyRaw ?? []) as Array<{
                     month_start: string
@@ -165,7 +166,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
             })
             if (dailyErr) {
                 console.warn('[tablero] dashboard_sales_daily', dailyErr.message)
-                setVentasPorDia([])
+                setDashboardError('No se pudo actualizar el gráfico de ventas.')
             } else {
                 const rows = (dailyRaw ?? []) as Array<{
                     sale_day: string
@@ -193,7 +194,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
             .limit(5)
         if (corte) vq = vq.gte('created_at', corte.toISOString())
         const { data: vrec, error: vErr } = await vq
-        if (vErr) setVentasRecientes([])
+        if (vErr) setDashboardError('No se pudieron actualizar las ventas recientes.')
         else setVentasRecientes((vrec ?? []) as unknown as Venta[])
     }, [periodoIngresos])
 
@@ -205,18 +206,21 @@ export default function Tablero({ onNavigate }: TableroProps) {
             )
             .order('created_at', { ascending: false })
         if (!error && data) setProductos(data as unknown as Producto[])
+        else setDashboardError('No se pudo actualizar el inventario.')
     }
 
     const cargarDatos = async () => {
         setCargando(true)
-        await Promise.all([
+        setDashboardError(null)
+        try { await Promise.all([
             obtenerProductos(),
             refrescarMetricas(),
             fetchPanelBadges()
                 .then((b) => setPedidosAbiertos(b.ordersPendingOrConfirmed))
-                .catch(() => setPedidosAbiertos(0)),
-        ])
-        setCargando(false)
+                .catch(() => setDashboardError('No se pudieron actualizar los pedidos pendientes.')),
+        ]) } catch {
+            setDashboardError('No se pudo actualizar el resumen. Revisá tu conexión.')
+        } finally { setCargando(false) }
     }
 
     useEffect(() => {
@@ -230,7 +234,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
             omitFirstPeriodoEffect.current = false
             return
         }
-        void refrescarMetricas()
+        void refrescarMetricas().catch(() => setDashboardError('No se pudo actualizar el período seleccionado.'))
     }, [periodoIngresos, refrescarMetricas])
 
     // Calcular estadísticas (crítico = debajo de min_stock O stock ≤ umbral si está en Inventario)
@@ -316,6 +320,14 @@ export default function Tablero({ onNavigate }: TableroProps) {
     const hora = new Date().getHours()
     const saludoHora =
         hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches'
+
+    if (dashboardError) return (
+        <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+            <h2 className="text-xl font-bold">Resumen sin actualizar</h2>
+            <p className="mt-2">{dashboardError} Los importes no están disponibles hasta completar la actualización.</p>
+            <button type="button" onClick={() => void cargarDatos()} className="mt-4 rounded-xl border px-4 py-2 font-semibold">Reintentar</button>
+        </div>
+    )
 
     return (
         <div className="flex flex-col gap-6 sm:gap-8 pb-6 text-gray-800 dark:text-gray-100">

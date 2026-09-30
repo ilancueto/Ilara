@@ -1,8 +1,8 @@
 /**
- * Regenera types/database.generated.ts desde Supabase local.
+ * Regenera types/database.generated.ts desde Supabase en la nube (staging explícito).
  * Uso: node scripts/gen-db-types.mjs  |  npm run db:types
  */
-import { spawnSync } from 'node:child_process'
+import { generateCloudTypes } from './lib/cloud-types.mjs'
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,15 +12,8 @@ const out = resolve(root, 'types/database.generated.ts')
 
 mkdirSync(resolve(root, 'types'), { recursive: true })
 
-const gen = spawnSync(
-  'npx supabase gen types typescript --local --schema public',
-  { cwd: root, encoding: 'utf8', shell: true }
-)
-
-if (gen.status !== 0) {
-  console.error(gen.stderr || gen.stdout || 'supabase gen types failed')
-  process.exit(1)
-}
-
-writeFileSync(out, gen.stdout.replace(/\r\n/g, '\n'), 'utf8')
-console.log(`OK: wrote ${out} (${gen.stdout.length} bytes)`)
+try {
+  const types = generateCloudTypes(root)
+  writeFileSync(out, types.replace(/\r\n/g, '\n'), 'utf8')
+  console.log(`OK: wrote cloud staging types (${types.length} bytes)`)
+} catch (error) { console.error(error.message); process.exitCode = 1 }

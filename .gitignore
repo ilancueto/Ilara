@@ -35,6 +35,7 @@ yarn-error.log*
 # env files — plantilla pública versionada; secretos reales nunca
 .env*
 !.env.example
+!.env.test.example
 
 # credenciales / datos sensibles (no subir al repo)
 passsupa.txt
@@ -63,3 +64,4 @@ supabase/.branches/
 # Local ide & temporary files
 .cursor/
 tmp/
+.seo-fault-local

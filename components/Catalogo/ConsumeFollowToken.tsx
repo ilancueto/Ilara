@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { claimFollowSessionAction, claimNotificationSessionAction } from '@/app/actions/payments'
 import { buildOrderFollowCleanPath } from '@/lib/domain/orders/followLink'
@@ -33,19 +34,20 @@ export function ConsumeFollowToken({ orderNumber, token, mode = 'follow' }: Prop
 
   if (error) {
     return (
-      <main className="mx-auto max-w-xl px-4 py-10 text-gray-900 dark:text-zinc-50">
-        <p className="text-sm uppercase tracking-widest text-pink-600">Tu pedido</p>
-        <h1 className="mt-2 text-3xl font-extrabold">{orderNumber}</h1>
-        <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+      <main className="storefront mx-auto max-w-xl px-4 py-10">
+        <p>Tu pedido</p>
+        <h1 className="mt-2">{orderNumber}</h1>
+        <p className="mt-4 rounded-xl px-4 py-3 text-sm" role="alert" style={{ background: '#F6E6E8', color: '#A51D27' }}>
           {error}
         </p>
+        <p className="mt-4"><Link href="/pedido">Recuperar pedido</Link> · <Link href="/catalogo">Volver al catálogo</Link></p>
       </main>
     )
   }
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-10 text-gray-900 dark:text-zinc-50">
-      <p className="text-sm text-gray-500">Abriendo tu pedido…</p>
+    <main className="storefront mx-auto max-w-xl px-4 py-10">
+      <p>Abriendo tu pedido…</p>
     </main>
   )
 }

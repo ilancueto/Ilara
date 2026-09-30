@@ -25,19 +25,14 @@ test.describe('Accesibilidad (axe + teclado)', () => {
     expect(critical, JSON.stringify(critical, null, 2)).toEqual([])
   })
 
-  test('catálogo: la galería o su placeholder son accesibles', async ({ page }) => {
+  test('catálogo: las fichas de producto son accesibles con teclado', async ({ page }) => {
     await page.goto('/catalogo', { waitUntil: 'domcontentloaded' })
-    const preview = page.getByRole('button', { name: /Ampliar imágenes de/ }).first()
-    if (await preview.count() === 0) {
-      await expect(page.getByRole('img', { name: /sin imagen/ }).first()).toBeVisible()
-      return
-    }
-    await preview.focus()
-    await expect(preview).toBeFocused()
-    await preview.press('Enter')
-    await expect(page.getByRole('dialog')).toBeVisible()
-    await page.getByRole('button', { name: 'Cerrar' }).click()
-    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.locator('#catalogo-titulo-principal')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('searchbox', { name: /buscar productos/i })).toBeVisible()
+    const productLink = page.getByRole('link', { name: /^Ver / }).first()
+    if (await productLink.count() === 0) return
+    await productLink.focus()
+    await expect(productLink).toBeFocused()
   })
 
   test('login: recorrido teclado enfoca email y envía con Enter', async ({ page }) => {

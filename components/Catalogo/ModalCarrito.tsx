@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { ArrowUpRight, MessageCircle, Minus, Plus, ShoppingBag, Sparkles, X } from 'lucide-react'
+import { Minus, Plus, X } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { getProductImages } from '@/lib/supabase'
 import type { CatalogCartItem } from '@/hooks/useCarrito'
 import type { PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { formatPesoAR } from '@/lib/formatPesoAR'
-import styles from '@/components/Catalogo/ModalCarrito.module.css'
+import { OrderSummary } from '@/components/storefront/OrderSummary'
+import { catalogDisplayComboPrice } from '@/lib/domain/payments/catalogDisplayPrice'
+import styles from '@/components/storefront/storefront.module.css'
 
 interface ModalCarritoProps {
     open: boolean
@@ -28,8 +30,8 @@ interface ModalCarritoProps {
     descuentoCupon: number
     total: number
     onWhatsApp: () => void
-    /** Stage 6.1 — abre checkout y persiste pedido antes de WhatsApp. */
     onCheckout?: () => void
+    verifying?: boolean
     onSolicitarVaciar: () => void
 }
 
@@ -52,6 +54,7 @@ export function ModalCarrito({
     total,
     onWhatsApp,
     onCheckout,
+    verifying = false,
     onSolicitarVaciar,
 }: ModalCarritoProps) {
     const panelRef = useRef<HTMLElement>(null)
@@ -70,9 +73,17 @@ export function ModalCarrito({
     if (!open) return null
 
     const cantidadTotal = carrito.reduce((sum, item) => sum + item.cantidad, 0)
+    const summaryItems = carrito.map(item => {
+        const esProducto = !!item.producto
+        return {
+            name: esProducto ? item.producto!.name : item.combo!.name,
+            quantity: item.cantidad,
+            unitPrice: esProducto ? getPrecioConDescuento(item.producto!) : catalogDisplayComboPrice(item.combo!),
+        }
+    })
 
     return (
-        <div className={styles.overlay}>
+        <div className={`storefront ${styles.overlay}`}>
             <button className={styles.backdrop} type="button" onClick={onClose} aria-label="Cerrar bolsa" />
 
             <aside
@@ -82,20 +93,20 @@ export function ModalCarrito({
                 aria-labelledby="modal-carrito-titulo"
                 className={styles.drawer}
             >
-                <header className={styles.head}>
+                <header className={styles.drawerHead}>
                     <div>
-                        <p className={styles.eyebrow}>Tu selección</p>
-                        <h2 id="modal-carrito-titulo" className={styles.title}>Bolsa</h2>
-                        <p className={styles.count} aria-live="polite">
+                        <p className={styles.muted}>Seguir mirando</p>
+                        <h2 id="modal-carrito-titulo">Tu bolsa</h2>
+                        <p className={styles.muted} aria-live="polite">
                             {cantidadTotal} {cantidadTotal === 1 ? 'producto' : 'productos'}
                         </p>
                     </div>
-                    <div className={styles.headActions}>
-                        <button className={styles.close} type="button" onClick={onClose} aria-label="Cerrar bolsa">
+                    <div>
+                        <button className={styles.iconBtn} type="button" onClick={onClose} aria-label="Cerrar bolsa">
                             <X size={18} />
                         </button>
                         {carrito.length > 0 && (
-                            <button className={styles.clear} type="button" onClick={onSolicitarVaciar}>
+                            <button className={styles.comboLink} type="button" onClick={onSolicitarVaciar}>
                                 Vaciar
                             </button>
                         )}
@@ -104,16 +115,13 @@ export function ModalCarrito({
 
                 {carrito.length > 0 ? (
                     <>
-                        <div className={styles.items}>
+                        <div className={styles.drawerBody}>
                             {carrito.map(item => {
                                 const esProducto = !!item.producto
                                 const producto = item.producto
                                 const combo = item.combo
                                 const nombre = esProducto ? producto!.name : combo!.name
-                                const categoria = esProducto
-                                    ? (producto!.categories?.name ?? producto!.brand ?? 'Belleza')
-                                    : 'Combo Ilara'
-                                const precioUnit = esProducto ? getPrecioConDescuento(producto!) : (combo!.public_price ?? combo!.sale_price)
+                                const precioUnit = esProducto ? getPrecioConDescuento(producto!) : catalogDisplayComboPrice(combo!)
                                 const imagen = esProducto ? getProductImages(producto!)[0] : combo!.image_url
                                 const key = esProducto ? `p-${producto!.id}` : `c-${combo!.id}`
                                 const maxStock = esProducto ? producto!.stock : undefined
@@ -129,22 +137,19 @@ export function ModalCarrito({
                                 }
 
                                 return (
-                                    <article key={key} className={styles.item}>
-                                        <div className={styles.media}>
+                                    <article key={key} className={styles.itemRow}>
+                                        <div className={styles.mini}>
                                             {imagen ? (
-                                                <Image src={imagen} alt={nombre} fill sizes="92px" />
+                                                <Image src={imagen} alt="" fill sizes="70px" />
                                             ) : (
-                                                <span className={styles.mediaFallback}>
-                                                    <Sparkles size={28} aria-hidden />
-                                                </span>
+                                                <span className={styles.photoFallback}>Sin imagen</span>
                                             )}
                                         </div>
 
                                         <div className={styles.itemCopy}>
-                                            <span className={styles.category}>{categoria}</span>
-                                            <h3 className={styles.itemName}>{nombre}</h3>
-                                            <p className={styles.unitPrice}>${formatPesoAR(precioUnit)} c/u</p>
-                                            <div className={styles.quantity} aria-label={`Cantidad de ${nombre}`}>
+                                            <h3>{nombre}</h3>
+                                            <p className={styles.muted}>${formatPesoAR(precioUnit)} por unidad</p>
+                                            <div className={styles.qty} aria-label={`Cantidad de ${nombre}`}>
                                                 <button
                                                     type="button"
                                                     onClick={() => cambiarCantidad(-1)}
@@ -153,7 +158,7 @@ export function ModalCarrito({
                                                 >
                                                     <Minus size={15} />
                                                 </button>
-                                                <span className={styles.quantityValue}>{item.cantidad}</span>
+                                                <span>{item.cantidad}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => cambiarCantidad(1)}
@@ -165,116 +170,85 @@ export function ModalCarrito({
                                             </div>
                                         </div>
 
-                                        <div className={styles.itemEnd}>
-                                            <button className={styles.remove} type="button" onClick={quitarItem} aria-label={`Quitar ${nombre} de la bolsa`}>
-                                                <X size={14} />
+                                        <div>
+                                            <button className={styles.removeBtn} type="button" onClick={quitarItem} aria-label={`Quitar ${nombre} de la bolsa`}>
+                                                Quitar
                                             </button>
-                                            <p className={styles.lineTotal}>${formatPesoAR(precioUnit * item.cantidad)}</p>
+                                            <p><strong>${formatPesoAR(precioUnit * item.cantidad)}</strong></p>
                                         </div>
                                     </article>
                                 )
                             })}
-                        </div>
 
-                        <section className={styles.coupon} aria-label="Cupón de descuento">
-                            {!appliedCoupon ? (
-                                <>
-                                    <button
-                                        className={styles.couponToggle}
-                                        type="button"
-                                        onClick={() => setMostrarCupon(value => !value)}
-                                        aria-expanded={mostrarCupon}
-                                    >
-                                        <span>¿Tenés un cupón?</span>
-                                        <Plus className={`${styles.couponPlus} ${mostrarCupon ? styles.couponPlusOpen : ''}`} size={17} />
-                                    </button>
-                                    {mostrarCupon && (
-                                        <form
-                                            className={styles.couponForm}
-                                            onSubmit={event => {
-                                                event.preventDefault()
-                                                onAplicarCupon()
-                                            }}
-                                        >
-                                            <label className="sr-only" htmlFor="catalogo-coupon-code">Código de cupón</label>
-                                            <input
-                                                id="catalogo-coupon-code"
-                                                className={styles.couponInput}
-                                                type="text"
-                                                value={cuponInput}
-                                                onChange={event => setCuponInput(event.target.value)}
-                                                placeholder="Ingresar cupón"
-                                                autoComplete="off"
-                                            />
-                                            <button className={styles.couponApply} type="submit">Aplicar</button>
-                                        </form>
-                                    )}
-                                </>
-                            ) : (
-                                <div className={styles.couponApplied}>
-                                    <span>{appliedCoupon.code} · {appliedCoupon.discount_percentage}% de descuento</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setMostrarCupon(false)
-                                            quitarCupon()
+                            <details className={styles.coupon} open={mostrarCupon} onToggle={(event) => setMostrarCupon((event.target as HTMLDetailsElement).open)}>
+                                <summary>¿Tenés un cupón?</summary>
+                                {!appliedCoupon ? (
+                                    <form
+                                        className={styles.couponForm}
+                                        onSubmit={event => {
+                                            event.preventDefault()
+                                            onAplicarCupon()
                                         }}
                                     >
-                                        Quitar
-                                    </button>
-                                </div>
-                            )}
-                        </section>
+                                        <label className="sr-only" htmlFor="catalogo-coupon-code">Código de cupón</label>
+                                        <input
+                                            id="catalogo-coupon-code"
+                                            type="text"
+                                            value={cuponInput}
+                                            onChange={event => setCuponInput(event.target.value)}
+                                            placeholder="Ingresá tu código"
+                                            autoComplete="off"
+                                        />
+                                        <button className={styles.secondaryBtn} type="submit">Aplicar</button>
+                                    </form>
+                                ) : (
+                                    <div className={styles.summaryRow}>
+                                        <span className={styles.successText}>{appliedCoupon.code} · {appliedCoupon.discount_percentage}% de descuento</span>
+                                        <button type="button" className={styles.comboLink} onClick={quitarCupon}>Quitar</button>
+                                    </div>
+                                )}
+                            </details>
+                        </div>
 
-                        <footer className={styles.foot}>
-                            <div className={styles.summaryLine}>
-                                <span>Subtotal</span>
-                                <span>${formatPesoAR(subtotal)}</span>
-                            </div>
-                            {appliedCoupon && (
-                                <div className={`${styles.summaryLine} ${styles.summaryDiscount}`}>
-                                    <span>Descuento {appliedCoupon.code}</span>
-                                    <span>−${formatPesoAR(descuentoCupon)}</span>
-                                </div>
-                            )}
-                            <div className={styles.totalLine}>
-                                <span className={styles.totalLabel}>Total</span>
-                                <strong className={styles.totalValue}>${formatPesoAR(total)}</strong>
-                            </div>
+                        <footer className={styles.drawerFoot}>
+                            <OrderSummary
+                                items={summaryItems}
+                                productsTotal={subtotal}
+                                couponCode={appliedCoupon?.code}
+                                couponDiscount={descuentoCupon}
+                                shippingLabel="Aún sin determinar"
+                                hideItems
+                            />
                             {onCheckout ? (
                                 <button
-                                    className={styles.checkout}
+                                    className={`${styles.primaryBtn} ${styles.wide}`}
                                     type="button"
                                     onClick={onCheckout}
+                                    disabled={verifying}
                                     data-testid="cart-checkout"
                                 >
-                                    <span className={styles.checkoutCopy}>
-                                        <Sparkles size={18} />
-                                        Confirmar pedido
-                                    </span>
-                                    <ArrowUpRight size={18} />
+                                    {verifying ? 'Verificando bolsa…' : 'Continuar con mi pedido'}
                                 </button>
                             ) : null}
                             <button
-                                className={onCheckout ? styles.checkoutSecondary : styles.checkout}
+                                className={`${styles.secondaryBtn} ${styles.wide}`}
                                 type="button"
                                 onClick={onWhatsApp}
                                 data-testid="cart-whatsapp-fallback"
+                                style={{ marginTop: 10 }}
                             >
-                                <span className={styles.checkoutCopy}>
-                                    <MessageCircle size={18} />
-                                    Pedir por WhatsApp
-                                </span>
-                                <ArrowUpRight size={18} />
+                                Pedir por WhatsApp
                             </button>
+                            <p className={styles.muted} style={{ marginTop: 8 }}>
+                                WhatsApp no reemplaza el pedido web. Subtotal de referencia: ${formatPesoAR(total)}.
+                            </p>
                         </footer>
                     </>
                 ) : (
                     <div className={styles.empty}>
-                        <span className={styles.emptyIcon}><ShoppingBag size={28} /></span>
-                        <h3>Tu bolsa está esperando</h3>
-                        <p>Volvé al catálogo para encontrar un nuevo favorito.</p>
-                        <button className={styles.explore} type="button" onClick={onClose}>Explorar catálogo</button>
+                        <h2>Tu bolsa está esperando</h2>
+                        <p>Elegí algo que te guste y lo guardamos acá.</p>
+                        <button className={styles.primaryBtn} type="button" onClick={onClose}>Explorar productos</button>
                     </div>
                 )}
             </aside>

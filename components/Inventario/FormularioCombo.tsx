@@ -23,6 +23,7 @@ interface ComboToEditForm {
   description: string | null
   sale_price: number
   is_active: boolean
+  updated_at?: string | null
   combo_items?: { product_id: number; quantity: number; products?: ProductoForm }[]
 }
 
@@ -116,36 +117,22 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                 is_active: formData.is_active,
             }
 
-            let comboId: number
-            if (comboToEdit) {
-                comboId = comboToEdit.id
-                const { error: errCombo } = await supabase
-                    .from('combos')
-                    .update({ ...payload, updated_at: new Date().toISOString() })
-                    .eq('id', comboId)
-                if (errCombo) throw errCombo
-                await supabase.from('combo_items').delete().eq('combo_id', comboId)
-            } else {
-                const { data: nuevo, error: errCombo } = await supabase
-                    .from('combos')
-                    .insert([payload])
-                    .select()
-                    .single()
-                if (errCombo || !nuevo) throw errCombo || new Error('No se creó el combo')
-                comboId = nuevo.id
-            }
-            if (items.length > 0) {
-                const rows = items.map(i => ({ combo_id: comboId, product_id: i.product_id, quantity: i.quantity }))
-                const { error: errItems } = await supabase.from('combo_items').insert(rows)
-                if (errItems) throw errItems
-            }
+            const { error } = await supabase.rpc('save_inventory_combo', {
+                p_combo_id: comboToEdit?.id ?? null,
+                p_expected_updated_at: comboToEdit?.updated_at ?? null,
+                p_payload: { ...payload, items: items.map(i => ({ product_id: i.product_id, quantity: i.quantity })) },
+            })
+            if (error) throw error
 
             showSuccess(comboToEdit ? 'Combo actualizado' : 'Combo creado')
             onSuccess()
             onClose()
         } catch (err) {
             console.error(err)
-            showError('Error al guardar el combo')
+            const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : ''
+            showError(message.includes('combo_changed')
+                ? 'Otra persona modificó este combo. Cerrá y recargá el inventario antes de editarlo.'
+                : 'No se pudo guardar el combo. Los cambios no se aplicaron.')
         } finally {
             setGuardando(false)
         }

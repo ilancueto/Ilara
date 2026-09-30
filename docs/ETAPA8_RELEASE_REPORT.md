@@ -1,5 +1,7 @@
 # Etapa 8 — Informe de cierre (sin cobros)
 
+> Informe histórico de la fecha indicada. Consultar [ESTADO.md](../ESTADO.md) para el estado actual verificado; no inferir la versión publicada a partir de este informe.
+
 **Fecha:** 2026-08-17  
 **Proyecto Supabase:** `qbbnvdmadgomfmrsfxlo`  
 **Sitio:** https://ilara.com.ar  

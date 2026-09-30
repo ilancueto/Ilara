@@ -1,0 +1,24 @@
+# Local secrets, database backups, and test artifacts are not deployment inputs.
+.env*
+!.env.example
+passsupa.txt
+*.pem
+*.zip
+backups/
+**/backups/**
+*.sql.gz
+*dump*.sql
+supabase/.temp/
+supabase/.branches/
+tmp/
+.cursor/
+.codex/
+.agents/
+.git/
+.next/
+node_modules/
+playwright-report/
+test-results/
+coverage/
+*.tsbuildinfo
+*.log

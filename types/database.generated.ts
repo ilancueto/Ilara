@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
       categories: {
@@ -307,7 +312,7 @@ export type Database = {
           payment_method: string
           receipt_url: string | null
           updated_by: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           amount: number
@@ -320,7 +325,7 @@ export type Database = {
           payment_method: string
           receipt_url?: string | null
           updated_by?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           amount?: number
@@ -333,7 +338,7 @@ export type Database = {
           payment_method?: string
           receipt_url?: string | null
           updated_by?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1746,19 +1751,19 @@ export type Database = {
           catalog_badge: string | null
           category_id: number | null
           color: string | null
-          created_at: string
+          created_at: string | null
           created_by: string | null
           discount_percentage: number | null
           id: number
           image_url: string | null
           image_urls: string[] | null
-          min_stock: number
+          min_stock: number | null
           name: string
           notes: string | null
           purchase_price: number | null
           sale_price: number
           stock: number
-          updated_at: string
+          updated_at: string | null
           updated_by: string | null
           visible_in_catalog: boolean | null
         }
@@ -1767,19 +1772,19 @@ export type Database = {
           catalog_badge?: string | null
           category_id?: number | null
           color?: string | null
-          created_at?: string
+          created_at?: string | null
           created_by?: string | null
           discount_percentage?: number | null
           id?: number
           image_url?: string | null
           image_urls?: string[] | null
-          min_stock?: number
+          min_stock?: number | null
           name: string
           notes?: string | null
           purchase_price?: number | null
-          sale_price?: number
+          sale_price: number
           stock?: number
-          updated_at?: string
+          updated_at?: string | null
           updated_by?: string | null
           visible_in_catalog?: boolean | null
         }
@@ -1788,19 +1793,19 @@ export type Database = {
           catalog_badge?: string | null
           category_id?: number | null
           color?: string | null
-          created_at?: string
+          created_at?: string | null
           created_by?: string | null
           discount_percentage?: number | null
           id?: number
           image_url?: string | null
           image_urls?: string[] | null
-          min_stock?: number
+          min_stock?: number | null
           name?: string
           notes?: string | null
           purchase_price?: number | null
           sale_price?: number
           stock?: number
-          updated_at?: string
+          updated_at?: string | null
           updated_by?: string | null
           visible_in_catalog?: boolean | null
         }
@@ -1873,7 +1878,7 @@ export type Database = {
           product_id: number | null
           product_name: string
           quantity: number
-          sale_id: number
+          sale_id: number | null
           subtotal: number
           unit_price: number
         }
@@ -1882,11 +1887,11 @@ export type Database = {
           discount_percentage?: number | null
           id?: number
           product_id?: number | null
-          product_name?: string
-          quantity?: number
-          sale_id: number
-          subtotal?: number
-          unit_price?: number
+          product_name: string
+          quantity: number
+          sale_id?: number | null
+          subtotal: number
+          unit_price: number
         }
         Update: {
           combo_id?: number | null
@@ -1895,7 +1900,7 @@ export type Database = {
           product_id?: number | null
           product_name?: string
           quantity?: number
-          sale_id?: number
+          sale_id?: number | null
           subtotal?: number
           unit_price?: number
         }
@@ -2061,7 +2066,7 @@ export type Database = {
       }
       sales: {
         Row: {
-          created_at: string
+          created_at: string | null
           created_by: string | null
           customer_id: number | null
           customer_name: string | null
@@ -2070,13 +2075,13 @@ export type Database = {
           payment_breakdown: Json | null
           payment_method: string | null
           receipt_url: string | null
-          sale_date: string
-          status: string
+          sale_date: string | null
+          status: string | null
           total: number
           updated_by: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           created_by?: string | null
           customer_id?: number | null
           customer_name?: string | null
@@ -2085,13 +2090,13 @@ export type Database = {
           payment_breakdown?: Json | null
           payment_method?: string | null
           receipt_url?: string | null
-          sale_date?: string
-          status?: string
-          total?: number
+          sale_date?: string | null
+          status?: string | null
+          total: number
           updated_by?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           created_by?: string | null
           customer_id?: number | null
           customer_name?: string | null
@@ -2100,8 +2105,8 @@ export type Database = {
           payment_breakdown?: Json | null
           payment_method?: string | null
           receipt_url?: string | null
-          sale_date?: string
-          status?: string
+          sale_date?: string | null
+          status?: string | null
           total?: number
           updated_by?: string | null
         }
@@ -2728,6 +2733,14 @@ export type Database = {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
+      save_inventory_combo: {
+        Args: {
+          p_combo_id?: number
+          p_expected_updated_at?: string
+          p_payload: Json
+        }
+        Returns: Json
+      }
       set_user_role: {
         Args: {
           p_role: Database["public"]["Enums"]["app_role"]
@@ -2798,12 +2811,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2827,11 +2840,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2852,11 +2865,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2877,11 +2890,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2894,11 +2907,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

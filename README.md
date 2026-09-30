@@ -1,5 +1,7 @@
 # ✨ Ilara Beauty POS
 
+Estado actual: [ESTADO.md](ESTADO.md). Desarrollo y CI utilizan Supabase en la nube, sin Docker; [configuración de staging](docs/SUPABASE_CLOUD_TESTS.md).
+
 Sistema de gestión para negocio de belleza: inventario, ventas, gastos, clientes y catálogo público con integración WhatsApp.
 
 ## Stack
@@ -14,7 +16,7 @@ Sistema de gestión para negocio de belleza: inventario, ventas, gastos, cliente
 ## Requisitos
 
 - Node.js `>=20.9.0` (Next.js 16)
-- Docker Desktop (para Supabase local / Stage 2)
+- Proyecto Supabase de staging en la nube para las pruebas mutantes (separado de producción)
 - Cuenta de [Supabase](https://supabase.com)
 
 ## Instalación
@@ -57,50 +59,34 @@ Obtener valores en: Supabase Dashboard → Settings → API. Ver **`.env.example
 | `npm run test:watch` | Tests en modo watch |
 | `npm run test:e2e` | Tests E2E (Playwright; arranca el servidor si hace falta) |
 | `npm run test:smoke` | Smoke posdeploy de solo lectura (catálogo, login, headers, SW) |
-| `npm run test:db-security` | Matriz anon/service sobre Supabase local |
+| `npm run test:db-security` | Matriz anon/service sobre staging en la nube |
 | `npm run test:db-rls` | RLS habilitado en tablas `public` |
-| `npm run test:db-insecure-control` | Control negativo de policy anónima (local) |
-| `npm run db:types` / `db:types:check` | Generar / verificar tipos desde esquema local |
-| `npm run db:reset` | `supabase db reset --local` |
+| `npm run test:db-insecure-control` | Control negativo transaccional en staging en la nube |
+| `npm run db:types` / `db:types:check` | Generar / verificar tipos desde staging en la nube |
+| `npm run db:prepare:test` | Aplicar migraciones y seed ficticio a staging (destino explícito) |
+| `npm run test:db-isolated` | Migraciones y reglas SQL aisladas, sin Docker |
 | `npm run pwa-icons` | Generar iconos PWA con dimensiones reales |
 | `npm run check:pwa-icons` | Verificar iconos, manifest y SW online-only |
 | `npm run analyze` | Bundle analyzer (`ANALYZE=true`) |
 
-## Supabase local (Stage 2)
+## Supabase en la nube
 
-```bash
-npx supabase start
-npx supabase db reset --local
-npm run db:types
-npm run test:db-rls
-# exportar API_URL / ANON_KEY / SERVICE_ROLE_KEY desde: npx supabase status -o env
-npm run test:db-security
-```
+La aplicación mantiene Supabase remoto. Las pruebas mutantes y CI usan un proyecto dedicado de staging con destino explícito. No se utiliza Docker. Copiar `.env.test.example` a `.env.test.local` y seguir [SUPABASE_CLOUD_TESTS.md](docs/SUPABASE_CLOUD_TESTS.md).
 
-**Fuentes vigentes** (únicas para estado de riesgo y ejecución):
-[`AUDITORIA.md`](./AUDITORIA.md), [`PLAN.md`](./PLAN.md).
+**Fuente de estado vigente:** [ESTADO.md](ESTADO.md). [AUDITORIA.md](AUDITORIA.md) y [PLAN.md](PLAN.md) conservan la evolución histórica.
 
-Runbooks por etapa: Stage 2 [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md);
-Stage 3 PWA; Stage 4 [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md)
-(desplegado); Stage 5 arquitectura **cerrada, desplegada y verificada**
-[`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md);
-Stage 6.1 pedidos catálogo (**cerrado, desplegado y verificado**)
-[`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md);
-Stages 6.2–6.6 producto (**Stage 6 cerrado en producción; ver runbooks**):
-[`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md),
-[`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md),
-[`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md),
-[`docs/ETAPA6_5_CRM_RUNBOOK.md`](docs/ETAPA6_5_CRM_RUNBOOK.md) y
-[`docs/ETAPA6_6_FINANZAS_RUNBOOK.md`](docs/ETAPA6_6_FINANZAS_RUNBOOK.md).
+Los runbooks por etapa conservan decisiones de diseño y evidencia de sus respectivas fechas. Para comandos de base de datos y CI seguir la guía de nube; para estado de publicación usar ESTADO.md.
 
 ## Documentación extra
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | **Fuentes vigentes** de riesgo y ejecución |
-| [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md) | Stage 5: clientes, DAL, DTOs y dominios; **cerrada y verificada en producción** |
-| [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md) | Stage 6.1: pedidos desde catálogo; **cerrado y verificado en producción** |
-| [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md) | Stage 6.2: alertas de stock; **implementado local, pendiente release** |
+| [`ESTADO.md`](ESTADO.md) | Estado actual y límites de verificación |
+| [`docs/SUPABASE_CLOUD_TESTS.md`](docs/SUPABASE_CLOUD_TESTS.md) | Staging y CI en la nube, sin Docker |
+| [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | Evolución histórica de riesgo y ejecución |
+| [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md) | Clientes, DAL, DTOs y dominios |
+| [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md) | Pedidos desde catálogo |
+| [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md) | Alertas de stock |
 | [`docs/ETAPA6_6_FINANZAS_RUNBOOK.md`](docs/ETAPA6_6_FINANZAS_RUNBOOK.md) | Stage 6.6: CxC/CxP, ledger auditable y conciliación |
 | [`docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`](docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md) | Stage 4: E2E/CI, a11y |
 | [`docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md`](docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md) | Logs, eventos, Sentry opt-in |

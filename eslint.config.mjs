@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Supabase local runtime / generated
     "supabase/.temp/**",
     // Mockups and Playwright artifacts (not app source)
+    "mockup/**",
     "mockups/**",
     "capturas/**",
     "playwright-report/**",

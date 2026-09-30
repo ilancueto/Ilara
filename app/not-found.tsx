@@ -1,4 +1,10 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Página no encontrada',
+  robots: { index: false, follow: false },
+}
 
 /**
  * 404 uniforme (Stage 4). Renderiza dentro del root layout.

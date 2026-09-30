@@ -11,9 +11,5 @@
 .transfer {
   font-size: 0.78em;
   font-weight: 500;
-  color: var(--ilara-muted, #6b5b63);
-}
-
-:global(.dark) .transfer {
-  color: #d8cbd2;
+  color: var(--sf-text-2, var(--ilara-muted, #68615C));
 }

@@ -1,5 +1,7 @@
 # Informe de cierre — Stage 9
 
+> Informe histórico de la fecha indicada. Consultar [ESTADO.md](../ESTADO.md) para el estado actual verificado; no inferir la versión publicada a partir de este informe.
+
 Fecha: 2026-08-18  
 Rama: `main`  
 Flags Stage 8: apagados  

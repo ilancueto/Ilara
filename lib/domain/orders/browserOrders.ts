@@ -29,6 +29,7 @@ export type ListOrdersFilter = {
   status?: OrderStatus | 'all'
   query?: string
   limit?: number
+  offset?: number
 }
 
 export async function listOrders(filter: ListOrdersFilter = {}): Promise<OrderListItem[]> {
@@ -37,7 +38,8 @@ export async function listOrders(filter: ListOrdersFilter = {}): Promise<OrderLi
     .from('orders')
     .select(ORDER_SELECT)
     .order('created_at', { ascending: false })
-    .limit(filter.limit ?? 100)
+    .order('id', { ascending: false })
+    .range(filter.offset ?? 0, (filter.offset ?? 0) + (filter.limit ?? 100) - 1)
 
   if (filter.status && filter.status !== 'all') {
     q = q.eq('status', filter.status)

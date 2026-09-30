@@ -1,7 +1,7 @@
 import 'server-only'
 
 /**
- * Lectura de catálogo público en servidor (ISR / RSC).
+ * Lectura de catálogo público en servidor (RSC / caché de datos).
  * Usa select mínimo Stage 0 y DTO público Stage 5 (sin purchase_price).
  */
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -23,6 +23,7 @@ import { applyComboPublicPricing, applyProductPublicPricing } from '@/lib/domain
 import { mapPublicPricingContext } from '@/lib/domain/payments/mappers'
 import type { PublicPricingContext } from '@/lib/domain/payments/types'
 import { PUBLIC_CATALOG_MIN_STOCK, isPublicCatalogProductVisible } from '@/lib/domain/catalog/publicAvailability'
+import { readAllCatalogRows } from '@/lib/domain/catalog/readAllRows'
 
 export { CATALOG_PRODUCT_SELECT } from '@/lib/catalog/publicCatalogSelect'
 
@@ -51,15 +52,14 @@ export type CatalogQueryResult<T> = CatalogQueryOk<T> | CatalogQueryErr
 export async function fetchCatalogProductsServer(
   supabase: SupabaseClient
 ): Promise<CatalogQueryResult<PublicCatalogProduct[]>> {
-  const { data, error } = await supabase
+  const { data, error } = await readAllCatalogRows((from, to) => supabase
     .from('products')
-    .select(CATALOG_PRODUCT_SELECT)
+    .select(CATALOG_PRODUCT_SELECT, { count: 'exact' })
     .gte('stock', PUBLIC_CATALOG_MIN_STOCK)
     .or('visible_in_catalog.eq.true,visible_in_catalog.is.null')
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }).order('id').range(from, to))
 
   if (error) {
-    console.error('[catalog server] products', error.message)
     return { ok: false }
   }
   return { ok: true, data: mapPublicCatalogProducts(data ?? []) }
@@ -68,14 +68,13 @@ export async function fetchCatalogProductsServer(
 export async function fetchCatalogCombosServer(
   supabase: SupabaseClient
 ): Promise<CatalogQueryResult<PublicCatalogCombo[]>> {
-  const { data, error } = await supabase
+  const { data, error } = await readAllCatalogRows((from, to) => supabase
     .from('combos')
-    .select(CATALOG_COMBO_SELECT)
+    .select(CATALOG_COMBO_SELECT, { count: 'exact' })
     .eq('is_active', true)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }).order('id').range(from, to))
 
   if (error) {
-    console.error('[catalog server] combos', error.message)
     return { ok: false }
   }
   return { ok: true, data: mapPublicCatalogCombos(data ?? []) }
@@ -84,13 +83,12 @@ export async function fetchCatalogCombosServer(
 export async function fetchCatalogCategoriesServer(
   supabase: SupabaseClient
 ): Promise<CatalogQueryResult<PublicCatalogCategory[]>> {
-  const { data, error } = await supabase
+  const { data, error } = await readAllCatalogRows((from, to) => supabase
     .from('categories')
-    .select(CATALOG_CATEGORY_SELECT)
-    .order('name')
+    .select(CATALOG_CATEGORY_SELECT, { count: 'exact' })
+    .order('name').order('id').range(from, to))
 
   if (error) {
-    console.error('[catalog server] categories', error.message)
     return { ok: false }
   }
   return { ok: true, data: mapPublicCatalogCategories(data ?? []) }
