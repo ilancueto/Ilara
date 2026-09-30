@@ -1,6 +1,6 @@
 # Plan de implementación por etapas — Ilara
 
-> Estado actualizado: [ESTADO.md](./ESTADO.md), revisado el 29/09/2026. Este documento conserva la auditoría y planificación histórica; las fechas y estados de release de sus secciones no reemplazan la evidencia actual.
+> Estado actualizado: [ESTADO.md](./ESTADO.md), revisado el 30/09/2026. Este documento conserva la auditoría y planificación histórica; las fechas y estados de release de sus secciones no reemplazan la evidencia actual.
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
