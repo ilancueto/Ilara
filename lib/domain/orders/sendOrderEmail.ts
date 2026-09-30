@@ -46,31 +46,19 @@ export async function notifyOrderCustomer(
     if (error || !data) return false
     if (['confirmed', 'preparing', 'ready', 'completed', 'cancelled'].includes(kind) && data.status !== kind) return false
     if (!isNotifyEmail(data.customer_email)) return false
-    const followUrl = await createOrderNotificationUrl(data.order_number, kind)
-    if (!followUrl) return false
-    const items = await service
-        .from('order_items')
-        .select('name_snapshot, quantity')
-        .eq('order_id', data.id)
-        .order('sort_order')
-    if (items.error) return false
-    const lines = (items.data || []).map((item) => ({ name: item.name_snapshot, quantity: item.quantity }))
-    return sendOrderCustomerEmail({
-      customerName: data.customer_name,
-      customerEmail: data.customer_email,
-      orderNumber: data.order_number,
-      total: Number(data.total) || 0,
-      lines,
-      fulfillmentMode: data.fulfillment_mode,
-      followUrl,
-      kind,
-    })
+    const { dispatchOrderNotifications } = await import('./notificationOutbox')
+    return (await dispatchOrderNotifications(data.id, kind)).sent > 0
   } catch {
     return false
   }
 }
 
-export async function sendOrderCustomerEmail(input: OrderNotifyInput): Promise<boolean> {
+export function prepareOrderCustomerEmail(input: OrderNotifyInput): string {
+  const mail = buildOrderCustomerEmail(input)
+  return JSON.stringify({ from: process.env.ORDER_EMAIL_FROM?.trim() || '', to: [(input.customerEmail || '').trim()], subject: mail.subject, text: mail.text, html: mail.html })
+}
+
+export async function sendOrderCustomerEmail(input: OrderNotifyInput, deliveryId?: string, preparedBody?: string): Promise<boolean> {
   const to = (input.customerEmail || '').trim()
   if (!isNotifyEmail(to)) return false
   const key = process.env.RESEND_API_KEY?.trim() || ''
@@ -80,8 +68,7 @@ export async function sendOrderCustomerEmail(input: OrderNotifyInput): Promise<b
     return false
   }
 
-  const mail = buildOrderCustomerEmail(input)
-  const body = JSON.stringify({ from, to: [to], subject: mail.subject, text: mail.text, html: mail.html })
+  const body = preparedBody || prepareOrderCustomerEmail(input)
   const deadline = Date.now() + 8_000
   for (let attempt = 0; attempt < 3; attempt++) {
     let retryDelay = 250 * (2 ** attempt)
@@ -91,7 +78,7 @@ export async function sendOrderCustomerEmail(input: OrderNotifyInput): Promise<b
         headers: {
           Authorization: `Bearer ${key}`,
           'Content-Type': 'application/json',
-          'Idempotency-Key': `ilara-${input.orderNumber}-${input.kind || 'status'}`.slice(0, 256),
+          'Idempotency-Key': (deliveryId ? `ilara-outbox-${deliveryId}` : `ilara-${input.orderNumber}-${input.kind || 'status'}`).slice(0, 256),
         },
         body,
         cache: 'no-store',

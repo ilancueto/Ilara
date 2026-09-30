@@ -1,5 +1,7 @@
 # Etapa 4 — Calidad operativa (runbook maestro)
 
+> Evidencia histórica. Desde el 29/09 se utiliza exclusivamente Supabase cloud para integración/E2E, sin Docker: [configuración](SUPABASE_CLOUD_TESTS.md). Consultar [operación 30/09](OPERACION_2026-09-30.md) para cola, alertas y recuperación actuales.
+
 - **Estado (2026-08-12):** desplegado y verificado en producción.
 - **Evidencia:** commit `775bc95`; CI GitHub verde (lint, unit, tipos, build,
   DB/integración, E2E y smoke local); deploy único Vercel **`ilara`** y smoke

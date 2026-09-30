@@ -107,6 +107,7 @@ const sensitiveTables = [
   'order_follow_tokens',
   'order_follow_sessions',
   'order_notification_links',
+  'order_notification_outbox',
   'payment_receipt_uploads',
   'payment_receipts',
   'payment_expire_runs',

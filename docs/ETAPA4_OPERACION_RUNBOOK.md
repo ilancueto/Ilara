@@ -1,5 +1,7 @@
 # Etapa 4 — Operación y recuperación
 
+> Documento histórico. Los comandos locales con Supabase/Docker quedaron reemplazados por [pruebas cloud](SUPABASE_CLOUD_TESTS.md). Estado y ejecución de recuperación actuales: [operación 30/09](OPERACION_2026-09-30.md). No ejecutar los ejemplos Docker de este informe.
+
 - **Estado (2026-08-12):** procedimientos documentados + 404/error UI desplegados;
   Stage 4 smoke productivo GET-only 16/16 verificado.
 - **RPO/RTO:** **propuestas** pendientes de decisión de negocio

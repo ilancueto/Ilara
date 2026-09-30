@@ -17,6 +17,8 @@ try {
     await db.exec(`RESET ROLE; SET ROLE ${role}`)
     await assert.rejects(db.query(`SELECT public.attach_mp_preference('{}'::jsonb)`), /permission denied/)
     await assert.rejects(db.query(`SELECT public.mp_preference_context('invalid')`), /permission denied/)
+    await assert.rejects(db.query(`SELECT * FROM public.order_notification_outbox`), /permission denied/)
+    await assert.rejects(db.query(`SELECT * FROM public.claim_order_notifications()`), /permission denied/)
   }
   await db.exec('RESET ROLE; SET ROLE anon')
   await db.query('SELECT id, name, sale_price FROM public.products')
@@ -64,6 +66,23 @@ try {
   assert.equal((await db.query('SELECT stock FROM products WHERE id=1')).rows[0].stock, 20)
   await db.query(`SELECT public.transition_catalog_order($1,'cancelled','Isolated test')`, [order.order_id])
   assert.equal((await db.query('SELECT stock FROM products WHERE id=1')).rows[0].stock, 20, 'Repeated cancellation must not restore stock twice')
+  await db.exec('RESET ROLE')
+  assert.equal((await db.query('SELECT count(*)::integer count FROM order_notification_outbox WHERE order_id=$1', [order.order_id])).rows[0].count, 3, 'Created, confirmed and cancelled events persist once each')
+  await db.exec('SET ROLE service_role')
+  const jobs = (await db.query('SELECT * FROM public.claim_order_notifications(3)')).rows
+  assert.equal(jobs.length, 3)
+  assert.equal((await db.query('SELECT * FROM public.claim_order_notifications(3)')).rows.length, 0, 'A second worker cannot take leased jobs')
+  const job = jobs[0]
+  assert.equal((await db.query("SELECT public.finish_order_notification($1,$2,'sent') done", [job.id, '00000000-0000-0000-0000-000000000099'])).rows[0].done, false, 'Stale workers cannot complete a job')
+  assert.equal((await db.query("SELECT public.finish_order_notification($1,$2,'pending','network') done", [job.id,job.lease_token])).rows[0].done, true)
+  assert.equal((await db.query('SELECT * FROM public.claim_order_notifications(3)')).rows.length, 0, 'Retry backoff survives a worker restart')
+  await db.query("UPDATE order_notification_outbox SET available_at=now()-interval '1 minute' WHERE id=$1", [job.id])
+  const retry = (await db.query('SELECT * FROM public.claim_order_notifications(1)')).rows[0]
+  assert.equal(retry.attempts, 2)
+  assert.notEqual(retry.lease_token, job.lease_token)
+  assert.equal((await db.query("SELECT public.finish_order_notification($1,$2,'sent') done", [retry.id,retry.lease_token])).rows[0].done, true)
+  assert.equal((await db.query('SELECT * FROM public.claim_order_notifications(3)')).rows.length, 0, 'Sent jobs are never reclaimed')
+  console.log('PASS: transactional outbox, deduplication, exclusive leases, fencing and persistent backoff')
   console.log(`PASS: ${migrations} complete migrations; ${tables.rows.length} public tables with RLS; anon denials; public catalog grants; private receipts`)
   console.log('PASS: POS authoritative pricing and stock; catalog pricing; idempotency; admin-only transitions; stock reservation and exactly-once restoration')
 } finally { await db.close() }

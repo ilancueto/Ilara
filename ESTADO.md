@@ -2,6 +2,8 @@
 
 Fecha de revisión: 29–30 de septiembre de 2026. Esta es la fuente de estado actual. Los informes de agosto y del 5 de septiembre conservan evidencia histórica; no describen por sí solos la versión desplegada hoy.
 
+Continuación del 30/09: cola transaccional de notificaciones y monitor operativo implementados localmente, aún sin publicar. 263 unitarias en 55 archivos, lint y TypeScript aprobados; build de 74 páginas/rutas; 57 migraciones y 52 tablas con RLS aprobadas en SQL aislado. Staging y restauración permanecen bloqueados por cupo y credencial vigente de DB; ver [evidencia operativa](docs/OPERACION_2026-09-30.md). El propietario excluyó la protección de contraseñas filtradas del cierre.
+
 ## Correcciones y comprobaciones de esta revisión
 
 - Next.js actualizado de 16.3.0 a 16.3.7, con ESLint y bundle analyzer de la misma versión. Dependencias compatibles actualizadas: `npm audit` sin vulnerabilidades.
