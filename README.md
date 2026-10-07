@@ -1,4 +1,12 @@
-# ✨ Ilara Beauty POS
+# Ilara Beauty POS
+
+Ilara nació del emprendimiento de Mara. Yo, Ilan, armé esta aplicación para acompañarla: que pudiera tener sus productos, ventas, pedidos y cuentas en un mismo lugar, y dedicarle más tiempo a lo que le gusta hacer.
+
+Lo que empezó como una forma de apoyarla fue creciendo con las necesidades del negocio. Hoy compartimos el código bajo licencia MIT para que otras personas puedan conocer cómo está hecho, aportar mejoras y evaluar si les sirve como base para su propio comercio.
+
+**Uso actual:** Ilara Beauty, en Neuquén, Argentina. No contamos con adopción externa documentada. La aplicación conserva nuestra marca y varias configuraciones propias; adaptarla requiere trabajo, no basta con cambiar el nombre.
+
+[Ver el catálogo real](https://ilara.com.ar/catalogo) · [Adaptar a otro comercio](docs/ADAPTAR_A_OTRO_COMERCIO.md) · [Contribuir](CONTRIBUTING.md)
 
 Estado actual: [ESTADO.md](ESTADO.md). Desarrollo y CI utilizan Supabase en la nube, sin Docker; [configuración de staging](docs/SUPABASE_CLOUD_TESTS.md).
 
@@ -15,7 +23,7 @@ Sistema de gestión para negocio de belleza: inventario, ventas, gastos, cliente
 
 ## Requisitos
 
-- Node.js `>=20.9.0` (Next.js 16)
+- Node.js **22 o posterior** (CI utiliza Node 22; también requerido por las versiones actuales de las librerías de Supabase)
 - Proyecto Supabase de staging en la nube para las pruebas mutantes (separado de producción)
 - Cuenta de [Supabase](https://supabase.com)
 
@@ -23,7 +31,9 @@ Sistema de gestión para negocio de belleza: inventario, ventas, gastos, cliente
 
 ```bash
 # Clonar e instalar dependencias
-npm install
+git clone https://github.com/ilancueto/Ilara.git
+cd Ilara
+npm ci
 
 # Configurar variables de entorno
 cp .env.example .env.local
@@ -34,6 +44,28 @@ npm run dev
 ```
 
 Abrir [http://localhost:3000](http://localhost:3000)
+
+En PowerShell, usar `Copy-Item .env.example .env.local` para copiar la plantilla. Completarla con un proyecto Supabase propio antes de iniciar. La plantilla por sí sola no crea la base de datos ni una cuenta de administrador. Seguir la [guía de adaptación](docs/ADAPTAR_A_OTRO_COMERCIO.md) para esos pasos.
+
+## Qué incluye
+
+- Gestión de productos, stock, ventas, gastos y clientes.
+- Catálogo público con bolsa de compra y contacto por WhatsApp.
+- Pedidos, seguimiento y herramientas para operar el negocio.
+- Autenticación, roles y políticas de acceso en la base de datos.
+- Pruebas unitarias, SQL aislado, integración y pruebas de navegador.
+
+Las integraciones de pagos, envíos y correo requieren sus propias cuentas y configuración. La PWA necesita internet; no registra ventas sin conexión. El catálogo publicado es el negocio real, no una demostración para crear pedidos de prueba.
+
+## Ayudar al proyecto
+
+Si algo no se entiende, encontraste un error o estás intentando adaptarlo, podés abrir una [issue](https://github.com/ilancueto/Ilara/issues). Nos sirven especialmente las mejoras en la instalación, la documentación, la accesibilidad y la separación de la marca de la lógica del negocio. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Licencia
+
+El software y su documentación están disponibles bajo [MIT](LICENSE): podés usarlos, modificarlos y distribuirlos, incluso comercialmente, conservando el aviso de copyright y la licencia. Se ofrecen sin garantía.
+
+La licencia no concede derechos sobre marcas ni implica que una instalación de terceros represente a Ilara Beauty. Para otro comercio, usá tu identidad, contactos y contenido. Las dependencias y recursos de terceros conservan sus propias licencias.
 
 ## Variables de entorno
 
