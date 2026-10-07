@@ -14,7 +14,8 @@ Requisitos: https://developers.openai.com/community/codex-for-oss
 - Rol propuesto: Primary maintainer, sujeto a confirmar que Ilan es quien mantiene principalmente el proyecto.
 - Email: confirmar el correo asociado a la cuenta ChatGPT; no asumir que coincide con el de Claude.
 - Estado: uso real en Ilara Beauty; sin adopción externa documentada. MIT elegida por Ilan; verificar su publicación en GitHub antes de enviar.
-- API credits: opcional; si se solicitan, hace falta el OpenAI Organization ID. No completar uno inventado.
+- OpenAI Organization ID: obligatorio en el formulario observado, aunque no se marque el interés opcional en créditos de API. Obtenerlo en https://platform.openai.com/settings/organization/general; no completar uno inventado.
+- API credits: el interés es opcional, pero el formulario observado también requiere explicar un uso propuesto. No afirmar que la integración ya existe.
 
 ## Why does this repository qualify? (máximo 500 caracteres)
 
