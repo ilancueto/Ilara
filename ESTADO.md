@@ -1,8 +1,21 @@
 # Estado actual de Ilara
 
-Revisión cerrada el 30/09/2026. Código integrado en `main`, cambios originales preservados y sitio publicado en [ilara.com.ar](https://ilara.com.ar), únicamente en Vercel `ilara` (`prj_l1212uETlGghvn8jChfiXCp68SzN`). PR [#4](https://github.com/ilancueto/Ilara/pull/4) y corrección operativa [#5](https://github.com/ilancueto/Ilara/pull/5). Commit de release `44941bafccdffd2cbbb3430cccfefe8f786b2928`; deployment `dpl_3bz14xmkDCjJ2i5e8dBQWgzci2d5`.
+Mantenimiento del 01/11/2026 sobre el cierre del 30/09/2026. Código en `main`, sitio en [ilara.com.ar](https://ilara.com.ar), Vercel `ilara` (`prj_l1212uETlGghvn8jChfiXCp68SzN`). Release cloud previo: PRs [#4](https://github.com/ilancueto/Ilara/pull/4) y [#5](https://github.com/ilancueto/Ilara/pull/5); commit `44941bafccdffd2cbbb3430cccfefe8f786b2928`.
 
-## Validación real
+## Mantenimiento 01/11/2026
+
+| Control | Resultado |
+|---|---|
+| Next.js / ESLint / analyzer | 16.4.3 (parche de seguridad sep–oct 2026) |
+| `npm audit --omit=dev` | 0 vulnerabilidades |
+| Unitarias | 267 aprobadas en 55 archivos |
+| Build producción | Aprobado; incluye `/sobre-ilara` |
+| Monitores programados | Expire catalog payments y operations-monitor en verde el 01/11 |
+| Drift SEO | Página `/sobre-ilara`, identidad JSON-LD e Instagram congelados en git |
+
+No se reejecutó en esta pasada la matriz completa de integración/e2e cloud ni el ejercicio de backup/restore del 30/09. Esas cifras siguen siendo la última certificación integral.
+
+## Validación real (cierre 30/09/2026)
 
 | Control | Resultado |
 |---|---|
@@ -10,7 +23,7 @@ Revisión cerrada el 30/09/2026. Código integrado en `main`, cambios originales
 | Integración Supabase cloud | 105/105 en 15 archivos |
 | Navegador cloud desktop/mobile | 53/53, incluidos POS, pedidos, devoluciones, CRM, finanzas, stock, accesibilidad y PWA |
 | CI final | [Run aprobado](https://github.com/ilancueto/Ilara/actions/runs/36766831095) |
-| Lint, TypeScript y build | Aprobados; Next.js 16.3.7 |
+| Lint, TypeScript y build | Aprobados (entonces en Next.js 16.3.7; hoy 16.4.3) |
 | SQL aislado complementario | 58 migraciones completas; 52 tablas públicas con RLS |
 | Staging: advisors, RLS, matriz anon/service, control negativo y tipos/drift | Aprobados; política de control revertida con rollback |
 | Cola durable cloud | Encolado, lease exclusivo, fencing, reintento persistente y deduplicación; fixture revertido |
@@ -24,7 +37,8 @@ Las pruebas mutantes se ejecutaron exclusivamente en `ilara-staging` (`pwbgwzril
 
 ## Correcciones publicadas
 
-- Next.js, ESLint y analyzer 16.3.7; auditoría npm sin vulnerabilidades en esta revisión.
+- Next.js, ESLint y analyzer 16.4.3; auditoría npm de producción sin vulnerabilidades en la revisión del 01/11.
+- Identidad pública y SEO: `/sobre-ilara`, Organization JSON-LD, Instagram oficial, CollectionPage en catálogo y ruta pública en `proxy.ts`.
 - Catálogo completo por rangos, cantidad exacta y orden estable; nunca publica una lectura parcial. Más vendidos conserva el ranking SSR durante hidratación.
 - Fichas inexistentes devuelven 404; paginación, queries, canonical/noindex, sitemap y schema corregidos. Contraste de botones del storefront corregido.
 - RPC de Mercado Pago reservadas al backend y predicados de permisos INVOKER. Tipos generados desde staging, alineado con la nullabilidad y defaults reales de producción sin reescribir filas.
