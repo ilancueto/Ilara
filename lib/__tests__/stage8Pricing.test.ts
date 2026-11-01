@@ -8,7 +8,7 @@ import {
   transferPriceFromList,
 } from '../domain/payments/pricing'
 import { applyProductPublicPricing } from '../domain/payments/applyPublicPricing'
-import { bankTransferSecondaryLine, INTERNAL_WORDS_FORBIDDEN_IN_PUBLIC_UI, PUBLIC_PAYMENT_COPY } from '../domain/payments/labels'
+import { bankTransferCompactLine, bankTransferSecondaryLine, INTERNAL_WORDS_FORBIDDEN_IN_PUBLIC_UI, PUBLIC_PAYMENT_COPY } from '../domain/payments/labels'
 import { formatPesoAR } from '../formatPesoAR'
 
 const migration = readFileSync(
@@ -148,11 +148,13 @@ describe('Stage 8.1 — copy humana', () => {
     expect(bankTransferSecondaryLine(formatPesoAR(90000))).toBe(
       '$90.000 pagando por transferencia bancaria'
     )
+    expect(bankTransferCompactLine(formatPesoAR(90000))).toBe('$90.000 transferencia')
     expect(PUBLIC_PAYMENT_COPY.youSave).toBe('Ahorrás')
     expect(PUBLIC_PAYMENT_COPY.mercadoPago).toBe('Mercado Pago')
     for (const word of INTERNAL_WORDS_FORBIDDEN_IN_PUBLIC_UI) {
       expect(PUBLIC_PAYMENT_COPY.payingByTransfer.toLowerCase()).not.toContain(word)
       expect(PUBLIC_PAYMENT_COPY.youSave.toLowerCase()).not.toContain(word)
+      expect(PUBLIC_PAYMENT_COPY.transferShort.toLowerCase()).not.toContain(word)
     }
   })
 })

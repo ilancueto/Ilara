@@ -19,6 +19,8 @@ export type Producto = {
   image_urls?: string[] | null
   /** Solo panel; el catálogo público no lo selecciona. */
   notes: string | null
+  /** Texto visible en la ficha pública del catálogo. */
+  public_description?: string | null
   created_at: string
   updated_at: string
   discount_percentage?: number | null

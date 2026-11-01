@@ -1,5 +1,5 @@
 import { formatPesoAR } from '@/lib/formatPesoAR'
-import { bankTransferSecondaryLine } from '@/lib/domain/payments/labels'
+import { bankTransferCompactLine, bankTransferSecondaryLine } from '@/lib/domain/payments/labels'
 import styles from './CatalogPrice.module.css'
 
 type Props = {
@@ -8,6 +8,8 @@ type Props = {
   publicAmount?: number | null
   transferAmount?: number | null
   dual?: boolean
+  /** Grilla: línea de transferencia corta. Ficha: texto completo. */
+  compact?: boolean
   className?: string
 }
 
@@ -17,6 +19,7 @@ export function CatalogPrice({
   publicAmount,
   transferAmount,
   dual = false,
+  compact = false,
   className,
 }: Props) {
   if (!dual || publicAmount == null || transferAmount == null) {
@@ -29,10 +32,14 @@ export function CatalogPrice({
     )
   }
 
+  const transferLine = compact
+    ? bankTransferCompactLine(formatPesoAR(transferAmount))
+    : bankTransferSecondaryLine(formatPesoAR(transferAmount))
+
   return (
     <p className={`${styles.wrap} ${className ?? ''}`}>
       <span className={styles.public}>${formatPesoAR(publicAmount)}</span>
-      <span className={styles.transfer}>{bankTransferSecondaryLine(formatPesoAR(transferAmount))}</span>
+      <span className={styles.transfer}>{transferLine}</span>
     </p>
   )
 }

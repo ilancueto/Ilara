@@ -28,9 +28,9 @@ export function buildProductJsonLd(
             : 'https://schema.org/InStock'
 
     const brandName = p.brand?.trim()
-    const description = p.brand?.trim()
-        ? `${p.name} · ${p.brand.trim()}`
-        : p.name
+    const publicCopy = p.public_description?.trim()
+    const description = publicCopy
+        || (brandName ? `${p.name} · ${brandName}` : p.name)
 
     const product: Record<string, unknown> = {
         '@context': 'https://schema.org',

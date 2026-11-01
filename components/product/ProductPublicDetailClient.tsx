@@ -174,8 +174,9 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
   const stockAgotado = producto.stock <= 0
   const stockBajo = !stockAgotado && producto.stock <= 3
   const colorDetalle = producto.color?.trim()
+  const publicDescription = producto.public_description?.trim() || ''
   const addDisabled = stockAgotado || !cartReady
-  const addLabel = !cartReady ? 'Verificando…' : stockAgotado ? 'Sin stock' : `Agregar a la bolsa · $${formatPesoAR(displayPrice)}`
+  const addLabel = stockAgotado ? 'Sin stock' : `Agregar a la bolsa · $${formatPesoAR(displayPrice)}`
 
   const addToBag = () => {
     if (addDisabled) return
@@ -263,6 +264,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
               type="button"
               className={`${styles.primaryBtn} ${styles.wide}`}
               disabled={addDisabled}
+              aria-busy={!cartReady && !stockAgotado ? true : undefined}
               onClick={addToBag}
             >
               {addLabel}
@@ -270,6 +272,13 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
             <button type="button" className={`${styles.secondaryBtn} ${styles.wide}`} onClick={consultarWhatsApp} style={{ marginTop: 12 }}>
               Consultar por WhatsApp
             </button>
+
+            {publicDescription ? (
+              <div className={styles.line}>
+                <strong>Detalle</strong>
+                <p className={styles.description}>{publicDescription}</p>
+              </div>
+            ) : null}
 
             <div className={styles.line}>
               <strong>Entrega y retiro</strong>

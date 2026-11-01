@@ -26,6 +26,7 @@ type FormProductoState = {
     stock: string
     min_stock: string
     notes: string
+    public_description: string
     image_urls: string[]
     discount_percentage: string
     visible_in_catalog: boolean
@@ -48,6 +49,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         stock: '',
         min_stock: '1',
         notes: '',
+        public_description: '',
         image_urls: [],
         discount_percentage: '',
         visible_in_catalog: true,
@@ -72,6 +74,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     stock: productToEdit.stock.toString(),
                     min_stock: productToEdit.min_stock.toString(),
                     notes: productToEdit.notes || '',
+                    public_description: productToEdit.public_description || '',
                     image_urls: urls,
                     discount_percentage: productToEdit.discount_percentage != null ? String(productToEdit.discount_percentage) : '',
                     visible_in_catalog: productToEdit.visible_in_catalog !== false,
@@ -80,7 +83,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             } else {
                 setFormData({
                     name: '', category_id: '', brand: '',
-                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', image_urls: [], discount_percentage: '',
+                    purchase_price: '', sale_price: '', stock: '', min_stock: '1', notes: '', public_description: '', image_urls: [], discount_percentage: '',
                     visible_in_catalog: true,
                     catalog_badge: 'auto'
                 })
@@ -177,6 +180,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
             stock: parseInt(formData.stock),
             min_stock: formData.min_stock ? parseInt(formData.min_stock) : 5,
             notes: formData.notes.trim() || null,
+            public_description: formData.public_description.trim() || null,
             image_url: imageUrls?.[0] ?? null,
             image_urls: imageUrls,
             discount_percentage: formData.discount_percentage ? Math.min(100, Math.max(0, parseInt(formData.discount_percentage) || 0)) : 0,
@@ -447,6 +451,22 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                         </p>
                     </div>
 
+                    {/* Descripción pública del catálogo */}
+                    <div className="form-section">
+                        <label className="form-label">Descripción en el catálogo</label>
+                        <textarea
+                            rows={4}
+                            value={formData.public_description}
+                            onChange={(e) => setFormData({ ...formData, public_description: e.target.value })}
+                            placeholder="2–4 oraciones para la ficha pública: para qué sirve, textura, marca. Sin datos internos."
+                            className="form-input w-full resize-none form-textarea-min"
+                            maxLength={800}
+                        />
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                            Visible en ilara.com.ar. No uses esto para notas de stock o costos.
+                        </p>
+                    </div>
+
                     {/* Notas */}
                     <div className="form-section">
                         <label className="form-label">Notas adicionales</label>
@@ -454,7 +474,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                             rows={3}
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                            placeholder="Detalles, ubicación, etc."
+                            placeholder="Detalles internos, ubicación, etc. (no se publica)"
                             className="form-input w-full resize-none form-textarea-min"
                         />
                     </div>

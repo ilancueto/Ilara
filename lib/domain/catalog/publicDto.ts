@@ -18,6 +18,8 @@ export type PublicCatalogProduct = {
   discount_percentage?: number | null
   catalog_badge?: CatalogBadgeKey | null
   visible_in_catalog?: boolean | null
+  /** Texto público de ficha; distinto de notes internas. */
+  public_description?: string | null
   created_at: string
   categories?: { name: string }
   dual_price_visible?: boolean
@@ -102,6 +104,7 @@ export function mapPublicCatalogProduct(row: unknown): PublicCatalogProduct {
         : r.visible_in_catalog === true
           ? true
           : null,
+    public_description: asNullableString(r.public_description),
     created_at: asString(r.created_at),
     categories,
   }

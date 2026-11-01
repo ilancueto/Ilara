@@ -5,7 +5,7 @@
 
 /** Columnas de products permitidas a anon (alineado con grants de migración stage0). */
 export const CATALOG_PRODUCT_COLUMNS =
-  'id, name, brand, color, sale_price, stock, category_id, image_url, image_urls, discount_percentage, catalog_badge, visible_in_catalog, created_at' as const
+  'id, name, brand, color, sale_price, stock, category_id, image_url, image_urls, discount_percentage, catalog_badge, visible_in_catalog, created_at, public_description' as const
 
 export const CATALOG_PRODUCT_SELECT = `${CATALOG_PRODUCT_COLUMNS}, categories(name)` as const
 

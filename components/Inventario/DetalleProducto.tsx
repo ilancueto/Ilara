@@ -122,8 +122,14 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                 <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 leading-tight pr-12">
                                     {producto.name}
                                 </h2>
+                                {producto.public_description && (
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                        {producto.public_description}
+                                    </p>
+                                )}
                                 {producto.notes && (
                                     <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                                        <span className="font-medium text-gray-400 dark:text-gray-500">Nota interna · </span>
                                         {producto.notes}
                                     </p>
                                 )}

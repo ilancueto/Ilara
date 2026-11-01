@@ -50,6 +50,10 @@ function absoluteFromSite(pathOrUrl: string, siteOrigin: string): string {
 }
 
 function buildProductDescription(p: PublicCatalogProduct, precioFinal: number): string {
+    const publicCopy = p.public_description?.trim()
+    if (publicCopy) {
+      return publicCopy.length > 165 ? `${publicCopy.slice(0, 162)}…` : publicCopy
+    }
     const parts: string[] = []
     const brand = p.brand?.trim()
     if (brand) parts.push(`${p.name} · ${brand}`)

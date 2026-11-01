@@ -8,7 +8,8 @@ const ALLOWED_SORT = new Set([
   'precio-desc',
 ])
 
-export const CATALOG_SORT_DEFAULT = 'nuevo-desc'
+/** Default: más vendidos (con desempate por foto/nombre en sorting). */
+export const CATALOG_SORT_DEFAULT = 'vendidos-desc'
 export const CATALOG_PRICE_MAX_UNSET = 999999
 export const COMBOS_FILTER = 'combos'
 /** Tope de página para no crear URLs de paginación ilimitadas. */

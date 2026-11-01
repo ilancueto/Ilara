@@ -5,6 +5,8 @@ export const PUBLIC_PAYMENT_COPY = {
   mercadoPago: 'Mercado Pago',
   bankTransfer: 'Transferencia bancaria',
   payingByTransfer: 'pagando por transferencia bancaria',
+  /** Línea corta para grilla de catálogo (móvil). */
+  transferShort: 'transferencia',
   youSave: 'Ahorrás',
   choosePayment: 'Elegí cómo pagar',
   transferInstructions: 'Transferí el total a la cuenta indicada y, si te lo pedimos, adjuntá el comprobante.',
@@ -35,4 +37,9 @@ export const INTERNAL_WORDS_FORBIDDEN_IN_PUBLIC_UI = [
 
 export function bankTransferSecondaryLine(formattedBase: string): string {
   return `$${formattedBase} ${PUBLIC_PAYMENT_COPY.payingByTransfer}`
+}
+
+/** Precio dual compacto para tarjetas: "$5.850 transferencia". */
+export function bankTransferCompactLine(formattedBase: string): string {
+  return `$${formattedBase} ${PUBLIC_PAYMENT_COPY.transferShort}`
 }

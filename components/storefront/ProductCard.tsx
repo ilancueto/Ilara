@@ -84,14 +84,16 @@ export function ProductCard({
         dual={dual}
         publicAmount={publicAmount}
         transferAmount={transferAmount}
+        compact
       />
       <button
         className={styles.addBtn}
         type="button"
         disabled={!available || !cartReady}
+        aria-busy={!cartReady && available ? true : undefined}
         onClick={onAdd}
       >
-        {!cartReady ? 'Verificando…' : available ? 'Agregar a la bolsa' : 'Sin stock'}
+        {available ? 'Agregar a la bolsa' : 'Sin stock'}
       </button>
       {comboIncludes ? (
         <button type="button" className={styles.comboLink} onClick={comboIncludes}>
