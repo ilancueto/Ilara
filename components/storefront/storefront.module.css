@@ -101,15 +101,15 @@
   display: block;
   width: auto;
   height: auto;
-  max-height: 40px;
-  max-width: 140px;
+  max-height: 48px;
+  max-width: 160px;
   object-fit: contain;
 }
 
 @media (min-width: 768px) {
   .brand img {
-    max-height: 44px;
-    max-width: 168px;
+    max-height: 52px;
+    max-width: 180px;
   }
 }
 
@@ -117,16 +117,23 @@
   flex: 1;
   max-width: 510px;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .search input {
   width: 100%;
-  height: 46px;
-  border: 1px solid var(--sf-line, #E9E5E1);
+  height: 44px;
+  border: 1px solid var(--sf-border, #D6D0CA);
   background: var(--sf-muted-bg, #F4F2EE);
+  color: var(--sf-text, #242222);
   border-radius: var(--sf-radius-sm, 8px);
   padding: 0 16px;
   font-size: 16px;
+}
+
+.search input::placeholder {
+  color: var(--sf-text-2, #68615C);
 }
 
 .bag {
@@ -173,11 +180,13 @@
 
 .subnav {
   display: flex;
-  gap: 22px;
-  padding-bottom: 14px;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 12px;
   overflow-x: auto;
   white-space: nowrap;
   font-size: 14px;
+  line-height: 1.2;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -189,16 +198,23 @@
 .subnavBtn {
   background: none;
   border: 0;
-  padding: 8px 0;
-  min-height: 44px;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
   color: var(--sf-text, #242222);
+  line-height: 1.2;
+  box-shadow: none;
 }
 
 .subnavBtnActive {
   color: var(--sf-action, #A42447);
   text-decoration: underline;
-  text-underline-offset: 9px;
+  text-underline-offset: 8px;
+  text-decoration-thickness: 1.5px;
 }
 
 @media (min-width: 768px) {
@@ -637,7 +653,9 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: inherit;
+  color: var(--sf-text, #242222);
+  font-weight: 550;
+  line-height: 1;
 }
 
 .pageBtn[aria-hidden] {
@@ -646,7 +664,10 @@
   cursor: default;
 }
 
-.pageBtnActive {
+.pageBtnActive,
+.pageBtnActive:link,
+.pageBtnActive:visited,
+.pageBtnActive:hover {
   background: var(--sf-action, #A42447);
   color: #fff;
   border-color: var(--sf-action, #A42447);

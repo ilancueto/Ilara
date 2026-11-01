@@ -1150,12 +1150,36 @@ select:disabled {
 .dark .storefront h4,
 .dark .storefront h5,
 .dark .storefront h6,
-.dark .storefront p {
+.dark .storefront p,
+.dark .storefront label,
+.dark .storefront strong {
   color: #242222;
 }
 
 .dark .storefront {
   background: #FFFEFA;
+}
+
+/* Evitar que los inputs oscuros del panel contaminen el catálogo público. */
+.dark .storefront input,
+.dark .storefront textarea,
+.dark .storefront select {
+  background: #F4F2EE;
+  border-color: #D6D0CA;
+  color: #242222;
+  box-shadow: none;
+}
+
+.dark .storefront input::placeholder,
+.dark .storefront textarea::placeholder {
+  color: #68615C;
+}
+
+.dark .storefront input:focus,
+.dark .storefront textarea:focus,
+.dark .storefront select:focus {
+  border-color: #924365;
+  box-shadow: 0 0 0 3px rgba(146, 67, 101, 0.2);
 }
 
 .storefront [class*="dark:text"] {

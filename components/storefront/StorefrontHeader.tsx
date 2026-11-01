@@ -32,7 +32,7 @@ export function StorefrontHeader({
             width={168}
             height={44}
             priority
-            style={{ width: 'auto', height: 'auto', maxHeight: 44 }}
+            style={{ width: 'auto', height: 'auto', maxHeight: 52 }}
           />
         </Link>
         {!simple && onSearch ? (
