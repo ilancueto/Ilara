@@ -60,7 +60,7 @@ function buildProductDescription(p: PublicCatalogProduct, precioFinal: number): 
     else parts.push(p.name)
     parts.push(`$${formatPesoAR(precioFinal)}`)
     if (p.categories?.name) parts.push(p.categories.name)
-    parts.push('Belleza y cosmética en Neuquén. Pedidos por WhatsApp en Ilara Beauty.')
+    parts.push('Pedidos por WhatsApp en Ilara Beauty.')
     const joined = parts.join('. ')
     return joined.length > 165 ? `${joined.slice(0, 162)}…` : joined
 }

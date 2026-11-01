@@ -251,7 +251,7 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
     : categorias.find(c => String(c.id) === categoriaFiltro)?.name
   const toolbarTitle = searching
     ? 'Resultados de búsqueda'
-    : categoryName ?? 'Explorá el catálogo'
+    : categoryName ?? 'Productos'
   const activeFilterCount = [
     categoriaFiltro !== 'all',
     precioMin > 0,
@@ -289,10 +289,8 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
     >
       <main className={styles.wrap}>
         <section className={`${styles.intro} ${searching ? styles.introHidden : ''}`} aria-labelledby="catalogo-titulo-principal">
-          <p className={styles.eyebrow}>Ilara Beauty · Neuquén</p>
           <h1 id="catalogo-titulo-principal">Un poco de color. Mucho de vos.</h1>
-          <p>Maquillaje, skincare y cosmética en Neuquén.</p>
-          <Link href="/sobre-ilara" className={styles.aboutLink}>Conocé Ilara y nuestra historia <span aria-hidden="true">↗</span></Link>
+          <Link href="/sobre-ilara" className={styles.aboutLink}>Quiénes somos</Link>
         </section>
 
         <div className={styles.toolbar} id="productos">

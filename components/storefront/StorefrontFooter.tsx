@@ -7,7 +7,7 @@ export function StorefrontFooter() {
     <footer className={`${styles.wrap} ${styles.footer}`}>
       <div>
         <strong>Ilara Beauty</strong>
-        <p className={styles.muted} style={{ margin: '6px 0 0' }}>Belleza a tu manera. Neuquén, Argentina.</p>
+        <p className={styles.muted} style={{ margin: '6px 0 0' }}>Maquillaje, skincare y cosmética.</p>
       </div>
       <div className={styles.footerLinks}>
         <Link href="/sobre-ilara">Sobre Ilara</Link>

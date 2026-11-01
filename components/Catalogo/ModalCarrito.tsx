@@ -247,7 +247,7 @@ export function ModalCarrito({
                 ) : (
                     <div className={styles.empty}>
                         <h2>Tu bolsa está esperando</h2>
-                        <p>Elegí algo que te guste y lo guardamos acá.</p>
+                        <p>Cuando agregues productos, van a aparecer acá.</p>
                         <button className={styles.primaryBtn} type="button" onClick={onClose}>Explorar productos</button>
                     </div>
                 )}

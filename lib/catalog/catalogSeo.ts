@@ -7,7 +7,7 @@ import {
 import { getSiteUrl } from '@/lib/site'
 
 const catalogDescription =
-  'Descubrí maquillaje, skincare y cosmética en Ilara Beauty, Neuquén. Mirá precios y disponibilidad, armá tu bolsa y hacé tu pedido online o por WhatsApp.'
+  'Catálogo de Ilara Beauty: precios, disponibilidad y pedidos online o por WhatsApp.'
 
 const canonicalShareOrigin =
   process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') ||
@@ -24,11 +24,11 @@ export function buildCatalogMetadata(view: CatalogViewState): Metadata {
   const canonical = catalogAbsoluteUrl(view)
   const indexable = isCatalogViewIndexable(view)
   const title = view.page > 1
-    ? `Catálogo de belleza en Neuquén · página ${view.page}`
-    : 'Maquillaje, skincare y cosmética en Neuquén'
+    ? `Catálogo · página ${view.page}`
+    : 'Catálogo'
   const ogTitle = view.page > 1
-    ? `Catálogo de belleza en Neuquén · página ${view.page} | Ilara`
-    : 'Ilara Beauty | Maquillaje y skincare en Neuquén'
+    ? `Catálogo · página ${view.page} | Ilara Beauty`
+    : 'Ilara Beauty | Catálogo'
 
   return {
     title: view.page > 1 ? title : { absolute: ogTitle },

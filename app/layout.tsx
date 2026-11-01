@@ -43,12 +43,12 @@ const canonicalShareOrigin =
   "https://ilara.com.ar";
 
 const defaultDescription =
-  "Descubrí Ilara, tu catálogo de productos de belleza en Neuquén. Maquillaje, skincare y cosmética con pedidos por WhatsApp.";
+  "Catálogo de Ilara Beauty: maquillaje, skincare y cosmética. Precios, stock y pedidos online o por WhatsApp.";
 
 /** Texto para compartir (OG/Twitter); más corto y de marca que el meta description SEO. */
 const shareTitle = "Ilara Beauty";
 const shareDescription =
-  "Descubrí productos de maquillaje, skincare y cosmética en Ilara Beauty.";
+  "Maquillaje, skincare y cosmética. Pedidos online o por WhatsApp.";
 
 /** Link preview (OG/Twitter): `public/og-image.png` — recomendado 1200×630. URL absoluta normalizada. */
 const ogImageUrl = new URL("/og-image.png", `${canonicalShareOrigin}/`).href;
@@ -56,7 +56,7 @@ const ogImageUrl = new URL("/og-image.png", `${canonicalShareOrigin}/`).href;
 export const metadata: Metadata = {
   metadataBase,
   title: {
-    default: "Ilara | Productos de belleza en Neuquén",
+    default: "Ilara Beauty",
     template: "%s | Ilara",
   },
   description: defaultDescription,

@@ -11,13 +11,12 @@ export function buildIlaraOrganization(siteOrigin: string) {
     alternateName: 'Ilara',
     url: origin,
     logo: `${origin}/logo-header.png`,
-    description: 'Emprendimiento de maquillaje, skincare y cosmética en Neuquén, Argentina. Fundado por Mara y acompañado por Ilan Cueto como cofundador y responsable de tecnología.',
+    description: 'Emprendimiento de maquillaje, skincare y cosmética. Fundado por Mara y acompañado por Ilan Cueto como cofundador y responsable de tecnología.',
     email: ['mara.baidal@ilara.com.ar', 'ilan.cueto@ilara.com.ar'],
     sameAs: [ILARA_INSTAGRAM_URL],
     founder: [
       { '@type': 'Person', name: 'Mara', jobTitle: 'Fundadora' },
       { '@type': 'Person', name: 'Ilan Cueto', jobTitle: 'Cofundador y responsable de tecnología' },
     ],
-    location: { '@type': 'Place', name: 'Neuquén, Argentina' },
   }
 }

@@ -79,7 +79,7 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
     '@type': 'CollectionPage',
     '@id': `${catalogAbsoluteUrl(view)}#page`,
     url: catalogAbsoluteUrl(view),
-    name: 'Catálogo de Ilara Beauty en Neuquén',
+    name: 'Catálogo de Ilara Beauty',
     inLanguage: 'es-AR',
     about: { '@id': `${origin}/#organization` },
     mainEntity: {
