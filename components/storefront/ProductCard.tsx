@@ -71,35 +71,37 @@ export function ProductCard({
           {badge ? <span className={styles.badge}>{badge}</span> : null}
         </button>
       )}
-      {brand ? <div className={styles.brandLabel}>{brand}</div> : null}
+      <div className={styles.brandLabel}>{brand?.trim() || '\u00a0'}</div>
       {href ? (
         <Link className={styles.name} href={href}>{name}</Link>
       ) : (
         <button type="button" className={styles.name} onClick={onOpen}>{name}</button>
       )}
-      <CatalogPrice
-        className={styles.price}
-        amount={amount}
-        listAmount={listAmount}
-        dual={dual}
-        publicAmount={publicAmount}
-        transferAmount={transferAmount}
-        compact
-      />
-      <button
-        className={styles.addBtn}
-        type="button"
-        disabled={!available || !cartReady}
-        aria-busy={!cartReady && available ? true : undefined}
-        onClick={onAdd}
-      >
-        {available ? 'Agregar a la bolsa' : 'Sin stock'}
-      </button>
-      {comboIncludes ? (
-        <button type="button" className={styles.comboLink} onClick={comboIncludes}>
-          Ver qué incluye
+      <div className={styles.cardFooter}>
+        <CatalogPrice
+          className={styles.price}
+          amount={amount}
+          listAmount={listAmount}
+          dual={dual}
+          publicAmount={publicAmount}
+          transferAmount={transferAmount}
+          compact
+        />
+        <button
+          className={styles.addBtn}
+          type="button"
+          disabled={!available || !cartReady}
+          aria-busy={!cartReady && available ? true : undefined}
+          onClick={onAdd}
+        >
+          {available ? 'Agregar a la bolsa' : 'Sin stock'}
         </button>
-      ) : null}
+        {comboIncludes ? (
+          <button type="button" className={styles.comboLink} onClick={comboIncludes}>
+            Ver qué incluye
+          </button>
+        ) : null}
+      </div>
     </article>
   )
 }

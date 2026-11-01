@@ -357,8 +357,16 @@
 
 .card {
   min-width: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.cardFooter {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
 }
 
 .photo {
@@ -406,15 +414,21 @@
   letter-spacing: 1px;
   color: var(--sf-text-2, #68615C);
   margin-top: 12px;
+  min-height: 1.2em;
+  line-height: 1.2;
   text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .name {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 54px;
+  /* 2 líneas fijas → precios/botones alineados en la fila */
+  min-height: calc(1.3em * 2);
   margin: 6px 0 0;
   font-size: 14px;
   font-weight: 550;
@@ -429,14 +443,15 @@
 @media (min-width: 768px) {
   .name {
     font-size: 16px;
-    min-height: 62px;
   }
 }
 
 .price {
   font-size: 18px;
   font-weight: 550;
-  margin: 8px 0 2px;
+  margin: 0;
+  /* reserva espacio del precio dual (lista + transferencia) */
+  min-height: 2.6em;
 }
 
 @media (min-width: 768px) {
@@ -470,7 +485,7 @@
 
 .addBtn {
   width: 100%;
-  margin-top: 12px;
+  margin-top: 10px;
   border: 1px solid var(--sf-border, #D6D0CA);
   background: transparent;
   font-size: 14px;
