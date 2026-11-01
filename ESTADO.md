@@ -12,8 +12,11 @@ Mantenimiento del 01/11/2026 sobre el cierre del 30/09/2026. Código en `main`, 
 | Build producción | Aprobado; incluye `/sobre-ilara` |
 | Monitores programados | Expire catalog payments y operations-monitor en verde el 01/11 |
 | Drift SEO | Página `/sobre-ilara`, identidad JSON-LD e Instagram congelados en git |
+| Deploy Vercel | Completado para el commit de mantenimiento |
+| CI lint | Ajustado: reglas nuevas de hooks en 16.4 quedan en warn hasta refactor |
+| CI db-security | Falló al preparar staging: pooler `tenant/user … not found` (credenciales/proyecto staging) |
 
-No se reejecutó en esta pasada la matriz completa de integración/e2e cloud ni el ejercicio de backup/restore del 30/09. Esas cifras siguen siendo la última certificación integral.
+No se reejecutó en esta pasada la matriz completa de integración/e2e cloud ni el ejercicio de backup/restore del 30/09. Esas cifras siguen siendo la última certificación integral. El fallo de staging no afecta el sitio publicado; requiere revisar secrets `SUPABASE_TEST_*` / estado de `ilara-staging`.
 
 ## Validación real (cierre 30/09/2026)
 

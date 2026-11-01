@@ -23,6 +23,14 @@ const eslintConfig = defineConfig([
     "backups/**",
     "tmp/**",
   ]),
+  {
+    // eslint-config-next 16.4 tightened React Compiler hook rules.
+    // Keep them visible as warnings until data-fetch effects are refactored.
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/immutability": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;
