@@ -29,6 +29,7 @@
     "db:advisors": "node scripts/cloud-db.mjs advisors",
     "db:advisors:security": "node scripts/cloud-db.mjs security",
     "db:prepare:test": "node scripts/cloud-db.mjs prepare",
+    "db:ensure:staging": "node scripts/ensure-staging-active.mjs",
     "db:check:test-env": "node scripts/check-cloud-test-env.mjs",
     "analyze": "cross-env ANALYZE=true next build",
     "migrate:receipts": "node --env-file=.env.local scripts/migrate-receipts-legacy-to-user-prefix.mjs",

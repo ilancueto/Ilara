@@ -76,6 +76,9 @@ jobs:
       - name: Validate cloud staging target
         run: npm run db:check:test-env
 
+      - name: Ensure staging project is active (resume if Free-tier paused)
+        run: node scripts/ensure-staging-active.mjs
+
       - name: Apply cloud staging migrations and fictitious seed
         run: npm run db:prepare:test
 
@@ -145,6 +148,9 @@ jobs:
 
       - name: Validate cloud staging target
         run: npm run db:check:test-env
+
+      - name: Ensure staging project is active (resume if Free-tier paused)
+        run: node scripts/ensure-staging-active.mjs
 
       - name: Export cloud E2E keys
         run: |

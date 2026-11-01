@@ -14,9 +14,9 @@ Mantenimiento del 01/11/2026 sobre el cierre del 30/09/2026. Código en `main`, 
 | Drift SEO | Página `/sobre-ilara`, identidad JSON-LD e Instagram congelados en git |
 | Deploy Vercel | Completado para el commit de mantenimiento |
 | CI lint | Ajustado: reglas nuevas de hooks en 16.4 quedan en warn hasta refactor |
-| CI db-security | Falló al preparar staging: pooler `tenant/user … not found` (credenciales/proyecto staging) |
+| Staging CI | `ilara-staging` estaba INACTIVE (Free pause); CI ahora lo reactiva con `scripts/ensure-staging-active.mjs` |
 
-No se reejecutó en esta pasada la matriz completa de integración/e2e cloud ni el ejercicio de backup/restore del 30/09. Esas cifras siguen siendo la última certificación integral. El fallo de staging no afecta el sitio publicado; requiere revisar secrets `SUPABASE_TEST_*` / estado de `ilara-staging`.
+No se reejecutó en esta pasada el ejercicio de backup/restore del 30/09. La certificación integral cloud queda sujeta al run de CI tras reactivar staging.
 
 ## Validación real (cierre 30/09/2026)
 

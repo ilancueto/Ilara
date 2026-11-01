@@ -4,7 +4,7 @@ Decisión vigente desde el 29/09/2026: no usar Docker. El proyecto de producció
 
 ## Configuración
 
-Staging vigente: `ilara-staging`, referencia `pwbgwzrilbgozwzfzegn`, en la organización de producción. FinningCAT quedó pausado con autorización del propietario para liberar el cupo Free. Mientras CI use este staging debe permanecer activo; reactivar FinningCAT requiere liberar nuevamente el cupo o ampliar el plan. No se contrató Pro.
+Staging vigente: `ilara-staging`, referencia `pwbgwzrilbgozwzfzegn`, en la organización de producción. FinningCAT quedó pausado con autorización del propietario para liberar el cupo Free. Mientras CI use este staging debe permanecer activo; reactivar FinningCAT requiere liberar nuevamente el cupo o ampliar el plan. No se contrató Pro. Si Free pausa staging, CI ejecuta `npm run db:ensure:staging` (`scripts/ensure-staging-active.mjs`) antes de migraciones y E2E.
 
 Crear un proyecto dedicado de staging en la cuenta correcta de Supabase. Copiar `.env.test.example` a `.env.test.local`, que está excluido de Git y del deploy. Completar:
 
