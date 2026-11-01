@@ -7,6 +7,7 @@ import { createRequestId } from '@/lib/observability';
 /** Rutas públicas exactas: no requieren sesión y no deben redirigir a /login. */
 const PUBLIC_EXACT_ROUTES = new Set([
     '/login',
+    '/sobre-ilara',
     '/sitemap.xml',
     '/sitemap-xml',
     '/robots.txt',

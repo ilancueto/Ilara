@@ -7,7 +7,7 @@ import {
 import { getSiteUrl } from '@/lib/site'
 
 const catalogDescription =
-  'Catálogo de productos de belleza en Neuquén: maquillaje, skincare y cosmética. Pedidos rápidos por WhatsApp.'
+  'Descubrí maquillaje, skincare y cosmética en Ilara Beauty, Neuquén. Mirá precios y disponibilidad, armá tu bolsa y hacé tu pedido online o por WhatsApp.'
 
 const canonicalShareOrigin =
   process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') ||
@@ -25,13 +25,13 @@ export function buildCatalogMetadata(view: CatalogViewState): Metadata {
   const indexable = isCatalogViewIndexable(view)
   const title = view.page > 1
     ? `Catálogo de belleza en Neuquén · página ${view.page}`
-    : 'Catálogo de belleza en Neuquén'
+    : 'Maquillaje, skincare y cosmética en Neuquén'
   const ogTitle = view.page > 1
     ? `Catálogo de belleza en Neuquén · página ${view.page} | Ilara`
-    : 'Catálogo de belleza en Neuquén | Ilara'
+    : 'Ilara Beauty | Maquillaje y skincare en Neuquén'
 
   return {
-    title,
+    title: view.page > 1 ? title : { absolute: ogTitle },
     description: catalogDescription,
     alternates: { canonical },
     robots: {
@@ -39,6 +39,9 @@ export function buildCatalogMetadata(view: CatalogViewState): Metadata {
       follow: true,
     },
     openGraph: {
+      siteName: 'Ilara Beauty',
+      locale: 'es_AR',
+      type: 'website',
       title: ogTitle,
       description: catalogDescription,
       url: canonical,

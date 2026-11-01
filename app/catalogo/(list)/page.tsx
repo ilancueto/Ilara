@@ -3,7 +3,9 @@ import { notFound, redirect } from 'next/navigation'
 import { unstable_noStore as noStore } from 'next/cache'
 import Catalogo from '@/components/Catalogo'
 import { loadPublicCatalogSnapshot, loadPublicCatalogSales } from '@/lib/catalog/publicCatalogSnapshot'
-import { buildCatalogMetadata } from '@/lib/catalog/catalogSeo'
+import { buildCatalogMetadata, catalogAbsoluteUrl } from '@/lib/catalog/catalogSeo'
+import { getShareSiteOrigin } from '@/lib/site'
+import { serializeJsonLd } from '@/lib/security/serializeJsonLd'
 import {
   catalogNormalizeRedirectPath,
   parseCatalogView,
@@ -69,7 +71,31 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
   })
   if (listing.outOfRange) notFound()
 
+  const origin = getShareSiteOrigin()
+  // Only describe products actually rendered on this page; combos have no public detail URL.
+  const productsOnPage = listing.itemsPagina.filter((item) => 'stock' in item)
+  const collection = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': `${catalogAbsoluteUrl(view)}#page`,
+    url: catalogAbsoluteUrl(view),
+    name: 'Catálogo de Ilara Beauty en Neuquén',
+    inLanguage: 'es-AR',
+    about: { '@id': `${origin}/#organization` },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: productsOnPage.map((product, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: product.name,
+        url: `${origin}/catalogo/p/${product.id}`,
+      })),
+    },
+  }
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(collection) }} />
     <Catalogo
       initialCatalog={{
         productos: snapshot.productos,
@@ -80,5 +106,6 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
       }}
       initialView={view}
     />
+    </>
   )
 }

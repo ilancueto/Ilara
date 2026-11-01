@@ -48,7 +48,9 @@ export function buildProductJsonLd(
             itemCondition: 'https://schema.org/NewCondition',
             seller: {
                 '@type': 'Organization',
+                '@id': `${siteOrigin.replace(/\/$/, '')}/#organization`,
                 name: MERCHANT_NAME,
+                url: siteOrigin,
             },
         },
     }

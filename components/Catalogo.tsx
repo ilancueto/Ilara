@@ -289,9 +289,10 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
     >
       <main className={styles.wrap}>
         <section className={`${styles.intro} ${searching ? styles.introHidden : ''}`} aria-labelledby="catalogo-titulo-principal">
-          <p className={styles.eyebrow}>Tu próxima obsesión, acá.</p>
+          <p className={styles.eyebrow}>Ilara Beauty · Neuquén</p>
           <h1 id="catalogo-titulo-principal">Un poco de color. Mucho de vos.</h1>
           <p>Maquillaje, skincare y cosmética en Neuquén.</p>
+          <Link href="/sobre-ilara" className={styles.aboutLink}>Conocé Ilara y nuestra historia <span aria-hidden="true">↗</span></Link>
         </section>
 
         <div className={styles.toolbar} id="productos">
