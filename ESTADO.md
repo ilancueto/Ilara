@@ -14,9 +14,11 @@ Mantenimiento del 01/11/2026 sobre el cierre del 30/09/2026. Código en `main`, 
 | Drift SEO | Página `/sobre-ilara`, identidad JSON-LD e Instagram congelados en git |
 | Deploy Vercel | Completado para el commit de mantenimiento |
 | CI lint | Ajustado: reglas nuevas de hooks en 16.4 quedan en warn hasta refactor |
-| Staging CI | `ilara-staging` estaba INACTIVE (Free pause); CI ahora lo reactiva con `scripts/ensure-staging-active.mjs` |
+| Staging CI | `ilara-staging` reactivado (`ACTIVE_HEALTHY`); auto-resume en CI con `scripts/ensure-staging-active.mjs` |
+| CI completo | [Run aprobado](https://github.com/ilancueto/Ilara/actions/runs/41321575213) — lint/test/build, db-security e integración, e2e |
+| Producción | Smoke 16/16; SEO remoto 14/14; Vercel Production en `e917a40` |
 
-No se reejecutó en esta pasada el ejercicio de backup/restore del 30/09. La certificación integral cloud queda sujeta al run de CI tras reactivar staging.
+No se reejecutó en esta pasada el ejercicio de backup/restore del 30/09.
 
 ## Validación real (cierre 30/09/2026)
 
