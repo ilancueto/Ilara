@@ -34,16 +34,16 @@ export default function ModalClienteForm({ editando, formData, onChange, guardan
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="clientes-form-titulo"
-                    className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] flex flex-col z-[201] rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden outline-none"
+                    className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] flex flex-col z-[201] rounded-3xl border border-line bg-surface shadow-2xl overflow-hidden outline-none"
                 >
                     <div className="flex items-center justify-between flex-shrink-0 p-6 sm:p-8 pb-4">
-                        <h3 id="clientes-form-titulo" className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-                            <div className="p-2.5 bg-pink-100 dark:bg-pink-900/40 rounded-xl text-pink-600 dark:text-pink-400">
+                        <h3 id="clientes-form-titulo" className="text-xl font-bold text-ink flex items-center gap-3">
+                            <div className="p-2.5 bg-primary-soft rounded-xl text-accent">
                                 <User className="w-5 h-5" />
                             </div>
                             {editando ? 'Editar Cliente' : 'Nuevo Cliente'}
                         </h3>
-                        <button type="button" onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" aria-label="Cerrar">
+                        <button type="button" onClick={onClose} className="p-2 rounded-xl hover:bg-surface-soft text-hint hover:text-gray-600 dark:hover:text-gray-200 transition-colors" aria-label="Cerrar">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
@@ -68,9 +68,9 @@ export default function ModalClienteForm({ editando, formData, onChange, guardan
                                 <input type="tel" value={formData.phone} onChange={(e) => onChange({ ...formData, phone: e.target.value })} placeholder="Ej: 299 123 4567" className="form-input rounded-xl h-11 px-4" />
                             </div>
                         </div>
-                        <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex gap-4">
+                        <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-line bg-gray-50/50 dark:bg-gray-800/50 flex gap-4">
                             <button type="button" onClick={onClose} className="btn-ghost flex-1 py-3 rounded-xl">Cancelar</button>
-                            <button type="submit" disabled={guardando} className="btn-primary flex-[2] py-3 rounded-xl shadow-lg shadow-pink-200 dark:shadow-pink-900/20 font-semibold">
+                            <button type="submit" disabled={guardando} className="btn-primary flex-[2] py-3 rounded-xl dark:shadow-pink-900/20 font-semibold">
                                 {guardando ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Crear Cliente')}
                             </button>
                         </div>

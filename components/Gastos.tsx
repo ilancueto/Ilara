@@ -186,20 +186,20 @@ export default function Gastos() {
     };
 
     return (
-        <div className="flex flex-col gap-10 animate-fade-in pb-12 text-gray-800 dark:text-gray-100">
+        <div className="flex flex-col gap-10 animate-fade-in pb-12 text-ink">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-2.5">
-                        <span className="text-pink-500 dark:text-pink-400">✦</span>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight flex items-center gap-2.5">
+                        <span className="text-accent">✦</span>
                         Gestión de Gastos
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">Controla y optimiza tus egresos de forma simple.</p>
+                    <p className="text-muted text-sm font-medium mt-1">Controla y optimiza tus egresos de forma simple.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                     <button
                         onClick={() => setShowStats(!showStats)}
-                        className="btn-ghost bg-white dark:bg-gray-800 shadow-sm border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 px-4 py-2.5 text-sm font-medium rounded-xl"
+                        className="btn-ghost bg-surface shadow-sm border-line text-muted hover:text-accent px-4 py-2.5 text-sm font-medium rounded-xl"
                     >
                         <BarChart3 size={18} />
                         <span className="hidden sm:inline">{showStats ? 'Ocultar' : 'Ver'} Stats</span>
@@ -207,14 +207,14 @@ export default function Gastos() {
                     <button
                         onClick={handleExport}
                         disabled={expenses.length === 0}
-                        className="btn-ghost bg-white dark:bg-gray-800 shadow-sm border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 px-4 py-2.5 text-sm font-medium rounded-xl"
+                        className="btn-ghost bg-surface shadow-sm border-line text-muted hover:text-accent px-4 py-2.5 text-sm font-medium rounded-xl"
                     >
                         <Download size={18} />
                         <span className="hidden sm:inline">Exportar</span>
                     </button>
                     <button
                         onClick={() => { setEditingExpense(undefined); setReceiptPreviewForForm(null); setIsFormOpen(true); }}
-                        className="btn-primary shadow-lg shadow-pink-200 px-5 py-2.5 text-sm font-bold rounded-xl gap-2"
+                        className="btn-primary px-5 py-2.5 text-sm font-bold rounded-xl gap-2"
                     >
                         <Plus size={18} />
                         Nuevo Gasto
@@ -233,8 +233,8 @@ export default function Gastos() {
                 <header className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Movimientos</h2>
-                            <span className="bg-pink-100 dark:bg-pink-900/40 px-2.5 py-0.5 rounded-lg text-xs font-bold text-pink-600 dark:text-pink-400">
+                            <h2 className="text-lg font-bold text-ink">Movimientos</h2>
+                            <span className="bg-primary-soft px-2.5 py-0.5 rounded-lg text-xs font-bold text-accent">
                                 {expenses.length}
                             </span>
                             {expenses.length > 0 && (
@@ -256,8 +256,8 @@ export default function Gastos() {
                             type="button"
                             onClick={() => setFiltersPanelOpen(prev => !prev)}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all font-medium text-sm border shrink-0 ${Object.keys(filters).length > 0
-                                ? 'bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800'
-                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                ? 'bg-primary-soft text-accent border-pink-200 dark:border-pink-800'
+                                : 'bg-surface text-muted border-line hover:bg-canvas'
                             }`}
                         >
                             <Filter className="w-4 h-4" />

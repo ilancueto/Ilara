@@ -117,13 +117,13 @@ export function BulkSelectList({
           data-testid={`${testId}-select-all`}
           data-dialog-initial-focus
         />
-        <span className="font-bold text-sm text-gray-700 dark:text-gray-200">
+        <span className="font-bold text-sm text-ink">
           {selectAllLabel}
         </span>
       </label>
       <div className="space-y-1.5" role="group" aria-label="Elementos seleccionables">
         {items.length === 0 ? (
-          <p className="text-gray-400 dark:text-gray-500 text-sm py-4">{emptyMessage}</p>
+          <p className="text-hint text-sm py-4">{emptyMessage}</p>
         ) : (
           items.map((item) => (
             <label
@@ -141,11 +141,11 @@ export function BulkSelectList({
                 className={`rounded shrink-0 ${accentCheck[accent]}`}
                 data-testid={`${testId}-item-${item.id}`}
               />
-              <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate min-w-0">
+              <span className="flex-1 text-sm font-medium text-ink truncate min-w-0">
                 {item.label}
               </span>
               {item.meta ? (
-                <span className="text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 tabular-nums max-w-[45%] truncate">
+                <span className="text-xs text-muted flex-shrink-0 tabular-nums max-w-[45%] truncate">
                   {item.meta}
                 </span>
               ) : null}

@@ -127,7 +127,7 @@ export function ModalBadgeProductos({
                 <div className="mb-4">
                     <label
                         htmlFor="bulk-badge-select"
-                        className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5"
+                        className="block text-xs font-semibold text-muted mb-1.5"
                     >
                         Badge a aplicar
                     </label>
@@ -138,7 +138,7 @@ export function ModalBadgeProductos({
                             onBadgeChange(e.target.value as CatalogBadgeKey | 'auto')
                         }
                         disabled={loading}
-                        className="w-full rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100"
+                        className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm font-medium text-ink"
                         data-dialog-initial-focus
                     >
                         {CATALOG_BADGE_OPTIONS.map((opt) => (
@@ -147,7 +147,7 @@ export function ModalBadgeProductos({
                             </option>
                         ))}
                     </select>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                    <p className="text-xs text-hint mt-1.5">
                         {CATALOG_BADGE_OPTIONS.find((o) => o.value === badge)?.hint}
                     </p>
                 </div>
@@ -200,7 +200,7 @@ export function ModalVisibilidadProductos({
                             type="button"
                             onClick={() => onConfirm(false)}
                             disabled={loading || seleccionados.size === 0}
-                            className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 disabled:opacity-50"
+                            className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 border border-line disabled:opacity-50"
                             data-testid="bulk-visibilidad-productos-hide"
                         >
                             <EyeOff className="w-4 h-4" aria-hidden />

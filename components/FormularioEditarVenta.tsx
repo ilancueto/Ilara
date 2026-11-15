@@ -184,45 +184,45 @@ export default function FormularioEditarVenta({
         aria-labelledby="editar-venta-titulo"
         className="fixed left-1/2 -translate-x-1/2 top-8 w-full max-w-lg max-h-[calc(100vh-4rem)] z-[100] outline-none"
       >
-      <PastelCard className="max-h-[calc(100vh-4rem)] overflow-y-auto !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 !p-0 overflow-hidden bg-white dark:bg-gray-900" noHover>
+      <PastelCard className="max-h-[calc(100vh-4rem)] overflow-y-auto !shadow-2xl rounded-3xl border border-line !p-0 overflow-hidden bg-surface" noHover>
         {/* Header con gradiente */}
-        <div className="bg-gradient-to-br from-pink-500/10 via-rose-50 to-transparent dark:from-pink-900/20 dark:via-gray-800/80 dark:to-transparent border-b border-pink-100 dark:border-gray-700 px-6 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9">
+        <div className="bg-gradient-to-br from-pink-500/10 via-rose-50 to-transparent dark:from-pink-900/20 dark:via-gray-800/80 dark:to-transparent border-b border-line px-6 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-2xl bg-pink-500/20 dark:bg-pink-500/30 flex items-center justify-center text-pink-600 dark:text-pink-400 flex-shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-pink-500/20 dark:bg-pink-500/30 flex items-center justify-center text-accent flex-shrink-0">
                 <Receipt className="w-5 h-5" strokeWidth={2} />
               </div>
               <div className="min-w-0">
-                <h3 id="editar-venta-titulo" className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">
+                <h3 id="editar-venta-titulo" className="text-lg sm:text-xl font-bold text-ink">
                   Editar venta #{venta.id}
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1.5">Modificá los datos de la venta</p>
+                <p className="text-xs sm:text-sm text-muted mt-1.5">Modificá los datos de la venta</p>
               </div>
             </div>
-            <button type="button" onClick={onCancelar} className="p-2.5 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="Cerrar">
+            <button type="button" onClick={onCancelar} className="p-2.5 rounded-xl text-hint hover:text-gray-600 dark:hover:text-gray-200 hover:bg-surface-soft transition-colors" aria-label="Cerrar">
               <X size={20} />
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="form-body p-6 sm:p-8 border-gray-200 dark:border-gray-700">
+        <form onSubmit={handleSubmit} className="form-body p-6 sm:p-8 border-line">
           {/* Main information: date + client */}
           <section className="form-section">
-            <h4 className="form-label text-gray-700 dark:text-gray-300">Información principal</h4>
+            <h4 className="form-label text-ink">Información principal</h4>
             <div className="form-section-fields">
               <div className="form-section">
-                <label htmlFor="editar-venta-fecha" className="form-label text-gray-700 dark:text-gray-300">Fecha</label>
+                <label htmlFor="editar-venta-fecha" className="form-label text-ink">Fecha</label>
                 <input
                   id="editar-venta-fecha"
                   type="date"
                   value={saleDate}
                   onChange={(e) => setSaleDate(e.target.value)}
-                  className="form-control-h w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+                  className="form-control-h w-full px-4 py-3 bg-surface border border-line rounded-xl text-ink focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
                 />
               </div>
               <div className="form-section">
-                <label htmlFor="editar-venta-cliente" className="form-label text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <User className="w-4 h-4 text-pink-500 dark:text-pink-400" />
+                <label htmlFor="editar-venta-cliente" className="form-label text-ink flex items-center gap-2">
+                  <User className="w-4 h-4 text-accent" />
                   Cliente
                 </label>
                 <div className="form-section-fields">
@@ -230,7 +230,7 @@ export default function FormularioEditarVenta({
                     id="editar-venta-cliente"
                     value={selectValue}
                     onChange={(e) => handleClienteChange(e.target.value)}
-                    className="form-control-h w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+                    className="form-control-h w-full px-4 py-3 bg-surface border border-line rounded-xl text-ink focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
                   >
                     <option value="">Consumidor final</option>
                     {clientes.map((c) => (
@@ -246,7 +246,7 @@ export default function FormularioEditarVenta({
                       value={customerName}
                       onChange={(e) => handleNombreOtroChange(e.target.value)}
                       placeholder="Nombre del cliente"
-                      className="form-control-h w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+                      className="form-control-h w-full px-4 py-3 bg-surface border border-line rounded-xl text-ink placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
                     />
                   )}
                 </div>
@@ -256,7 +256,7 @@ export default function FormularioEditarVenta({
 
           {/* Payment method */}
           <section className="form-section">
-            <label className="form-label text-gray-700 dark:text-gray-300">Método de pago</label>
+            <label className="form-label text-ink">Método de pago</label>
             <div className="form-payment-grid">
               {[
                 { id: 'efectivo', icon: Banknote, label: 'Efectivo' },
@@ -274,8 +274,8 @@ export default function FormularioEditarVenta({
                     onClick={() => setPaymentMethod(m.id)}
                     className={`form-payment-btn gap-2 px-4 rounded-xl border-2 text-sm font-bold transition-all ${
                       active
-                        ? 'bg-pink-50 dark:bg-pink-900/40 border-pink-300 dark:border-pink-600 text-pink-600 dark:text-pink-400 shadow-sm'
-                        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-pink-200 dark:hover:border-pink-700 hover:bg-pink-50/50 dark:hover:bg-pink-900/20'
+                        ? 'bg-primary-soft border-pink-300 dark:border-pink-600 text-accent shadow-sm'
+                        : 'bg-canvas border-line text-muted hover:border-pink-200 dark:hover:border-pink-700 hover:bg-pink-50/50 dark:hover:bg-pink-900/20'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -288,7 +288,7 @@ export default function FormularioEditarVenta({
 
           {/* Attachment / receipt upload */}
           <section className="form-section">
-            <label className="form-label text-gray-700 dark:text-gray-300">Comprobante (opcional)</label>
+            <label className="form-label text-ink">Comprobante (opcional)</label>
             <div>
               <input
                 type="file"
@@ -298,25 +298,25 @@ export default function FormularioEditarVenta({
                 className="hidden"
               />
               {tieneBloqueComprobante ? (
-                <div className="flex flex-wrap items-center gap-4 p-5 border border-pink-200 dark:border-pink-800 rounded-2xl bg-pink-50 dark:bg-pink-900/30">
+                <div className="flex flex-wrap items-center gap-4 p-5 border border-pink-200 dark:border-pink-800 rounded-2xl bg-primary-soft">
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-gray-700 border border-pink-100 dark:border-transparent flex-shrink-0">
                     {localReceiptDataUrl && localReceiptDataUrl.includes('image') ? (
                       <Image src={localReceiptDataUrl} alt="Preview" width={56} height={56} className="w-full h-full object-cover" unoptimized />
                     ) : remoteSignedThumb && !esPdfGuardado ? (
                       <Image src={remoteSignedThumb} alt="Preview" width={56} height={56} className="w-full h-full object-cover" unoptimized />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-pink-500 dark:text-pink-400">
+                      <div className="w-full h-full flex items-center justify-center text-accent">
                         <FileText className="w-6 h-6" />
                       </div>
                     )}
                   </div>
-                  <span className="text-sm text-pink-700 dark:text-pink-300 flex-1 truncate min-w-0 font-medium">
+                  <span className="text-sm text-primary-ink flex-1 truncate min-w-0 font-medium">
                     {receiptFile ? receiptFile.name : 'Comprobante adjunto'}
                   </span>
                   <button
                     type="button"
                     onClick={() => void openStoredReceipt()}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300 hover:bg-pink-200 dark:hover:bg-pink-800 text-xs font-bold transition-colors"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-pink-100 dark:bg-pink-900/50 text-primary-ink hover:bg-pink-200 dark:hover:bg-pink-800 text-xs font-bold transition-colors"
                   >
                     <ExternalLink size={14} />
                     Ver comprobante
@@ -333,7 +333,7 @@ export default function FormularioEditarVenta({
               ) : (
                 <label
                   htmlFor="receipt-venta"
-                  className="flex items-center justify-center gap-3 min-h-[88px] py-6 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl cursor-pointer hover:border-pink-400 dark:hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 text-gray-500 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 text-sm font-medium transition-colors"
+                  className="flex items-center justify-center gap-3 min-h-[88px] py-6 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl cursor-pointer hover:border-pink-400 dark:hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 text-muted hover:text-accent text-sm font-medium transition-colors"
                 >
                   <Upload size={20} />
                   Subir comprobante (imagen o PDF)
@@ -344,23 +344,23 @@ export default function FormularioEditarVenta({
 
           {/* Notes */}
           <section className="form-section">
-            <label htmlFor="editar-venta-notas" className="form-label text-gray-700 dark:text-gray-300">Notas</label>
+            <label htmlFor="editar-venta-notas" className="form-label text-ink">Notas</label>
             <textarea
               id="editar-venta-notas"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Notas adicionales..."
               rows={3}
-              className="form-textarea-min w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
+              className="form-textarea-min w-full px-4 py-3 bg-surface border border-line rounded-xl text-ink placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 dark:focus:border-pink-500 transition-colors"
             />
           </section>
 
           {/* Footer actions */}
-          <div className="form-footer-bar flex gap-4 border-gray-200 dark:border-gray-700">
-            <button type="button" onClick={onCancelar} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          <div className="form-footer-bar flex gap-4 border-line">
+            <button type="button" onClick={onCancelar} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-ink bg-surface-soft border border-line hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={guardando} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-white bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-500 shadow-lg shadow-pink-500/30 dark:shadow-pink-900/30 disabled:opacity-50 transition-all">
+            <button type="submit" disabled={guardando} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-white bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-500 dark:shadow-pink-900/30 disabled:opacity-50 transition-all">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

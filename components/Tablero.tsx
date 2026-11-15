@@ -285,14 +285,14 @@ export default function Tablero({ onNavigate }: TableroProps) {
     )
 
     return (
-        <div className="flex flex-col gap-6 sm:gap-8 pb-6 text-gray-800 dark:text-gray-100">
+        <div className="flex flex-col gap-6 sm:gap-8 pb-6 text-ink">
             {/* Header estilo mock */}
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div className="min-w-0">
-                    <h2 className="text-2xl sm:text-[1.65rem] font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-primary-ink tracking-tight">
                         {saludoHora} ✨
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 font-medium">
+                    <p className="text-muted text-sm mt-1 font-medium">
                         Resumen de tu negocio · hoy
                     </p>
                 </div>
@@ -306,7 +306,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         onClick={() =>
                             onNavigate ? onNavigate('sales') : router.push('/?tab=sales')
                         }
-                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm shadow-[0_8px_20px_-6px_rgba(184,93,111,0.5)] hover:brightness-105 hover:-translate-y-0.5 transition-all"
+                        className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-primary hover:bg-primary-hover text-white font-bold text-sm transition-colors"
                     >
                         <Receipt className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                         Nueva venta
@@ -315,14 +315,13 @@ export default function Tablero({ onNavigate }: TableroProps) {
             </div>
 
             {/* KPIs — grilla fluida como mock */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-stretch">
-                <div className="col-span-2 sm:col-span-1">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-stretch">
+                <div className="col-span-2 lg:row-span-2">
                     <TarjetaEstadistica
                         icono={<DollarSign className="w-5 h-5" />}
                         etiqueta="Ingresos"
                         valor={`$${totalIngresos.toLocaleString()}`}
-                        color="text-pink-500"
-                        bgIcon="bg-pink-50"
+                        destacada
                         subtitulo={`${cantidadVentas} mostrador · ${kpi.incomes_count} manuales${kpi.catalog_inflow > 0 ? ' · web incluida' : ''}`}
                         trend={true}
                         onActivate={onNavigate ? () => onNavigate({ tab: 'incomes', view: 'historial' }) : undefined}
@@ -333,7 +332,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                                     event.stopPropagation()
                                     setMostrarModalPeriodo(true)
                                 }}
-                                className="p-2 rounded-lg bg-white/80 dark:bg-zinc-800 border border-pink-100 dark:border-zinc-700 text-pink-600 dark:text-pink-400 hover:bg-white dark:hover:bg-zinc-700 transition-colors"
+                                className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
                                 aria-label="Cambiar período de ingresos"
                             >
                                 <Settings className="w-4 h-4" />
@@ -346,8 +345,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         icono={<Wallet className="w-5 h-5" />}
                         etiqueta="Gastos"
                         valor={`$${totalGastos.toLocaleString()}`}
-                        color="text-amber-500"
-                        bgIcon="bg-amber-50"
+                        tone={1}
                         subtitulo="Egresos del período"
                         onActivate={onNavigate ? () => onNavigate('expenses') : undefined}
                     />
@@ -357,8 +355,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         icono={<Package className="w-5 h-5" />}
                         etiqueta="Productos"
                         valor={totalProductos.toString()}
-                        color="text-violet-500"
-                        bgIcon="bg-violet-50"
+                        tone={2}
                         subtitulo={productosStockBajo > 0 ? `${productosStockBajo} bajo mínimo` : 'Stock OK'}
                         onActivate={onNavigate ? () => onNavigate('inventory') : undefined}
                     />
@@ -368,8 +365,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         icono={<AlertTriangle className="w-5 h-5" />}
                         etiqueta="Stock crítico"
                         valor={productosStockBajo.toString()}
-                        color="text-amber-500"
-                        bgIcon="bg-amber-50"
+                        tone={3}
                         alerta={productosStockBajo > 0}
                         subtitulo={`Inv. $${valorTotalInventario.toLocaleString()}`}
                         onActivate={
@@ -384,8 +380,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         icono={<ClipboardList className="w-5 h-5" />}
                         etiqueta="Pedidos web"
                         valor={`$${kpi.catalog_inflow.toLocaleString()}`}
-                        color="text-sky-500"
-                        bgIcon="bg-sky-50"
+                        tone={4}
                         subtitulo={
                             pedidosAbiertos > 0
                                 ? `${pedidosAbiertos} abiertos · cobrados en el período`
@@ -403,53 +398,53 @@ export default function Tablero({ onNavigate }: TableroProps) {
                     <button
                         type="button"
                         onClick={() => onNavigate('orders')}
-                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                        className="flex items-center gap-3 p-3.5 rounded-full border border-line bg-surface hover:border-primary hover:-translate-y-0.5 transition-all text-left"
                     >
-                        <span className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <span className="w-10 h-10 rounded-full bg-tint-4 text-primary-ink flex items-center justify-center shrink-0">
                             <ClipboardList className="w-5 h-5" />
                         </span>
                         <span className="min-w-0">
-                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Pedidos</span>
-                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Web pendientes</span>
+                            <span className="block text-sm font-bold text-ink">Pedidos</span>
+                            <span className="block text-xs text-muted font-semibold">Web pendientes</span>
                         </span>
                     </button>
                     <button
                         type="button"
                         onClick={() => onNavigate('incomes')}
-                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                        className="flex items-center gap-3 p-3.5 rounded-full border border-line bg-surface hover:border-primary hover:-translate-y-0.5 transition-all text-left"
                     >
-                        <span className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <span className="w-10 h-10 rounded-full bg-tint-2 text-primary-ink flex items-center justify-center shrink-0">
                             <TrendingUp className="w-5 h-5" />
                         </span>
                         <span className="min-w-0">
-                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Ingresos</span>
-                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Ventas e historial</span>
+                            <span className="block text-sm font-bold text-ink">Ingresos</span>
+                            <span className="block text-xs text-muted font-semibold">Ventas e historial</span>
                         </span>
                     </button>
                     <button
                         type="button"
                         onClick={() => onNavigate('expenses')}
-                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                        className="flex items-center gap-3 p-3.5 rounded-full border border-line bg-surface hover:border-primary hover:-translate-y-0.5 transition-all text-left"
                     >
-                        <span className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <span className="w-10 h-10 rounded-full bg-tint-1 text-primary-ink flex items-center justify-center shrink-0">
                             <Wallet className="w-5 h-5" />
                         </span>
                         <span className="min-w-0">
-                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Gastos</span>
-                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Egresos del mes</span>
+                            <span className="block text-sm font-bold text-ink">Gastos</span>
+                            <span className="block text-xs text-muted font-semibold">Egresos del mes</span>
                         </span>
                     </button>
                     <button
                         type="button"
                         onClick={() => router.push('/catalogo')}
-                        className="flex items-center gap-3 p-3.5 rounded-2xl border border-pink-100/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_16px_rgba(190,24,93,0.05)] hover:border-pink-200 dark:hover:border-pink-800/50 hover:-translate-y-0.5 hover:shadow-md transition-all text-left"
+                        className="flex items-center gap-3 p-3.5 rounded-full border border-line bg-surface hover:border-primary hover:-translate-y-0.5 transition-all text-left"
                     >
-                        <span className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0">
+                        <span className="w-10 h-10 rounded-full bg-tint-3 text-primary-ink flex items-center justify-center shrink-0">
                             <Store className="w-5 h-5" />
                         </span>
                         <span className="min-w-0">
-                            <span className="block text-sm font-extrabold text-gray-900 dark:text-gray-50">Catálogo</span>
-                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">Vitrina pública</span>
+                            <span className="block text-sm font-bold text-ink">Catálogo</span>
+                            <span className="block text-xs text-muted font-semibold">Vitrina pública</span>
                         </span>
                     </button>
                 </div>
@@ -461,16 +456,16 @@ export default function Tablero({ onNavigate }: TableroProps) {
                     <PastelCard noHover className="h-full min-h-[320px] sm:min-h-[360px] flex flex-col p-5 sm:p-6">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4 shrink-0">
                             <div className="min-w-0">
-                                <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+                                <h3 className="text-base sm:text-lg font-bold tracking-tight text-ink">
                                     Actividad de ventas
                                 </h3>
                                 {ventasChartEsMensual ? (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed max-w-xl">
+                                    <p className="text-xs text-muted mt-1 leading-relaxed max-w-xl">
                                         Barras mensuales desde la primera venta cobrada (máx. 120 meses).
                                     </p>
                                 ) : null}
                             </div>
-                            <span className="px-2.5 py-1 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[10px] text-pink-600 dark:text-pink-300 font-bold uppercase tracking-wider shrink-0 self-start">
+                            <span className="px-2.5 py-1 rounded-full bg-primary-soft text-[10px] text-primary-ink font-bold uppercase tracking-wider shrink-0 self-start">
                                 {etiquetaPeriodo}
                             </span>
                         </div>
@@ -487,10 +482,10 @@ export default function Tablero({ onNavigate }: TableroProps) {
                 <div className="flex flex-col min-w-0">
                     <PastelCard noHover className="p-5 sm:p-6 h-full">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+                            <h3 className="text-base sm:text-lg font-bold tracking-tight text-ink">
                                 Recientes
                             </h3>
-                            <span className="px-2.5 py-1 rounded-full bg-pink-50 dark:bg-pink-900/30 text-[10px] text-pink-600 dark:text-pink-300 font-bold uppercase tracking-wider">
+                            <span className="px-2.5 py-1 rounded-full bg-primary-soft text-[10px] text-primary-ink font-bold uppercase tracking-wider">
                                 Hoy
                             </span>
                         </div>
@@ -528,27 +523,27 @@ export default function Tablero({ onNavigate }: TableroProps) {
                                             key={row.key}
                                             type="button"
                                             onClick={row.onClick}
-                                            className="w-full flex items-center gap-3 py-3 border-b border-gray-100/80 dark:border-white/5 last:border-0 text-left group"
+                                            className="w-full flex items-center gap-3 py-3 border-b border-line last:border-0 text-left group"
                                         >
-                                            <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/40 dark:to-zinc-800 border border-pink-100 dark:border-white/10 flex items-center justify-center text-[11px] font-extrabold text-pink-600 dark:text-pink-300 shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-[11px] font-bold text-primary-ink shrink-0">
                                                 {row.title.slice(0, 2).toUpperCase()}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="font-bold text-sm text-gray-900 dark:text-gray-100 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">
+                                                <p className="font-bold text-sm text-ink group-hover:text-primary transition-colors truncate">
                                                     {row.title}
                                                 </p>
-                                                <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5 truncate capitalize">
+                                                <p className="text-xs text-hint font-medium mt-0.5 truncate capitalize">
                                                     {row.subtitle} · {format(new Date(row.at), 'HH:mm', { locale: es })}
                                                 </p>
                                             </div>
-                                            <p className="font-extrabold text-sm tabular-nums text-gray-900 dark:text-gray-50 shrink-0">
+                                            <p className="font-bold text-sm tabular-nums text-ink shrink-0">
                                                 ${row.total.toLocaleString()}
                                             </p>
                                         </button>
                                     ))}
                             </div>
                         ) : (
-                            <div className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm border border-dashed border-pink-100 dark:border-white/10 rounded-2xl">
+                            <div className="text-center py-10 text-muted text-sm border border-dashed border-line rounded-card">
                                 <p className="font-medium">Sin ventas recientes</p>
                             </div>
                         )}

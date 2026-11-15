@@ -83,6 +83,8 @@
   --color-surface-soft: var(--ui-surface-soft);
   --color-ink: var(--ui-ink);
   --color-muted: var(--ui-muted);
+  --color-hint: var(--ui-hint);
+  --color-accent: var(--ui-accent);
   --color-line: var(--ui-line);
   --color-primary: var(--ui-primary);
   --color-primary-hover: var(--ui-primary-hover);
@@ -102,6 +104,8 @@
   --ui-surface-soft: #FDEAE6;
   --ui-ink: #4A3542;
   --ui-muted: #6B5562;
+  --ui-hint: #9A8590;
+  --ui-accent: #B8446F;
   --ui-line: #F3DFE0;
   --ui-border: #EED3D8;
   --ui-primary: #B8446F;
@@ -127,6 +131,8 @@
   --ui-surface-soft: #33262D;
   --ui-ink: #F6E9EF;
   --ui-muted: #CDB5C2;
+  --ui-hint: #A08A96;
+  --ui-accent: #F093B1;
   --ui-line: #3A2C33;
   --ui-border: #4A3740;
   --ui-primary: #C9507D;
@@ -145,14 +151,6 @@
 .dark body {
   background: var(--ui-canvas);
   color: var(--color-text-main);
-}
-
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-  color: var(--ui-ink);
-}
-
-.dark p {
-  color: var(--ui-muted);
 }
 
 /* ─── Reset & Base ─── */
@@ -422,15 +420,18 @@ body {
 }
 
 /* ─── Typography ─── */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--ui-ink);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
+/* En @layer base para que las clases de Tailwind de cada componente (text-*, font-*) tengan prioridad. */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--ui-ink);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
 
-p {
-  color: var(--ui-muted);
-  line-height: 1.6;
+  p {
+    color: var(--ui-muted);
+    line-height: 1.6;
+  }
 }
 
 /* Excepción: total a pagar (card rosa) debe mantener texto blanco (p global pisa si no) */

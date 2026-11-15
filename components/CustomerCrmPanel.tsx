@@ -86,26 +86,26 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
   return (
     <div className="flex flex-col gap-6" data-testid="customer-crm-panel">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <div className="rounded-xl bg-pink-50 dark:bg-pink-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Compras</p><p className="font-black text-lg">{profile.metrics.sale_count}</p></div>
+        <div className="rounded-xl bg-primary-soft p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Compras</p><p className="font-black text-lg">{profile.metrics.sale_count}</p></div>
         <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Neto comprado</p><p className="font-black text-lg">{money.format(profile.metrics.net_spent)}</p></div>
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Devuelto</p><p className="font-black text-lg">{money.format(profile.metrics.refund_total)}</p></div>
         <div className="rounded-xl bg-sky-50 dark:bg-sky-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Ticket medio</p><p className="font-black text-lg">{money.format(profile.metrics.average_ticket)}</p></div>
       </div>
 
-      <section aria-labelledby="crm-orders-title" className="rounded-xl border border-gray-200 dark:border-gray-700 p-4" data-testid="crm-catalog-orders">
+      <section aria-labelledby="crm-orders-title" className="rounded-xl border border-line p-4" data-testid="crm-catalog-orders">
         <h4 id="crm-orders-title" className="font-extrabold">Pedidos online</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">Pedidos</p><p className="font-black">{profile.catalog_orders.order_count}</p></div>
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">Histórico</p><p className="font-black">{money.format(profile.catalog_orders.order_total)}</p></div>
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">En curso</p><p className="font-black">{profile.catalog_orders.open_count}</p></div>
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[10px] uppercase text-gray-500">Último</p><p className="font-black text-sm">{profile.catalog_orders.last_order_at ? dateTime.format(new Date(profile.catalog_orders.last_order_at)) : '—'}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">Pedidos</p><p className="font-black">{profile.catalog_orders.order_count}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">Histórico</p><p className="font-black">{money.format(profile.catalog_orders.order_total)}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">En curso</p><p className="font-black">{profile.catalog_orders.open_count}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">Último</p><p className="font-black text-sm">{profile.catalog_orders.last_order_at ? dateTime.format(new Date(profile.catalog_orders.last_order_at)) : '—'}</p></div>
         </div>
         <ul className="mt-3 space-y-2">
           {profile.catalog_orders.recent.map((order) => (
             <li key={order.id}>
               <a
                 href={panelHref({ tab: 'orders', orderId: order.id })}
-                className="flex justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 text-sm hover:bg-pink-50/60 dark:hover:bg-pink-950/20"
+                className="flex justify-between gap-3 rounded-xl border border-line px-3 py-2 text-sm hover:bg-pink-50/60 dark:hover:bg-pink-950/20"
                 data-testid={`crm-order-${order.order_number}`}
               >
                 <span>
@@ -129,7 +129,7 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
         <div className="flex flex-wrap gap-2 mt-3">
           {allTags.map((tag) => {
             const selected = selectedTags.has(tag.id)
-            return <button key={tag.id} type="button" aria-pressed={selected} data-testid={`crm-tag-${tag.id}`} onClick={() => setSelectedTags((current) => { const next = new Set(current); if (next.has(tag.id)) next.delete(tag.id); else next.add(tag.id); return next })} className={`rounded-full border px-3 py-1.5 text-xs font-bold ${selected ? 'text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'}`} style={selected ? { backgroundColor: tag.color, borderColor: tag.color } : { borderColor: tag.color }}>{tag.name}</button>
+            return <button key={tag.id} type="button" aria-pressed={selected} data-testid={`crm-tag-${tag.id}`} onClick={() => setSelectedTags((current) => { const next = new Set(current); if (next.has(tag.id)) next.delete(tag.id); else next.add(tag.id); return next })} className={`rounded-full border px-3 py-1.5 text-xs font-bold ${selected ? 'text-white' : 'bg-surface text-muted'}`} style={selected ? { backgroundColor: tag.color, borderColor: tag.color } : { borderColor: tag.color }}>{tag.name}</button>
           })}
           {allTags.length === 0 && <span className="text-xs text-gray-500">Todavía no hay etiquetas.</span>}
         </div>
@@ -140,7 +140,7 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
         </div>
       </section>
 
-      <section aria-labelledby="crm-consent-title" className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      <section aria-labelledby="crm-consent-title" className="rounded-xl border border-line p-4">
         <div className="flex items-center justify-between gap-3">
           <h4 id="crm-consent-title" className="font-extrabold">Campañas de marketing</h4>
           <span className={`inline-flex items-center gap-1 text-xs font-bold ${profile.consent.granted ? 'text-emerald-600' : 'text-gray-500'}`} data-testid="crm-consent-status">
@@ -195,8 +195,8 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
               </>
             )
             return href
-              ? <li key={event.id}><a href={href} className="rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 flex justify-between gap-3 text-sm hover:bg-pink-50/50 dark:hover:bg-pink-950/20">{body}</a></li>
-              : <li key={event.id} className="rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2 flex justify-between gap-3 text-sm">{body}</li>
+              ? <li key={event.id}><a href={href} className="rounded-xl border border-line px-3 py-2 flex justify-between gap-3 text-sm hover:bg-pink-50/50 dark:hover:bg-pink-950/20">{body}</a></li>
+              : <li key={event.id} className="rounded-xl border border-line px-3 py-2 flex justify-between gap-3 text-sm">{body}</li>
           })}
           {profile.activity.length === 0 && <li className="text-xs text-gray-500">Sin actividad registrada.</li>}
         </ul>

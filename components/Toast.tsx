@@ -92,7 +92,7 @@ export default function Toast({ id, type, message, duration = 4000, action, onCl
                     <button
                         type="button"
                         onClick={handleAction}
-                        className="mt-2.5 text-sm font-semibold text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-1 rounded"
+                        className="mt-2.5 text-sm font-semibold text-accent hover:text-primary-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-1 rounded"
                         aria-label={action.label}
                     >
                         {action.label}
@@ -102,7 +102,7 @@ export default function Toast({ id, type, message, duration = 4000, action, onCl
 
             <button
                 onClick={runExitAndClose}
-                className="flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex-shrink-0 text-hint hover:text-muted transition-colors p-1 rounded-lg hover:bg-surface-soft"
                 aria-label="Cerrar"
             >
                 <X className="w-4 h-4" />

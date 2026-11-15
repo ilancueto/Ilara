@@ -53,7 +53,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
             <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
-            <PastelCard className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
+            <PastelCard className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-line" noHover>
                 <div className="flex flex-col md:flex-row flex-1 min-h-0">
                     {/* Imagen */}
                     <div className="relative w-full md:w-72 flex-shrink-0 h-52 md:h-auto md:min-h-[380px] bg-gradient-to-br from-pink-50 to-gray-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none overflow-hidden">
@@ -100,7 +100,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                         <div className="flex-1 min-w-0 overflow-y-auto p-6 sm:p-8 flex flex-col gap-8">
                             <button
                                 onClick={onClose}
-                                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 hover:border-pink-100 dark:hover:border-pink-800 transition-all"
+                                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white dark:bg-gray-700 shadow-sm border border-line flex items-center justify-center text-muted hover:text-accent hover:border-pink-100 dark:hover:border-pink-800 transition-all"
                                 aria-label="Cerrar"
                             >
                                 <X className="w-4 h-4" />
@@ -109,27 +109,27 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                             <div className="flex flex-col gap-1">
                                 <div className="flex flex-wrap gap-2">
                                     {producto.categories && (
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/40 px-2.5 py-1 rounded-full border border-pink-100 dark:border-pink-800/50">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-accent bg-primary-soft px-2.5 py-1 rounded-full border border-line">
                                             {producto.categories.name}
                                         </span>
                                     )}
                                     {producto.brand && (
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted bg-surface-soft px-2.5 py-1 rounded-full">
                                             {producto.brand}
                                         </span>
                                     )}
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 leading-tight pr-12">
+                                <h2 className="text-xl font-bold text-ink leading-tight pr-12">
                                     {producto.name}
                                 </h2>
                                 {producto.public_description && (
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                    <p className="text-muted text-sm leading-relaxed whitespace-pre-wrap">
                                         {producto.public_description}
                                     </p>
                                 )}
                                 {producto.notes && (
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                                        <span className="font-medium text-gray-400 dark:text-gray-500">Nota interna · </span>
+                                    <p className="text-muted text-sm leading-relaxed">
+                                        <span className="font-medium text-hint">Nota interna · </span>
                                         {producto.notes}
                                     </p>
                                 )}
@@ -137,48 +137,48 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
 
                             {/* Fila de métricas principales: Precio venta + Stock */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="flex flex-col justify-center min-h-[88px] p-4 rounded-2xl bg-gray-50/90 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700">
-                                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 flex items-center gap-1.5">
+                                <div className="flex flex-col justify-center min-h-[88px] p-4 rounded-2xl bg-gray-50/90 dark:bg-gray-800/80 border border-line">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-hint mb-1.5 flex items-center gap-1.5">
                                         <DollarSign className="w-3.5 h-3.5" /> Precio venta
                                     </p>
-                                    <p className="text-xl font-black text-gray-800 dark:text-gray-100">${producto.sale_price.toLocaleString()}</p>
+                                    <p className="text-xl font-black text-ink">${producto.sale_price.toLocaleString()}</p>
                                 </div>
-                                <div className="flex flex-col justify-center min-h-[88px] p-4 rounded-2xl bg-gray-50/90 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700">
-                                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 flex items-center gap-1.5">
+                                <div className="flex flex-col justify-center min-h-[88px] p-4 rounded-2xl bg-gray-50/90 dark:bg-gray-800/80 border border-line">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-hint mb-1.5 flex items-center gap-1.5">
                                         <Package className="w-3.5 h-3.5" /> Stock
                                     </p>
-                                    <p className="text-xl font-black text-gray-800 dark:text-gray-100">{producto.stock} <span className="text-sm font-medium text-gray-500 dark:text-gray-400">un.</span></p>
+                                    <p className="text-xl font-black text-ink">{producto.stock} <span className="text-sm font-medium text-muted">un.</span></p>
                                 </div>
                             </div>
 
                             {/* Bloque de información secundaria */}
-                            <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30 p-3.5">
+                            <div className="rounded-xl border border-line bg-gray-50/50 dark:bg-gray-800/30 p-3.5">
                                 <div className="grid gap-0 divide-y divide-gray-200 dark:divide-gray-600">
                                     <div className="flex items-center justify-between gap-4 py-2.5 first:pt-0">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
-                                            <Tag className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> Costo unitario
+                                        <span className="text-xs text-muted flex items-center gap-2 shrink-0">
+                                            <Tag className="w-3.5 h-3.5 text-hint" /> Costo unitario
                                         </span>
-                                        <span className="font-medium text-xs text-gray-800 dark:text-gray-100 tabular-nums">
+                                        <span className="font-medium text-xs text-ink tabular-nums">
                                             {producto.purchase_price ? `$${producto.purchase_price.toLocaleString()}` : '—'}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4 py-2.5">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
-                                            <Award className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> Margen
+                                        <span className="text-xs text-muted flex items-center gap-2 shrink-0">
+                                            <Award className="w-3.5 h-3.5 text-hint" /> Margen
                                         </span>
                                         <span className={`font-medium text-xs tabular-nums ${margen != null && margen > 30 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                                             {margen != null ? `${margen}%` : '—'}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4 py-2.5">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
-                                            <Package className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> Mínimo
+                                        <span className="text-xs text-muted flex items-center gap-2 shrink-0">
+                                            <Package className="w-3.5 h-3.5 text-hint" /> Mínimo
                                         </span>
-                                        <span className="font-medium text-xs text-gray-800 dark:text-gray-100 tabular-nums">{producto.min_stock} un.</span>
+                                        <span className="font-medium text-xs text-ink tabular-nums">{producto.min_stock} un.</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4 py-2.5">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
-                                            {producto.visible_in_catalog !== false ? <Eye className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> : <EyeOff className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
+                                        <span className="text-xs text-muted flex items-center gap-2 shrink-0">
+                                            {producto.visible_in_catalog !== false ? <Eye className="w-3.5 h-3.5 text-hint" /> : <EyeOff className="w-3.5 h-3.5 text-hint" />}
                                             Visible en catálogo
                                         </span>
                                         <span className={`font-medium text-xs ${producto.visible_in_catalog !== false ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
@@ -186,10 +186,10 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4 py-2.5 last:pb-0">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 shrink-0">
-                                            <Award className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" /> Badge catálogo
+                                        <span className="text-xs text-muted flex items-center gap-2 shrink-0">
+                                            <Award className="w-3.5 h-3.5 text-hint" /> Badge catálogo
                                         </span>
-                                        <span className="font-medium text-xs text-gray-800 dark:text-gray-100 text-right">
+                                        <span className="font-medium text-xs text-ink text-right">
                                             {etiquetaBadgeCatalogo(producto.catalog_badge)}
                                         </span>
                                     </div>
@@ -202,7 +202,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                     type="button"
                                     onClick={() => setMostrarModalMovimientos(true)}
                                     disabled={cargandoMov}
-                                    className="inline-flex items-center gap-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-50 transition-colors"
+                                    className="inline-flex items-center gap-2 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-50 transition-colors"
                                 >
                                     <History className="w-4 h-4" />
                                     {cargandoMov ? 'Cargando...' : movimientos.length === 0 ? 'Ver movimientos' : `Ver movimientos (${movimientos.length})`}
@@ -211,10 +211,10 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                         </div>
 
                         {/* Pie fijo: CTA Editar */}
-                        <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                        <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-line bg-surface/80 backdrop-blur-sm">
                             <button
                                 onClick={() => { onClose(); onEdit(producto) }}
-                                className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 rounded-xl shadow-lg shadow-pink-200/50 dark:shadow-pink-900/30"
+                                className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 rounded-xl dark:shadow-pink-900/30"
                             >
                                 <SquarePen size={16} aria-hidden />
                                 Editar producto
@@ -229,16 +229,16 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                 <>
                     <div className="fixed inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm z-[60]" onClick={() => setMostrarModalMovimientos(false)} aria-hidden />
                     <div className="fixed inset-0 z-[61] flex items-center justify-center p-4">
-                        <PastelCard className="relative w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
-                            <div className="px-6 py-5 border-b border-pink-100 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-                                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                                    <History className="w-5 h-5 text-pink-500 dark:text-pink-400" />
+                        <PastelCard className="relative w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-line" noHover>
+                            <div className="px-6 py-5 border-b border-line flex items-center justify-between flex-shrink-0">
+                                <h3 className="text-lg font-bold text-ink flex items-center gap-2">
+                                    <History className="w-5 h-5 text-accent" />
                                     Movimientos de stock
                                 </h3>
                                 <button
                                     type="button"
                                     onClick={() => setMostrarModalMovimientos(false)}
-                                    className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center justify-center transition-colors"
+                                    className="w-9 h-9 rounded-full bg-surface-soft hover:bg-gray-200 dark:hover:bg-gray-600 text-muted hover:text-ink flex items-center justify-center transition-colors"
                                     aria-label="Cerrar"
                                 >
                                     <X className="w-4 h-4" />
@@ -246,7 +246,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                             </div>
                             <div className="p-5 overflow-y-auto flex-1 min-h-0">
                                 {movimientos.length === 0 ? (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Sin movimientos registrados.</p>
+                                    <p className="text-sm text-muted py-8 text-center">Sin movimientos registrados.</p>
                                 ) : (
                                     <ul className="space-y-2">
                                         {movimientos.map((m) => {
@@ -256,16 +256,16 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                             return (
                                                 <li
                                                     key={m.id}
-                                                    className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 text-sm"
+                                                    className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-line text-sm"
                                                 >
                                                     <div className="flex items-center gap-3 min-w-0">
                                                         {m.type === 'sale' && <TrendingDown className="w-4 h-4 text-rose-500 dark:text-rose-400 flex-shrink-0" />}
                                                         {m.type === 'purchase' && <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />}
                                                         {m.type === 'adjustment' && <Minus className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0" />}
                                                         <div className="min-w-0">
-                                                            <span className="font-medium text-gray-800 dark:text-gray-100">{label}</span>
-                                                            {refText && <span className="text-gray-400 dark:text-gray-500 text-xs ml-1">{refText}</span>}
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                            <span className="font-medium text-ink">{label}</span>
+                                                            {refText && <span className="text-hint text-xs ml-1">{refText}</span>}
+                                                            <p className="text-xs text-muted mt-0.5">
                                                                 {format(new Date(m.created_at), "d MMM yyyy, HH:mm", { locale: es })}
                                                             </p>
                                                         </div>

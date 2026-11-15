@@ -173,7 +173,7 @@ export default function FinanceLedger() {
         <div className="flex flex-col lg:flex-row lg:items-end gap-4 justify-between">
           <div>
             <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Conciliación de caja</p>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">Entradas y salidas por medio</h2>
+            <h2 className="text-xl font-bold text-ink mt-1">Entradas y salidas por medio</h2>
           </div>
           <div className="flex flex-wrap gap-3">
             <label className="text-xs font-semibold text-gray-500">Desde
@@ -186,10 +186,10 @@ export default function FinanceLedger() {
         </div>
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-gray-200 dark:border-gray-700"><th className="py-3">Medio</th><th>Entradas</th><th>Salidas</th><th>Neto</th></tr></thead>
+            <thead><tr className="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-line"><th className="py-3">Medio</th><th>Entradas</th><th>Salidas</th><th>Neto</th></tr></thead>
             <tbody>
               {(snapshot?.reconciliation ?? []).map((line) => (
-                <tr key={line.payment_method} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
+                <tr key={line.payment_method} className="border-b border-line last:border-0">
                   <td className="py-3 font-semibold">{PAYMENT_METHOD_LABELS[line.payment_method]}</td>
                   <td className="text-emerald-600 font-bold">{money(line.inflow)}</td>
                   <td className="text-rose-600 font-bold">{money(line.outflow)}</td>
@@ -205,7 +205,7 @@ export default function FinanceLedger() {
       {catalog && (
         <PastelCard className="p-5 sm:p-6" noHover data-testid="catalog-payment-slice">
           <p className="text-xs font-bold text-pink-600 uppercase tracking-wider">Resumen combinado</p>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">Mostrador, pedidos y total</h2>
+          <h2 className="text-xl font-bold text-ink mt-1">Mostrador, pedidos y total</h2>
           <p className="text-sm text-gray-500 mt-1">
             Los cobros online no se cargan como otro ingreso ni se mezclan con la caja del local.
           </p>
@@ -247,9 +247,9 @@ export default function FinanceLedger() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setKind('receivable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'receivable' ? 'bg-amber-500 text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'}`}><ArrowDownLeft className="inline w-4 h-4 mr-1" /> Cuentas por cobrar</button>
-          <button type="button" onClick={() => setKind('payable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'payable' ? 'bg-rose-500 text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'}`}><ArrowUpRight className="inline w-4 h-4 mr-1" /> Cuentas por pagar</button>
-          <label className="inline-flex items-center gap-2 px-3 text-sm font-semibold text-gray-600 dark:text-gray-300"><input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} /> Sólo pendientes</label>
+          <button type="button" onClick={() => setKind('receivable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'receivable' ? 'bg-amber-500 text-white' : 'bg-surface border border-line'}`}><ArrowDownLeft className="inline w-4 h-4 mr-1" /> Cuentas por cobrar</button>
+          <button type="button" onClick={() => setKind('payable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'payable' ? 'bg-rose-500 text-white' : 'bg-surface border border-line'}`}><ArrowUpRight className="inline w-4 h-4 mr-1" /> Cuentas por pagar</button>
+          <label className="inline-flex items-center gap-2 px-3 text-sm font-semibold text-muted"><input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} /> Sólo pendientes</label>
         </div>
         {kind === 'payable' && <button type="button" onClick={() => setPayableOpen(true)} className="btn-primary px-4 py-2.5 rounded-xl"><Plus className="w-4 h-4" /> Nueva cuenta por pagar</button>}
       </div>
@@ -263,12 +263,12 @@ export default function FinanceLedger() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{account.sale_id ? `Venta #${account.sale_id}` : account.counterparty}</p>
-                  <h3 className="font-bold text-gray-900 dark:text-gray-100 mt-1 truncate">{account.description}</h3>
+                  <h3 className="font-bold text-ink mt-1 truncate">{account.description}</h3>
                   {account.due_date && <p className="text-xs text-gray-500 mt-2"><CalendarDays className="inline w-3.5 h-3.5 mr-1" /> Vence {new Date(`${account.due_date}T12:00:00`).toLocaleDateString('es-AR')}</p>}
                 </div>
                 <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${account.status === 'settled' ? 'bg-emerald-100 text-emerald-700' : account.status === 'partial' ? 'bg-blue-100 text-blue-700' : account.status === 'cancelled' ? 'bg-gray-200 text-gray-600' : 'bg-amber-100 text-amber-700'}`}>{account.status === 'settled' ? 'Saldada' : account.status === 'partial' ? 'Parcial' : account.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}</span>
               </div>
-              <div className="grid grid-cols-3 gap-3 mt-5 py-4 border-y border-gray-100 dark:border-gray-700">
+              <div className="grid grid-cols-3 gap-3 mt-5 py-4 border-y border-line">
                 <div><p className="text-[10px] uppercase text-gray-400 font-bold">Total</p><p className="font-bold mt-1">{money(account.net_amount)}</p></div>
                 <div><p className="text-[10px] uppercase text-gray-400 font-bold">Registrado</p><p className="font-bold mt-1 text-emerald-600">{money(account.paid_amount)}</p></div>
                 <div><p className="text-[10px] uppercase text-gray-400 font-bold">Saldo</p><p className="font-black mt-1 text-amber-600">{money(account.balance)}</p></div>

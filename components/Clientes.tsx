@@ -16,6 +16,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
 import { CUSTOMER_LIST_SELECT } from '@/lib/domain/customers/browserCustomers'
 
+/** Pastel de cada tarjeta de clienta. */
+const CLIENT_TONES = [0, 1, 2, 3, 4, 5] as const
+
 export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
     const { showSuccess, showError } = useToast()
     const { confirm: confirmDialog, confirmProps } = useConfirm()
@@ -350,18 +353,18 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
             {/* Header: buscador + botón centrados */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 sm:gap-5">
                 <div className="relative w-full sm:w-auto sm:min-w-[280px] max-w-md h-12">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none shrink-0" aria-hidden />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-hint pointer-events-none shrink-0" aria-hidden />
                     <input
                         type="text"
                         placeholder="Buscar cliente..."
                         value={terminoBusqueda}
                         onChange={(e) => setTerminoBusqueda(e.target.value)}
-                        className="absolute inset-0 w-full h-full pl-11 pr-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 focus:outline-none transition-all text-sm"
+                        className="absolute inset-0 w-full h-full pl-11 pr-4 bg-surface border border-line rounded-xl text-ink placeholder-gray-400 dark:placeholder-gray-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 focus:outline-none transition-all text-sm"
                     />
                 </div>
                 <button
                     onClick={() => { setEditando(null); setFormData({ first_name: '', last_name: '', email: '', phone: '' }); setMostrarModal(true); }}
-                    className="btn-primary shrink-0 gap-2 px-5 py-3 rounded-xl shadow-lg shadow-pink-200 dark:shadow-pink-900/20 font-semibold"
+                    className="btn-primary shrink-0 gap-2 px-5 py-3 rounded-xl dark:shadow-pink-900/20 font-semibold"
                 >
                     <Plus className="w-5 h-5" />
                     Nuevo Cliente
@@ -370,39 +373,39 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
 
             {/* Métricas */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
-                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 cursor-default rounded-2xl border border-gray-200 dark:border-gray-600">
-                    <div className="w-12 h-12 rounded-xl bg-pink-50 dark:bg-pink-900/40 text-pink-500 dark:text-pink-400 flex items-center justify-center flex-shrink-0">
+                <PastelCard tone={0} className="p-5 sm:p-6 flex items-center gap-4 cursor-default">
+                    <div className="w-12 h-12 rounded-xl bg-primary-soft text-accent flex items-center justify-center flex-shrink-0">
                         <Users className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Total Clientes</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-none tabular-nums">{clientes.length}</p>
+                        <p className="text-[11px] text-muted uppercase tracking-wider font-semibold mb-1">Total Clientes</p>
+                        <p className="text-2xl font-bold text-ink leading-none tabular-nums">{clientes.length}</p>
                     </div>
                 </PastelCard>
-                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 cursor-default rounded-2xl border border-gray-200 dark:border-gray-600">
+                <PastelCard tone={2} className="p-5 sm:p-6 flex items-center gap-4 cursor-default">
                     <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-500 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
                         <TrendingUp className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Nuevos (30 días)</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-none tabular-nums">{clientesNuevos}</p>
+                        <p className="text-[11px] text-muted uppercase tracking-wider font-semibold mb-1">Nuevos (30 días)</p>
+                        <p className="text-2xl font-bold text-ink leading-none tabular-nums">{clientesNuevos}</p>
                     </div>
                 </PastelCard>
-                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 cursor-default rounded-2xl border border-gray-200 dark:border-gray-600">
+                <PastelCard tone={3} className="p-5 sm:p-6 flex items-center gap-4 cursor-default">
                     <div className="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-900/40 text-violet-500 dark:text-violet-400 flex items-center justify-center flex-shrink-0">
                         <ShoppingBag className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Con Compras</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-none tabular-nums">{clientesActivos}</p>
+                        <p className="text-[11px] text-muted uppercase tracking-wider font-semibold mb-1">Con Compras</p>
+                        <p className="text-2xl font-bold text-ink leading-none tabular-nums">{clientesActivos}</p>
                     </div>
                 </PastelCard>
             </div>
 
             {/* Resultados + Eliminar clientes */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Mostrando <span className="font-semibold text-gray-800 dark:text-gray-100 tabular-nums">{clientesFiltrados.length}</span> resultados
+                <p className="text-sm text-muted">
+                    Mostrando <span className="font-semibold text-ink tabular-nums">{clientesFiltrados.length}</span> resultados
                 </p>
                 {clientes.length > 0 && (
                     <button
@@ -423,37 +426,37 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
             {/* Lista de clientes */}
             {/* 1 col hasta lg: en media pantalla + sidebar, 2 cols aplastaban el nombre a 0px */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {clientesFiltrados.map(cliente => {
+                {clientesFiltrados.map((cliente, index) => {
                     const stats = clientesStats.get(cliente.id) || { totalVentas: 0, totalPedidos: 0, totalGastado: 0, ultimaCompra: null }
 
                     return (
-                        <PastelCard key={cliente.id} className="group relative p-0 flex flex-col h-full hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-600 rounded-2xl overflow-hidden">
+                        <PastelCard key={cliente.id} tone={CLIENT_TONES[index % CLIENT_TONES.length]} className="group relative p-0 flex flex-col h-full hover:shadow-[var(--ui-shadow)] transition-all duration-200 overflow-hidden">
                             {/* Acciones fuera del flujo (absolute): opacity-0 igual ocupaba ancho y escondía el nombre */}
-                            <div className="absolute top-3 right-3 z-10 flex gap-1 rounded-xl bg-white/90 dark:bg-gray-800/90 p-0.5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                                <button type="button" onClick={() => abrirPerfil(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Ver perfil" aria-label="Ver perfil">
+                            <div className="absolute top-3 right-3 z-10 flex gap-1 rounded-xl bg-surface/90 p-0.5 shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                <button type="button" onClick={() => abrirPerfil(cliente)} className="p-2 text-hint hover:text-accent hover:bg-primary-soft rounded-lg transition-colors" title="Ver perfil" aria-label="Ver perfil">
                                     <Eye size={16} aria-hidden />
                                 </button>
-                                <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 rounded-lg transition-colors" title="Editar" aria-label="Editar cliente">
+                                <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-hint hover:text-accent hover:bg-primary-soft rounded-lg transition-colors" title="Editar" aria-label="Editar cliente">
                                     <SquarePen size={16} aria-hidden />
                                 </button>
-                                <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
+                                <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
                                     <Trash2 size={16} aria-hidden />
                                 </button>
                             </div>
                             <div className="p-6 sm:p-7 pr-14 sm:pr-16 flex items-start gap-4 min-w-0">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/50 dark:to-gray-700 border border-pink-100 dark:border-gray-600 flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-sm shrink-0">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-white dark:from-pink-900/50 dark:to-gray-700 border border-line flex items-center justify-center text-accent font-bold text-sm shrink-0">
                                     {cliente.first_name.charAt(0)}{cliente.last_name.charAt(0)}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors break-words">
+                                    <h3 className="font-bold text-ink text-base leading-snug group-hover:text-accent transition-colors break-words">
                                         {cliente.first_name} {cliente.last_name}
                                     </h3>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1.5 min-w-0">
-                                        <Calendar size={12} className="shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
+                                    <p className="text-xs text-muted mt-1.5 flex items-center gap-1.5 min-w-0">
+                                        <Calendar size={12} className="shrink-0 text-hint" aria-hidden />
                                         <span>{format(new Date(cliente.created_at), 'MMM yyyy', { locale: es })}</span>
                                     </p>
                                     {(cliente.email || cliente.phone) && (
-                                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-muted">
                                             {cliente.email && (
                                                 <span className="flex items-center gap-1.5 min-w-0 max-w-full">
                                                     <Mail size={12} className="shrink-0" aria-hidden />
@@ -470,18 +473,18 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                                     )}
                                 </div>
                             </div>
-                            <div className="mt-auto border-t border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/50 px-4 sm:px-6 py-4 sm:py-5 grid grid-cols-3 gap-2 sm:gap-4">
+                            <div className="mt-auto border-t border-line bg-gray-50/60 dark:bg-gray-800/50 px-4 sm:px-6 py-4 sm:py-5 grid grid-cols-3 gap-2 sm:gap-4">
                                 <div className="text-center min-w-0">
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Mostrador / web</p>
-                                    <p className="text-gray-800 dark:text-gray-100 font-bold tabular-nums">{stats.totalVentas} / {stats.totalPedidos}</p>
+                                    <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">Mostrador / web</p>
+                                    <p className="text-ink font-bold tabular-nums">{stats.totalVentas} / {stats.totalPedidos}</p>
                                 </div>
-                                <div className="text-center min-w-0 border-x border-gray-100 dark:border-gray-700 px-1">
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Total</p>
+                                <div className="text-center min-w-0 border-x border-line px-1">
+                                    <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">Total</p>
                                     <p className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums text-sm sm:text-base break-all">${stats.totalGastado.toLocaleString()}</p>
                                 </div>
                                 <div className="text-center min-w-0">
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Última</p>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium truncate">{stats.ultimaCompra || '—'}</p>
+                                    <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">Última</p>
+                                    <p className="text-muted text-xs font-medium truncate">{stats.ultimaCompra || '—'}</p>
                                 </div>
                             </div>
                         </PastelCard>

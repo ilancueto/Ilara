@@ -57,7 +57,7 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen grid lg:grid-cols-2 bg-canvas dark:bg-zinc-950 relative overflow-hidden">
+        <div className="min-h-screen grid lg:grid-cols-2 bg-canvas relative overflow-hidden">
             <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_0%_0%,rgba(217,119,134,0.18),transparent_55%),radial-gradient(ellipse_50%_40%_at_100%_100%,rgba(197,168,128,0.16),transparent_50%)]" aria-hidden />
                 <p className="relative font-serif text-3xl tracking-[0.22em] text-ink dark:text-zinc-50">ILARA</p>
@@ -66,7 +66,7 @@ export default function Login() {
                     <h1 className="font-serif text-5xl xl:text-6xl font-medium leading-[0.95] tracking-tight text-ink dark:text-zinc-50">
                         El estudio de belleza, en un solo panel.
                     </h1>
-                    <p className="mt-6 text-muted dark:text-zinc-400 text-base leading-relaxed">
+                    <p className="mt-6 text-muted text-base leading-relaxed">
                         Caja, stock, clientas y pedidos web con la misma calma con la que armás un look.
                     </p>
                 </div>
@@ -82,7 +82,7 @@ export default function Login() {
 
             <div
                 id="login-form-card"
-                className="login-card w-full max-w-[400px] relative z-10 animate-fade-in-scale rounded-3xl border border-line dark:border-white/10 bg-white/92 dark:bg-zinc-900/92 backdrop-blur-2xl shadow-[0_24px_48px_-8px_rgba(26,24,30,0.12)] px-8 pt-4 pb-6 sm:px-10 sm:pt-5 sm:pb-7"
+                className="login-card w-full max-w-[400px] relative z-10 animate-fade-in-scale rounded-3xl border border-line bg-surface/92 backdrop-blur-2xl shadow-[0_24px_48px_-8px_rgba(26,24,30,0.12)] px-8 pt-4 pb-6 sm:px-10 sm:pt-5 sm:pb-7"
             >
                 <div className="flex flex-col items-center text-center mb-4">
                     <div className="relative">
@@ -102,7 +102,7 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                        <label className="text-sm font-medium text-ink">Email</label>
                         <input
                             type="email"
                             value={email}
@@ -112,11 +112,11 @@ export default function Login() {
                             disabled={cargando}
                             autoComplete="email"
                             aria-label="Email"
-                            className="w-full rounded-xl border border-gray-100 dark:border-gray-600/70 bg-gray-50/80 dark:bg-gray-700/40 px-4 py-3.5 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-400/25 focus:shadow-[0_0_0_3px_rgba(236,72,153,0.12)] dark:focus:shadow-[0_0_0_3px_rgba(236,72,153,0.2)] focus:outline-none transition-all duration-200 text-sm"
+                            className="w-full rounded-xl border border-gray-100 dark:border-gray-600/70 bg-gray-50/80 dark:bg-gray-700/40 px-4 py-3.5 text-ink placeholder-gray-500 dark:placeholder-gray-400 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-400/25 focus:shadow-[0_0_0_3px_rgba(236,72,153,0.12)] dark:focus:shadow-[0_0_0_3px_rgba(236,72,153,0.2)] focus:outline-none transition-all duration-200 text-sm"
                         />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
+                        <label className="text-sm font-medium text-ink">Contraseña</label>
                         <div className="relative">
                             <input
                                 type={mostrarPassword ? 'text' : 'password'}
@@ -127,12 +127,12 @@ export default function Login() {
                                 disabled={cargando}
                                 autoComplete="current-password"
                                 aria-label="Contraseña"
-                                className="w-full rounded-xl border border-gray-100 dark:border-gray-600/70 bg-gray-50/80 dark:bg-gray-700/40 pl-4 pr-12 py-3.5 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-400/25 focus:shadow-[0_0_0_3px_rgba(236,72,153,0.12)] dark:focus:shadow-[0_0_0_3px_rgba(236,72,153,0.2)] focus:outline-none transition-all duration-200 text-sm"
+                                className="w-full rounded-xl border border-gray-100 dark:border-gray-600/70 bg-gray-50/80 dark:bg-gray-700/40 pl-4 pr-12 py-3.5 text-ink placeholder-gray-500 dark:placeholder-gray-400 focus:border-pink-300 dark:focus:border-pink-500 focus:ring-2 focus:ring-pink-400/25 focus:shadow-[0_0_0_3px_rgba(236,72,153,0.12)] dark:focus:shadow-[0_0_0_3px_rgba(236,72,153,0.2)] focus:outline-none transition-all duration-200 text-sm"
                             />
                             <button
                                 type="button"
                                 onClick={() => setMostrarPassword(!mostrarPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-gray-400 hover:text-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50"
                                 aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                             >
                                 {mostrarPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}

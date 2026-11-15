@@ -28,7 +28,7 @@ const TYPE_SHORT_LABELS: Record<IncomeType, string> = {
 }
 
 const FinanceLedger = dynamic(() => import('@/components/FinanceLedger'), {
-  loading: () => <div className="h-72 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />,
+  loading: () => <div className="h-72 rounded-2xl bg-surface-soft animate-pulse" />,
 })
 
 function formatDate(dateStr: string) {
@@ -163,11 +163,11 @@ export default function Ingresos() {
         <div className="flex flex-col gap-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight flex items-center gap-3">
                 <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60 dark:shadow-emerald-900/40">✦</span>
                 Cuentas y caja
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium max-w-md mt-2">Mostrador, pedidos online y combinado. Los cobros web no se mezclan con la caja del local.</p>
+              <p className="text-muted text-sm font-medium max-w-md mt-2">Mostrador, pedidos online y combinado. Los cobros web no se mezclan con la caja del local.</p>
             </div>
             <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200 shrink-0">
               <Plus size={20} />
@@ -177,14 +177,14 @@ export default function Ingresos() {
 
           {/* Sub navegación: Ventas | Otros ingresos */}
           <div className="flex justify-center">
-            <PastelCard className="!p-2 flex gap-1 rounded-2xl w-auto inline-flex shadow-md shadow-emerald-100/50 dark:shadow-none border border-gray-200 dark:border-gray-700" noHover>
+            <PastelCard className="!p-2 flex gap-1 rounded-2xl w-auto inline-flex shadow-md shadow-emerald-100/50 dark:shadow-none border border-line" noHover>
               <button
                 onClick={() => setVistaActiva('historial')}
                 className={`
                   flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300
                   ${vistaActiva === 'historial'
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-300/40 dark:shadow-emerald-900/40'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30'
+                    : 'text-muted hover:text-ink hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30'
                   }
                 `}
               >
@@ -197,7 +197,7 @@ export default function Ingresos() {
                   flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
                   ${vistaActiva === 'otros'
                     ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700'
-                    : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    : 'text-hint hover:text-muted hover:bg-canvas'
                   }
                 `}
               >
@@ -208,7 +208,7 @@ export default function Ingresos() {
                 onClick={() => setVistaActiva('finanzas')}
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${vistaActiva === 'finanzas'
                   ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700'
-                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'text-hint hover:text-muted hover:bg-canvas'
                 }`}
               >
                 <Scale className="w-4 h-4" strokeWidth={2.5} />
@@ -226,41 +226,41 @@ export default function Ingresos() {
       ) : (
         <div className="flex flex-col gap-8">
           {/* Filtros: barra compacta en una fila (desktop) */}
-          <PastelCard className="p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-gray-600" noHover>
+          <PastelCard className="p-4 sm:p-5 rounded-xl border border-line" noHover>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
               <div className="flex items-center gap-2 shrink-0">
                 <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
                   <Filter size={14} />
                 </span>
-                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Filtros</span>
+                <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Filtros</span>
               </div>
               <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 flex-1 min-w-0">
                 <label className="flex flex-col gap-1 shrink-0 sm:w-[160px]">
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Desde</span>
+                  <span className="text-[11px] font-medium text-muted">Desde</span>
                   <input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="form-input w-full rounded-lg h-10 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 min-w-0"
+                    className="form-input w-full rounded-lg h-10 text-sm border border-line bg-surface px-3 py-2 min-w-0"
                     aria-label="Fecha desde"
                   />
                 </label>
                 <label className="flex flex-col gap-1 shrink-0 sm:w-[160px]">
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Hasta</span>
+                  <span className="text-[11px] font-medium text-muted">Hasta</span>
                   <input
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="form-input w-full rounded-lg h-10 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 min-w-0"
+                    className="form-input w-full rounded-lg h-10 text-sm border border-line bg-surface px-3 py-2 min-w-0"
                     aria-label="Fecha hasta"
                   />
                 </label>
                 <label className="flex flex-col gap-1 shrink-0 sm:w-[180px] min-w-0">
-                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">Tipo</span>
+                  <span className="text-[11px] font-medium text-muted">Tipo</span>
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value as IncomeType | '')}
-                    className="otros-ingresos-filtros-select form-input w-full rounded-lg h-10 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-8 appearance-none cursor-pointer min-w-0"
+                    className="otros-ingresos-filtros-select form-input w-full rounded-lg h-10 text-sm border border-line bg-surface px-3 py-2 pr-8 appearance-none cursor-pointer min-w-0"
                   >
                     <option value="">Todos los tipos</option>
                     {(Object.keys(INCOME_TYPE_LABELS) as IncomeType[]).map((t) => (
@@ -288,8 +288,8 @@ export default function Ingresos() {
           {/* Movimientos: más jerarquía */}
           <div className="flex flex-col gap-6">
             <div className="flex items-baseline gap-3">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Movimientos</h2>
-              <span className="text-sm font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/80 px-2.5 py-0.5 rounded-lg tabular-nums">{incomes.length}</span>
+              <h2 className="text-lg font-bold text-ink">Movimientos</h2>
+              <span className="text-sm font-medium text-hint bg-gray-100 dark:bg-gray-700/80 px-2.5 py-0.5 rounded-lg tabular-nums">{incomes.length}</span>
             </div>
             {loading ? (
               <div className="space-y-4">
@@ -300,8 +300,8 @@ export default function Ingresos() {
             ) : incomes.length === 0 ? (
               <PastelCard className="p-12 sm:p-14 text-center rounded-2xl" noHover>
                 <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-2xl mb-4">💰</div>
-                <p className="font-semibold text-gray-800 dark:text-gray-100 text-base">No hay ingresos registrados</p>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-sm mx-auto">Agregá regalos, donaciones, ventas anteriores al sistema o cualquier otro ingreso extra.</p>
+                <p className="font-semibold text-ink text-base">No hay ingresos registrados</p>
+                <p className="text-muted text-sm mt-2 max-w-sm mx-auto">Agregá regalos, donaciones, ventas anteriores al sistema o cualquier otro ingreso extra.</p>
                 <button type="button" onClick={openNew} className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-emerald-600 dark:text-emerald-400 font-semibold rounded-xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-800/50 transition-colors">
                   <Plus size={18} />
                   Nuevo ingreso
@@ -311,14 +311,14 @@ export default function Ingresos() {
               <ul className="space-y-4">
                 {incomes.map((income) => (
                   <li key={income.id}>
-                    <PastelCard className="p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-600 flex flex-col sm:flex-row sm:items-center justify-between gap-5 group hover:border-emerald-200/80 dark:hover:border-emerald-700/50 transition-colors overflow-hidden">
+                    <PastelCard className="p-5 sm:p-6 rounded-2xl border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-5 group hover:border-emerald-200/80 dark:hover:border-emerald-700/50 transition-colors overflow-hidden">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
                         <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100/80 dark:border-emerald-800/40 flex items-center justify-center text-xl flex-shrink-0">
                           {TYPE_ICONS[income.type]}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base line-clamp-2">{income.description || INCOME_TYPE_LABELS[income.type]}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="font-semibold text-ink text-sm sm:text-base line-clamp-2">{income.description || INCOME_TYPE_LABELS[income.type]}</p>
+                          <p className="text-xs text-muted mt-1">
                             {INCOME_TYPE_LABELS[income.type]} · {formatDate(income.date)}
                           </p>
                         </div>
@@ -326,10 +326,10 @@ export default function Ingresos() {
                       <div className="flex items-center justify-between sm:justify-end gap-4 pl-14 sm:pl-0">
                         <span className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{formatCurrency(income.amount)}</span>
                         <div className="flex items-center gap-1">
-                          <button type="button" onClick={() => openEdit(income)} className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors" aria-label="Editar">
+                          <button type="button" onClick={() => openEdit(income)} className="p-2 rounded-lg text-hint hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors" aria-label="Editar">
                             <Pencil size={16} />
                           </button>
-                          <button type="button" onClick={() => handleDelete(income.id)} className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors" aria-label="Eliminar">
+                          <button type="button" onClick={() => handleDelete(income.id)} className="p-2 rounded-lg text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors" aria-label="Eliminar">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -348,13 +348,13 @@ export default function Ingresos() {
       {modalOpen && typeof document !== 'undefined' && createPortal(
         <>
           <div className="fixed inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm z-[200] animate-fade-in" onClick={() => setModalOpen(false)} aria-hidden />
-          <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col z-[201] shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700">
+          <PastelCard noHover className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col z-[201] shadow-2xl rounded-3xl border border-line">
             <div className="flex items-center justify-between flex-shrink-0 p-6 sm:p-8 pb-4">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2.5">
+              <h3 className="text-xl font-bold text-ink flex items-center gap-2.5">
                 <span className="text-2xl">{editing ? '✏️' : '➕'}</span>
                 {editing ? 'Editar ingreso' : 'Nuevo ingreso'}
               </h3>
-              <button type="button" onClick={() => setModalOpen(false)} className="p-2.5 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label="Cerrar">
+              <button type="button" onClick={() => setModalOpen(false)} className="p-2.5 rounded-xl text-hint hover:text-gray-600 dark:hover:text-gray-200 hover:bg-surface-soft transition-colors" aria-label="Cerrar">
                 <X size={20} />
               </button>
             </div>
@@ -396,7 +396,7 @@ export default function Ingresos() {
                         className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all min-h-[88px]
                           ${form.type === t
                             ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-700'
-                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-emerald-100 dark:hover:border-emerald-800 hover:text-gray-700 dark:hover:text-gray-200'
+                            : 'bg-surface border-line text-muted hover:bg-canvas hover:border-emerald-100 dark:hover:border-emerald-800 hover:text-ink'
                           }`}
                       >
                         <span className={`text-2xl ${form.type === t ? 'scale-105' : ''}`}>{TYPE_ICONS[t]}</span>
@@ -446,8 +446,8 @@ export default function Ingresos() {
               </div>
 
               {/* Footer */}
-              <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex gap-4">
-                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost flex-1 py-3 rounded-xl text-gray-600 dark:text-gray-300">
+              <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-line bg-gray-50/50 dark:bg-gray-800/40 flex gap-4">
+                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost flex-1 py-3 rounded-xl text-muted">
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving} className="flex-[2] inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200/50 hover:shadow-emerald-300/50 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0">

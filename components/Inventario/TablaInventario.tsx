@@ -15,6 +15,9 @@ interface TablaInventarioProps {
     onDelete: (id: number) => void
 }
 
+/** Pastel de cada tarjeta: rota igual que en el POS y el catálogo. */
+const TONES = [0, 1, 2, 3, 4, 5] as const
+
 export default function TablaInventario({ productos, loading, onEdit, onView, onDelete }: TablaInventarioProps) {
 
     const obtenerEstadoStock = (producto: Producto) => {
@@ -29,10 +32,10 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
                 {[...Array(8)].map((_, i) => (
                     <PastelCard key={i} className="h-[260px] animate-pulse !p-0" noHover>
-                        <div className="h-36 bg-gray-100 dark:bg-gray-800 w-full rounded-t-3xl" />
+                        <div className="h-36 bg-surface-soft w-full rounded-t-3xl" />
                         <div className="p-4 space-y-2">
-                            <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4 mx-auto" />
-                            <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded w-1/2 mx-auto" />
+                            <div className="h-4 bg-surface-soft rounded w-3/4 mx-auto" />
+                            <div className="h-5 bg-surface-soft rounded w-1/2 mx-auto" />
                         </div>
                     </PastelCard>
                 ))}
@@ -52,15 +55,15 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 animate-fade-in pb-20">
-            {productos.map(producto => {
+            {productos.map((producto, index) => {
                 const estadoStock = obtenerEstadoStock(producto)
 
                 return (
                     <div key={producto.id} className="group h-full relative cursor-pointer" onClick={() => onView(producto)}>
-                        <PastelCard className="!p-0 flex flex-col h-full overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-5px_rgba(184,93,111,0.16)] hover:-translate-y-2 border-line bg-white dark:bg-gray-800/90" noHover>
+                        <PastelCard tone={TONES[index % TONES.length]} className="!p-2 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-[var(--ui-shadow)] hover:-translate-y-1" noHover>
 
                             {/* Image: shorter aspect, less empty space */}
-                            <div className="relative aspect-[5/3] w-full overflow-hidden bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700 transition-colors">
+                            <div className="relative aspect-[5/3] w-full overflow-hidden rounded-[20px] bg-surface">
                                 {getProductImages(producto)[0] ? (
                                     <Image
                                         src={getProductImages(producto)[0]}
@@ -105,14 +108,14 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 translate-y-8 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onEdit(producto); }}
-                                        className="w-9 h-9 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600 transition-all duration-300 shadow-lg hover:scale-105 active:scale-95"
+                                        className="w-9 h-9 rounded-full bg-white dark:bg-gray-700 text-ink flex items-center justify-center hover:bg-pink-500 hover:text-white dark:hover:bg-pink-600 transition-all duration-300 shadow-lg hover:scale-105 active:scale-95"
                                         title="Ver Detalles / Editar"
                                     >
                                         <SquarePen size={14} aria-hidden />
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onDelete(producto.id); }}
-                                        className="w-9 h-9 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-red-500 hover:text-white dark:hover:bg-red-600 transition-all duration-300 shadow-lg hover:scale-105 active:scale-95"
+                                        className="w-9 h-9 rounded-full bg-white dark:bg-gray-700 text-ink flex items-center justify-center hover:bg-red-500 hover:text-white dark:hover:bg-red-600 transition-all duration-300 shadow-lg hover:scale-105 active:scale-95"
                                         title="Eliminar"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
@@ -123,7 +126,7 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                             {/* Body: compact, centered hierarchy */}
                             <div className="px-5 py-4 flex flex-col flex-1 items-center text-center gap-2 min-h-0">
                                 {producto.categories && (
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-pink-500 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/40 px-2.5 py-1 rounded-full">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-accent bg-primary-soft px-2.5 py-1 rounded-full">
                                         {producto.categories.name}
                                     </span>
                                 )}
@@ -135,10 +138,10 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                         {etiquetaBadgeCatalogo(producto.catalog_badge)}
                                     </span>
                                 )}
-                                <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors line-clamp-2 flex-1">
+                                <h3 className="text-base font-bold text-ink leading-snug group-hover:text-accent transition-colors line-clamp-2 flex-1">
                                     {producto.name}
                                 </h3>
-                                <p className="text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight tabular-nums">
+                                <p className="text-lg font-bold text-ink tracking-tight tabular-nums">
                                     ${producto.sale_price.toLocaleString()}
                                 </p>
                             </div>

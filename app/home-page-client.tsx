@@ -305,8 +305,8 @@ function HomeContent() {
 
   if (cargando) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-canvas dark:bg-gray-950 text-pink-500 dark:text-pink-400 gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-pink-100 dark:bg-pink-900/40 animate-pulse" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-canvas text-accent gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary-soft animate-pulse" />
         <div className="font-bold text-lg animate-pulse">Cargando Ilara...</div>
       </div>
     )
@@ -316,7 +316,7 @@ function HomeContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-canvas dark:bg-gray-900 p-6">
         <div className="text-center max-w-sm">
-          <p className="text-gray-600 dark:text-gray-300 font-medium mb-4">{authError}</p>
+          <p className="text-muted font-medium mb-4">{authError}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               type="button"
@@ -332,7 +332,7 @@ function HomeContent() {
             <button
               type="button"
               onClick={handleLogout}
-              className="px-5 py-2.5 rounded-xl border-2 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400 font-bold hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors"
+              className="px-5 py-2.5 rounded-xl border-2 border-pink-200 dark:border-pink-800 text-accent font-bold hover:bg-primary-soft transition-colors"
             >
               Cerrar sesión
             </button>
@@ -364,7 +364,7 @@ function HomeContent() {
   const pageTitle = TAB_TITLES[activeTab]
 
   return (
-    <div className="app-shell min-h-screen text-gray-800 dark:text-gray-100">
+    <div className="app-shell min-h-screen text-ink">
       {/* Top bar */}
       <header className="app-topbar">
         <div className="app-topbar-inner">
@@ -382,16 +382,16 @@ function HomeContent() {
                   onError={() => setLogoError(true)}
                 />
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center text-pink-500">
+                <div className="w-10 h-10 rounded-xl bg-primary-soft flex items-center justify-center text-pink-500">
                   <Sparkles className="w-5 h-5" />
                 </div>
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900 dark:text-gray-50 truncate">
+              <p className="text-base sm:text-lg font-extrabold tracking-tight text-ink truncate">
                 {pageTitle}
               </p>
-              <p className="text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 truncate">
+              <p className="text-[11px] sm:text-xs font-semibold text-muted truncate">
                 Ilara Beauty POS
               </p>
             </div>
@@ -403,7 +403,7 @@ function HomeContent() {
               <button
                 type="button"
                 onClick={() => setAccountOpen((o) => !o)}
-                className="flex items-center justify-center w-10 h-10 rounded-xl bg-pink-50 dark:bg-gray-800 border border-pink-100 dark:border-gray-700 text-pink-600 dark:text-pink-400 font-bold text-xs hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-pink-50 dark:bg-gray-800 border border-line text-accent font-bold text-xs hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
                 aria-label="Cuenta"
                 aria-expanded={accountOpen}
               >
@@ -417,15 +417,15 @@ function HomeContent() {
                     aria-label="Cerrar menú de cuenta"
                     onClick={() => setAccountOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-2xl border border-pink-100 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl shadow-pink-200/30 dark:shadow-black/40 p-3 animate-fade-in">
-                    <div className="px-2 py-2 mb-2 border-b border-gray-100 dark:border-gray-800">
-                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
+                  <div className="absolute right-0 top-full mt-2 z-50 w-64 rounded-2xl border border-line bg-surface dark:shadow-black/40 p-3 animate-fade-in">
+                    <div className="px-2 py-2 mb-2 border-b border-line">
+                      <p className="text-sm font-bold text-ink truncate">
                         {getSaludo(userDisplayName)}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-mono mt-0.5">
+                      <p className="text-xs text-muted truncate font-mono mt-0.5">
                         {userEmail}
                       </p>
-                      <p className="text-[11px] font-semibold text-pink-600 dark:text-pink-400 mt-1">
+                      <p className="text-[11px] font-semibold text-accent mt-1">
                         Rol: {staffCaps.role}
                       </p>
                     </div>

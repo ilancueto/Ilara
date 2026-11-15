@@ -269,10 +269,10 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                         <DollarSign size={26} className="text-emerald-500 dark:text-emerald-400" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">
+                        <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">
                             Total Recaudado
                         </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all tabular-nums break-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all tabular-nums break-all">
                             ${totalRecaudado.toLocaleString()}
                         </p>
                     </div>
@@ -283,24 +283,24 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                         <Clock size={26} className="text-amber-500 dark:text-amber-400" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">
+                        <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">
                             Total por Cobrar
                         </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-all tabular-nums break-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-all tabular-nums break-all">
                             ${totalPorCobrar.toLocaleString()}
                         </p>
                     </div>
                 </PastelCard>
 
                 <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-pink-50 dark:bg-pink-900/40 flex items-center justify-center shadow-sm overflow-hidden">
-                        <Receipt size={26} className="text-pink-500 dark:text-pink-400" aria-hidden />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-primary-soft flex items-center justify-center shadow-sm overflow-hidden">
+                        <Receipt size={26} className="text-accent" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">
+                        <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">
                             Cantidad de Ventas
                         </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 tracking-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all tabular-nums">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-accent transition-all tabular-nums">
                             {cantidadVentas}
                         </p>
                     </div>
@@ -311,7 +311,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                         <p className="text-[10px] uppercase tracking-wider text-pink-500 font-bold">Pedidos web cobrados</p>
-                        <p className="text-2xl font-black text-gray-800 dark:text-gray-100 tabular-nums">
+                        <p className="text-2xl font-black text-ink tabular-nums">
                             ${formatPesoAR(catalogInflow)}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -347,9 +347,9 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
             <PastelCard className="p-6 sm:p-8 mb-historial-block" noHover>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-8">
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-50 dark:bg-pink-900/40 border border-pink-100 dark:border-pink-800/50 mr-2">
-                            <Calendar className="w-4 h-4 text-pink-500 dark:text-pink-400" />
-                            <span className="text-xs font-bold text-pink-600 dark:text-pink-300 uppercase tracking-wide">Período</span>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-soft border border-line mr-2">
+                            <Calendar className="w-4 h-4 text-accent" />
+                            <span className="text-xs font-bold text-accent uppercase tracking-wide">Período</span>
                         </div>
 
                         {(['hoy', 'semana', 'mes', 'todo'] as const).map(filtro => (
@@ -358,7 +358,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                 onClick={() => setFiltroFecha(filtro)}
                                 className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filtroFecha === filtro
                                     ? 'bg-pink-500 dark:bg-pink-600 text-white shadow-sm'
-                                    : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 border border-gray-100 dark:border-gray-600'
+                                    : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 border border-line'
                                     }`}
                             >
                                 {filtro === 'hoy' && 'Hoy'}
@@ -371,7 +371,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                             onClick={() => setFiltroPorCobrar(!filtroPorCobrar)}
                             className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${filtroPorCobrar
                                 ? 'bg-amber-500 dark:bg-amber-600 text-white shadow-sm'
-                                : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 border border-gray-100 dark:border-gray-600'
+                                : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 border border-line'
                                 }`}
                         >
                             <Clock className="w-3.5 h-3.5" />
@@ -381,7 +381,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
 
                     <button
                         onClick={() => setMostrarExportar(true)}
-                        className="btn-ghost flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600"
+                        className="btn-ghost flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all text-muted border-line"
                         title="Exportar reporte a CSV"
                     >
                         <FileSpreadsheet className="w-4 h-4" />
@@ -402,7 +402,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                     </div>
                 ) : (
                     ventasFiltradas.map(venta => (
-                        <PastelCard key={venta.id} className="!p-0 group overflow-hidden border-pink-100/50 dark:border-gray-600" noHover>
+                        <PastelCard key={venta.id} className="!p-0 group overflow-hidden border-line" noHover>
                             {/* Header de la venta */}
                             <div
                                 role="button"
@@ -412,7 +412,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                 className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left p-6 sm:p-7 hover:bg-pink-50/30 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                             >
                                 <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white dark:bg-gray-700 border border-pink-100 dark:border-gray-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-sm text-pink-500 dark:text-pink-400 font-bold text-xs">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white dark:bg-gray-700 border border-line flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-sm text-accent font-bold text-xs">
                                         #{venta.id}
                                     </div>
 
@@ -425,17 +425,17 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                 </span>
                                             )}
                                             {venta.customer_name ? (
-                                                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors truncate">{venta.customer_name}</span>
+                                                <span className="font-bold text-ink text-sm group-hover:text-accent transition-colors truncate">{venta.customer_name}</span>
                                             ) : (
                                                 <span className="font-bold text-gray-400 dark:text-gray-300 text-sm italic">Cliente Esporádico</span>
                                             )}
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                                            <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 rounded-md border border-gray-100 dark:border-gray-600">
-                                                <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                                            <span className="flex items-center gap-1 bg-canvas px-1.5 py-0.5 rounded-md border border-line">
+                                                <Calendar className="w-3 h-3 text-hint flex-shrink-0" />
                                                 {format(new Date(venta.created_at), "d MMM, HH:mm", { locale: es })}
                                             </span>
-                                            <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 rounded-md border border-gray-100 dark:border-gray-600">
+                                            <span className="flex items-center gap-1 bg-canvas px-1.5 py-0.5 rounded-md border border-line">
                                                 {obtenerIconoPago(venta.payment_method)}
                                                 {obtenerEtiquetaPago(venta.payment_method)}
                                             </span>
@@ -443,16 +443,16 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 border-t border-pink-100/50 dark:border-gray-600 pt-4 sm:border-0 sm:pt-0">
+                                <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 border-t border-line pt-4 sm:border-0 sm:pt-0">
                                     <div className="text-left sm:text-right min-w-0">
-                                        <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">Total</p>
+                                        <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">Total</p>
                                         <p className="font-black text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400 tabular-nums">${venta.total.toLocaleString()}</p>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-4">
-                                        <div className={`w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center transition-transform duration-300 border border-gray-100 dark:border-gray-600 flex-shrink-0 ${ventaExpandida === venta.id ? 'rotate-180 bg-pink-50 dark:bg-pink-900/40 text-pink-500 dark:text-pink-400 border-pink-200 dark:border-pink-700' : 'text-gray-400 dark:text-gray-500'}`}>
+                                        <div className={`w-8 h-8 rounded-full bg-canvas flex items-center justify-center transition-transform duration-300 border border-line flex-shrink-0 ${ventaExpandida === venta.id ? 'rotate-180 bg-primary-soft text-accent border-pink-200 dark:border-pink-700' : 'text-hint'}`}>
                                             <ChevronDown className="w-4 h-4" />
                                         </div>
-                                        <div className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center sm:border-l border-gray-100 dark:border-gray-600 sm:pl-1">
+                                        <div className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center sm:border-l border-line sm:pl-1">
                                             {venta.receipt_url ? (
                                                 <button
                                                     type="button"
@@ -460,7 +460,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                         e.stopPropagation()
                                                         void abrirComprobanteVenta(venta)
                                                     }}
-                                                    className="p-1.5 sm:p-2 rounded-xl text-pink-500 dark:text-pink-400 hover:text-pink-600 dark:hover:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/40 border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors shadow-sm"
+                                                    className="p-1.5 sm:p-2 rounded-xl text-accent hover:text-accent hover:bg-primary-soft border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors shadow-sm"
                                                     title="Ver comprobante"
                                                 >
                                                     <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -470,7 +470,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                         <button
                                             type="button"
                                             onClick={(e) => { e.stopPropagation(); setVentaEditando(venta); }}
-                                            className="p-1.5 sm:p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/40 border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors flex-shrink-0"
+                                            className="p-1.5 sm:p-2 rounded-xl text-hint hover:text-accent hover:bg-primary-soft border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors flex-shrink-0"
                                             title="Editar venta"
                                         >
                                             <Pencil className="w-4 h-4" />
@@ -483,7 +483,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                             {ventaExpandida === venta.id && (
                                 <div className="border-t border-gray-200/80 dark:border-gray-600/80 bg-gray-50/70 dark:bg-gray-800/40 animate-slide-in-right">
                                     <div className="px-6 sm:px-8 lg:px-10 py-6 sm:py-7 flex flex-col gap-6">
-                                        <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                        <p className="text-[11px] font-semibold text-hint uppercase tracking-wider flex items-center gap-2">
                                             <ShoppingBag className="w-3.5 h-3.5" />
                                             Detalle de compra
                                         </p>
@@ -496,12 +496,12 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                         className="flex items-center justify-between gap-4 py-3 px-0 border-b border-gray-100/80 dark:border-gray-700/80 last:border-0 last:pb-0"
                                                     >
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{item.product_name}</p>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">${item.unit_price.toLocaleString()} unitario</p>
+                                                            <p className="font-semibold text-ink text-sm truncate">{item.product_name}</p>
+                                                            <p className="text-xs text-muted mt-0.5">${item.unit_price.toLocaleString()} unitario</p>
                                                         </div>
                                                         <div className="flex items-center gap-4 flex-shrink-0 text-right">
-                                                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums">x{item.quantity}</span>
-                                                            <span className="font-bold text-gray-800 dark:text-gray-100 text-sm tabular-nums min-w-[4rem]">${item.subtotal.toLocaleString()}</span>
+                                                            <span className="text-xs font-medium text-muted tabular-nums">x{item.quantity}</span>
+                                                            <span className="font-bold text-ink text-sm tabular-nums min-w-[4rem]">${item.subtotal.toLocaleString()}</span>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -528,7 +528,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                 <a
                                                     href={panelHref({ tab: 'returns', channel: 'pos', saleId: venta.id })}
                                                     onClick={(event) => event.stopPropagation()}
-                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-700 text-pink-700 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 border border-pink-200 dark:border-pink-800 font-semibold text-sm transition-colors shadow-sm"
+                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-700 text-primary-ink hover:bg-primary-soft border border-pink-200 dark:border-pink-800 font-semibold text-sm transition-colors shadow-sm"
                                                     data-testid={`venta-return-${venta.id}`}
                                                 >
                                                     <RotateCcw className="w-4 h-4" />
@@ -538,7 +538,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                             <button
                                                 type="button"
                                                 onClick={() => abrirComprobante(venta)}
-                                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 font-semibold text-sm transition-colors shadow-sm"
+                                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-700 text-ink hover:bg-gray-100 dark:hover:bg-gray-600 border border-line font-semibold text-sm transition-colors shadow-sm"
                                             >
                                                 <Printer className="w-4 h-4" />
                                                 Imprimir comprobante
@@ -547,7 +547,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                 <button
                                                     type="button"
                                                     onClick={() => void abrirComprobanteVenta(venta)}
-                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/60 border border-pink-100 dark:border-pink-800 font-semibold text-sm transition-colors"
+                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-soft text-accent hover:bg-pink-100 dark:hover:bg-pink-900/60 border border-pink-100 dark:border-pink-800 font-semibold text-sm transition-colors"
                                                 >
                                                     <Receipt className="w-4 h-4" />
                                                     Ver comprobante
@@ -572,7 +572,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                 )}
             </div>
 
-            <div className="flex justify-end mt-10 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex justify-end mt-10 pt-6 border-t border-line">
                 <button
                     type="button"
                     onClick={() => {

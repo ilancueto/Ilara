@@ -6,10 +6,10 @@ export default function Ventas() {
     return (
         <div className="flex flex-col gap-5 sm:gap-6 animate-fade-in pb-2">
             <div className="min-w-0">
-                <h2 className="font-serif text-[1.85rem] sm:text-[2.1rem] font-semibold tracking-tight text-ink dark:text-gray-50">
+                <h2 className="text-[1.85rem] sm:text-[2.1rem] font-bold tracking-tight text-primary-ink">
                     Punto de venta
                 </h2>
-                <p className="text-sm text-muted dark:text-gray-400 mt-1 font-medium">
+                <p className="text-sm text-muted mt-1 font-medium">
                     Catálogo táctil · multi-pago · crédito
                 </p>
             </div>

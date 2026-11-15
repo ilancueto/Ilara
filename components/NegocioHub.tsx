@@ -154,15 +154,13 @@ const tiles: Tile[] = [
   },
 ]
 
+/** Bloque pastel de cada acceso (pastel bento); el ícono va sobre blanco. */
 const toneClass: Record<Tile['tone'], string> = {
-  emerald:
-    'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400',
-  amber:
-    'bg-amber-50 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400',
-  violet:
-    'bg-violet-50 text-violet-600 dark:bg-violet-900/40 dark:text-violet-300',
-  pink: 'bg-pink-50 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400',
-  sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
+  emerald: 'bg-tint-2',
+  amber: 'bg-tint-1',
+  violet: 'bg-tint-3',
+  pink: 'bg-tint-0',
+  sky: 'bg-tint-4',
 }
 
 export default function NegocioHub({ onNavigate, caps }: Props) {
@@ -170,12 +168,12 @@ export default function NegocioHub({ onNavigate, caps }: Props) {
   const visibleTiles = tiles.filter((t) => t.visible(caps))
 
   return (
-    <div className="flex flex-col gap-6 sm:gap-8 animate-fade-in pb-4 text-gray-800 dark:text-gray-100">
+    <div className="flex flex-col gap-6 sm:gap-8 animate-fade-in pb-4 text-ink">
       <div className="min-w-0">
-        <h2 className="text-2xl sm:text-[1.65rem] font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary-ink">
           Negocio
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
+        <p className="text-sm text-muted mt-1 font-medium">
           Pedidos, caja, margen, clientas y devoluciones en un mismo lugar
         </p>
       </div>
@@ -185,7 +183,7 @@ export default function NegocioHub({ onNavigate, caps }: Props) {
           const Icon = tile.icon
           const iconBox = (
             <span
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${toneClass[tile.tone]}`}
+              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-surface text-primary-ink"
             >
               <Icon className="w-5 h-5" strokeWidth={2.25} aria-hidden />
             </span>
@@ -195,13 +193,13 @@ export default function NegocioHub({ onNavigate, caps }: Props) {
             <>
               {iconBox}
               <div className="min-w-0 flex-1 flex flex-col gap-1.5">
-                <h3 className="text-base font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+                <h3 className="text-base font-extrabold tracking-tight text-ink">
                   {tile.title}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug flex-1">
+                <p className="text-sm text-muted leading-snug flex-1">
                   {tile.description}
                 </p>
-                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 mt-1">
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-accent mt-1">
                   {tile.go}
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden />
                 </span>
@@ -209,8 +207,7 @@ export default function NegocioHub({ onNavigate, caps }: Props) {
             </>
           )
 
-          const cardClass =
-            'group flex flex-col items-start gap-4 text-left p-5 sm:p-6 min-h-[148px] rounded-[20px] border border-pink-100/70 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-[0_4px_24px_rgba(190,24,93,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_16px_40px_-12px_rgba(190,24,93,0.16)] dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:border-pink-200 dark:hover:border-pink-800/40 transition-all duration-200'
+          const cardClass = `group flex flex-col items-start gap-4 text-left p-5 sm:p-6 min-h-[148px] rounded-card border border-transparent ${toneClass[tile.tone]} hover:-translate-y-0.5 hover:border-primary transition-all duration-200`
 
           if (tile.kind === 'tab' && tile.tab) {
             return (

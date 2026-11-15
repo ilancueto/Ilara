@@ -160,10 +160,10 @@ export default function PagosConfig() {
     <section className="flex flex-col gap-5 pb-5 animate-fade-in" data-testid="payments-config-panel">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+          <h2 className="text-2xl font-extrabold tracking-tight text-ink">
             Precios y pagos
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted mt-1">
             Configurá los precios y las opciones de cobro. Cada pedido se administra desde Pedidos.
           </p>
         </div>
@@ -270,7 +270,7 @@ export default function PagosConfig() {
           </p>
 
           <div className="rounded-2xl border border-gray-200 p-4 dark:border-zinc-800 flex flex-col gap-3">
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Opciones disponibles en la tienda</h3>
+            <h3 className="text-base font-bold text-ink">Opciones disponibles en la tienda</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                 <input
@@ -336,7 +336,7 @@ export default function PagosConfig() {
             </button>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-zinc-800">
+          <div className="overflow-x-auto rounded-2xl border border-line">
             <table className="min-w-full text-sm">
               <caption className="sr-only">Vista previa de precios</caption>
               <thead className="bg-gray-50 text-left dark:bg-zinc-900">
@@ -349,7 +349,7 @@ export default function PagosConfig() {
               </thead>
               <tbody>
                 {preview.samples.map((row) => (
-                  <tr key={`${row.kind}-${row.id}`} className="border-t border-gray-100 dark:border-zinc-800">
+                  <tr key={`${row.kind}-${row.id}`} className="border-t border-line">
                     <td className="px-3 py-2">{row.name}</td>
                     <td className="px-3 py-2">${formatPesoAR(row.public_price)}</td>
                     <td className="px-3 py-2">${formatPesoAR(row.transfer_price)}</td>
@@ -416,7 +416,7 @@ export default function PagosConfig() {
                   type="button"
                   disabled={saving}
                   onClick={() => void handleActivate(version.id)}
-                  className="text-xs font-extrabold text-pink-700 dark:text-pink-300"
+                  className="text-xs font-extrabold text-primary-ink"
                 >
                   Publicar esta versión
                 </button>
