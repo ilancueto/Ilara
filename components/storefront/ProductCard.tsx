@@ -20,6 +20,10 @@ type Props = {
   onOpen?: () => void
   comboIncludes?: () => void
   priority?: boolean
+  /** Índice de color pastel de fondo (0–5); cicla en la grilla. */
+  tone?: number
+  /** Tarjeta grande (2×2) al inicio de la grilla. */
+  featured?: boolean
 }
 
 export function ProductCard({
@@ -39,8 +43,12 @@ export function ProductCard({
   onOpen,
   comboIncludes,
   priority = false,
+  tone = 0,
+  featured = false,
 }: Props) {
-  const sizes = '(max-width: 767px) 50vw, (max-width: 1099px) 33vw, 25vw'
+  const sizes = featured
+    ? '(max-width: 767px) 100vw, (max-width: 1099px) 66vw, 50vw'
+    : '(max-width: 767px) 50vw, (max-width: 1099px) 33vw, 25vw'
   const openLabel = `Ver ${name}`
 
   const media = image ? (
@@ -59,7 +67,10 @@ export function ProductCard({
   )
 
   return (
-    <article className={styles.card}>
+    <article
+      className={featured ? `${styles.card} ${styles.cardFeatured}` : styles.card}
+      data-tone={featured ? undefined : tone % 6}
+    >
       {href ? (
         <Link className={styles.photo} href={href} aria-label={openLabel}>
           {media}

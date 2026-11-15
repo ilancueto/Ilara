@@ -257,10 +257,10 @@ export default function AlertasReposicion() {
     <div className="flex flex-col gap-5 animate-fade-in pb-8" data-testid="alertas-reposicion-panel">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+          <h2 className="text-2xl font-extrabold tracking-tight text-ink">
             Alertas de reposición
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted mt-1">
             Stock ≤ mínimo · sin compras automáticas
           </p>
         </div>
@@ -275,7 +275,7 @@ export default function AlertasReposicion() {
           <button
             type="button"
             onClick={() => void loadList()}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold hover:bg-canvas"
             data-testid="alertas-refresh"
           >
             <RefreshCw size={16} />
@@ -297,7 +297,7 @@ export default function AlertasReposicion() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Producto, marca o categoría"
-            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-3 py-2.5 text-sm"
+            className="w-full rounded-xl border border-line bg-surface pl-9 pr-3 py-2.5 text-sm"
             data-testid="alertas-search"
           />
         </label>
@@ -308,7 +308,7 @@ export default function AlertasReposicion() {
             onChange={(e) =>
               setStatusFilter(e.target.value as StockAlertStatus | 'active' | 'all')
             }
-            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm"
+            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm"
             data-testid="alertas-status-filter"
           >
             {STATUS_FILTERS.map((s) => (
@@ -321,7 +321,7 @@ export default function AlertasReposicion() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-2 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden">
+        <div className="lg:col-span-2 rounded-2xl border border-line bg-surface overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-16 text-pink-500">
               <Loader2 className="animate-spin" size={20} />
@@ -347,7 +347,7 @@ export default function AlertasReposicion() {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-gray-900 dark:text-gray-50 truncate">
+                        <span className="font-bold text-ink truncate">
                           {a.product_name || `Producto #${a.product_id}`}
                         </span>
                         <span
@@ -356,7 +356,7 @@ export default function AlertasReposicion() {
                           {stockAlertStatusLabel(a.status)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-muted">
                         Stock {a.stock_current} · mín {a.min_stock_current} · sugerido{' '}
                         {a.suggested_qty}
                       </p>
@@ -383,7 +383,7 @@ export default function AlertasReposicion() {
           )}
         </div>
 
-        <div className="lg:col-span-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-4 sm:p-5 min-h-[320px]">
+        <div className="lg:col-span-3 rounded-2xl border border-line bg-surface p-4 sm:p-5 min-h-[320px]">
           {!selectedId && (
             <p className="text-sm text-gray-500 py-12 text-center">
               Seleccioná una alerta para ver el detalle.
@@ -399,7 +399,7 @@ export default function AlertasReposicion() {
             <div className="flex flex-col gap-4" data-testid="alerta-detail">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-xl font-extrabold text-gray-900 dark:text-gray-50">
+                  <h3 className="text-xl font-extrabold text-ink">
                     {detail.product_name || `Producto #${detail.product_id}`}
                   </h3>
                   <span
@@ -415,7 +415,7 @@ export default function AlertasReposicion() {
                 </div>
                 <button
                   type="button"
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="p-2 rounded-lg hover:bg-surface-soft"
                   onClick={() => {
                     setSelectedId(null)
                     setDetail(null)
@@ -437,7 +437,7 @@ export default function AlertasReposicion() {
                 </div>
                 <div>
                   <dt className="text-gray-400 text-xs">Sugerido</dt>
-                  <dd className="font-semibold tabular-nums text-pink-600 dark:text-pink-400">
+                  <dd className="font-semibold tabular-nums text-accent">
                     +{detail.suggested_qty}
                   </dd>
                 </div>
@@ -455,7 +455,7 @@ export default function AlertasReposicion() {
                 </div>
               </dl>
 
-              <p className="text-xs text-gray-500 rounded-xl bg-gray-50 dark:bg-gray-900 px-3 py-2">
+              <p className="text-xs text-gray-500 rounded-xl bg-canvas px-3 py-2">
                 Sugerencia = reponer hasta{' '}
                 <strong>max(mín×2, mín+1)</strong> (si mín=0 → 1). No es una orden de
                 compra automática.
@@ -473,12 +473,12 @@ export default function AlertasReposicion() {
 
               {noteOpen && (
                 <div
-                  className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2"
+                  className="rounded-xl border border-line p-3 space-y-2"
                   data-testid="alerta-note-form"
                 >
                   <label
                     htmlFor="alerta-note"
-                    className="block text-xs font-bold text-gray-600 dark:text-gray-300"
+                    className="block text-xs font-bold text-muted"
                   >
                     {noteOpen === 'dismissed' ? 'Motivo de descarte *' : 'Nota de resolución *'}
                   </label>
@@ -488,7 +488,7 @@ export default function AlertasReposicion() {
                     onChange={(e) => setNote(e.target.value)}
                     maxLength={500}
                     rows={2}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-2 py-1.5 text-sm"
+                    className="w-full rounded-lg border border-line bg-transparent px-2 py-1.5 text-sm"
                     data-testid="alerta-note"
                     disabled={actionLoading}
                   />
@@ -512,7 +512,7 @@ export default function AlertasReposicion() {
                     </button>
                     <button
                       type="button"
-                      className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold"
+                      className="rounded-xl border border-line px-3 py-2 text-sm font-semibold"
                       disabled={actionLoading}
                       onClick={() => {
                         setNoteOpen(null)
@@ -567,7 +567,7 @@ export default function AlertasReposicion() {
                   {detail.events.map((ev) => (
                     <li
                       key={ev.id}
-                      className="text-xs sm:text-sm flex gap-2 text-gray-600 dark:text-gray-300"
+                      className="text-xs sm:text-sm flex gap-2 text-muted"
                     >
                       <span className="text-gray-400 shrink-0">
                         {new Date(ev.created_at).toLocaleString('es-AR')}

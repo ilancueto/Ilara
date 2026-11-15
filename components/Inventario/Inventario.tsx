@@ -315,12 +315,12 @@ export default function Inventario() {
     return (
         <div className="max-w-7xl mx-auto flex flex-col gap-12">
             {/* Tabs Productos | Combos | Lista para reposición */}
-            <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 dark:bg-gray-800 rounded-2xl w-fit">
+            <div className="flex flex-wrap gap-2 p-1.5 bg-surface-soft rounded-2xl w-fit">
                 <button
                     type="button"
                     onClick={() => setTabActiva('productos')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors ${
-                        tabActiva === 'productos' ? 'bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        tabActiva === 'productos' ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' : 'text-muted hover:text-ink'
                     }`}
                 >
                     Productos
@@ -329,7 +329,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('combos')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
-                        tabActiva === 'combos' ? 'bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        tabActiva === 'combos' ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' : 'text-muted hover:text-ink'
                     }`}
                 >
                     <Package className="w-4 h-4" /> Combos
@@ -338,7 +338,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('reposicion')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
-                        tabActiva === 'reposicion' ? 'bg-white dark:bg-gray-700 text-pink-600 dark:text-pink-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        tabActiva === 'reposicion' ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' : 'text-muted hover:text-ink'
                     }`}
                 >
                     <AlertTriangle className="w-4 h-4" /> Lista para reposición
@@ -348,24 +348,24 @@ export default function Inventario() {
             {tabActiva === 'productos' && (
             <>
             {/* Toolbar: main container → left group (filters) + right group (actions) */}
-            <div className="inventory-toolbar flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between bg-white dark:bg-gray-800/80 p-5 sm:p-6 rounded-2xl border border-pink-100 dark:border-gray-600 shadow-sm">
+            <div className="inventory-toolbar flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between bg-surface p-5 sm:p-6 rounded-card border border-line">
                 {/* Left group: search input + category select */}
                 <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
                     <div className="relative w-full lg:w-[300px]">
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 pointer-events-none" />
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-hint w-4 h-4 pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Buscar por nombre o marca..."
                             value={terminoBusqueda}
                             onChange={(e) => setTerminoBusqueda(e.target.value)}
-                            className="w-full h-12 min-h-[3rem] bg-gray-50 dark:bg-gray-700 border border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-pink-200 dark:focus:border-pink-500 rounded-xl pl-4 pr-10 py-3 text-sm leading-[1.5] text-gray-800 dark:text-gray-100 transition-all outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                            className="w-full h-12 min-h-[3rem] bg-canvas border border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-pink-200 dark:focus:border-pink-500 rounded-xl pl-4 pr-10 py-3 text-sm leading-[1.5] text-ink transition-all outline-none placeholder-gray-400 dark:placeholder-gray-500"
                         />
                     </div>
                     <div className="w-full lg:w-[340px] min-h-[3rem] flex items-stretch">
                         <select
                             value={categoriaSeleccionada}
                             onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-                            className="h-12 min-h-[3rem] w-full bg-white dark:bg-gray-700 border border-pink-100 dark:border-gray-600 rounded-xl py-3 px-4 text-sm font-medium leading-[1.5] text-gray-700 dark:text-gray-200 transition-all outline-none cursor-pointer hover:border-pink-200 dark:hover:border-pink-600 focus:border-pink-300 focus:ring-2 focus:ring-pink-200/50"
+                            className="h-12 min-h-[3rem] w-full bg-white dark:bg-gray-700 border border-line rounded-xl py-3 px-4 text-sm font-medium leading-[1.5] text-ink transition-all outline-none cursor-pointer hover:border-pink-200 dark:hover:border-pink-600 focus:border-pink-300 focus:ring-2 focus:ring-pink-200/50"
                         >
                             <option value="all">Todas las categorías</option>
                             {categorias.map(cat => (
@@ -379,7 +379,7 @@ export default function Inventario() {
                 <div className="flex shrink-0 flex-wrap items-center gap-3">
                     <button
                         onClick={() => setGestionCatsAbierto(true)}
-                        className="btn-ghost flex items-center justify-center gap-2 h-12 min-h-[3rem] px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl border-0"
+                        className="btn-ghost flex items-center justify-center gap-2 h-12 min-h-[3rem] px-4 py-3 bg-canvas text-muted hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl border-0"
                         title="Administrar categorías"
                     >
                         <Settings className="w-4 h-4" />
@@ -387,7 +387,7 @@ export default function Inventario() {
                     </button>
                     <button
                         onClick={() => setGestionCuponesAbierto(true)}
-                        className="btn-ghost flex items-center justify-center gap-2 h-12 min-h-[3rem] px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl border-0"
+                        className="btn-ghost flex items-center justify-center gap-2 h-12 min-h-[3rem] px-4 py-3 bg-canvas text-muted hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl border-0"
                         title="Cupones del catálogo"
                     >
                         <Tag className="w-4 h-4" />
@@ -398,7 +398,7 @@ export default function Inventario() {
                             setProductoEditar(null)
                             setModalAbierto(true)
                         }}
-                        className="btn-primary flex items-center justify-center gap-2 h-12 min-h-[3rem] px-5 py-3 shadow-lg shadow-pink-200 rounded-xl"
+                        className="btn-primary flex items-center justify-center gap-2 h-12 min-h-[3rem] px-5 py-3 rounded-full"
                         title="Agregar nuevo producto"
                     >
                         <Plus className="w-4 h-4" />
@@ -411,8 +411,8 @@ export default function Inventario() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pl-1">
                 <div className="flex items-center gap-3">
                     <span className="w-2 h-2 rounded-full bg-pink-400 dark:bg-pink-500"></span>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                        Mostrando <span className="font-bold text-gray-900 dark:text-gray-100">{productosFiltrados.length}</span> producto{productosFiltrados.length !== 1 ? 's' : ''}
+                    <p className="text-sm text-muted font-medium">
+                        Mostrando <span className="font-bold text-ink">{productosFiltrados.length}</span> producto{productosFiltrados.length !== 1 ? 's' : ''}
                     </p>
                     {productosAgotados > 0 && (
                         <span
@@ -434,7 +434,7 @@ export default function Inventario() {
                                 setProductosSeleccionados(new Set())
                                 setBulkVisError(null)
                             }}
-                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-pink-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-700 font-bold text-sm transition-colors"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-muted hover:text-ink hover:bg-canvas border border-pink-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-700 font-bold text-sm transition-colors"
                         >
                             <Eye className="w-4 h-4" />
                             Ocultar / Mostrar en catálogo
@@ -487,16 +487,16 @@ export default function Inventario() {
 
             {tabActiva === 'combos' && (
             <>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800/80 p-5 sm:p-6 rounded-2xl border border-pink-100 dark:border-gray-600 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-5 sm:p-6 rounded-card border border-line">
                 <div className="flex items-center gap-2.5">
                     <span className="w-2 h-2 rounded-full bg-pink-400 dark:bg-pink-500 shrink-0" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                        <span className="font-bold text-gray-900 dark:text-gray-100">{combos.length}</span> combo{combos.length !== 1 ? 's' : ''}
+                    <p className="text-sm text-muted font-medium">
+                        <span className="font-bold text-ink">{combos.length}</span> combo{combos.length !== 1 ? 's' : ''}
                     </p>
                 </div>
                 <button
                     onClick={() => { setComboEditar(null); setModalComboAbierto(true) }}
-                    className="btn-primary flex items-center justify-center gap-2 px-5 py-2.5 shadow-lg shadow-pink-200 rounded-xl text-sm font-bold"
+                    className="btn-primary flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold"
                 >
                     <Plus className="w-4 h-4" />
                     <span>Nuevo Combo</span>
@@ -516,7 +516,7 @@ export default function Inventario() {
             <PastelCard noHover className="p-5 sm:p-6">
                 <div className="flex flex-col gap-1 mb-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-ink flex items-center gap-2">
                             <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                             Lista para reposición
                         </h3>
@@ -524,7 +524,7 @@ export default function Inventario() {
                             <button
                                 type="button"
                                 onClick={() => setMostrarAjusteUmbral(prev => !prev)}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/80 hover:bg-gray-100 dark:hover:bg-gray-600 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 transition-colors"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-muted bg-gray-100/80 dark:bg-gray-700/80 hover:bg-gray-100 dark:hover:bg-gray-600 border border-transparent hover:border-line transition-colors"
                                 title="Ajustar umbral"
                                 aria-expanded={mostrarAjusteUmbral}
                             >
@@ -533,9 +533,9 @@ export default function Inventario() {
                             </button>
                             {mostrarAjusteUmbral && (
                                 <>
-                                    <div className="absolute right-0 top-full mt-2 z-10 w-72 p-4 rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Umbral de stock</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                    <div className="absolute right-0 top-full mt-2 z-10 w-72 p-4 rounded-xl border border-line bg-surface shadow-lg">
+                                        <p className="text-sm font-medium text-ink mb-2">Umbral de stock</p>
+                                        <p className="text-xs text-muted mb-3">
                                             Además de los que están bajo su mínimo, incluir productos con stock ≤
                                         </p>
                                         <input
@@ -553,9 +553,9 @@ export default function Inventario() {
                                                 if (Number.isFinite(n) && n >= 0) setUmbralStockCritico(n)
                                             }}
                                             placeholder="ej. 5 (opcional)"
-                                            className="w-full rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100 dark:bg-gray-700 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
+                                            className="w-full rounded-lg border border-line px-3 py-2.5 text-sm font-medium text-ink dark:bg-gray-700 focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20"
                                         />
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Dejá vacío para usar solo el mínimo de cada producto.</p>
+                                        <p className="text-xs text-hint mt-2">Dejá vacío para usar solo el mínimo de cada producto.</p>
                                     </div>
                                     <button
                                         type="button"
@@ -567,12 +567,12 @@ export default function Inventario() {
                             )}
                         </div>
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-xs text-hint">
                         Los mismos productos se ven en “Stock Crítico” en el tablero.
                     </p>
                 </div>
                 {productosParaReposicion.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 dark:text-gray-500 border border-dashed border-gray-200 dark:border-gray-600 rounded-xl">
+                    <div className="text-center py-10 text-hint border border-dashed border-line rounded-xl">
                         <AlertTriangle className="w-9 h-9 mx-auto mb-2 opacity-50" />
                         <p className="font-medium text-sm">No hay productos para reposición</p>
                         <p className="text-xs mt-1">Subí el umbral o revisá los mínimos de cada producto.</p>
@@ -593,13 +593,13 @@ export default function Inventario() {
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm leading-tight truncate">{prod.name}</p>
+                                        <p className="font-semibold text-ink text-sm leading-tight truncate">{prod.name}</p>
                                         <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">Mín: {prod.min_stock}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-center justify-center min-w-[56px] py-1.5 px-3 rounded-lg bg-white dark:bg-gray-700 border border-amber-100/80 dark:border-gray-600 flex-shrink-0">
                                     <span className="text-[9px] uppercase font-semibold tracking-wider text-amber-500 dark:text-amber-400">Stock</span>
-                                    <span className={`font-extrabold text-base tabular-nums leading-none mt-0.5 ${prod.stock === 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-800 dark:text-gray-100'}`}>{prod.stock}</span>
+                                    <span className={`font-extrabold text-base tabular-nums leading-none mt-0.5 ${prod.stock === 0 ? 'text-red-500 dark:text-red-400' : 'text-ink'}`}>{prod.stock}</span>
                                 </div>
                             </div>
                         ))}

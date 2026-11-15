@@ -1,9 +1,19 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import type { Page } from '@playwright/test'
+
+/** axe mide colores reales: si una animación de entrada sigue corriendo, mide tonos a medio aparecer. */
+async function waitForEntryAnimations(page: Page) {
+  await page.waitForFunction(() =>
+    document.getAnimations().every((animation) => animation.playState !== 'running' || animation.effect?.getTiming().iterations === Infinity)
+  )
+}
 
 test.describe('Accesibilidad (axe + teclado)', () => {
   test('login: sin violaciones críticas axe', async ({ page }) => {
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await expect(page.getByRole('button', { name: 'Iniciar sesión' })).toBeVisible()
+    await waitForEntryAnimations(page)
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
       .analyze()

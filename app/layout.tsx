@@ -26,6 +26,15 @@ const fraunces = localFont({
   display: "swap",
 });
 
+/** Letra redondeada del catálogo público (pastel bento). */
+const quicksand = localFont({
+  src: "./fonts/quicksand-latin-wght-normal.woff2",
+  weight: "300 700",
+  style: "normal",
+  variable: "--font-quicksand",
+  display: "swap",
+});
+
 const ilaraScript = localFont({
   src: "./fonts/great-vibes-latin-400-normal.woff2",
   weight: "400",
@@ -125,14 +134,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html
+      lang="es"
+      // Las variables de fuente van en <html> para que --font-sans (definida en :root) las resuelva.
+      className={`${outfit.variable} ${fraunces.variable} ${quicksand.variable} ${ilaraScript.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <Script src="/ilara-theme-init.js" strategy="beforeInteractive" />
         <link rel="icon" href="/icon-512.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
-        className={`${outfit.variable} ${fraunces.variable} ${ilaraScript.variable} antialiased`}
+        className="antialiased"
         suppressHydrationWarning
       >
         <ThemeProvider>

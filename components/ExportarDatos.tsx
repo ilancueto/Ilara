@@ -213,7 +213,7 @@ export default function ExportarDatos({ mostrar, cerrar }: Props) {
               type="button"
               onClick={() => exportar('csv')}
               disabled={cargando}
-              className="inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-sm shadow-lg shadow-pink-200/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {cargando ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

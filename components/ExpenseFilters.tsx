@@ -15,10 +15,10 @@ interface ExpenseFiltersProps {
 }
 
 const inputBase =
-    'w-full min-w-0 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm leading-normal outline-none transition-colors focus:border-pink-500 dark:focus:border-pink-400 focus:ring-2 focus:ring-pink-500/20 dark:focus:ring-pink-400/20';
+    'w-full min-w-0 rounded-xl border border-line bg-surface text-ink text-sm leading-normal outline-none transition-colors focus:border-pink-500 dark:focus:border-pink-400 focus:ring-2 focus:ring-pink-500/20 dark:focus:ring-pink-400/20';
 
 const selectBase =
-    'w-full min-w-0 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm leading-normal outline-none transition-colors focus:border-pink-500 dark:focus:border-pink-400 focus:ring-2 focus:ring-pink-500/20 appearance-none cursor-pointer pr-10 truncate';
+    'w-full min-w-0 rounded-xl border border-line bg-surface text-ink text-sm leading-normal outline-none transition-colors focus:border-pink-500 dark:focus:border-pink-400 focus:ring-2 focus:ring-pink-500/20 appearance-none cursor-pointer pr-10 truncate';
 
 export default function ExpenseFiltersComponent({ filters, onFiltersChange, onClose }: ExpenseFiltersProps) {
     const handleClearFilters = () => {
@@ -29,13 +29,13 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
 
     return (
         <PastelCard
-            className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-600 shadow-xl dark:shadow-none w-full max-w-[420px] max-h-[70vh]"
+            className="flex flex-col overflow-hidden rounded-2xl border border-line shadow-xl dark:shadow-none w-full max-w-[420px] max-h-[70vh]"
             noHover
         >
             {/* Header */}
-            <div className="flex items-center justify-between flex-shrink-0 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                <h3 className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2.5 text-base">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400">
+            <div className="flex items-center justify-between flex-shrink-0 px-6 py-5 border-b border-line">
+                <h3 className="font-bold text-ink flex items-center gap-2.5 text-base">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-soft text-accent">
                         <Filter className="w-4 h-4" />
                     </span>
                     Filtrar gastos
@@ -43,7 +43,7 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                 <button
                     type="button"
                     onClick={onClose}
-                    className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-2 rounded-lg text-hint hover:text-gray-600 dark:hover:text-gray-200 hover:bg-surface-soft transition-colors"
                     aria-label="Cerrar panel de filtros"
                 >
                     <X className="w-5 h-5" />
@@ -53,12 +53,12 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
             {/* Body: scroll interno */}
             <div className="flex-1 overflow-y-auto min-h-0 px-6 py-5 flex flex-col gap-6">
                 <div className="flex flex-col gap-3">
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-muted uppercase tracking-wider">
                         Rango de fechas
                     </span>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Desde</label>
+                            <label className="text-xs font-medium text-muted">Desde</label>
                             <input
                                 type="date"
                                 value={filters.dateFrom || ''}
@@ -67,7 +67,7 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                             />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Hasta</label>
+                            <label className="text-xs font-medium text-muted">Hasta</label>
                             <input
                                 type="date"
                                 value={filters.dateTo || ''}
@@ -79,7 +79,7 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <label className="text-xs font-semibold text-muted uppercase tracking-wider">
                         Categoría
                     </label>
                     <div className="relative min-w-0">
@@ -99,7 +99,7 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                             ))}
                         </select>
                         <span
-                            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-hint"
                             aria-hidden
                         >
                             <ChevronDown className="w-5 h-5" />
@@ -108,7 +108,7 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <label className="text-xs font-semibold text-muted uppercase tracking-wider">
                         Método de pago
                     </label>
                     <div className="relative min-w-0">
@@ -128,7 +128,7 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                             ))}
                         </select>
                         <span
-                            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-hint"
                             aria-hidden
                         >
                             <ChevronDown className="w-5 h-5" />
@@ -137,14 +137,14 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-muted uppercase tracking-wider">
                         Monto
                     </span>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Mínimo</label>
+                            <label className="text-xs font-medium text-muted">Mínimo</label>
                             <div className="relative">
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm">
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-hint text-sm">
                                     $
                                 </span>
                                 <input
@@ -162,9 +162,9 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
                             </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Máximo</label>
+                            <label className="text-xs font-medium text-muted">Máximo</label>
                             <div className="relative">
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm">
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-hint text-sm">
                                     $
                                 </span>
                                 <input
@@ -186,12 +186,12 @@ export default function ExpenseFiltersComponent({ filters, onFiltersChange, onCl
             </div>
 
             {/* Footer fijo */}
-            <div className="flex-shrink-0 px-6 py-5 pt-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex gap-3">
+            <div className="flex-shrink-0 px-6 py-5 pt-4 border-t border-line bg-gray-50/50 dark:bg-gray-800/40 flex gap-3">
                 {hasActiveFilters && (
                     <button
                         type="button"
                         onClick={handleClearFilters}
-                        className="flex-1 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="flex-1 py-3 rounded-xl text-sm font-medium text-muted hover:text-ink hover:bg-surface-soft transition-colors"
                     >
                         Limpiar
                     </button>

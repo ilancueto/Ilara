@@ -59,15 +59,15 @@ export default function ExpenseForm({
     const modalContent = (
         <>
             <div className="modal-backdrop" onClick={onCancel} />
-            <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700" noHover>
-                <div className="flex items-center justify-between flex-shrink-0 p-5 sm:p-6 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-2">
-                        <span className="text-pink-500 dark:text-pink-400">✦</span>
+            <PastelCard className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col z-[100] !shadow-2xl rounded-3xl border border-line" noHover>
+                <div className="flex items-center justify-between flex-shrink-0 p-5 sm:p-6 border-b border-line">
+                    <h3 className="text-xl font-bold text-ink tracking-tight flex items-center gap-2">
+                        <span className="text-accent">✦</span>
                         {expense ? 'Editar Gasto' : 'Nuevo Gasto'}
                     </h3>
                     <button
                         onClick={onCancel}
-                        className="p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-2 rounded-xl text-hint hover:text-gray-600 dark:hover:text-gray-200 hover:bg-surface-soft transition-colors"
                         aria-label="Cerrar"
                     >
                         <X size={20} />
@@ -131,12 +131,12 @@ export default function ExpenseForm({
                                         className={`
                                             p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all min-h-[72px]
                                             ${formData.category === key
-                                                ? 'bg-pink-50 dark:bg-pink-900/40 border-pink-200 dark:border-pink-700 text-pink-600 dark:text-pink-400 ring-1 ring-pink-200 dark:ring-pink-700'
-                                                : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-600 text-gray-400 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-200 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-200'
+                                                ? 'bg-primary-soft border-pink-200 dark:border-pink-700 text-accent ring-1 ring-pink-200 dark:ring-pink-700'
+                                                : 'bg-surface border-line text-gray-400 dark:text-gray-400 hover:bg-canvas hover:border-gray-200 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-200'
                                             }
                                         `}
                                     >
-                                        <span className={`text-xl ${formData.category === key ? 'text-pink-500 dark:text-pink-400' : 'text-gray-300 dark:text-gray-500'}`}>
+                                        <span className={`text-xl ${formData.category === key ? 'text-accent' : 'text-gray-300 dark:text-gray-500'}`}>
                                             {getCategoryIcon(key as ExpenseCategory)}
                                         </span>
                                         <span className="text-[10px] uppercase font-bold tracking-wider text-center leading-tight">
@@ -182,7 +182,7 @@ export default function ExpenseForm({
                                                 <span className="text-pink-500 text-xs font-bold">PDF</span>
                                             )}
                                         </div>
-                                        <span className="text-sm font-medium text-pink-700 dark:text-pink-300 truncate flex-1 min-w-0">Comprobante cargado</span>
+                                        <span className="text-sm font-medium text-primary-ink truncate flex-1 min-w-0">Comprobante cargado</span>
                                         {formData.receipt ? (
                                             <button
                                                 type="button"
@@ -200,7 +200,7 @@ export default function ExpenseForm({
                                 ) : (
                                     <label
                                         htmlFor="receipt-upload"
-                                        className="flex items-center justify-center gap-2.5 min-h-[52px] py-3 px-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/80 cursor-pointer hover:border-pink-300 dark:hover:border-pink-600 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 transition-all text-gray-500 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 text-sm font-medium"
+                                        className="flex items-center justify-center gap-2.5 min-h-[52px] py-3 px-4 rounded-xl border-2 border-dashed border-line bg-gray-50/80 dark:bg-gray-800/80 cursor-pointer hover:border-pink-300 dark:hover:border-pink-600 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 transition-all text-muted hover:text-accent text-sm font-medium"
                                     >
                                         <Upload size={20} />
                                         <span>Subir imagen o PDF</span>
@@ -209,7 +209,7 @@ export default function ExpenseForm({
                                 {expense?.receipt_url && !formData.receipt ? (
                                     <label
                                         htmlFor="receipt-upload"
-                                        className="mt-2 inline-block text-xs font-semibold text-pink-600 dark:text-pink-400 hover:underline cursor-pointer"
+                                        className="mt-2 inline-block text-xs font-semibold text-accent hover:underline cursor-pointer"
                                     >
                                         Reemplazar comprobante
                                     </label>
@@ -225,23 +225,23 @@ export default function ExpenseForm({
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                 placeholder="Información adicional..."
                                 rows={2}
-                                className="bg-white dark:bg-gray-800 rounded-xl resize-none"
+                                className="bg-surface rounded-xl resize-none"
                             />
                         </div>
                     </div>
 
-                    <div className="flex-shrink-0 p-5 sm:p-6 pt-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 flex gap-3">
+                    <div className="flex-shrink-0 p-5 sm:p-6 pt-6 border-t border-line bg-gray-50/50 dark:bg-gray-800/30 flex gap-3">
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="btn-ghost flex-1 py-3 rounded-xl border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+                            className="btn-ghost flex-1 py-3 rounded-xl border-line text-muted"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="btn-primary flex-[2] py-3 rounded-xl shadow-lg shadow-pink-200 dark:shadow-pink-900/30 font-semibold"
+                            className="btn-primary flex-[2] py-3 rounded-full font-semibold"
                         >
                             {isLoading ? 'Guardando...' : expense ? 'Guardar Cambios' : 'Crear Gasto'}
                         </button>

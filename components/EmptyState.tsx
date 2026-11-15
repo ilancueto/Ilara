@@ -22,7 +22,7 @@ export default function EmptyState({
 
     return (
         <PastelCard className="text-center animate-fade-in-scale py-16 px-10 max-w-md mx-auto" noHover>
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-100 to-purple-100 mb-6 animate-float">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-soft mb-6 animate-float">
                 <IconComponent className="w-10 h-10 text-pink-400" strokeWidth={1.5} />
             </div>
 

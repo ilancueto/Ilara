@@ -96,16 +96,16 @@ export default function PanelPago({
     }
 
     return (
-        <div className="px-[1.1rem] pt-3.5 pb-[1.1rem] border-t border-[#EDE8E1] dark:border-white/10 bg-[#FAF8F5] dark:bg-zinc-950/55">
+        <div className="px-[1.1rem] pt-3.5 pb-[1.1rem] border-t border-line bg-canvas">
             <div className="mb-3">
-                <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted mb-1.5">
                     <UserRound className="w-3.5 h-3.5" aria-hidden />
                     Clienta
                 </label>
                 {clienta ? (
                     <div className="flex items-start justify-between gap-2 rounded-xl border border-pink-100 bg-white px-3 py-2 dark:border-white/10 dark:bg-zinc-900">
                         <div className="min-w-0">
-                            <p className="text-sm font-bold text-gray-900 dark:text-gray-50 truncate">
+                            <p className="text-sm font-bold text-ink truncate">
                                 {clienta.first_name} {clienta.last_name === '.' ? '' : clienta.last_name}
                             </p>
                             <p className="text-[11px] text-gray-500 truncate">
@@ -130,7 +130,7 @@ export default function PanelPago({
                             value={busquedaClienta}
                             onChange={(event) => setBusquedaClienta(event.target.value)}
                             placeholder="Buscar por nombre o teléfono"
-                            className="w-full h-9 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 text-xs font-semibold"
+                            className="w-full h-9 rounded-lg border border-line bg-surface px-3 text-xs font-semibold"
                             aria-label="Buscar clienta"
                         />
                         {coincidencias.length > 0 && (
@@ -139,7 +139,7 @@ export default function PanelPago({
                                     <li key={c.id}>
                                         <button
                                             type="button"
-                                            className="w-full text-left px-3 py-2 text-xs hover:bg-pink-50 dark:hover:bg-pink-950/30"
+                                            className="w-full text-left px-3 py-2 text-xs hover:bg-primary-soft"
                                             onClick={() => {
                                                 setClienteSeleccionado(c.id)
                                                 setNombreClienteOtro('')
@@ -163,7 +163,7 @@ export default function PanelPago({
                                 setClienteSeleccionado(null)
                             }}
                             placeholder="O anotar un nombre suelto"
-                            className="w-full h-9 mt-1.5 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 text-xs font-semibold"
+                            className="w-full h-9 mt-1.5 rounded-lg border border-line bg-surface px-3 text-xs font-semibold"
                             aria-label="Nombre de clienta esporádica"
                         />
                     </div>
@@ -173,7 +173,7 @@ export default function PanelPago({
                     onChange={(event) => setNotas(event.target.value)}
                     rows={2}
                     placeholder="Notas internas de la venta (opcional)"
-                    className="w-full mt-1.5 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs"
+                    className="w-full mt-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs"
                     aria-label="Notas de la venta"
                 />
             </div>
@@ -187,8 +187,8 @@ export default function PanelPago({
                                 type="button"
                                 onClick={() => elegirMetodo(metodo.id)}
                                 className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${activo
-                                    ? 'border-[#D97786] bg-[#FDF2F4] text-[#A04A5C] dark:border-[#E88B9A] dark:bg-[#2D1B22] dark:text-[#E88B9A]'
-                                    : 'border-[#EDE8E1] bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                                    ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400 dark:bg-primary-soft dark:text-pink-300'
+                                    : 'border-line bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                                 }`}
                             >
                                 <span className="block truncate">{metodo.label}</span>
@@ -199,8 +199,8 @@ export default function PanelPago({
                         type="button"
                         onClick={elegirMixto}
                         className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${pagoMixto
-                            ? 'border-[#D97786] bg-[#FDF2F4] text-[#A04A5C] dark:border-[#E88B9A] dark:bg-[#2D1B22] dark:text-[#E88B9A]'
-                            : 'border-[#EDE8E1] bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                            ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400 dark:bg-primary-soft dark:text-pink-300'
+                            : 'border-line bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                         }`}
                     >
                         Mixto
@@ -212,26 +212,26 @@ export default function PanelPago({
                 <div className="mb-3 space-y-2">
                     {(paymentBreakdown || []).map((pago, index) => (
                         <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(88px,0.8fr)_28px] gap-1.5 items-center">
-                            <select value={pago.method} onChange={(event) => actualizarPago(index, 'method', event.target.value)} className="h-9 min-w-0 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-2 text-xs font-semibold">
+                            <select value={pago.method} onChange={(event) => actualizarPago(index, 'method', event.target.value)} className="h-9 min-w-0 rounded-lg border border-line bg-surface px-2 text-xs font-semibold">
                                 {METODOS.map((metodo) => <option key={metodo.id} value={metodo.id}>{metodo.label}</option>)}
                             </select>
-                            <input type="number" min={0} value={pago.amount || ''} onChange={(event) => actualizarPago(index, 'amount', event.target.value)} className="h-9 min-w-0 rounded-lg border border-pink-100 dark:border-white/10 bg-white dark:bg-zinc-900 px-2 text-xs font-bold text-right tabular-nums" placeholder="0" />
+                            <input type="number" min={0} value={pago.amount || ''} onChange={(event) => actualizarPago(index, 'amount', event.target.value)} className="h-9 min-w-0 rounded-lg border border-line bg-surface px-2 text-xs font-bold text-right tabular-nums" placeholder="0" />
                             <button type="button" onClick={() => quitarPago(index)} className="w-7 h-7 grid place-items-center rounded-md text-gray-400 hover:text-red-500" aria-label="Quitar pago"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                     ))}
                     <div className="flex items-center justify-between gap-2">
-                        <button type="button" onClick={() => setPaymentBreakdown([...(paymentBreakdown || []), { method: 'efectivo', amount: 0 }])} className="inline-flex items-center gap-1 text-[11px] font-bold text-pink-600 dark:text-pink-400"><Plus className="w-3 h-3" /> Agregar pago</button>
+                        <button type="button" onClick={() => setPaymentBreakdown([...(paymentBreakdown || []), { method: 'efectivo', amount: 0 }])} className="inline-flex items-center gap-1 text-[11px] font-bold text-accent"><Plus className="w-3 h-3" /> Agregar pago</button>
                         <span className={`text-[11px] font-bold whitespace-nowrap ${desgloseValido ? 'text-emerald-600' : 'text-amber-600'}`}>Suma ${sumaDesglose.toLocaleString()}</span>
                     </div>
                 </div>
             )}
 
             <div className="flex items-center justify-between gap-4 mb-4 py-1">
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Total</span>
-                <strong className="text-[clamp(1.25rem,3vw,1.5rem)] leading-none font-extrabold tracking-tight tabular-nums whitespace-nowrap shrink-0 text-gray-950 dark:text-white">${total.toLocaleString()}</strong>
+                <span className="text-sm font-semibold text-muted">Total</span>
+                <strong className="text-[clamp(1.25rem,3vw,1.5rem)] leading-none font-extrabold tracking-tight tabular-nums whitespace-nowrap shrink-0 text-ink">${total.toLocaleString()}</strong>
             </div>
 
-            <button type="button" onClick={onProcesar} disabled={disabled || cargando || !desgloseValido} className="w-full min-h-11 px-4 rounded-[14px] bg-gradient-to-br from-[#CF6B7F] to-[#B85064] text-white text-sm font-bold shadow-[0_8px_18px_-6px_rgba(184,93,111,0.45)] disabled:opacity-45 disabled:shadow-none">
+            <button type="button" onClick={onProcesar} disabled={disabled || cargando || !desgloseValido} className="w-full min-h-11 px-4 rounded-full bg-primary hover:bg-primary-hover text-white text-sm font-bold disabled:opacity-45 disabled:shadow-none">
                 {cargando ? <Loader variant="dots" size="sm" inline /> : cobrarDespues ? 'Registrar por cobrar' : 'Cobrar ahora'}
             </button>
             <button
@@ -242,7 +242,7 @@ export default function PanelPago({
                     if (siguiente) setPaymentBreakdown(null)
                 }}
                 disabled={disabled || cargando}
-                className={`w-full min-h-10 mt-1.5 px-4 rounded-[14px] border text-sm font-bold disabled:opacity-45 ${cobrarDespues
+                className={`w-full min-h-10 mt-1.5 px-4 rounded-full border text-sm font-bold disabled:opacity-45 ${cobrarDespues
                     ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
                     : 'border-pink-100/80 bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                 }`}

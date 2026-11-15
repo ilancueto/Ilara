@@ -222,20 +222,20 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
-            <PastelCard className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto !p-0 z-50 shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 animate-fade-in-scale" noHover>
-                <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md px-6 sm:px-8 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <PastelCard className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto !p-0 z-50 shadow-2xl rounded-3xl border border-line animate-fade-in-scale" noHover>
+                <div className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-6 sm:px-8 py-5 border-b border-line flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight flex items-center gap-2">
-                            <span className="text-pink-500 dark:text-pink-400">✦</span>
+                        <h3 className="text-xl font-bold text-ink tracking-tight flex items-center gap-2">
+                            <span className="text-accent">✦</span>
                             {productToEdit ? 'Editar Producto' : 'Nuevo Producto'}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                        <p className="text-sm text-muted mt-0.5">
                             {productToEdit ? 'Modifica los detalles del producto' : 'Agrega un nuevo ítem a tu inventario'}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                        className="w-9 h-9 rounded-full bg-surface-soft text-muted hover:text-ink hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
                         aria-label="Cerrar"
                     >
                         <X size={18} />
@@ -246,10 +246,10 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     {/* Imágenes: bloque destacado */}
                     <div className="form-section">
                         <label className="form-label">Imágenes del producto</label>
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 p-5 sm:p-6 min-h-[140px] flex flex-col justify-center">
+                        <div className="rounded-2xl border border-line bg-gray-50/80 dark:bg-gray-800/50 p-5 sm:p-6 min-h-[140px] flex flex-col justify-center">
                             <div className="flex flex-wrap gap-4 items-center">
                                 {formData.image_urls.map((url, index) => (
-                                    <div key={url} className="relative w-24 h-24 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 overflow-hidden group shrink-0">
+                                    <div key={url} className="relative w-24 h-24 rounded-xl bg-white dark:bg-gray-700 border border-line overflow-hidden group shrink-0">
                                         <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="96px" />
                                         <button
                                             type="button"
@@ -265,7 +265,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     {uploading ? (
                                         <Loader className="animate-spin text-pink-400 w-7 h-7" />
                                     ) : (
-                                        <Upload className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                                        <Upload className="w-7 h-7 text-hint" />
                                     )}
                                     <input
                                         type="file"
@@ -277,7 +277,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     />
                                 </label>
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                            <p className="text-xs text-muted mt-4">
                                 Podés subir varias. JPG, PNG o WEBP. En el catálogo se podrán deslizar.
                             </p>
                         </div>
@@ -385,14 +385,14 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     placeholder="5"
                                     className="form-input form-control-h w-full"
                                 />
-                                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Aviso cuando el stock baje de este valor</p>
+                                <p className="text-[11px] text-hint mt-1">Aviso cuando el stock baje de este valor</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Visible en catálogo: bloque de configuración */}
                     <div className="form-section">
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50/60 dark:bg-gray-800/40 p-5 sm:p-6">
+                        <div className="rounded-2xl border border-line bg-gray-50/60 dark:bg-gray-800/40 p-5 sm:p-6">
                             <label className="flex items-center gap-4 cursor-pointer has-[:checked]:[&_.track]:bg-pink-400 has-[:checked]:[&_.thumb]:translate-x-6">
                                 <input
                                     type="checkbox"
@@ -404,9 +404,9 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     <span className="track block h-8 w-14 rounded-full bg-gray-200 transition-colors duration-200" />
                                     <span className="thumb absolute left-1 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-out" />
                                 </span>
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Visible en el catálogo público</span>
+                                <span className="text-sm font-medium text-ink">Visible en el catálogo público</span>
                             </label>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 ml-[4.5rem] leading-relaxed">
+                            <p className="text-xs text-muted mt-3 ml-[4.5rem] leading-relaxed">
                                 Desactivá para ocultar este producto del catálogo (ideal cuando cargás algo sin precio o fotos).
                             </p>
                         </div>
@@ -424,7 +424,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                             placeholder="0"
                             className="form-input form-control-h w-full max-w-[120px]"
                         />
-                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Si es mayor a 0, en el catálogo público se muestra &quot;En descuento&quot; y el precio rebajado.</p>
+                        <p className="text-[11px] text-hint mt-1">Si es mayor a 0, en el catálogo público se muestra &quot;En descuento&quot; y el precio rebajado.</p>
                     </div>
 
                     {/* Badge visible en catálogo */}
@@ -446,7 +446,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                 </option>
                             ))}
                         </select>
-                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                        <p className="text-[11px] text-hint mt-1">
                             {CATALOG_BADGE_OPTIONS.find((o) => o.value === formData.catalog_badge)?.hint}
                         </p>
                     </div>
@@ -462,7 +462,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                             className="form-input w-full resize-none form-textarea-min"
                             maxLength={800}
                         />
-                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                        <p className="text-[11px] text-hint mt-1">
                             Visible en ilara.com.ar. No uses esto para notas de stock o costos.
                         </p>
                     </div>
@@ -479,19 +479,19 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                         />
                     </div>
 
-                    <div className="form-footer-bar flex gap-4 border-gray-200 dark:border-gray-700">
+                    <div className="form-footer-bar flex gap-4 border-line">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={guardando}
-                            className="btn-ghost flex-1 form-control-h text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                            className="btn-ghost flex-1 form-control-h text-muted hover:text-ink"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={uploading || guardando}
-                            className="btn-primary flex-[2] justify-center form-control-h text-base shadow-lg shadow-pink-200 dark:shadow-pink-900/30"
+                            className="btn-primary flex-[2] justify-center form-control-h text-base"
                         >
                             {guardando ? (
                                 <span className="flex items-center gap-2">

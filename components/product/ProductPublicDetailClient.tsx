@@ -314,6 +314,7 @@ export function ProductPublicDetailClient({ producto, canonicalPath, relatedProd
                   cartReady={cartReady}
                   onAdd={() => { if (rel.stock > 0) agregarAlCarrito(rel) }}
                   priority={index === 0}
+                  tone={index}
                 />
               ))}
             </div>

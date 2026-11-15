@@ -258,8 +258,8 @@ export function Dialog({
           sizeClass[size],
           'max-h-[min(92dvh,100%)] overflow-y-auto overscroll-contain',
           'rounded-t-2xl sm:rounded-2xl',
-          'bg-white dark:bg-gray-800',
-          'border border-gray-100 dark:border-gray-700',
+          'bg-surface',
+          'border border-line',
           'shadow-xl outline-none',
           'p-5 sm:p-6',
           'pb-[max(1.25rem,env(safe-area-inset-bottom))]',
@@ -271,7 +271,7 @@ export function Dialog({
         <div className="flex items-start justify-between gap-3 mb-3">
           <h2
             id={titleId}
-            className="text-lg font-bold text-gray-900 dark:text-gray-100 leading-snug"
+            className="text-lg font-bold text-ink leading-snug"
           >
             {title}
           </h2>
@@ -279,7 +279,7 @@ export function Dialog({
             <button
               type="button"
               onClick={handleClose}
-              className="shrink-0 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="shrink-0 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-surface-soft transition-colors"
               aria-label="Cerrar"
               data-testid={`${testId}-close`}
             >
@@ -290,12 +290,12 @@ export function Dialog({
         {description ? (
           <div
             id={descId}
-            className="text-sm text-gray-500 dark:text-gray-400 mb-4"
+            className="text-sm text-muted mb-4"
           >
             {description}
           </div>
         ) : null}
-        <div className="text-gray-800 dark:text-gray-100">{children}</div>
+        <div className="text-ink">{children}</div>
         {footer ? (
           <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
             {footer}

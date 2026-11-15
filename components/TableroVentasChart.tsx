@@ -58,8 +58,8 @@ export default function TableroVentasChart({ ventasPorDia, theme, valueLabel = '
                 >
                     <defs>
                         <linearGradient id="barGradientPink" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f472b6" />
-                            <stop offset="100%" stopColor="#db2777" />
+                            <stop offset="0%" stopColor="#E57A9C" />
+                            <stop offset="100%" stopColor="#B8446F" />
                         </linearGradient>
                     </defs>
                     <CartesianGrid
@@ -69,28 +69,28 @@ export default function TableroVentasChart({ ventasPorDia, theme, valueLabel = '
                     />
                     <XAxis
                         dataKey="fecha"
-                        tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12, fontWeight: 500 }}
-                        axisLine={{ stroke: theme === 'dark' ? '#3f3f46' : '#fce7f3' }}
+                        tick={{ fill: theme === 'dark' ? '#B8A3AE' : '#7A6470', fontSize: 12, fontWeight: 500 }}
+                        axisLine={{ stroke: theme === 'dark' ? '#3A2C33' : '#F3DFE0' }}
                         tickLine={false}
                         dy={10}
                     />
                     <YAxis
-                        tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12, fontWeight: 500 }}
+                        tick={{ fill: theme === 'dark' ? '#B8A3AE' : '#7A6470', fontSize: 12, fontWeight: 500 }}
                         tickFormatter={(value) => (value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`)}
                         axisLine={false}
                         tickLine={false}
                     />
                     <Tooltip
                         contentStyle={{
-                            background: theme === 'dark' ? '#27272a' : '#fff',
-                            border: theme === 'dark' ? '1px solid #3f3f46' : '1px solid #fbcfe8',
+                            background: theme === 'dark' ? '#2A1F25' : '#fff',
+                            border: theme === 'dark' ? '1px solid #4A3740' : '1px solid #EED3D8',
                             borderRadius: '16px',
                             boxShadow:
                                 theme === 'dark'
                                     ? '0 10px 30px -5px rgba(0,0,0,0.4)'
                                     : '0 10px 30px -5px rgba(236,72,153,0.15)',
                             padding: '12px 16px',
-                            color: theme === 'dark' ? '#f3f4f6' : '#1f2937',
+                            color: theme === 'dark' ? '#F6E9EF' : '#4A3542',
                         }}
                         cursor={{ fill: 'rgba(236, 72, 153, 0.06)' }}
                         formatter={(value: unknown) => {

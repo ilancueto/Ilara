@@ -24,17 +24,17 @@ export function ErrorState({
       role="alert"
       data-testid="error-state"
     >
-      <h2 className="text-xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">
+      <h2 className="text-xl font-extrabold text-ink mb-2">
         {title}
       </h2>
-      <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md text-sm sm:text-base">
+      <p className="text-muted mb-6 max-w-md text-sm sm:text-base">
         {message}
       </p>
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold shadow-lg shadow-pink-200/50 hover:shadow-xl transition-all"
+          className="px-6 py-3 rounded-full bg-primary hover:bg-primary-hover text-white font-bold transition-all"
           data-testid="error-state-retry"
         >
           {retryLabel}

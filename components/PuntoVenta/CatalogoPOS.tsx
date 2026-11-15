@@ -22,6 +22,9 @@ function isHexColor(value: string): boolean {
     return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
 }
 
+/** Fondos pastel que rotan en la grilla del POS (clases literales para Tailwind). */
+const TINTS = ['bg-tint-0', 'bg-tint-1', 'bg-tint-2', 'bg-tint-3', 'bg-tint-4', 'bg-tint-5']
+
 export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAddCombo, comboDisponible }: CatalogoPOSProps) {
     const [terminoBusqueda, setTerminoBusqueda] = useState('')
     const [categoria, setCategoria] = useState<'all' | 'combos' | string>('all')
@@ -56,14 +59,14 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
     return (
         <div className="min-w-0 flex flex-col gap-3 h-full">
             <div className="relative w-full">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#95909D] pointer-events-none" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                     type="search"
                     placeholder="Buscar producto, marca o combo…"
                     value={terminoBusqueda}
                     onChange={(event) => setTerminoBusqueda(event.target.value)}
                     aria-label="Buscar productos por nombre o marca"
-                    className="w-full h-11 pl-10 pr-4 rounded-full border border-[#DDD6CE] dark:border-white/10 bg-white dark:bg-zinc-900 text-sm text-[#1A181E] dark:text-gray-100 placeholder:text-[#95909D] outline-none shadow-[0_2px_8px_rgba(26,24,30,0.04)] focus:border-[#D97786] focus:ring-2 focus:ring-[#D97786]/20"
+                    className="w-full h-11 pl-10 pr-4 rounded-full border border-line bg-surface text-sm text-ink placeholder:text-gray-400 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
             </div>
 
@@ -75,8 +78,8 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                     onClick={() => setCategoria('all')}
                     className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                         categoria === 'all'
-                            ? 'bg-gradient-to-br from-[#CF6B7F] to-[#B85064] text-white border-transparent shadow-[0_2px_8px_rgba(184,93,111,0.28)]'
-                            : 'bg-white dark:bg-zinc-900 border-[#DDD6CE] dark:border-white/10 text-[#635F69]'
+                            ? 'bg-primary hover:bg-primary-hover text-white border-transparent'
+                            : 'bg-surface border-line text-muted hover:border-primary'
                     }`}
                 >
                     Todos
@@ -89,8 +92,8 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                         onClick={() => setCategoria('combos')}
                         className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                             categoria === 'combos'
-                                ? 'bg-gradient-to-br from-[#CF6B7F] to-[#B85064] text-white border-transparent shadow-[0_2px_8px_rgba(184,93,111,0.28)]'
-                                : 'bg-white dark:bg-zinc-900 border-[#DDD6CE] dark:border-white/10 text-[#635F69]'
+                                ? 'bg-primary hover:bg-primary-hover text-white border-transparent'
+                                : 'bg-surface border-line text-muted hover:border-primary'
                         }`}
                     >
                         Combos
@@ -105,8 +108,8 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                         onClick={() => setCategoria(name)}
                         className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                             categoria === name
-                                ? 'bg-gradient-to-br from-[#CF6B7F] to-[#B85064] text-white border-transparent shadow-[0_2px_8px_rgba(184,93,111,0.28)]'
-                                : 'bg-white dark:bg-zinc-900 border-[#DDD6CE] dark:border-white/10 text-[#635F69]'
+                                ? 'bg-primary hover:bg-primary-hover text-white border-transparent'
+                                : 'bg-surface border-line text-muted hover:border-primary'
                         }`}
                     >
                         {name} <span className="opacity-70">{count}</span>
@@ -117,7 +120,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
             <div className="flex-1 min-h-0 max-h-[min(70dvh,720px)] overflow-y-auto pr-1 custom-scrollbar">
                 {hayResultados ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {combosFiltrados.map((combo) => {
+                        {combosFiltrados.map((combo, index) => {
                             const disponible = comboDisponible?.(combo) ?? true
                             const imagen = combo.image_url || (combo.combo_items?.[0]?.products as Producto | undefined)?.image_url
                             return (
@@ -126,29 +129,29 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                     type="button"
                                     onClick={() => disponible && onAddCombo?.(combo)}
                                     disabled={!disponible}
-                                    className="group flex flex-col overflow-hidden rounded-2xl border border-[#EDE8E1] dark:border-white/10 bg-white dark:bg-zinc-900 text-left shadow-[0_2px_8px_rgba(26,24,30,0.04)] hover:-translate-y-0.5 hover:border-[#D97786] hover:shadow-[0_10px_24px_rgba(184,93,111,0.12)] disabled:opacity-55 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all"
+                                    className={`group flex flex-col overflow-hidden rounded-[22px] p-2 border border-transparent ${TINTS[index % TINTS.length]} text-left hover:-translate-y-0.5 hover:border-primary disabled:opacity-55 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all`}
                                     aria-label={`Agregar combo ${combo.name}`}
                                 >
-                                    <span className="relative block h-[118px] bg-[#F3EFEA] dark:bg-zinc-800 overflow-hidden">
+                                    <span className="relative block h-[118px] rounded-2xl bg-surface overflow-hidden">
                                         {imagen ? (
                                             <Image src={imagen} alt="" fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="180px" />
                                         ) : (
-                                            <span className="absolute inset-0 grid place-items-center"><Package className="w-7 h-7 text-[#D97786]" /></span>
+                                            <span className="absolute inset-0 grid place-items-center"><Package className="w-7 h-7 text-pink-400" /></span>
                                         )}
-                                        <span className="absolute top-2 left-2 rounded-full bg-[#C5A880] px-2 py-0.5 text-[10px] font-bold text-[#1A181E]">Combo</span>
+                                        <span className="absolute top-2 left-2 rounded-full bg-tint-1 px-2 py-0.5 text-[10px] font-bold text-ink">Combo</span>
                                     </span>
-                                    <span className="flex flex-col gap-1 p-3">
-                                        <strong className="text-[13px] font-semibold leading-snug text-[#1A181E] dark:text-gray-100 line-clamp-2">{combo.name}</strong>
+                                    <span className="flex flex-col gap-1 px-1.5 pt-2.5 pb-1">
+                                        <strong className="text-[13px] font-semibold leading-snug text-ink line-clamp-2">{combo.name}</strong>
                                         <span className="flex items-center justify-between gap-2 mt-1">
-                                            <strong className="text-sm font-extrabold text-[#C25B6C] tabular-nums">${combo.sale_price.toLocaleString()}</strong>
-                                            <small className="text-[11px] text-[#95909D]">{disponible ? 'Listo' : 'Sin stock'}</small>
+                                            <strong className="text-sm font-bold text-primary-ink tabular-nums">${combo.sale_price.toLocaleString()}</strong>
+                                            <small className="text-[11px] text-gray-400">{disponible ? 'Listo' : 'Sin stock'}</small>
                                         </span>
                                     </span>
                                 </button>
                             )
                         })}
 
-                        {productosFiltrados.map((producto) => {
+                        {productosFiltrados.map((producto, index) => {
                             const imagen = getProductImages(producto)[0]
                             const stockBajo = producto.stock < producto.min_stock
                             const precio = precioListaProducto(producto)
@@ -158,10 +161,10 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                     key={producto.id}
                                     type="button"
                                     onClick={() => onAddToCart(producto)}
-                                    className="group flex flex-col overflow-hidden rounded-2xl border border-[#EDE8E1] dark:border-white/10 bg-white dark:bg-zinc-900 text-left shadow-[0_2px_8px_rgba(26,24,30,0.04)] hover:-translate-y-0.5 hover:border-[#D97786] hover:shadow-[0_10px_24px_rgba(184,93,111,0.12)] transition-all"
+                                    className={`group flex flex-col overflow-hidden rounded-[22px] p-2 border border-transparent ${TINTS[(index + combosFiltrados.length) % TINTS.length]} text-left hover:-translate-y-0.5 hover:border-primary transition-all`}
                                     aria-label={`Agregar ${producto.name} al carrito, $${precio.toLocaleString()}`}
                                 >
-                                    <span className="relative block h-[118px] bg-[#F3EFEA] dark:bg-zinc-800 overflow-hidden">
+                                    <span className="relative block h-[118px] rounded-2xl bg-surface overflow-hidden">
                                         {imagen ? (
                                             <Image src={imagen} alt="" fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="180px" />
                                         ) : (
@@ -173,10 +176,10 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                             </span>
                                         )}
                                     </span>
-                                    <span className="flex flex-col gap-1 p-3">
-                                        <strong className="text-[13px] font-semibold leading-snug text-[#1A181E] dark:text-gray-100 line-clamp-2">{producto.name}</strong>
+                                    <span className="flex flex-col gap-1 px-1.5 pt-2.5 pb-1">
+                                        <strong className="text-[13px] font-semibold leading-snug text-ink line-clamp-2">{producto.name}</strong>
                                         {tono ? (
-                                            <small className="inline-flex items-center gap-1.5 text-[11px] text-[#635F69]">
+                                            <small className="inline-flex items-center gap-1.5 text-[11px] text-muted">
                                                 {isHexColor(tono) ? (
                                                     <span className="w-3 h-3 rounded-full border border-black/10" style={{ background: tono }} aria-hidden />
                                                 ) : null}
@@ -184,8 +187,8 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                             </small>
                                         ) : null}
                                         <span className="flex items-center justify-between gap-2 mt-1">
-                                            <strong className="text-sm font-extrabold text-[#C25B6C] tabular-nums">${precio.toLocaleString()}</strong>
-                                            <small className={`text-[11px] ${stockBajo ? 'text-amber-600 font-semibold' : 'text-[#95909D]'}`}>
+                                            <strong className="text-sm font-bold text-primary-ink tabular-nums">${precio.toLocaleString()}</strong>
+                                            <small className={`text-[11px] ${stockBajo ? 'text-amber-600 font-semibold' : 'text-gray-400'}`}>
                                                 Stock {producto.stock}
                                             </small>
                                         </span>
@@ -195,9 +198,9 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                         })}
                     </div>
                 ) : (
-                    <div className="py-16 text-center text-[#635F69]">
-                        <Search className="w-8 h-8 mx-auto mb-3 text-[#D97786]" />
-                        <p className="text-sm font-bold text-[#1A181E] dark:text-gray-100">No encontramos productos</p>
+                    <div className="py-16 text-center text-muted">
+                        <Search className="w-8 h-8 mx-auto mb-3 text-pink-400" />
+                        <p className="text-sm font-bold text-ink">No encontramos productos</p>
                         <p className="text-xs mt-1">Probá con otro nombre, marca o categoría.</p>
                     </div>
                 )}

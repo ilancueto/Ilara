@@ -30,7 +30,15 @@ import { CategoryNav } from '@/components/storefront/CategoryNav'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { FilterSheet } from '@/components/storefront/FilterSheet'
 import { EmptyState } from '@/components/storefront/EmptyState'
+import { CatalogHero } from '@/components/storefront/CatalogHero'
+import { buildCatalogHero } from '@/lib/domain/catalog/catalogHero'
 import styles from '@/components/storefront/storefront.module.css'
+
+/** Etiqueta de la tarjeta destacada según el orden activo. */
+const FEATURED_LABELS: Record<string, string> = {
+  'vendidos-desc': 'Lo más vendido',
+  'nuevo-desc': 'Lo más nuevo',
+}
 
 const ModalCarrito = dynamic(
   () => import('@/components/Catalogo/ModalCarrito').then(m => ({ default: m.ModalCarrito })),
@@ -258,6 +266,13 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
     precioMax < 999999,
   ].filter(Boolean).length
 
+  const hero = buildCatalogHero(productos, categorias)
+  const showFeatured = !searching
+    && categoriaFiltro === 'all'
+    && paginaActual === 1
+    && activeFilterCount === 0
+  const featuredLabel = FEATURED_LABELS[ordenamiento] ?? 'Destacado'
+
   const comboImage = (combo: PublicCatalogCombo) => {
     if (combo.image_url) return combo.image_url
     for (const item of combo.combo_items || []) {
@@ -288,10 +303,15 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
       }
     >
       <main className={styles.wrap}>
-        <section className={`${styles.intro} ${searching ? styles.introHidden : ''}`} aria-labelledby="catalogo-titulo-principal">
-          <h1 id="catalogo-titulo-principal">Un poco de color. Mucho de vos.</h1>
-          <Link href="/sobre-ilara" className={styles.aboutLink}>Quiénes somos</Link>
-        </section>
+        <CatalogHero
+          hidden={searching}
+          photo={hero.photo}
+          tiles={hero.tiles}
+          onSelectCategory={(id) => {
+            setCategoriaFiltro(id)
+            document.querySelector('#productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }}
+        />
 
         <div className={styles.toolbar} id="productos">
           <h2>
@@ -360,6 +380,8 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
           <>
             <div className={styles.grid}>
               {itemsPagina.map((item, slotIndex) => {
+                const featured = showFeatured && slotIndex === 0
+                const tone = showFeatured ? slotIndex - 1 : slotIndex
                 const esCombo = 'combo_items' in item
                 if (esCombo) {
                   const combo = item as PublicCatalogCombo
@@ -381,6 +403,8 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
                       onOpen={() => startTransition(() => setComboSeleccionado(combo))}
                       comboIncludes={() => startTransition(() => setComboSeleccionado(combo))}
                       priority={slotIndex < 4}
+                      featured={featured}
+                      tone={tone}
                     />
                   )
                 }
@@ -394,7 +418,7 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
                     href={`/catalogo/p/${producto.id}`}
                     brand={producto.brand}
                     image={getProductImages(producto)[0] ?? null}
-                    badge={badge}
+                    badge={badge ?? (featured ? featuredLabel : null)}
                     amount={getPrecioConDescuento(producto)}
                     listAmount={producto.sale_price}
                     dual={producto.dual_price_visible === true}
@@ -404,6 +428,8 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
                     cartReady={cartReady}
                     onAdd={() => { if (producto.stock > 0) startTransition(() => agregarAlCarrito(producto)) }}
                     priority={slotIndex < 4}
+                    featured={featured}
+                    tone={tone}
                   />
                 )
               })}

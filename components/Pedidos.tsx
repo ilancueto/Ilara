@@ -298,10 +298,10 @@ export default function Pedidos() {
     <div className="flex flex-col gap-5 animate-fade-in pb-8" data-testid="pedidos-panel">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+          <h2 className="text-2xl font-extrabold tracking-tight text-ink">
             Pedidos
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted mt-1">
             Operación, pago, envío, devolución y contacto de la clienta
           </p>
         </div>
@@ -319,7 +319,7 @@ export default function Pedidos() {
           <button
             type="button"
             onClick={() => void loadList()}
-            className="inline-flex items-center gap-2 self-start rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-line px-3 py-2 text-sm font-semibold hover:bg-canvas"
             data-testid="pedidos-refresh"
           >
             <RefreshCw size={16} />
@@ -341,7 +341,7 @@ export default function Pedidos() {
             value={query}
             onChange={(e) => { ++listRequest.current; setLoading(true); setPage(0); setQuery(e.target.value) }}
             placeholder="Número, nombre o teléfono"
-            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pl-9 pr-3 py-2.5 text-sm"
+            className="w-full rounded-xl border border-line bg-surface pl-9 pr-3 py-2.5 text-sm"
             data-testid="pedidos-search"
           />
         </label>
@@ -350,7 +350,7 @@ export default function Pedidos() {
           <select
             value={statusFilter}
             onChange={(e) => { ++listRequest.current; setLoading(true); setPage(0); setStatusFilter(e.target.value as OrderStatus | 'all') }}
-            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm"
+            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm"
             data-testid="pedidos-status-filter"
           >
             {STATUS_FILTERS.map((s) => (
@@ -363,7 +363,7 @@ export default function Pedidos() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-2 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden">
+        <div className="lg:col-span-2 rounded-2xl border border-line bg-surface overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-16 text-pink-500">
               <Loader2 className="animate-spin" size={20} />
@@ -389,13 +389,13 @@ export default function Pedidos() {
                     disabled={actionLoading}
                     className={[
                       'w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-pink-50/60 dark:hover:bg-pink-950/20 transition-colors',
-                      selectedId === o.id ? 'bg-pink-50 dark:bg-pink-950/30' : '',
+                      selectedId === o.id ? 'bg-primary-soft' : '',
                     ].join(' ')}
                     data-testid={`pedido-row-${o.order_number}`}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-gray-900 dark:text-gray-50">
+                        <span className="font-bold text-ink">
                           {o.order_number}
                         </span>
                         <span
@@ -404,7 +404,7 @@ export default function Pedidos() {
                           {orderStatusLabel(o.status)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                      <p className="text-sm text-muted truncate">
                         {o.customer_name} · {o.customer_phone}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
@@ -427,7 +427,7 @@ export default function Pedidos() {
           </nav>
         </div>
 
-        <div className="lg:col-span-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 p-4 sm:p-5 min-h-[320px]">
+        <div className="lg:col-span-3 rounded-2xl border border-line bg-surface p-4 sm:p-5 min-h-[320px]">
           {!selectedId && (
             <p className="text-sm text-gray-500 py-12 text-center">
               Seleccioná un pedido para ver el detalle.
@@ -443,7 +443,7 @@ export default function Pedidos() {
             <div className="flex flex-col gap-4" data-testid="pedido-detail">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-xl font-extrabold text-gray-900 dark:text-gray-50">
+                  <h3 className="text-xl font-extrabold text-ink">
                     {detail.order_number}
                   </h3>
                   <span
@@ -454,7 +454,7 @@ export default function Pedidos() {
                 </div>
                 <button
                   type="button"
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="p-2 rounded-lg hover:bg-surface-soft"
                   onClick={() => {
                     setSelectedId(null)
                     setDetail(null)
@@ -468,7 +468,7 @@ export default function Pedidos() {
               <PedidoDatosContacto detail={detail} />
 
               {detail.notes && (
-                <div className="rounded-xl bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm">
+                <div className="rounded-xl bg-canvas px-3 py-2 text-sm">
                   <p className="text-xs text-gray-400 mb-0.5">Notas del cliente</p>
                   <p>{detail.notes}</p>
                 </div>
@@ -494,14 +494,14 @@ export default function Pedidos() {
               <div className="flex flex-wrap gap-2">
                 <a
                   href={panelHref({ tab: 'returns', channel: 'catalog', orderId: detail.id })}
-                  className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="rounded-xl border border-line px-3 py-2 text-xs font-bold hover:bg-canvas"
                   data-testid="pedido-open-return"
                 >
                   Registrar devolución
                 </a>
                 <a
                   href={panelHref({ tab: 'margin_reports', channel: 'catalog' })}
-                  className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="rounded-xl border border-line px-3 py-2 text-xs font-bold hover:bg-canvas"
                 >
                   Ver margen del catálogo
                 </a>

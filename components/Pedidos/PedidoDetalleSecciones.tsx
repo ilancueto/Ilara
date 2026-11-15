@@ -28,7 +28,7 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
             {detail.customer_id ? (
               <a
                 href={panelHref({ tab: 'customers', customerId: detail.customer_id })}
-                className="text-pink-600 dark:text-pink-400 underline-offset-2 hover:underline"
+                className="text-accent underline-offset-2 hover:underline"
                 data-testid="pedido-open-customer"
               >
                 {detail.customer_name}
@@ -177,7 +177,7 @@ export function PedidoDevoluciones({ items }: { items: OrderDetail['returns'] })
             {items.map((item) => (
               <li
                 key={item.id}
-                className="rounded-xl border border-gray-100 dark:border-gray-800 px-3 py-2 text-sm"
+                className="rounded-xl border border-line px-3 py-2 text-sm"
               >
                 <p className="font-semibold">
                   {catalogReturnLabel(item.return_number)} · ${formatPesoAR(item.refund_total)}
@@ -186,7 +186,7 @@ export function PedidoDevoluciones({ items }: { items: OrderDetail['returns'] })
                   {catalogRefundActionLabel(item.refund_action)}
                   {item.restock ? ' · stock reintegrado' : ' · sin reintegro de stock'}
                 </p>
-                <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{item.reason}</p>
+                <p className="text-xs text-muted mt-1">{item.reason}</p>
               </li>
             ))}
           </ul>
@@ -199,7 +199,7 @@ export function PedidoLineas({ detail }: { detail: OrderDetail }) {
   return (
       <div>
         <h4 className="text-sm font-bold mb-2">Líneas</h4>
-        <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-100 dark:border-gray-800">
+        <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-line">
           {detail.items.map((it) => (
             <li key={it.id} className="px-3 py-2 text-sm flex justify-between gap-3">
               <div className="min-w-0">
@@ -259,7 +259,7 @@ export function PedidoHistorial({ events }: { events: OrderDetail['events'] }) {
           {events.map((ev) => (
             <li
               key={ev.id}
-              className="text-xs sm:text-sm flex gap-2 text-gray-600 dark:text-gray-300"
+              className="text-xs sm:text-sm flex gap-2 text-muted"
             >
               <span className="text-gray-400 shrink-0">
                 {new Date(ev.created_at).toLocaleString('es-AR')}
@@ -306,7 +306,7 @@ export function PedidoCancelarForm({ reason, onReasonChange, error, loading, onC
             onChange={(e) => onReasonChange(e.target.value)}
             maxLength={300}
             rows={2}
-            className="w-full rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-950 px-2 py-1.5 text-sm"
+            className="w-full rounded-lg border border-rose-200 dark:border-rose-800 bg-surface px-2 py-1.5 text-sm"
             data-testid="pedido-cancel-reason"
             disabled={loading}
           />
@@ -327,7 +327,7 @@ export function PedidoCancelarForm({ reason, onReasonChange, error, loading, onC
             </button>
             <button
               type="button"
-              className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold"
+              className="rounded-xl border border-line px-3 py-2 text-sm font-semibold"
               disabled={loading}
               onClick={onBack}
             >

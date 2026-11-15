@@ -25,7 +25,7 @@ export default function GastosPageClient() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#fdf4ff]">
+            <div className="min-h-screen flex items-center justify-center bg-canvas">
                 <div className="text-pink-500 font-bold text-xl animate-pulse">Cargando Ilara...</div>
             </div>
         );

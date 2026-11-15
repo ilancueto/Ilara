@@ -129,15 +129,15 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={cerrar} aria-hidden />
 
-            <PastelCard className="relative w-full max-w-md !p-0 z-50 shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 animate-fade-in-scale overflow-hidden" noHover>
-                <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                        <FolderOpen className="w-6 h-6 text-pink-500 dark:text-pink-400" />
+            <PastelCard className="relative w-full max-w-md !p-0 z-50 shadow-2xl rounded-3xl border border-line animate-fade-in-scale overflow-hidden" noHover>
+                <div className="px-5 sm:px-6 py-4 border-b border-line flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-ink flex items-center gap-2">
+                        <FolderOpen className="w-6 h-6 text-accent" />
                         Categorías
                     </h3>
                     <button
                         onClick={cerrar}
-                        className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                        className="w-8 h-8 rounded-full bg-surface-soft text-hint hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
                         aria-label="Cerrar"
                     >
                         <X size={18} />
@@ -147,7 +147,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                 <div className="p-5 sm:p-6 flex flex-col gap-4">
                     {/* Selector + Nueva */}
                     <div className="flex flex-col gap-2">
-                        <label className="form-label text-gray-700 dark:text-gray-200">Seleccionar categoría</label>
+                        <label className="form-label text-ink">Seleccionar categoría</label>
                         <div className="flex items-stretch gap-2">
                             <select
                                 value={categoriaSeleccionada?.toString() || ''}
@@ -161,7 +161,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                             </select>
                             <button
                                 onClick={handleNueva}
-                                className="btn-ghost bg-pink-50 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/60 min-w-[44px] form-control-h rounded-xl border-0 flex items-center justify-center shrink-0"
+                                className="btn-ghost bg-primary-soft text-accent hover:bg-pink-100 dark:hover:bg-pink-900/60 min-w-[44px] form-control-h rounded-xl border-0 flex items-center justify-center shrink-0"
                                 title="Nueva Categoría"
                             >
                                 <Plus className="w-5 h-5" />
@@ -171,7 +171,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
 
                     {/* Input nombre */}
                     <div className="flex flex-col gap-2">
-                        <label className="form-label text-gray-700 dark:text-gray-200">
+                        <label className="form-label text-ink">
                             {categoriaSeleccionada ? 'Editar nombre' : 'Nombre de nueva categoría'}
                         </label>
                         <input
@@ -196,7 +196,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                                 <button
                                     onClick={handleEditar}
                                     disabled={cargando || !nombre.trim()}
-                                    className="btn-primary flex-1 justify-center gap-2 shadow-lg shadow-pink-200"
+                                    className="btn-primary flex-1 justify-center gap-2"
                                 >
                                     <SquarePen size={16} aria-hidden />
                                     Actualizar
@@ -214,7 +214,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                             <button
                                 onClick={handleCrear}
                                 disabled={cargando || !nombre.trim()}
-                                className="btn-primary w-full justify-center gap-2 shadow-lg shadow-pink-200"
+                                className="btn-primary w-full justify-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Crear Categoría
@@ -223,7 +223,7 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
                     </div>
 
                     {/* Info */}
-                    <p className="text-center text-xs text-gray-400 dark:text-gray-500 font-medium pt-1">
+                    <p className="text-center text-xs text-hint font-medium pt-1">
                         {categorias.length} categoría{categorias.length !== 1 ? 's' : ''} en total
                     </p>
                 </div>
