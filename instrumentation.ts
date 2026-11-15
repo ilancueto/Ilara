@@ -6,10 +6,11 @@
 
 import type { Instrumentation } from 'next'
 import { trackError, ObservabilityEvent } from '@/lib/observability'
+import { warmSentry } from '@/lib/observability/sentry'
 
 export async function register() {
-  // Placeholder para OpenTelemetry / Sentry init cuando el owner active DSN.
-  // Sin dependencias externas obligatorias.
+  // Sentry sólo se carga si hay DSN (ver lib/observability/sentry.ts).
+  warmSentry()
   if (process.env.NODE_ENV === 'development' && process.env.LOG_OBS === '1') {
     console.info(
       JSON.stringify({

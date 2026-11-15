@@ -1,13 +1,14 @@
 /**
  * Capa de captura de errores opt-in (Stage 4).
  * - Siempre: log estructurado local (sanitizado).
- * - Sentry: desactivado sin DSN. El paquete @sentry/nextjs NO está instalado
- *   por defecto; ver docs/ETAPA4_OBSERVABILIDAD_RUNBOOK.md para activarlo.
+ * - Sentry: opt-in. Sin DSN no se carga ni se envía nada (ver lib/observability/sentry.ts
+ *   y docs/OBSERVABILIDAD_SENTRY.md). Los eventos salen sanitizados.
  * - Nunca envía eventos a servicios externos en tests.
  */
 
 import { logStructured, createRequestId } from '@/lib/observability/logger'
 import { sanitizeForTelemetry } from '@/lib/observability/sanitize'
+import { captureToSentry, isSentryEnabled } from '@/lib/observability/sentry'
 import {
   ObservabilityEvent,
   mapErrorCodeToEvent,
@@ -17,30 +18,7 @@ import {
 export { createRequestId, ObservabilityEvent, mapErrorCodeToEvent }
 export type { ObservabilityPayload }
 
-function sentryDsn(): string | undefined {
-  const dsn =
-    process.env.SENTRY_DSN?.trim() ||
-    process.env.NEXT_PUBLIC_SENTRY_DSN?.trim()
-  return dsn || undefined
-}
-
-function isTestEnv(): boolean {
-  return (
-    process.env.VITEST === 'true' ||
-    process.env.NODE_ENV === 'test' ||
-    process.env.PLAYWRIGHT_TEST === '1'
-  )
-}
-
-/**
- * True sólo si hay DSN y no estamos en test.
- * Aun con DSN, sin @sentry/nextjs instalado no hay envío externo
- * (la integración real es opt-in manual del owner).
- */
-export function isSentryEnabled(): boolean {
-  if (isTestEnv()) return false
-  return Boolean(sentryDsn())
-}
+export { isSentryEnabled }
 
 /** Emite un evento de negocio/técnico. No lanza. */
 export function trackEvent(payload: ObservabilityPayload): void {
@@ -83,6 +61,7 @@ export function trackError(
       },
     }
     logStructured(payload)
+    captureToSentry(err, payload)
   } catch {
     /* never break app flow */
   }

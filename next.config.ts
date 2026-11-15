@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import bundleAnalyzer from '@next/bundle-analyzer';
+import { readSentryDsn, sentryIngestOrigin } from './lib/observability/sentryDsn';
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -24,6 +25,8 @@ const isLocalSupabaseTarget = /^(https?:\/\/)?(127\.0\.0\.1|localhost)(:\d+)?/i.
 
 /** P3: sin unsafe-eval en prod; fuentes vía next/font (sin fonts.googleapis.com en runtime). */
 function buildContentSecurityPolicy(): string {
+  // Sentry: sólo se habilita el origen de ingesta del DSN configurado (si hay).
+  const sentryOrigin = sentryIngestOrigin(readSentryDsn());
   const scriptParts = [
     "'self'",
     "'unsafe-inline'",
@@ -50,6 +53,7 @@ function buildContentSecurityPolicy(): string {
       'https://*.vercel-insights.com',
       'https://vitals.vercel-insights.com',
       'https://va.vercel-scripts.com',
+      ...(sentryOrigin ? [sentryOrigin] : []),
       ...localSupabaseConnect,
     ].join(' '),
     "img-src 'self' data: blob: https:",
