@@ -26,6 +26,15 @@ const fraunces = localFont({
   display: "swap",
 });
 
+/** Letra redondeada del catálogo público (pastel bento). */
+const quicksand = localFont({
+  src: "./fonts/quicksand-latin-wght-normal.woff2",
+  weight: "300 700",
+  style: "normal",
+  variable: "--font-quicksand",
+  display: "swap",
+});
+
 const ilaraScript = localFont({
   src: "./fonts/great-vibes-latin-400-normal.woff2",
   weight: "400",
@@ -132,7 +141,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
-        className={`${outfit.variable} ${fraunces.variable} ${ilaraScript.variable} antialiased`}
+        className={`${outfit.variable} ${fraunces.variable} ${quicksand.variable} ${ilaraScript.variable} antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider>

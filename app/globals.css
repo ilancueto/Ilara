@@ -1117,28 +1117,39 @@ select:disabled {
 
 /* Public storefront: light tokens even when html has .dark (panel theme). */
 .storefront {
-  --sf-bg: #FFFEFA;
+  /* Pastel bento: paleta del catálogo público (contraste AA verificado). */
+  --sf-bg: #FFF6F2;
   --sf-surface: #FFFFFF;
-  --sf-muted-bg: #F4F2EE;
-  --sf-text: #242222;
-  --sf-text-2: #68615C;
-  --sf-action: #A42447;
-  --sf-action-hover: #861B39;
-  --sf-accent: #F6E6E8;
-  --sf-border: #D6D0CA;
-  --sf-line: #E9E5E1;
+  --sf-muted-bg: #FDEAE6;
+  --sf-text: #4A3542;
+  --sf-text-2: #6B5562;
+  --sf-deep: #7A3552;
+  --sf-action: #B8446F;
+  --sf-action-hover: #9C3560;
+  --sf-accent: #FFE1EA;
+  --sf-border: #EED3D8;
+  --sf-line: #F3DFE0;
   --sf-error: #A51D27;
   --sf-success: #236044;
-  --sf-focus: #924365;
-  --sf-radius-sm: 8px;
-  --sf-radius: 12px;
-  --color-bg-main: #FFFEFA;
-  --color-text-main: #242222;
-  --color-text-muted: #68615C;
-  --ilara-muted: #68615C;
+  --sf-warning: #8A5A12;
+  --sf-focus: #9C3560;
+  --sf-radius-sm: 12px;
+  --sf-radius: 20px;
+  --sf-radius-lg: 28px;
+  --sf-tint-0: #FFEEF3;
+  --sf-tint-1: #FFF1DC;
+  --sf-tint-2: #E6F6EE;
+  --sf-tint-3: #EFEAFB;
+  --sf-tint-4: #EAF3FC;
+  --sf-tint-5: #FDEEE8;
+  --sf-font: var(--font-quicksand), var(--font-outfit), Outfit, Arial, sans-serif;
+  --color-bg-main: var(--sf-bg);
+  --color-text-main: var(--sf-text);
+  --color-text-muted: var(--sf-text-2);
+  --ilara-muted: var(--sf-text-2);
   color-scheme: light;
-  background: #FFFEFA;
-  color: #242222;
+  background: var(--sf-bg);
+  color: var(--sf-text);
   min-height: 100vh;
   min-height: 100dvh;
 }
@@ -1153,33 +1164,33 @@ select:disabled {
 .dark .storefront p,
 .dark .storefront label,
 .dark .storefront strong {
-  color: #242222;
+  color: var(--sf-text);
 }
 
 .dark .storefront {
-  background: #FFFEFA;
+  background: var(--sf-bg);
 }
 
 /* Evitar que los inputs oscuros del panel contaminen el catálogo público. */
 .dark .storefront input,
 .dark .storefront textarea,
 .dark .storefront select {
-  background: #F4F2EE;
-  border-color: #D6D0CA;
-  color: #242222;
+  background: var(--sf-surface);
+  border-color: var(--sf-border);
+  color: var(--sf-text);
   box-shadow: none;
 }
 
 .dark .storefront input::placeholder,
 .dark .storefront textarea::placeholder {
-  color: #68615C;
+  color: var(--sf-text-2);
 }
 
 .dark .storefront input:focus,
 .dark .storefront textarea:focus,
 .dark .storefront select:focus {
-  border-color: #924365;
-  box-shadow: 0 0 0 3px rgba(146, 67, 101, 0.2);
+  border-color: var(--sf-focus);
+  box-shadow: 0 0 0 3px rgba(156, 53, 96, 0.2);
 }
 
 .storefront [class*="dark:text"] {

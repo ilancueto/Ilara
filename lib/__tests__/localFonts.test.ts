@@ -7,6 +7,7 @@ const layoutPath = join(projectRoot, 'app', 'layout.tsx')
 const fontFiles = [
   'outfit-latin-wght-normal.woff2',
   'fraunces-latin-wght-normal.woff2',
+  'quicksand-latin-wght-normal.woff2',
   'great-vibes-latin-400-normal.woff2',
 ]
 
