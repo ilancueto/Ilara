@@ -35,12 +35,6 @@ export default function PuntoVenta() {
     const [cargando, setCargando] = useState(false)
     const procesandoVenta = useRef(false)
 
-    useEffect(() => {
-        obtenerProductos()
-        obtenerCombos()
-        obtenerClientes()
-    }, [])
-
     const obtenerCombos = async () => {
         const { data } = await supabase
             .from('combos')
@@ -65,6 +59,12 @@ export default function PuntoVenta() {
             .order('first_name')
         if (data) setClientes(data as Cliente[])
     }
+
+    useEffect(() => {
+        obtenerProductos()
+        obtenerCombos()
+        obtenerClientes()
+    }, [])
 
     const agregarAlCarrito = (producto: Producto) => {
         const existente = carrito.find(item => item.producto?.id === producto.id)

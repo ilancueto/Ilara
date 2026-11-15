@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AlertTriangle, BarChart3, CheckCircle2, RefreshCw } from 'lucide-react'
 import { loadMarginReport } from '@/lib/domain/marginReports/browserMarginReports'
@@ -33,40 +33,50 @@ const channels: Array<{ id: MarginChannel; label: string }> = [
   { id: 'catalog', label: 'Pedido online' },
 ]
 
+function parseChannel(raw: string | null): MarginChannel | null {
+  return raw === 'pos' || raw === 'catalog' || raw === 'combined' ? raw : null
+}
+
 export default function ReportesMargen() {
   const searchParams = useSearchParams()
+  const urlChannel = parseChannel(searchParams.get('channel'))
   const [period, setPeriod] = useState<MarginPeriod>('month')
-  const [channel, setChannel] = useState<MarginChannel>('combined')
+  const [channel, setChannel] = useState<MarginChannel>(urlChannel ?? 'combined')
+  const [seenUrlChannel, setSeenUrlChannel] = useState(urlChannel)
   const [report, setReport] = useState<MarginReport | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const requestId = useRef(0)
+  const [reloadTick, setReloadTick] = useState(0)
+  /** Clave de la última consulta terminada; "cargando" se deriva de compararla con la pedida. */
+  const [settledKey, setSettledKey] = useState<string | null>(null)
+
+  // El canal de la URL manda cuando cambia (ajuste de estado durante el render, sin efecto).
+  if (urlChannel !== seenUrlChannel) {
+    setSeenUrlChannel(urlChannel)
+    if (urlChannel) setChannel(urlChannel)
+  }
+
+  const requestKey = `${period}|${channel}|${reloadTick}`
+  const loading = settledKey !== requestKey
 
   useEffect(() => {
-    const raw = searchParams.get('channel')
-    if (raw === 'pos' || raw === 'catalog' || raw === 'combined') setChannel(raw)
-  }, [searchParams])
-
-  const refresh = useCallback(async (selected: MarginPeriod, selectedChannel: MarginChannel) => {
-    const currentRequest = ++requestId.current
-    setLoading(true)
-    setError(null)
-    try {
-      const range = marginPeriodRange(selected)
-      const nextReport = await loadMarginReport(range.from, range.to, selectedChannel)
-      if (currentRequest === requestId.current) setReport(nextReport)
-    } catch (cause) {
-      if (currentRequest === requestId.current) {
+    let cancelled = false
+    const range = marginPeriodRange(period)
+    loadMarginReport(range.from, range.to, channel)
+      .then((nextReport) => {
+        if (cancelled) return
+        setReport(nextReport)
+        setError(null)
+        setSettledKey(requestKey)
+      })
+      .catch((cause) => {
+        if (cancelled) return
         setError(cause instanceof Error ? cause.message : 'No se pudo cargar el reporte.')
-      }
-    } finally {
-      if (currentRequest === requestId.current) setLoading(false)
+        setSettledKey(requestKey)
+      })
+    return () => {
+      cancelled = true
     }
-  }, [])
-
-  useEffect(() => {
-    void refresh(period, channel)
-  }, [period, channel, refresh])
+  }, [period, channel, requestKey])
 
   const maxDaily = useMemo(
     () => Math.max(1, ...(report?.daily.map((row) => row.net_revenue) ?? [])),
@@ -126,10 +136,10 @@ export default function ReportesMargen() {
         </div>
       )}
 
-      {error && (
+      {error && !loading && (
         <div className="rounded-2xl border border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3" role="alert">
           <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
-          <button type="button" onClick={() => void refresh(period, channel)} className="text-sm font-extrabold text-red-700 dark:text-red-300">
+          <button type="button" onClick={() => setReloadTick((tick) => tick + 1)} className="text-sm font-extrabold text-red-700 dark:text-red-300">
             Reintentar
           </button>
         </div>

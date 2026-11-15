@@ -82,11 +82,6 @@ export default function Inventario() {
     const [badgeLoteElegido, setBadgeLoteElegido] = useState<CatalogBadgeKey | 'auto'>('auto')
 
     useEffect(() => {
-        obtenerData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
-    }, [])
-
-    useEffect(() => {
         const raw = searchParams.get('productId')
         if (!raw || productos.length === 0) return
         const id = Number(raw)
@@ -128,6 +123,11 @@ export default function Inventario() {
             .order('name')
         if (!error && data) setCategorias(data)
     }
+
+    useEffect(() => {
+        obtenerData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
+    }, [])
 
     const handleEliminarCombo = async (id: number) => {
         const ok = await confirm({

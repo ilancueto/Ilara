@@ -59,25 +59,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
         phone: ''
     })
 
-    const obtenerClientes = useCallback(async () => {
-        setCargando(true)
-        const { data, error } = await supabase
-            .from('customers')
-            .select(CUSTOMER_LIST_SELECT)
-            .order('created_at', { ascending: false })
-
-        if (!error && data) {
-            setClientes(data)
-            await obtenerStatsClientes(data)
-        }
-        setCargando(false)
-    }, [])
-
-    useEffect(() => {
-        obtenerClientes()
-    }, [obtenerClientes])
-
-    const obtenerStatsClientes = async (lista: Cliente[]) => {
+    const obtenerStatsClientes = useCallback(async (lista: Cliente[]) => {
         const statsMap = new Map<number, ClienteStats>()
         if (lista.length === 0) {
             setClientesStats(statsMap)
@@ -142,7 +124,25 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
         }
 
         setClientesStats(statsMap)
-    }
+    }, [])
+
+    const obtenerClientes = useCallback(async () => {
+        setCargando(true)
+        const { data, error } = await supabase
+            .from('customers')
+            .select(CUSTOMER_LIST_SELECT)
+            .order('created_at', { ascending: false })
+
+        if (!error && data) {
+            setClientes(data)
+            await obtenerStatsClientes(data)
+        }
+        setCargando(false)
+    }, [obtenerStatsClientes])
+
+    useEffect(() => {
+        obtenerClientes()
+    }, [obtenerClientes])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
