@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase, Producto, Categoria, ComboConItems, getProductImages } from '@/lib/supabase'
 import { Settings, Search, Plus, Trash2, Tag, Package, AlertTriangle, Eye, EyeOff, Sparkles } from 'lucide-react'
-import { CATALOG_BADGE_OPTIONS, type CatalogBadgeKey, etiquetaBadgeCatalogo } from '@/lib/catalogBadges'
+import { type CatalogBadgeKey } from '@/lib/catalogBadges'
 import GestionCategorias from '../GestionCategorias'
 import GestionCupones from '../GestionCupones'
 import { useToast } from '@/context/ToastContext'
@@ -17,7 +17,7 @@ import FormularioCombo from './FormularioCombo'
 import DetalleProducto from './DetalleProducto'
 import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
+import { ModalEliminarProductos, ModalBadgeProductos, ModalVisibilidadProductos } from './BulkProductDialogs'
 import {
     ADMIN_COMBO_WITH_ITEMS_SELECT,
     ADMIN_INVENTORY_PRODUCT_SELECT,
@@ -655,219 +655,52 @@ export default function Inventario() {
                 cerrar={() => setGestionCuponesAbierto(false)}
             />
 
-            <BulkActionDialog
+            <ModalEliminarProductos
                 open={mostrarEliminarProductosModal}
                 onClose={() => {
-                    if (eliminandoProductos) return
                     setMostrarEliminarProductosModal(false)
                     setBulkDeleteError(null)
                 }}
-                title="Eliminar productos"
-                description={`Seleccioná los productos a eliminar (${productosSeleccionados.size} seleccionado(s)). Esta acción no se puede deshacer.`}
                 loading={eliminandoProductos}
                 error={bulkDeleteError}
-                testId="bulk-delete-productos"
-                footer={
-                    <>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (eliminandoProductos) return
-                                setMostrarEliminarProductosModal(false)
-                                setBulkDeleteError(null)
-                            }}
-                            disabled={eliminandoProductos}
-                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
-                            data-testid="bulk-delete-productos-cancel"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => void handleEliminarProductosSeleccionados()}
-                            disabled={eliminandoProductos || productosSeleccionados.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800 disabled:opacity-50"
-                            data-testid="bulk-delete-productos-confirm"
-                        >
-                            {eliminandoProductos
-                                ? 'Eliminando…'
-                                : `Eliminar ${productosSeleccionados.size} producto(s)`}
-                        </button>
-                    </>
-                }
-            >
-                <BulkSelectList
-                    testId="bulk-delete-productos-list"
-                    allSelected={
-                        productosFiltrados.length > 0 &&
-                        productosSeleccionados.size === productosFiltrados.length
-                    }
-                    onToggleAll={seleccionarTodosProductos}
-                    emptyMessage="No hay productos con los filtros actuales."
-                    items={productosFiltrados.map((producto) => ({
-                        id: producto.id,
-                        label: producto.name,
-                        meta: `${producto.categories?.name ?? 'Sin categoría'} · $${producto.sale_price.toLocaleString()}`,
-                        selected: productosSeleccionados.has(producto.id),
-                        onToggle: () => toggleSeleccionProducto(producto.id),
-                    }))}
-                />
-            </BulkActionDialog>
+                productos={productosFiltrados}
+                seleccionados={productosSeleccionados}
+                onToggleAll={seleccionarTodosProductos}
+                onToggle={toggleSeleccionProducto}
+                onConfirm={() => void handleEliminarProductosSeleccionados()}
+            />
 
-            <BulkActionDialog
+            <ModalBadgeProductos
                 open={mostrarBadgeModal}
                 onClose={() => {
-                    if (actualizandoBadge) return
                     setMostrarBadgeModal(false)
                     setBulkBadgeError(null)
                 }}
-                title="Badges del catálogo"
-                description={`Elegí el badge y los productos (${productosSeleccionados.size} seleccionado(s)). "Automático" quita el badge fijo.`}
                 loading={actualizandoBadge}
                 error={bulkBadgeError}
-                testId="bulk-badge-productos"
-                footer={
-                    <>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (actualizandoBadge) return
-                                setMostrarBadgeModal(false)
-                                setBulkBadgeError(null)
-                            }}
-                            disabled={actualizandoBadge}
-                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
-                            data-testid="bulk-badge-productos-cancel"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => void aplicarBadgeSeleccionados()}
-                            disabled={actualizandoBadge || productosSeleccionados.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-600 dark:text-white border border-violet-200 disabled:opacity-50"
-                            data-testid="bulk-badge-productos-confirm"
-                        >
-                            {actualizandoBadge
-                                ? 'Guardando…'
-                                : `Aplicar a ${productosSeleccionados.size} producto(s)`}
-                        </button>
-                    </>
-                }
-            >
-                <div className="mb-4">
-                    <label
-                        htmlFor="bulk-badge-select"
-                        className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5"
-                    >
-                        Badge a aplicar
-                    </label>
-                    <select
-                        id="bulk-badge-select"
-                        value={badgeLoteElegido}
-                        onChange={(e) =>
-                            setBadgeLoteElegido(e.target.value as CatalogBadgeKey | 'auto')
-                        }
-                        disabled={actualizandoBadge}
-                        className="w-full rounded-xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-gray-800 dark:text-gray-100"
-                        data-dialog-initial-focus
-                    >
-                        {CATALOG_BADGE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                        {CATALOG_BADGE_OPTIONS.find((o) => o.value === badgeLoteElegido)?.hint}
-                    </p>
-                </div>
-                <BulkSelectList
-                    testId="bulk-badge-productos-list"
-                    accent="violet"
-                    allSelected={
-                        productosFiltrados.length > 0 &&
-                        productosSeleccionados.size === productosFiltrados.length
-                    }
-                    onToggleAll={seleccionarTodosProductos}
-                    emptyMessage="No hay productos con los filtros actuales."
-                    items={productosFiltrados.map((producto) => ({
-                        id: producto.id,
-                        label: producto.name,
-                        meta: etiquetaBadgeCatalogo(producto.catalog_badge),
-                        selected: productosSeleccionados.has(producto.id),
-                        onToggle: () => toggleSeleccionProducto(producto.id),
-                    }))}
-                />
-            </BulkActionDialog>
+                productos={productosFiltrados}
+                seleccionados={productosSeleccionados}
+                onToggleAll={seleccionarTodosProductos}
+                onToggle={toggleSeleccionProducto}
+                onConfirm={() => void aplicarBadgeSeleccionados()}
+                badge={badgeLoteElegido}
+                onBadgeChange={setBadgeLoteElegido}
+            />
 
-            <BulkActionDialog
+            <ModalVisibilidadProductos
                 open={mostrarVisibilidadModal}
                 onClose={() => {
-                    if (actualizandoVisibilidad) return
                     setMostrarVisibilidadModal(false)
                     setBulkVisError(null)
                 }}
-                title="Visibilidad en catálogo"
-                description={`Seleccioná productos (${productosSeleccionados.size} seleccionado(s)) y elegí ocultar o mostrar en el catálogo público.`}
                 loading={actualizandoVisibilidad}
                 error={bulkVisError}
-                testId="bulk-visibilidad-productos"
-                footer={
-                    <>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (actualizandoVisibilidad) return
-                                setMostrarVisibilidadModal(false)
-                                setBulkVisError(null)
-                            }}
-                            disabled={actualizandoVisibilidad}
-                            className="btn-ghost flex-1 sm:flex-none px-4 py-3 rounded-xl"
-                            data-testid="bulk-visibilidad-productos-cancel"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => void actualizarVisibilidadSeleccionados(false)}
-                            disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
-                            className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 disabled:opacity-50"
-                            data-testid="bulk-visibilidad-productos-hide"
-                        >
-                            <EyeOff className="w-4 h-4" aria-hidden />
-                            Ocultar ({productosSeleccionados.size})
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => void actualizarVisibilidadSeleccionados(true)}
-                            disabled={actualizandoVisibilidad || productosSeleccionados.size === 0}
-                            className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-pink-50 text-pink-600 dark:bg-pink-600 dark:text-white border border-pink-200 disabled:opacity-50"
-                            data-testid="bulk-visibilidad-productos-show"
-                        >
-                            <Eye className="w-4 h-4" aria-hidden />
-                            Mostrar ({productosSeleccionados.size})
-                        </button>
-                    </>
-                }
-            >
-                <BulkSelectList
-                    testId="bulk-visibilidad-productos-list"
-                    allSelected={
-                        productosFiltrados.length > 0 &&
-                        productosSeleccionados.size === productosFiltrados.length
-                    }
-                    onToggleAll={seleccionarTodosProductos}
-                    emptyMessage="No hay productos con los filtros actuales."
-                    items={productosFiltrados.map((producto) => ({
-                        id: producto.id,
-                        label: producto.name,
-                        meta: producto.visible_in_catalog === false ? 'Oculto' : 'Visible',
-                        selected: productosSeleccionados.has(producto.id),
-                        onToggle: () => toggleSeleccionProducto(producto.id),
-                    }))}
-                />
-            </BulkActionDialog>
+                productos={productosFiltrados}
+                seleccionados={productosSeleccionados}
+                onToggleAll={seleccionarTodosProductos}
+                onToggle={toggleSeleccionProducto}
+                onConfirm={(visible) => void actualizarVisibilidadSeleccionados(visible)}
+            />
             <ConfirmDialog {...confirmProps} testId="confirm-inventario" />
         </div>
     )
