@@ -1,6 +1,6 @@
 # Plan de implementación por etapas — Ilara
 
-> Estado actualizado: [ESTADO.md](./ESTADO.md), revisado el 30/09/2026. Este documento conserva la auditoría y planificación histórica; las fechas y estados de release de sus secciones no reemplazan la evidencia actual.
+> Estado actualizado: [ESTADO.md](../../ESTADO.md), revisado el 30/09/2026. Este documento conserva la auditoría y planificación histórica; las fechas y estados de release de sus secciones no reemplazan la evidencia actual.
 
 - **Fecha de planificación:** 9 de agosto de 2026
 - **Fuente:** [`AUDITORIA.md`](./AUDITORIA.md)
@@ -334,7 +334,7 @@ estado oculto en el dashboard.
 **Decisión de negocio definitiva:** PWA instalable (icono, standalone, app-like)
 **sin** funcionamiento offline. Sin precache, sin runtime cache de páginas/API/
 Supabase/sesión, sin colas ni ventas offline. Ver
-[`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](./docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md).
+[`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](../ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md).
 
 ### 7.1 Reparar PWA — PWA-01
 
@@ -437,7 +437,7 @@ Runbooks: `docs/ETAPA4_CALIDAD_OPERATIVA_RUNBOOK.md`,
 
 **Estado:** implementado, validado y publicado en `main` (commit `a8f4a8e`).
 Sin SQL/migraciones remotas adicionales.
-Runbook: [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](./docs/ETAPA5_ARQUITECTURA_RUNBOOK.md).
+Runbook: [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](../ETAPA5_ARQUITECTURA_RUNBOOK.md).
 
 - [x] DAL `server-only` incremental: `lib/dal/auth.ts`, `lib/dal/catalog.ts` +
   `lib/catalog/serverCatalog.ts` (autorización/sesión cerca de la fuente en servidor).
@@ -474,7 +474,7 @@ Criterio de salida:
 Esta etapa comienza sólo después de cerrar las etapas 0–2. El orden final depende
 de valor comercial y capacidad operativa.
 
-Runbook 6.1: [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](./docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md).
+Runbook 6.1: [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](../ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md).
 
 ### 10.1 Stage 6.1 — Pedidos desde el catálogo
 
@@ -498,7 +498,7 @@ pedido controlado verificado y limpiado.
 Migraciones `20260814000544` y `20260814000745`, Vercel `ilara` READY y
 smoke transaccional productivo aprobado sin residuos.
 
-Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md).
+Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](../ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md).
 
 - [x] Trigger Postgres en `products` + tablas `stock_alerts` / `stock_alert_events`
 - [x] Una alerta activa por producto; auto-cierre y nuevo ciclo
@@ -513,16 +513,16 @@ Runbook: [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](./docs/ETAPA6_2_ALERTAS
 2. ~~**Alertas de reposición**~~ → ver 10.2 (cerrado en producción)
 3. ~~**Devoluciones y notas de crédito**~~: cerrado en producción con notas
    parciales, stock por snapshot, auditoría e idempotencia. Ver
-   [`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](./docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md).
+   [`docs/ETAPA6_3_DEVOLUCIONES_RUNBOOK.md`](../ETAPA6_3_DEVOLUCIONES_RUNBOOK.md).
 4. ~~**Reportes de margen**~~: cerrado en producción con costo histórico por
    componente, descuentos, devoluciones, calidad del dato y panel admin. Ver
-   [`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](./docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md).
+   [`docs/ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md`](../ETAPA6_4_REPORTES_MARGEN_RUNBOOK.md).
 5. ~~**CRM mínimo**~~: cerrado en producción con historial neto, etiquetas,
    notas internas y consentimiento auditable admin-only. Ver
-   [`docs/ETAPA6_5_CRM_RUNBOOK.md`](./docs/ETAPA6_5_CRM_RUNBOOK.md).
+   [`docs/ETAPA6_5_CRM_RUNBOOK.md`](../ETAPA6_5_CRM_RUNBOOK.md).
 6. ~~**Cuentas por cobrar/pagar y conciliación**~~: ledger auditable, pagos
    parciales, vencimientos, notas de crédito y caja por medio. Ver
-   [`docs/ETAPA6_6_FINANZAS_RUNBOOK.md`](./docs/ETAPA6_6_FINANZAS_RUNBOOK.md).
+   [`docs/ETAPA6_6_FINANZAS_RUNBOOK.md`](../ETAPA6_6_FINANZAS_RUNBOOK.md).
 *(La numeración 4–6 de este bloque corresponde a las iniciativas 6.4–6.6 del
 roadmap de producto.)*
 
@@ -546,7 +546,7 @@ Cada feature debe incluir antes de desarrollo:
 
 **Estado (2026-08-14): CERRADA, DESPLEGADA Y VERIFICADA EN PRODUCCIÓN.**
 
-Runbook: [`docs/ETAPA7_ENVIA_COTIZACIONES_RUNBOOK.md`](./docs/ETAPA7_ENVIA_COTIZACIONES_RUNBOOK.md).
+Runbook: [`docs/ETAPA7_ENVIA_COTIZACIONES_RUNBOOK.md`](../ETAPA7_ENVIA_COTIZACIONES_RUNBOOK.md).
 
 **Decisión de negocio (2026-08-13): Envia.com es la plataforma logística elegida.**
 No se desarrollarán integraciones directas con Correo Argentino, OCA ni Andreani;
@@ -596,8 +596,8 @@ y pasa a ser una etapa independiente. B2B y multisucursal quedan descartados.
 **Estado (2026-08-17):** 8.0–8.5 implementados. Capa en producción **apagada**.
 8.6 deja el procedimiento de encendido; no se cobra hasta revisión del dueño.
 
-ADR: [`docs/ETAPA8_PAYMENT_ADR.md`](./docs/ETAPA8_PAYMENT_ADR.md).
-Runbook: [`docs/ETAPA8_PAGOS_RUNBOOK.md`](./docs/ETAPA8_PAGOS_RUNBOOK.md).
+ADR: [`docs/ETAPA8_PAYMENT_ADR.md`](../ETAPA8_PAYMENT_ADR.md).
+Runbook: [`docs/ETAPA8_PAGOS_RUNBOOK.md`](../ETAPA8_PAGOS_RUNBOOK.md).
 
 Decisiones cerradas (ya no son un gate abierto):
 
@@ -639,7 +639,7 @@ independientes.
 
 ### 13.1 Orden de deploy de contención (Etapa 0)
 
-Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](./docs/ETAPA0_ORDEN_DEPLOY.md).
+Fuente vigente: [`docs/ETAPA0_ORDEN_DEPLOY.md`](../ETAPA0_ORDEN_DEPLOY.md).
 
 1. Backup y preservación de logs
 2. Deploy Edge Function `passkey-auth` bloqueada

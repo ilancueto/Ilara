@@ -1,8 +1,8 @@
 # Plan propuesto de fixes y mejoras
 
 **Fecha:** 23 de agosto de 2026  
-**Origen:** [Auditoría integral de Ilara](AUDITORIA_INTEGRAL_2026-08-23.md)  
-**Estado:** alcance aprobado implementado y validado localmente. Ver [informe de ejecución](INFORME_EJECUCION_2026-08-23.md). El despliegue a producción sigue pendiente.  
+**Origen:** [Auditoría integral de Ilara](./AUDITORIA_INTEGRAL_2026-08-23.md)  
+**Estado:** alcance aprobado implementado y validado localmente. Ver [informe de ejecución](./INFORME_EJECUCION_2026-08-23.md). El despliegue a producción sigue pendiente.  
 **Estimaciones:** días de desarrollo de una persona, incluyendo implementación y pruebas. No son fechas calendario.
 
 ## Objetivo

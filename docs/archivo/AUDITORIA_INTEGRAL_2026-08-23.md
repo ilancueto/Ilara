@@ -4,7 +4,7 @@
 **Alcance:** aplicación Next.js, catálogo público, panel de gestión, Supabase, pagos, pedidos, seguridad, rendimiento, accesibilidad, experiencia visual, pruebas, CI y documentación.  
 **Tipo de revisión:** lectura de código y configuración, compilación de producción, pruebas automatizadas, análisis estático, navegación manual responsive y auditoría Axe. No se modificó lógica de la aplicación.
 
-**Plan de acción asociado:** [Plan propuesto de fixes y mejoras](PLAN_FIXES_Y_MEJORAS_2026-08-23.md).
+**Plan de acción asociado:** [Plan propuesto de fixes y mejoras](./PLAN_FIXES_Y_MEJORAS_2026-08-23.md).
 
 ## Resumen ejecutivo
 
@@ -58,9 +58,9 @@ No encontré un motivo para considerar la aplicación inestable en general, pero
 
 **Evidencia**
 
-- [`lib/dal/payments.ts`](../lib/dal/payments.ts) acepta archivos de hasta `5 * 1024 * 1024` bytes.
-- [`app/actions/payments.ts`](../app/actions/payments.ts) recibe el archivo completo dentro de una Server Action.
-- [`next.config.ts`](../next.config.ts) no define `serverActions.bodySizeLimit`.
+- [`lib/dal/payments.ts`](../../lib/dal/payments.ts) acepta archivos de hasta `5 * 1024 * 1024` bytes.
+- [`app/actions/payments.ts`](../../app/actions/payments.ts) recibe el archivo completo dentro de una Server Action.
+- [`next.config.ts`](../../next.config.ts) no define `serverActions.bodySizeLimit`.
 - La documentación local de Next.js 16 instalada en el proyecto establece un límite por defecto de 1 MB para el cuerpo de una Server Action.
 - Vercel limita actualmente el cuerpo de una Function a 4,5 MB: [Vercel Functions Limits](https://vercel.com/docs/functions/limitations#request-body-size).
 
@@ -76,7 +76,7 @@ Usar upload directo a Supabase Storage mediante una capacidad o URL firmada de c
 
 **Evidencia**
 
-En [`supabase/functions/payments-mp-webhook/index.ts`](../supabase/functions/payments-mp-webhook/index.ts), si `MERCADOPAGO_ACCESS_TOKEN` tiene menos de 16 caracteres, la función responde `200` con `{ ok: true }`.
+En [`supabase/functions/payments-mp-webhook/index.ts`](../../supabase/functions/payments-mp-webhook/index.ts), si `MERCADOPAGO_ACCESS_TOKEN` tiene menos de 16 caracteres, la función responde `200` con `{ ok: true }`.
 
 **Consecuencia**
 
@@ -104,7 +104,7 @@ Ejemplos observados:
 - Precio por transferencia oscuro `#6b5b63` sobre `#130f12`: aproximadamente 2,98:1.
 - Contadores activos y categorías rosas con contraste inferior al requerido.
 
-La suite desactiva la regla en [`e2e/a11y.spec.ts`](../e2e/a11y.spec.ts) y en otros seis archivos E2E. Los estilos implicados están en [`components/Catalogo/CatalogoEditorial.module.css`](../components/Catalogo/CatalogoEditorial.module.css) y [`components/Catalogo/CatalogPrice.module.css`](../components/Catalogo/CatalogPrice.module.css).
+La suite desactiva la regla en [`e2e/a11y.spec.ts`](../../e2e/a11y.spec.ts) y en otros seis archivos E2E. Los estilos implicados están en [`components/Catalogo/CatalogoEditorial.module.css`](../../components/Catalogo/CatalogoEditorial.module.css) y [`components/Catalogo/CatalogPrice.module.css`](../../components/Catalogo/CatalogPrice.module.css).
 
 **Recomendación**
 
@@ -114,11 +114,11 @@ Crear tokens de texto/estado que alcancen AA en claro y oscuro, corregir primero
 
 **Evidencia**
 
-- [`app/actions/orders.ts`](../app/actions/orders.ts) importa `notifyOrderCustomer`, pero al crear un pedido fija siempre `notifiedVia = 'none'`; el argumento `_notify` queda sin usar.
+- [`app/actions/orders.ts`](../../app/actions/orders.ts) importa `notifyOrderCustomer`, pero al crear un pedido fija siempre `notifiedVia = 'none'`; el argumento `_notify` queda sin usar.
 - La misma acción envía cambios de estado sin pasar un `followToken`.
-- [`lib/domain/orders/sendOrderEmail.ts`](../lib/domain/orders/sendOrderEmail.ts) construye `/pedido/{número}` sin token cuando este no está disponible.
+- [`lib/domain/orders/sendOrderEmail.ts`](../../lib/domain/orders/sendOrderEmail.ts) construye `/pedido/{número}` sin token cuando este no está disponible.
 - La vista de seguimiento exige un token recibido por URL o una cookie HTTP-only ya creada en ese navegador.
-- [`.env.example`](../.env.example) afirma que se envía aviso por email con fallback a WhatsApp, lo que no coincide con la implementación actual.
+- [`.env.example`](../../.env.example) afirma que se envía aviso por email con fallback a WhatsApp, lo que no coincide con la implementación actual.
 
 **Consecuencia**
 
@@ -130,7 +130,7 @@ Definir un único contrato de notificación. Para enlaces posteriores, usar una 
 
 ### ILR-05 — Emails personales en código cliente
 
-[`app/home-page-client.tsx`](../app/home-page-client.tsx) contiene dos direcciones personales para elegir el saludo del usuario.
+[`app/home-page-client.tsx`](../../app/home-page-client.tsx) contiene dos direcciones personales para elegir el saludo del usuario.
 
 Aunque la pantalla esté protegida, esos valores forman parte del código frontend y no son necesarios para la función. El saludo debería provenir de `user_metadata`, perfil o una propiedad preparada en servidor. Esto elimina PII del bundle y evita editar código para incorporar otra cuenta.
 
@@ -144,7 +144,7 @@ Ejecutar las funciones Deno localmente con Supabase CLI y servidores fake determ
 
 ### ILR-07 — Validación y ciclo de vida del comprobante
 
-[`lib/dal/payments.ts`](../lib/dal/payments.ts) determina extensión y `contentType` desde `file.type`/nombre y no inspecciona magic bytes. Si Storage acepta el archivo pero el RPC de finalización falla, no se elimina el objeto recién subido.
+[`lib/dal/payments.ts`](../../lib/dal/payments.ts) determina extensión y `contentType` desde `file.type`/nombre y no inspecciona magic bytes. Si Storage acepta el archivo pero el RPC de finalización falla, no se elimina el objeto recién subido.
 
 **Recomendación**
 
@@ -155,7 +155,7 @@ Ejecutar las funciones Deno localmente con Supabase CLI y servidores fake determ
 
 ### ILR-08 — Interacción de galería y legibilidad móvil
 
-En [`components/Catalogo.tsx`](../components/Catalogo.tsx), el contenedor visual del producto es un `div` con `onClick`, sin rol, `tabIndex` ni control de teclado. Un usuario puede navegar al producto por el enlace, pero no abrir esa galería de imágenes con teclado.
+En [`components/Catalogo.tsx`](../../components/Catalogo.tsx), el contenedor visual del producto es un `div` con `onClick`, sin rol, `tabIndex` ni control de teclado. Un usuario puede navegar al producto por el enlace, pero no abrir esa galería de imágenes con teclado.
 
 En mobile se observan nombres y precios de 12 px, categorías de 9 px, sello del hero de 7 px y precio de transferencia de aproximadamente 9,4 px. La composición a dos columnas se ve elegante, pero sacrifica lectura y escaneo.
 
@@ -184,7 +184,7 @@ Separar por capacidades y no solo por fragmentos visuales: queries/mutaciones, e
 
 ### ILR-10 — Contención de passkeys duplicada
 
-La Edge Function [`supabase/functions/passkey-auth/index.ts`](../supabase/functions/passkey-auth/index.ts) está correctamente bloqueada con respuesta 403. Sin embargo, conserva debajo toda la implementación histórica y declara su propio `PASSKEYS_CONTAINED`, independiente del flag en [`lib/security/passkeysContainment.ts`](../lib/security/passkeysContainment.ts).
+La Edge Function [`supabase/functions/passkey-auth/index.ts`](../../supabase/functions/passkey-auth/index.ts) está correctamente bloqueada con respuesta 403. Sin embargo, conserva debajo toda la implementación histórica y declara su propio `PASSKEYS_CONTAINED`, independiente del flag en [`lib/security/passkeysContainment.ts`](../../lib/security/passkeysContainment.ts).
 
 **Recomendación**
 
@@ -194,9 +194,9 @@ Dejar la función desplegada como un handler mínimo que responda 403 y mover/el
 
 Ejemplos concretos:
 
-- [`docs/TODO_PROYECTO.md`](TODO_PROYECTO.md) declara catálogo offline completado, mientras que README y service worker definen correctamente una PWA online-only.
-- Los documentos de Etapa 8 hablan de Vercel Cron, pero [`vercel.json`](../vercel.json) no configura crons; la ejecución real está en [`.github/workflows/expire-catalog-payments.yml`](../.github/workflows/expire-catalog-payments.yml).
-- [`README.md`](../README.md) declara Node `>=20.9`; CI ya usa Node 22 y el soporte actual de dependencias aconseja unificar el requisito en Node 22.
+- [`docs/TODO_PROYECTO.md`](./TODO_PROYECTO.md) declara catálogo offline completado, mientras que README y service worker definen correctamente una PWA online-only.
+- Los documentos de Etapa 8 hablan de Vercel Cron, pero [`vercel.json`](../../vercel.json) no configura crons; la ejecución real está en [`.github/workflows/expire-catalog-payments.yml`](../../.github/workflows/expire-catalog-payments.yml).
+- [`README.md`](../../README.md) declara Node `>=20.9`; CI ya usa Node 22 y el soporte actual de dependencias aconseja unificar el requisito en Node 22.
 - Documentos históricos todavía mencionan Serwist y estados “pendientes” de funciones ya implementadas.
 
 **Recomendación**
@@ -205,7 +205,7 @@ Marcar documentos históricos como archivados, mantener un único `ESTADO_ACTUAL
 
 ### ILR-12 — CSP todavía permite inline
 
-[`next.config.ts`](../next.config.ts) quita `unsafe-eval` en producción, lo cual es positivo, pero mantiene `script-src 'unsafe-inline'` y `style-src 'unsafe-inline'`.
+[`next.config.ts`](../../next.config.ts) quita `unsafe-eval` en producción, lo cual es positivo, pero mantiene `script-src 'unsafe-inline'` y `style-src 'unsafe-inline'`.
 
 No encontré una inyección activa y el JSON-LD tiene serialización defensiva, por lo que esto es hardening, no una vulnerabilidad confirmada. Como evolución, usar nonce/hashes para scripts y desplegar primero una política `Content-Security-Policy-Report-Only` para medir incompatibilidades.
 
@@ -223,7 +223,7 @@ Usar listas explícitas de columnas y DTOs, especialmente para exportaciones y d
 
 ### ILR-15 — Metadatos de `/pedido`
 
-[`app/pedido/page.tsx`](../app/pedido/page.tsx) no exporta `metadata` con `robots: noindex`, mientras que las páginas con número de pedido sí lo hacen. `robots.txt` no reemplaza el `noindex` y, si bloquea el rastreo, puede impedir que el crawler vea esa instrucción.
+[`app/pedido/page.tsx`](../../app/pedido/page.tsx) no exporta `metadata` con `robots: noindex`, mientras que las páginas con número de pedido sí lo hacen. `robots.txt` no reemplaza el `noindex` y, si bloquea el rastreo, puede impedir que el crawler vea esa instrucción.
 
 Añadir `noindex`, `nofollow` y `referrer: no-referrer` de forma consistente a toda la familia de rutas de pedido.
 

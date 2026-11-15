@@ -22,8 +22,8 @@ Alineado con [`ROADMAP_INMEDIATO.md`](./ROADMAP_INMEDIATO.md). **Roles por emple
 2. ~~**Tests precios/cupón**~~ — `lib/catalogPricing.ts` + Vitest; `Catalogo.tsx` usa esas funciones.
 3. ~~**Refactor carga de datos**~~ — `hooks/useCatalogData.ts`; `Catalogo.tsx` más liviano en esa parte.
 4. ~~**Supabase:**~~ aplicado (`supabase/sql/supabase_rls_all.sql`).
-5. ~~**Checklists manuales:**~~ completados — [`CHECKLIST_PENTEST_MANUAL.md`](./CHECKLIST_PENTEST_MANUAL.md) (ítem 5 Postman pendiente opcional), [`CHECKLIST_EXPORTACIONES.md`](./CHECKLIST_EXPORTACIONES.md) (todo OK).
-6. **Dependencias:** ver [`NOTA_DEPENDENCIAS_BUILD.md`](./NOTA_DEPENDENCIAS_BUILD.md) y aplicar `npm audit fix` cuando quieras.
+5. ~~**Checklists manuales:**~~ completados — [`CHECKLIST_PENTEST_MANUAL.md`](../CHECKLIST_PENTEST_MANUAL.md) (ítem 5 Postman pendiente opcional), [`CHECKLIST_EXPORTACIONES.md`](../CHECKLIST_EXPORTACIONES.md) (todo OK).
+6. **Dependencias:** ver [`NOTA_DEPENDENCIAS_BUILD.md`](../NOTA_DEPENDENCIAS_BUILD.md) y aplicar `npm audit fix` cuando quieras.
 7. **E2E:** ampliar pruebas de humo en `e2e/` (catálogo, búsqueda, etc.).
 8. **Refactor restante:** seguir partiendo `Catalogo.tsx` / `app/page.tsx` en hooks sin cambiar comportamiento.
 

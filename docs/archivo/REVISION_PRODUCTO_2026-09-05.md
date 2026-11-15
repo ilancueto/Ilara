@@ -1,6 +1,6 @@
 # Revisión del catálogo y panel Ilara — 5 de septiembre de 2026
 
-Actualización: las correcciones locales y sus verificaciones están en [CORRECCIONES_2026-09-05.md](CORRECCIONES_2026-09-05.md). Este informe conserva el diagnóstico anterior a esos cambios.
+Actualización: las correcciones locales y sus verificaciones están en [CORRECCIONES_2026-09-05.md](./CORRECCIONES_2026-09-05.md). Este informe conserva el diagnóstico anterior a esos cambios.
 
 Revisión del checkout local `5bd6d31` y de la superficie pública de https://ilara.com.ar. Este informe aporta evidencia nueva; los estados de despliegue que figuran en documentos anteriores no se consideran revalidados por esta revisión.
 

@@ -105,7 +105,7 @@ Obtener valores en: Supabase Dashboard → Settings → API. Ver **`.env.example
 
 La aplicación mantiene Supabase remoto. Las pruebas mutantes y CI usan un proyecto dedicado de staging con destino explícito. No se utiliza Docker. Copiar `.env.test.example` a `.env.test.local` y seguir [SUPABASE_CLOUD_TESTS.md](docs/SUPABASE_CLOUD_TESTS.md).
 
-**Fuente de estado vigente:** [ESTADO.md](ESTADO.md). [AUDITORIA.md](AUDITORIA.md) y [PLAN.md](PLAN.md) conservan la evolución histórica.
+**Fuente de estado vigente:** [ESTADO.md](ESTADO.md). [AUDITORIA.md](./docs/archivo/AUDITORIA.md) y [PLAN.md](./docs/archivo/PLAN.md) conservan la evolución histórica.
 
 Los runbooks por etapa conservan decisiones de diseño y evidencia de sus respectivas fechas. Para comandos de base de datos y CI seguir la guía de nube; para estado de publicación usar ESTADO.md.
 
@@ -115,7 +115,7 @@ Los runbooks por etapa conservan decisiones de diseño y evidencia de sus respec
 |-----------|-----------|
 | [`ESTADO.md`](ESTADO.md) | Estado actual y límites de verificación |
 | [`docs/SUPABASE_CLOUD_TESTS.md`](docs/SUPABASE_CLOUD_TESTS.md) | Staging y CI en la nube, sin Docker |
-| [`AUDITORIA.md`](./AUDITORIA.md) / [`PLAN.md`](./PLAN.md) | Evolución histórica de riesgo y ejecución |
+| [`AUDITORIA.md`](./docs/archivo/AUDITORIA.md) / [`PLAN.md`](./docs/archivo/PLAN.md) | Evolución histórica de riesgo y ejecución |
 | [`docs/ETAPA5_ARQUITECTURA_RUNBOOK.md`](docs/ETAPA5_ARQUITECTURA_RUNBOOK.md) | Clientes, DAL, DTOs y dominios |
 | [`docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md`](docs/ETAPA6_1_PEDIDOS_CATALOGO_RUNBOOK.md) | Pedidos desde catálogo |
 | [`docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md`](docs/ETAPA6_2_ALERTAS_REPOSICION_RUNBOOK.md) | Alertas de stock |
@@ -125,7 +125,7 @@ Los runbooks por etapa conservan decisiones de diseño y evidencia de sus respec
 | [`docs/ETAPA4_OPERACION_RUNBOOK.md`](docs/ETAPA4_OPERACION_RUNBOOK.md) | Backup, rollback, RPO/RTO propuestas |
 | [`docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md`](docs/ETAPA3_PWA_RENDIMIENTO_RUNBOOK.md) | PWA online-only (cerrado) |
 | [`docs/ETAPA2_RUNBOOK.md`](docs/ETAPA2_RUNBOOK.md) | Reconstrucción, diff, tipos, CI Stage 2 |
-| [`docs/STAGE2_INVENTORY.md`](docs/STAGE2_INVENTORY.md) | Inventario sanitizado de objetos |
+| [`docs/STAGE2_INVENTORY.md`](./docs/archivo/STAGE2_INVENTORY.md) | Inventario sanitizado de objetos |
 | [`docs/ETAPA1_RUNBOOK.md`](docs/ETAPA1_RUNBOOK.md) | Roles y deploy Stage 1 (cerrado) |
 | [`docs/VERCEL_PROYECTO_AUTORIZADO.md`](docs/VERCEL_PROYECTO_AUTORIZADO.md) | Solo Vercel `ilara` |
 | [`docs/MIGRACIONES_SUPABASE.md`](docs/MIGRACIONES_SUPABASE.md) | Convención de migraciones |

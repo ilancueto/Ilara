@@ -1,6 +1,6 @@
 # Correcciones del catálogo y panel — 5 de septiembre de 2026
 
-> Informe histórico de la fecha indicada. Consultar [ESTADO.md](../ESTADO.md) para el estado actual verificado; no inferir la versión publicada a partir de este informe.
+> Informe histórico de la fecha indicada. Consultar [ESTADO.md](../../ESTADO.md) para el estado actual verificado; no inferir la versión publicada a partir de este informe.
 
 Cambios derivados de `REVISION_PRODUCTO_2026-09-05.md`. La migración y la aplicación están publicadas en producción el 5 de septiembre de 2026. Los fallos de DNS de los primeros intentos se resolvieron al recuperar la conexión.
 
