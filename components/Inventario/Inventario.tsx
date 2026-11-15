@@ -398,7 +398,7 @@ export default function Inventario() {
                             setProductoEditar(null)
                             setModalAbierto(true)
                         }}
-                        className="btn-primary flex items-center justify-center gap-2 h-12 min-h-[3rem] px-5 py-3 rounded-xl"
+                        className="btn-primary flex items-center justify-center gap-2 h-12 min-h-[3rem] px-5 py-3 rounded-full"
                         title="Agregar nuevo producto"
                     >
                         <Plus className="w-4 h-4" />
@@ -496,7 +496,7 @@ export default function Inventario() {
                 </div>
                 <button
                     onClick={() => { setComboEditar(null); setModalComboAbierto(true) }}
-                    className="btn-primary flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold"
+                    className="btn-primary flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold"
                 >
                     <Plus className="w-4 h-4" />
                     <span>Nuevo Combo</span>

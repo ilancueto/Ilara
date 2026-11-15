@@ -241,7 +241,7 @@ export default function ExpenseForm({
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="btn-primary flex-[2] py-3 rounded-xl dark:shadow-pink-900/30 font-semibold"
+                            className="btn-primary flex-[2] py-3 rounded-full font-semibold"
                         >
                             {isLoading ? 'Guardando...' : expense ? 'Guardar Cambios' : 'Crear Gasto'}
                         </button>

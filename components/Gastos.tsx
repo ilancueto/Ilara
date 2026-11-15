@@ -214,7 +214,7 @@ export default function Gastos() {
                     </button>
                     <button
                         onClick={() => { setEditingExpense(undefined); setReceiptPreviewForForm(null); setIsFormOpen(true); }}
-                        className="btn-primary px-5 py-2.5 text-sm font-bold rounded-xl gap-2"
+                        className="btn-primary px-5 py-2.5 text-sm font-bold rounded-full gap-2"
                     >
                         <Plus size={18} />
                         Nuevo Gasto

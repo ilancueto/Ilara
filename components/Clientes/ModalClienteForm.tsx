@@ -70,7 +70,7 @@ export default function ModalClienteForm({ editando, formData, onChange, guardan
                         </div>
                         <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-line bg-gray-50/50 dark:bg-gray-800/50 flex gap-4">
                             <button type="button" onClick={onClose} className="btn-ghost flex-1 py-3 rounded-xl">Cancelar</button>
-                            <button type="submit" disabled={guardando} className="btn-primary flex-[2] py-3 rounded-xl dark:shadow-pink-900/20 font-semibold">
+                            <button type="submit" disabled={guardando} className="btn-primary flex-[2] py-3 rounded-full font-semibold">
                                 {guardando ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Crear Cliente')}
                             </button>
                         </div>

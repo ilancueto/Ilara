@@ -34,7 +34,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold hover:shadow-xl transition-all"
+          className="px-6 py-3 rounded-full bg-primary hover:bg-primary-hover text-white font-bold transition-all"
           data-testid="error-state-retry"
         >
           {retryLabel}

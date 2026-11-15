@@ -291,7 +291,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  /* Debajo de los modales (z-50) para no tapar sus botones. */
+  z-index: 40;
   padding: 0 var(--app-pad-x) calc(0.55rem + var(--app-safe-b));
   pointer-events: none;
   display: flex;

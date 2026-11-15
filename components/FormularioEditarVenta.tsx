@@ -186,7 +186,7 @@ export default function FormularioEditarVenta({
       >
       <PastelCard className="max-h-[calc(100vh-4rem)] overflow-y-auto !shadow-2xl rounded-3xl border border-line !p-0 overflow-hidden bg-surface" noHover>
         {/* Header con gradiente */}
-        <div className="bg-gradient-to-br from-pink-500/10 via-rose-50 to-transparent dark:from-pink-900/20 dark:via-gray-800/80 dark:to-transparent border-b border-line px-6 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9">
+        <div className="bg-primary-soft border-b border-line px-6 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-11 h-11 rounded-2xl bg-pink-500/20 dark:bg-pink-500/30 flex items-center justify-center text-accent flex-shrink-0">
@@ -360,7 +360,7 @@ export default function FormularioEditarVenta({
             <button type="button" onClick={onCancelar} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-ink bg-surface-soft border border-line hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={guardando} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-white bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-500 dark:shadow-pink-900/30 disabled:opacity-50 transition-all">
+            <button type="submit" disabled={guardando} className="form-control-h flex-1 px-4 rounded-xl font-semibold text-white bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-500 disabled:opacity-50 transition-all">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

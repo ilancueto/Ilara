@@ -136,7 +136,7 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
         <div className="flex flex-col sm:flex-row gap-2 mt-3">
           <input value={tagName} onChange={(event) => setTagName(event.target.value)} maxLength={30} placeholder="Nueva etiqueta" className="form-input rounded-xl px-3 py-2 text-sm flex-1" data-testid="crm-new-tag" />
           <button type="button" disabled={saving || tagName.trim().length < 2} onClick={() => void run(async () => { const created = await createCustomerCrmTag(tagName.trim()); setTagName(''); await setCustomerCrmTags(customerId, [...selectedTags, created.id]) }, 'Etiqueta creada y asignada.')} className="btn-ghost rounded-xl px-3 py-2 text-sm disabled:opacity-50"><Plus className="w-4 h-4" /> Crear</button>
-          <button type="button" disabled={saving || !tagsChanged} onClick={() => void run(() => setCustomerCrmTags(customerId, [...selectedTags]), 'Etiquetas actualizadas.')} className="btn-primary rounded-xl px-4 py-2 text-sm disabled:opacity-50" data-testid="crm-save-tags">Guardar etiquetas</button>
+          <button type="button" disabled={saving || !tagsChanged} onClick={() => void run(() => setCustomerCrmTags(customerId, [...selectedTags]), 'Etiquetas actualizadas.')} className="btn-primary rounded-full px-4 py-2 text-sm disabled:opacity-50" data-testid="crm-save-tags">Guardar etiquetas</button>
         </div>
       </section>
 
@@ -164,7 +164,7 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
       <section aria-labelledby="crm-notes-title">
         <h4 id="crm-notes-title" className="font-extrabold flex items-center gap-2"><StickyNote className="w-4 h-4 text-pink-500" /> Notas internas</h4>
         <textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={1000} rows={3} placeholder="Información útil para próximas atenciones…" className="form-input rounded-xl p-3 text-sm w-full mt-3" data-testid="crm-note-input" />
-        <div className="flex justify-end mt-2"><button type="button" disabled={saving || !note.trim()} onClick={() => void run(async () => { await addCustomerCrmNote(customerId, note.trim()); setNote('') }, 'Nota agregada.')} className="btn-primary rounded-xl px-4 py-2 text-sm disabled:opacity-50" data-testid="crm-add-note">Agregar nota</button></div>
+        <div className="flex justify-end mt-2"><button type="button" disabled={saving || !note.trim()} onClick={() => void run(async () => { await addCustomerCrmNote(customerId, note.trim()); setNote('') }, 'Nota agregada.')} className="btn-primary rounded-full px-4 py-2 text-sm disabled:opacity-50" data-testid="crm-add-note">Agregar nota</button></div>
         <ul className="space-y-2 mt-3">
           {profile.notes.map((item) => <li key={item.id} data-testid={`crm-note-${item.id}`} className="rounded-xl bg-gray-50 dark:bg-gray-700/50 p-3 flex gap-3 justify-between"><div><p className="text-sm whitespace-pre-wrap break-words">{item.body}</p><p className="text-[11px] text-gray-500 mt-1">{dateTime.format(new Date(item.created_at))}</p></div><button type="button" disabled={saving} onClick={() => void run(() => archiveCustomerCrmNote(item.id), 'Nota archivada.')} className="p-2 self-start text-gray-400 hover:text-red-500" aria-label="Archivar nota"><Archive className="w-4 h-4" /></button></li>)}
           {profile.notes.length === 0 && <li className="text-xs text-gray-500">Sin notas internas.</li>}

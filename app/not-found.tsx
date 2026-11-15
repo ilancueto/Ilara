@@ -25,7 +25,7 @@ export default function NotFound() {
       <div className="flex flex-col sm:flex-row gap-3">
         <Link
           href="/catalogo"
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold"
+          className="px-6 py-3 rounded-full bg-primary hover:bg-primary-hover text-white font-bold"
         >
           Ir al catálogo
         </Link>

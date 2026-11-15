@@ -156,7 +156,7 @@ export default function ModalPerfilCliente({
                         </div>}
                     </div>
                     <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-line bg-gray-50/50 dark:bg-gray-800/50">
-                        <button type="button" onClick={() => { onClose(); onEditar(clientePerfil); }} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold dark:shadow-pink-900/20">
+                        <button type="button" onClick={() => { onClose(); onEditar(clientePerfil); }} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-full font-semibold">
                             <SquarePen size={16} aria-hidden />
                             Editar cliente
                         </button>

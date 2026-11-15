@@ -46,7 +46,7 @@ export default function Loader({
     if (variant === 'pulse') {
         return (
             <div className={containerClasses}>
-                <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-tr from-pink-400 to-purple-400 animate-pulse shadow-sm`}></div>
+                <div className={`${sizeClasses[size]} rounded-full bg-primary animate-pulse shadow-sm`}></div>
                 {text && !inline && (
                     <p className="text-sm font-medium text-hint animate-pulse tracking-wide">
                         {text}

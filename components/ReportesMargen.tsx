@@ -131,7 +131,7 @@ export default function ReportesMargen() {
       </div>
 
       {loading && !report && (
-        <div className="min-h-56 grid place-items-center rounded-2xl border border-line bg-surface">
+        <div className="min-h-56 grid place-items-center rounded-card border border-line bg-surface">
           <RefreshCw className="w-6 h-6 text-pink-500 animate-spin" aria-label="Cargando reporte" />
         </div>
       )}
@@ -149,15 +149,15 @@ export default function ReportesMargen() {
         <>
           {report.pos && report.catalog && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <article className="rounded-2xl border border-line bg-surface p-4">
+              <article className="rounded-card bg-tint-0 p-4 sm:p-5">
                 <p className="text-xs font-bold uppercase text-gray-500">Margen mostrador</p>
                 <p className="mt-1 text-xl font-black">{formatMarginMoney(report.pos.gross_margin)}</p>
               </article>
-              <article className="rounded-2xl border border-line bg-surface p-4">
+              <article className="rounded-card bg-tint-3 p-4 sm:p-5">
                 <p className="text-xs font-bold uppercase text-gray-500">Margen catálogo</p>
                 <p className="mt-1 text-xl font-black">{formatMarginMoney(report.catalog.gross_margin)}</p>
               </article>
-              <article className="rounded-2xl border border-line bg-surface p-4">
+              <article className="rounded-card bg-primary-soft p-4 sm:p-5">
                 <p className="text-xs font-bold uppercase text-gray-500">Margen total</p>
                 <p className="mt-1 text-xl font-black">{formatMarginMoney(report.combined?.gross_margin ?? report.summary.gross_margin)}</p>
               </article>
@@ -185,8 +185,8 @@ export default function ReportesMargen() {
               ['Costo vendido', formatMarginMoney(report.summary.known_cogs), 'margin-kpi-cogs'],
               ['Margen bruto', formatMarginMoney(report.summary.gross_margin), 'margin-kpi-gross'],
               ['Margen %', marginLabel(report.summary.margin_percent), 'margin-kpi-percent'],
-            ].map(([label, value, testId]) => (
-              <article key={label} data-testid={testId} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+            ].map(([label, value, testId], index) => (
+              <article key={label} data-testid={testId} className={`rounded-card p-4 sm:p-5 ${['bg-tint-1', 'bg-tint-2', 'bg-tint-4', 'bg-tint-5'][index]}`}>
                 <p className="text-xs font-bold uppercase tracking-wide text-muted">{label}</p>
                 <p className="mt-2 text-xl sm:text-2xl font-black tracking-tight text-ink">{value}</p>
               </article>
@@ -215,7 +215,7 @@ export default function ReportesMargen() {
             <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-gray-500">Reintegros</p><p className="font-black">{formatMarginMoney(report.summary.refund_total)}</p></div>
           </div>
 
-          <article className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+          <article className="rounded-card border border-line bg-surface p-4 sm:p-5">
             <div className="flex items-center gap-2 mb-4"><BarChart3 className="w-5 h-5 text-pink-600" aria-hidden /><h3 className="font-extrabold">Ventas netas por día</h3></div>
             {report.daily.length === 0 ? (
               <p className="text-sm text-gray-500 py-8 text-center">No hay ventas en este período.</p>
@@ -224,7 +224,7 @@ export default function ReportesMargen() {
                 {report.daily.map((row) => (
                   <div key={row.date} className="group flex flex-col items-center justify-end gap-1 min-w-7 h-full" title={`${row.date}: ${formatMarginMoney(row.net_revenue)}`}>
                     <span className="sr-only">{row.date}: {formatMarginMoney(row.net_revenue)}</span>
-                    <div className="w-full rounded-t-md bg-gradient-to-t from-pink-600 to-fuchsia-400 min-h-1" style={{ height: `${Math.max(3, row.net_revenue / maxDaily * 100)}%` }} />
+                    <div className="w-full rounded-t-md bg-primary min-h-1" style={{ height: `${Math.max(3, row.net_revenue / maxDaily * 100)}%` }} />
                     <span className="text-[9px] text-gray-400 whitespace-nowrap">{date.format(parseLocalDate(row.date))}</span>
                   </div>
                 ))}
@@ -232,7 +232,7 @@ export default function ReportesMargen() {
             )}
           </article>
 
-          <article className="rounded-2xl border border-line bg-surface overflow-hidden">
+          <article className="rounded-card border border-line bg-surface overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-line"><h3 className="font-extrabold">Productos y combos</h3><p className="text-xs text-gray-500 mt-1">Ordenados por venta neta.</p></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

@@ -491,7 +491,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                         <button
                             type="submit"
                             disabled={uploading || guardando}
-                            className="btn-primary flex-[2] justify-center form-control-h text-base dark:shadow-pink-900/30"
+                            className="btn-primary flex-[2] justify-center form-control-h text-base"
                         >
                             {guardando ? (
                                 <span className="flex items-center gap-2">

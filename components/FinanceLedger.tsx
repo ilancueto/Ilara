@@ -251,7 +251,7 @@ export default function FinanceLedger() {
           <button type="button" onClick={() => setKind('payable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'payable' ? 'bg-rose-500 text-white' : 'bg-surface border border-line'}`}><ArrowUpRight className="inline w-4 h-4 mr-1" /> Cuentas por pagar</button>
           <label className="inline-flex items-center gap-2 px-3 text-sm font-semibold text-muted"><input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} /> Sólo pendientes</label>
         </div>
-        {kind === 'payable' && <button type="button" onClick={() => setPayableOpen(true)} className="btn-primary px-4 py-2.5 rounded-xl"><Plus className="w-4 h-4" /> Nueva cuenta por pagar</button>}
+        {kind === 'payable' && <button type="button" onClick={() => setPayableOpen(true)} className="btn-primary px-4 py-2.5 rounded-full"><Plus className="w-4 h-4" /> Nueva cuenta por pagar</button>}
       </div>
 
       {accounts.length === 0 ? (
@@ -289,13 +289,13 @@ export default function FinanceLedger() {
             <label className="block text-sm font-semibold">Medio<select value={settlement.paymentMethod} onChange={(e) => setSettlement((old) => ({ ...old, paymentMethod: e.target.value as PaymentMethod }))} className="form-input w-full mt-1 rounded-xl">{METHODS.map((method) => <option key={method} value={method}>{PAYMENT_METHOD_LABELS[method]}</option>)}</select></label>
             <label className="block text-sm font-semibold">Fecha y hora<input type="datetime-local" required value={settlement.occurredAt} onChange={(e) => setSettlement((old) => ({ ...old, occurredAt: e.target.value }))} className="form-input w-full mt-1 rounded-xl" /></label>
             <label className="block text-sm font-semibold">Nota opcional<textarea minLength={3} value={settlement.note} onChange={(e) => setSettlement((old) => ({ ...old, note: e.target.value }))} className="form-input w-full mt-1 rounded-xl" rows={3} /></label>
-            <button type="submit" disabled={saving} className="btn-primary w-full py-3 rounded-xl"><CheckCircle2 className="w-4 h-4" /> {saving ? 'Registrando...' : 'Confirmar movimiento'}</button>
+            <button type="submit" disabled={saving} className="btn-primary w-full py-3 rounded-full"><CheckCircle2 className="w-4 h-4" /> {saving ? 'Registrando...' : 'Confirmar movimiento'}</button>
           </form> : <form onSubmit={submitPayable} className="mt-6 space-y-4">
             <label className="block text-sm font-semibold">Proveedor o acreedor<input required minLength={2} maxLength={200} value={payable.counterparty} onChange={(e) => setPayable((old) => ({ ...old, counterparty: e.target.value }))} className="form-input w-full mt-1 rounded-xl" /></label>
             <label className="block text-sm font-semibold">Concepto<textarea required minLength={3} maxLength={500} value={payable.description} onChange={(e) => setPayable((old) => ({ ...old, description: e.target.value }))} className="form-input w-full mt-1 rounded-xl" rows={3} /></label>
             <label className="block text-sm font-semibold">Monto<input type="number" min="0.01" step="0.01" required value={payable.amount || ''} onChange={(e) => setPayable((old) => ({ ...old, amount: Number(e.target.value) }))} className="form-input w-full mt-1 rounded-xl" /></label>
             <label className="block text-sm font-semibold">Vencimiento opcional<input type="date" value={payable.dueDate} onChange={(e) => setPayable((old) => ({ ...old, dueDate: e.target.value }))} className="form-input w-full mt-1 rounded-xl" /></label>
-            <button type="submit" disabled={saving} className="btn-primary w-full py-3 rounded-xl"><Plus className="w-4 h-4" /> {saving ? 'Guardando...' : 'Registrar deuda'}</button>
+            <button type="submit" disabled={saving} className="btn-primary w-full py-3 rounded-full"><Plus className="w-4 h-4" /> {saving ? 'Guardando...' : 'Registrar deuda'}</button>
           </form>}
         </PastelCard>
       </div>}

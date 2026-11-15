@@ -145,10 +145,10 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
             <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-surface rounded-3xl shadow-2xl overflow-hidden animate-fade-in-scale border border-line">
                 {/* Header */}
-                <div className="flex-shrink-0 px-6 sm:px-8 py-5 bg-gradient-to-br from-pink-500/10 via-rose-50 to-amber-50/50 dark:from-pink-900/20 dark:via-gray-800 dark:to-gray-800 border-b border-line">
+                <div className="flex-shrink-0 px-6 sm:px-8 py-5 bg-primary-soft border-b border-line">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center dark:shadow-pink-900/40 flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover flex items-center justify-center flex-shrink-0">
                                 <Package className="w-6 h-6 text-white" />
                             </div>
                             <div>
@@ -331,7 +331,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                             <button
                                 type="submit"
                                 disabled={guardando}
-                                className="flex-1 px-5 py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 dark:shadow-pink-900/40 transition-all min-h-[44px]"
+                                className="flex-1 px-5 py-3.5 rounded-full font-bold text-sm text-white bg-primary hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all min-h-[44px]"
                             >
                                 {guardando ? <Loader className="w-5 h-5 animate-spin" /> : null}
                                 {comboToEdit ? 'Guardar cambios' : 'Crear combo'}

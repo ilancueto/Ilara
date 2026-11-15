@@ -39,7 +39,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
         <div className="flex flex-col gap-6 animate-fade-in-scale">
             {/* KPI row: financial summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                <PastelCard className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
+                <PastelCard tone={0} className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
                     <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Gastos del Mes</span>
                     <p className="text-2xl sm:text-3xl font-extrabold text-ink leading-none mt-2">
                         {formatCurrency(stats.totalMonth)}
@@ -52,21 +52,21 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
                         </div>
                     </div>
                 </PastelCard>
-                <PastelCard className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
+                <PastelCard tone={1} className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
                     <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Mes Anterior</span>
                     <p className="text-2xl sm:text-3xl font-extrabold text-ink leading-none mt-2">
                         {formatCurrency(stats.totalPrevMonth)}
                     </p>
                     <p className="text-[11px] text-muted mt-3">Comparativa directa</p>
                 </PastelCard>
-                <PastelCard className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
+                <PastelCard tone={2} className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
                     <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Promedio Diario</span>
                     <p className="text-2xl sm:text-3xl font-extrabold text-ink leading-none mt-2">
                         {formatCurrency(dailyAvg)}
                     </p>
                     <p className="text-[11px] text-muted mt-3">sobre {daysElapsed} días</p>
                 </PastelCard>
-                <PastelCard className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
+                <PastelCard tone={3} className="p-5 sm:p-6 min-h-[120px] flex flex-col justify-between">
                     <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Proyección Mensual</span>
                     <p className="text-2xl sm:text-3xl font-extrabold text-ink leading-none mt-2">
                         {formatCurrency(proyeccionMensual)}
@@ -79,7 +79,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <PastelCard className="flex flex-col p-5 sm:p-6 min-h-[320px]">
                     <div className="flex items-center gap-2.5 mb-4 sm:mb-5 pt-1">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500/20 to-rose-500/20 dark:from-pink-500/30 dark:to-rose-500/30 text-accent">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-soft text-accent">
                             <span className="text-base leading-none">📊</span>
                         </span>
                         <h3 className="text-base font-bold text-ink">Top Categorías</h3>
@@ -106,7 +106,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
                                         <div className="flex items-center gap-2">
                                             <div className="h-1.5 flex-1 min-w-0 bg-gray-200/80 dark:bg-gray-700 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full rounded-full bg-gradient-to-r from-pink-400 to-rose-400 dark:from-pink-500 dark:to-rose-500"
+                                                    className="h-full rounded-full bg-primary"
                                                     style={{ width: `${Math.max(percentage, 4)}%` }}
                                                 />
                                             </div>
@@ -126,7 +126,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
 
                 <PastelCard className="min-h-[320px] flex flex-col p-5 sm:p-6">
                     <div className="flex items-center gap-2.5 mb-6">
-                        <div className="w-1 h-6 bg-blue-400 dark:bg-blue-500 rounded-full flex-shrink-0" />
+                        <div className="w-1 h-6 bg-primary rounded-full flex-shrink-0" />
                         <h3 className="text-base font-bold text-ink">Tendencia Semestral</h3>
                     </div>
                     <div className="flex-1 flex items-end justify-between gap-2 sm:gap-4 px-2 sm:px-3 pb-4">
@@ -148,7 +148,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
                                             className={`
                                                 w-full max-w-[40px] rounded-t-sm transition-all duration-700 ease-out relative
                                                 ${isCurrent
-                                                    ? 'bg-gradient-to-t from-blue-400 to-cyan-300 dark:from-blue-500 dark:to-cyan-400 shadow-sm'
+                                                    ? 'bg-primary'
                                                     : 'bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500'
                                                 }
                                             `}
@@ -157,7 +157,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
                                             {isCurrent && <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/50"></div>}
                                         </div>
                                     </div>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isCurrent ? 'text-blue-500 dark:text-blue-400' : 'text-hint'}`}>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isCurrent ? 'text-accent' : 'text-hint'}`}>
                                         {item.month.slice(0, 3)}
                                     </span>
                                 </div>

@@ -264,8 +264,8 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
         <div className="tab-content w-full space-y-10 animate-fade-in max-w-5xl sm:max-w-6xl lg:max-w-7xl xl:max-w-[90rem] 2xl:max-w-[100rem] mx-auto px-0 pt-6 sm:pt-8">
             {/* Stats: 1 col hasta lg (sidebar + media pantalla aplastaba 3 cols) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-historial-block">
-                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center shadow-sm overflow-hidden">
+                <PastelCard tone={2} className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-surface flex items-center justify-center overflow-hidden">
                         <DollarSign size={26} className="text-emerald-500 dark:text-emerald-400" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -278,8 +278,8 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                     </div>
                 </PastelCard>
 
-                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shadow-sm overflow-hidden">
+                <PastelCard tone={1} className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-surface flex items-center justify-center overflow-hidden">
                         <Clock size={26} className="text-amber-500 dark:text-amber-400" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -292,8 +292,8 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                     </div>
                 </PastelCard>
 
-                <PastelCard className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-primary-soft flex items-center justify-center shadow-sm overflow-hidden">
+                <PastelCard tone={3} className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-surface flex items-center justify-center overflow-hidden">
                         <Receipt size={26} className="text-accent" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">

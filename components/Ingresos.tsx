@@ -164,12 +164,12 @@ export default function Ingresos() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight flex items-center gap-3">
-                <span className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-200/60 dark:shadow-emerald-900/40">✦</span>
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary hover:bg-primary-hover text-white">✦</span>
                 Cuentas y caja
               </h1>
               <p className="text-muted text-sm font-medium max-w-md mt-2">Mostrador, pedidos online y combinado. Los cobros web no se mezclan con la caja del local.</p>
             </div>
-            <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:shadow-emerald-300/40 hover:-translate-y-0.5 transition-all duration-200 shrink-0">
+            <button type="button" onClick={openNew} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary-hover text-white font-semibold rounded-full hover:-translate-y-0.5 transition-all duration-200 shrink-0">
               <Plus size={20} />
               Nuevo ingreso
             </button>
@@ -177,14 +177,14 @@ export default function Ingresos() {
 
           {/* Sub navegación: Ventas | Otros ingresos */}
           <div className="flex justify-center">
-            <PastelCard className="!p-2 flex gap-1 rounded-2xl w-auto inline-flex shadow-md shadow-emerald-100/50 dark:shadow-none border border-line" noHover>
+            <PastelCard className="!p-2 flex gap-1 rounded-2xl w-auto inline-flex border border-line" noHover>
               <button
                 onClick={() => setVistaActiva('historial')}
                 className={`
                   flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300
                   ${vistaActiva === 'historial'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-300/40 dark:shadow-emerald-900/40'
-                    : 'text-muted hover:text-ink hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30'
+                    ? 'bg-primary hover:bg-primary-hover text-white'
+                    : 'text-muted hover:text-ink hover:bg-surface-soft'
                   }
                 `}
               >
@@ -196,7 +196,7 @@ export default function Ingresos() {
                 className={`
                   flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
                   ${vistaActiva === 'otros'
-                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700'
+                    ? 'bg-primary-soft text-primary-ink border border-primary'
                     : 'text-hint hover:text-muted hover:bg-canvas'
                   }
                 `}
@@ -363,11 +363,11 @@ export default function Ingresos() {
                 {/* Fecha y monto */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="form-label text-sm">Fecha <span className="text-emerald-500">*</span></label>
+                    <label className="form-label text-sm">Fecha <span className="text-accent">*</span></label>
                     <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required className="form-input w-full rounded-xl" />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="form-label text-sm">Monto <span className="text-emerald-500">*</span></label>
+                    <label className="form-label text-sm">Monto <span className="text-accent">*</span></label>
                     <div className="relative">
                       <input
                         type="number"
@@ -395,8 +395,8 @@ export default function Ingresos() {
                         onClick={() => setForm({ ...form, type: t })}
                         className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all min-h-[88px]
                           ${form.type === t
-                            ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-700'
-                            : 'bg-surface border-line text-muted hover:bg-canvas hover:border-emerald-100 dark:hover:border-emerald-800 hover:text-ink'
+                            ? 'bg-primary-soft border-primary text-primary-ink ring-1 ring-primary'
+                            : 'bg-surface border-line text-muted hover:bg-canvas hover:border-primary hover:text-ink'
                           }`}
                       >
                         <span className={`text-2xl ${form.type === t ? 'scale-105' : ''}`}>{TYPE_ICONS[t]}</span>
@@ -450,7 +450,7 @@ export default function Ingresos() {
                 <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost flex-1 py-3 rounded-xl text-muted">
                   Cancelar
                 </button>
-                <button type="submit" disabled={saving} className="flex-[2] inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200/50 hover:shadow-emerald-300/50 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0">
+                <button type="submit" disabled={saving} className="flex-[2] inline-flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-full hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0">
                   {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>

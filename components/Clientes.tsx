@@ -364,7 +364,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                 </div>
                 <button
                     onClick={() => { setEditando(null); setFormData({ first_name: '', last_name: '', email: '', phone: '' }); setMostrarModal(true); }}
-                    className="btn-primary shrink-0 gap-2 px-5 py-3 rounded-xl dark:shadow-pink-900/20 font-semibold"
+                    className="btn-primary shrink-0 gap-2 px-5 py-3 rounded-full font-semibold"
                 >
                     <Plus className="w-5 h-5" />
                     Nuevo Cliente

@@ -214,7 +214,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                         <div className="flex-shrink-0 p-6 sm:p-8 pt-6 border-t border-line bg-surface/80 backdrop-blur-sm">
                             <button
                                 onClick={() => { onClose(); onEdit(producto) }}
-                                className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 rounded-xl dark:shadow-pink-900/30"
+                                className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 rounded-full"
                             >
                                 <SquarePen size={16} aria-hidden />
                                 Editar producto
