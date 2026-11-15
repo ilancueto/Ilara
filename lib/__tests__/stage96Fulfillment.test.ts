@@ -11,10 +11,15 @@ const migration = readFileSync(
   join(__dirname, '../../supabase/migrations/20260818034000_stage96_fulfillment_pickup.sql'),
   'utf8'
 )
-const checkout = readFileSync(
-  join(__dirname, '../../components/Catalogo/CheckoutPedido.tsx'),
-  'utf8'
-)
+// El checkout se reparte entre el contenedor y sus secciones (Checkout/*.tsx).
+const checkout = [
+  'CheckoutPedido.tsx',
+  'Checkout/CheckoutEntrega.tsx',
+  'Checkout/CheckoutDatosFields.tsx',
+  'Checkout/CheckoutExito.tsx',
+]
+  .map((file) => readFileSync(join(__dirname, '../../components/Catalogo', file), 'utf8'))
+  .join('\n')
 const payment = readFileSync(
   join(__dirname, '../../components/Catalogo/PedidoPagoClient.tsx'),
   'utf8'

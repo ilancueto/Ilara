@@ -5,6 +5,9 @@ import { resolve } from 'node:path'
 const root = process.cwd()
 const publicSurfaces = [
   'components/Catalogo/CheckoutPedido.tsx',
+  'components/Catalogo/Checkout/CheckoutEntrega.tsx',
+  'components/Catalogo/Checkout/CheckoutDatosFields.tsx',
+  'components/Catalogo/Checkout/CheckoutExito.tsx',
   'components/Catalogo/ModalCarrito.tsx',
   'components/Catalogo/ProductoCatalogoRecover.tsx',
   'components/Catalogo/ModalDetalleCombo.tsx',

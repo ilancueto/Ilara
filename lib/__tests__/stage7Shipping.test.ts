@@ -21,10 +21,15 @@ const edgeFunction = readFileSync(
   resolve(root, 'supabase/functions/shipping-quotes/index.ts'),
   'utf8'
 )
-const checkout = readFileSync(
-  resolve(root, 'components/Catalogo/CheckoutPedido.tsx'),
-  'utf8'
-)
+// El checkout se reparte entre el contenedor y sus secciones (Checkout/*.tsx).
+const checkout = [
+  'components/Catalogo/CheckoutPedido.tsx',
+  'components/Catalogo/Checkout/CheckoutEntrega.tsx',
+  'components/Catalogo/Checkout/CheckoutDatosFields.tsx',
+  'components/Catalogo/Checkout/CheckoutExito.tsx',
+]
+  .map((file) => readFileSync(resolve(root, file), 'utf8'))
+  .join('\n')
 
 describe('Stage 7 — cotizaciones Envia', () => {
   it('mantiene token y llamadas de proveedor exclusivamente en Edge Function', () => {
