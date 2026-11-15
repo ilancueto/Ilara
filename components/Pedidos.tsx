@@ -6,15 +6,12 @@ import {
   Check,
   ChevronRight,
   Loader2,
-  MessageCircle,
   Package,
   RefreshCw,
   Search,
   Trash2,
-  UserPlus,
   X,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useConfirm } from '@/hooks/useConfirm'
 import {
@@ -26,12 +23,11 @@ import {
 import { notifyOrderStatusAction } from '@/app/actions/orders'
 import {
   ORDER_STATUSES,
-  canTransitionOrder,
   orderStatusLabel,
   type OrderStatus,
 } from '@/lib/domain/orders/states'
 import type { OrderDetail, OrderListItem } from '@/lib/domain/orders/types'
-import { formatPesoAR, formatPesoARExact } from '@/lib/formatPesoAR'
+import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
 import { useToast } from '@/context/ToastContext'
 import { logStructured, createRequestId } from '@/lib/observability/logger'
@@ -41,50 +37,24 @@ import {
   type AdminOrderPayment,
 } from '@/app/actions/adminPayments'
 import { PedidoPagosPanel } from '@/components/Pedidos/PedidoPagosPanel'
+import { statusBadgeClass, nextActions } from '@/components/Pedidos/pedidoUi'
+import {
+  PedidoCancelarForm,
+  PedidoDatosContacto,
+  PedidoDevoluciones,
+  PedidoEnvio,
+  PedidoHistorial,
+  PedidoLineas,
+} from '@/components/Pedidos/PedidoDetalleSecciones'
 import { panelHref } from '@/lib/appNavigation'
-import { catalogReturnLabel, catalogRefundActionLabel } from '@/lib/domain/returns/rules'
-import { findOrCreateCustomerFromContact } from '@/lib/domain/customers/browserCustomers'
-import { orderWhatsAppMessage, whatsappContactDigits } from '@/lib/domain/orders/orderWhatsApp'
-import { buildWhatsAppUrlTo } from '@/lib/whatsappLink'
 
 const STATUS_FILTERS: Array<OrderStatus | 'all'> = ['all', ...ORDER_STATUSES]
 const ORDER_PAGE_SIZE = 50
-
-function statusBadgeClass(status: OrderStatus): string {
-  switch (status) {
-    case 'pending':
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
-    case 'confirmed':
-      return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200'
-    case 'preparing':
-      return 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200'
-    case 'ready':
-      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200'
-    case 'completed':
-      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
-    case 'cancelled':
-      return 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200'
-    default:
-      return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
-  }
-}
-
-function nextActions(status: OrderStatus): OrderStatus[] {
-  return ORDER_STATUSES.filter((s) => s !== status && canTransitionOrder(status, s))
-}
-
-function actorLabel(kind: OrderDetail['events'][number]['actor_kind']): string {
-  if (kind === 'admin') return 'Equipo'
-  if (kind === 'public') return 'Clienta'
-  return 'Automático'
-}
 
 export default function Pedidos() {
   const { showToast } = useToast()
   const { confirm, confirmProps } = useConfirm()
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const [registeringCustomer, setRegisteringCustomer] = useState(false)
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<OrderListItem[]>([])
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
@@ -495,103 +465,7 @@ export default function Pedidos() {
                 </button>
               </div>
 
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                <div>
-                  <dt className="text-gray-400 text-xs">Clienta</dt>
-                  <dd className="font-semibold">
-                    {detail.customer_id ? (
-                      <a
-                        href={panelHref({ tab: 'customers', customerId: detail.customer_id })}
-                        className="text-pink-600 dark:text-pink-400 underline-offset-2 hover:underline"
-                        data-testid="pedido-open-customer"
-                      >
-                        {detail.customer_name}
-                      </a>
-                    ) : (
-                      <span className="inline-flex flex-wrap items-center gap-2">
-                        {detail.customer_name}
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-1 rounded-lg border border-pink-200 px-2 py-1 text-xs font-bold text-pink-700 hover:bg-pink-50 dark:border-pink-800 dark:text-pink-300"
-                          disabled={registeringCustomer}
-                          data-testid="pedido-register-customer"
-                          onClick={() => {
-                            void (async () => {
-                              setRegisteringCustomer(true)
-                              try {
-                                const created = await findOrCreateCustomerFromContact({
-                                  name: detail.customer_name,
-                                  phone: detail.customer_phone,
-                                  email: detail.customer_email,
-                                })
-                                router.push(panelHref({ tab: 'customers', customerId: created.id }), { scroll: false })
-                              } catch (err) {
-                                showToast('error', toUserMessage(err, 'No se pudo registrar a la clienta.'))
-                              } finally {
-                                setRegisteringCustomer(false)
-                              }
-                            })()
-                          }}
-                        >
-                          <UserPlus size={14} aria-hidden />
-                          Registrar como clienta
-                        </button>
-                      </span>
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-gray-400 text-xs">Teléfono</dt>
-                  <dd className="font-semibold flex flex-wrap items-center gap-2">
-                    <span>{detail.customer_phone}</span>
-                    {(() => {
-                      const url = buildWhatsAppUrlTo(
-                        whatsappContactDigits(detail.customer_phone),
-                        orderWhatsAppMessage({
-                          customerName: detail.customer_name,
-                          orderNumber: detail.order_number,
-                          status: detail.status,
-                          fulfillmentMode: detail.fulfillment_mode,
-                        })
-                      )
-                      return url ? (
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300"
-                          data-testid="pedido-whatsapp"
-                        >
-                          <MessageCircle size={14} aria-hidden />
-                          WhatsApp
-                        </a>
-                      ) : null
-                    })()}
-                  </dd>
-                </div>
-                {detail.customer_email && (
-                  <div>
-                    <dt className="text-gray-400 text-xs">Email</dt>
-                    <dd className="font-semibold break-all">{detail.customer_email}</dd>
-                  </div>
-                )}
-                <div>
-                  <dt className="text-gray-400 text-xs">Creado</dt>
-                  <dd>{new Date(detail.created_at).toLocaleString('es-AR')}</dd>
-                </div>
-                <div>
-                  <dt className="text-gray-400 text-xs">Actualizado</dt>
-                  <dd>{new Date(detail.updated_at).toLocaleString('es-AR')}</dd>
-                </div>
-                {detail.coupon_code && (
-                  <div>
-                    <dt className="text-gray-400 text-xs">Cupón</dt>
-                    <dd>
-                      {detail.coupon_code} (−{detail.coupon_discount_percentage ?? 0}%)
-                    </dd>
-                  </div>
-                )}
-              </dl>
+              <PedidoDatosContacto detail={detail} />
 
               {detail.notes && (
                 <div className="rounded-xl bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm">
@@ -614,47 +488,7 @@ export default function Pedidos() {
               </div>
 
               {(detail.shipping_quote_id || detail.fulfillment_mode !== 'envio') && (
-                <div className="rounded-xl bg-pink-50 dark:bg-pink-950/20 px-3 py-2 text-sm">
-                  <p className="text-xs text-gray-400 mb-1">
-                    {detail.fulfillment_mode === 'retiro'
-                      ? 'Retiro en el local'
-                      : detail.fulfillment_mode === 'coordinar'
-                        ? 'Entrega a coordinar'
-                        : 'Envío cotizado'}
-                  </p>
-                  {detail.fulfillment_mode === 'envio' ? (
-                    <>
-                      <p className="font-semibold">
-                        {detail.shipping_carrier_description} · {detail.shipping_service_description}
-                      </p>
-                      {detail.shipping_destination_street && detail.shipping_destination_number ? (
-                        <div className="space-y-0.5">
-                          <p><span className="text-gray-500">Dirección:</span> {detail.shipping_destination_street} {detail.shipping_destination_number}</p>
-                          <p><span className="text-gray-500">Localidad:</span> {detail.shipping_destination_city}, {detail.shipping_destination_state}</p>
-                          <p><span className="text-gray-500">Código postal:</span> {detail.shipping_destination_postal_code}</p>
-                        </div>
-                      ) : (
-                        <p>
-                          {detail.shipping_destination_formatted_address
-                            || `CP ${detail.shipping_destination_postal_code}, ${detail.shipping_destination_city}, ${detail.shipping_destination_state}`}
-                        </p>
-                      )}
-                      <p>
-                        ${formatPesoARExact(detail.shipping_amount)}
-                        {detail.shipping_delivery_estimate ? ` · ${detail.shipping_delivery_estimate}` : ''}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="font-semibold">
-                      {detail.fulfillment_mode === 'retiro'
-                        ? 'Pasás a buscarlo. Coordinamos el horario por WhatsApp.'
-                        : 'Si estás cerca, lo vemos por WhatsApp.'}
-                      {detail.shipping_destination_formatted_address
-                        ? ` · ${detail.shipping_destination_formatted_address}`
-                        : ''}
-                    </p>
-                  )}
-                </div>
+                <PedidoEnvio detail={detail} />
               )}
 
               <div className="flex flex-wrap gap-2">
@@ -674,151 +508,25 @@ export default function Pedidos() {
               </div>
 
               {detail.returns.length > 0 && (
-                <div data-testid="pedido-returns">
-                  <h4 className="text-sm font-bold mb-2">Devoluciones</h4>
-                  <ul className="space-y-2">
-                    {detail.returns.map((item) => (
-                      <li
-                        key={item.id}
-                        className="rounded-xl border border-gray-100 dark:border-gray-800 px-3 py-2 text-sm"
-                      >
-                        <p className="font-semibold">
-                          {catalogReturnLabel(item.return_number)} · ${formatPesoAR(item.refund_total)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {catalogRefundActionLabel(item.refund_action)}
-                          {item.restock ? ' · stock reintegrado' : ' · sin reintegro de stock'}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{item.reason}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <PedidoDevoluciones items={detail.returns} />
               )}
 
-              <div>
-                <h4 className="text-sm font-bold mb-2">Líneas</h4>
-                <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-100 dark:border-gray-800">
-                  {detail.items.map((it) => (
-                    <li key={it.id} className="px-3 py-2 text-sm flex justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-semibold truncate">
-                          {it.name_snapshot}{' '}
-                          <span className="text-gray-400 font-normal">×{it.quantity}</span>
-                        </p>
-                        {it.variant_snapshot && (
-                          <p className="text-xs text-gray-400">{it.variant_snapshot}</p>
-                        )}
-                        {it.line_type === 'combo' && it.combo_components_snapshot.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {it.combo_components_snapshot
-                              .map((c) => `${c.product_name}×${c.quantity}`)
-                              .join(', ')}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-semibold">${formatPesoAR(it.line_subtotal)}</p>
-                        <p className="text-xs text-gray-400">
-                          ${formatPesoAR(it.unit_price)} c/u
-                          {it.discount_percentage > 0 ? ` (−${it.discount_percentage}%)` : ''}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-2 text-sm space-y-0.5 text-right">
-                  <p>
-                    Subtotal: <strong>${formatPesoAR(detail.subtotal)}</strong>
-                  </p>
-                  {detail.discount_total > 0 && (
-                    <p>
-                      Descuento: <strong>−${formatPesoAR(detail.discount_total)}</strong>
-                    </p>
-                  )}
-                  {detail.shipping_amount > 0 && (
-                    <p>
-                      Envío: <strong>${formatPesoARExact(detail.shipping_amount)}</strong>
-                    </p>
-                  )}
-                  <p className="text-base">
-                    Total: <strong>${formatPesoARExact(detail.total)}</strong>
-                  </p>
-                </div>
-              </div>
+              <PedidoLineas detail={detail} />
 
-              <div>
-                <h4 className="text-sm font-bold mb-2">Historial de estados</h4>
-                <ol className="space-y-2">
-                  {detail.events.map((ev) => (
-                    <li
-                      key={ev.id}
-                      className="text-xs sm:text-sm flex gap-2 text-gray-600 dark:text-gray-300"
-                    >
-                      <span className="text-gray-400 shrink-0">
-                        {new Date(ev.created_at).toLocaleString('es-AR')}
-                      </span>
-                      <span>
-                        {ev.from_status
-                          ? `${orderStatusLabel(ev.from_status)} → ${orderStatusLabel(ev.to_status)}`
-                          : orderStatusLabel(ev.to_status)}
-                        {ev.reason ? ` · ${ev.reason}` : ''}
-                        <span className="text-gray-400"> · {actorLabel(ev.actor_kind)}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+              <PedidoHistorial events={detail.events} />
 
               {cancelOpen && (
-                <div
-                  className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 p-3 space-y-2"
-                  data-testid="pedido-cancel-form"
-                >
-                  <label
-                    htmlFor="pedido-cancel-reason"
-                    className="block text-xs font-bold text-rose-800 dark:text-rose-200"
-                  >
-                    Motivo de cancelación *
-                  </label>
-                  <textarea
-                    id="pedido-cancel-reason"
-                    value={cancelReason}
-                    onChange={(e) => setCancelReason(e.target.value)}
-                    maxLength={300}
-                    rows={2}
-                    className="w-full rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-gray-950 px-2 py-1.5 text-sm"
-                    data-testid="pedido-cancel-reason"
-                    disabled={actionLoading}
-                  />
-                  {cancelError && (
-                    <p className="text-xs text-rose-600" role="alert">
-                      {cancelError}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="rounded-xl bg-rose-600 text-white px-3 py-2 text-sm font-bold disabled:opacity-60"
-                      disabled={actionLoading}
-                      onClick={() => void confirmCancel()}
-                      data-testid="pedido-cancel-confirm"
-                    >
-                      Confirmar cancelación
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-semibold"
-                      disabled={actionLoading}
-                      onClick={() => {
-                        setCancelOpen(false)
-                        setCancelError(null)
-                      }}
-                    >
-                      Volver
-                    </button>
-                  </div>
-                </div>
+                <PedidoCancelarForm
+                  reason={cancelReason}
+                  onReasonChange={setCancelReason}
+                  error={cancelError}
+                  loading={actionLoading}
+                  onConfirm={() => void confirmCancel()}
+                  onBack={() => {
+                    setCancelOpen(false)
+                    setCancelError(null)
+                  }}
+                />
               )}
 
               {detail.status === 'cancelled' && !cancelOpen && (
