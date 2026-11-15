@@ -305,7 +305,7 @@ function HomeContent() {
 
   if (cargando) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#faf9fb] dark:bg-gray-950 text-pink-500 dark:text-pink-400 gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-canvas dark:bg-gray-950 text-pink-500 dark:text-pink-400 gap-4">
         <div className="w-16 h-16 rounded-2xl bg-pink-100 dark:bg-pink-900/40 animate-pulse" />
         <div className="font-bold text-lg animate-pulse">Cargando Ilara...</div>
       </div>
@@ -314,7 +314,7 @@ function HomeContent() {
 
   if (authError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fdf4ff] dark:bg-gray-900 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-canvas dark:bg-gray-900 p-6">
         <div className="text-center max-w-sm">
           <p className="text-gray-600 dark:text-gray-300 font-medium mb-4">{authError}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

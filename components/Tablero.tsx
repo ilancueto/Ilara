@@ -306,7 +306,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
                         onClick={() =>
                             onNavigate ? onNavigate('sales') : router.push('/?tab=sales')
                         }
-                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-[#CF6B7F] to-[#B85064] text-white font-bold text-sm shadow-[0_8px_20px_-6px_rgba(184,93,111,0.5)] hover:brightness-105 hover:-translate-y-0.5 transition-all"
+                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm shadow-[0_8px_20px_-6px_rgba(184,93,111,0.5)] hover:brightness-105 hover:-translate-y-0.5 transition-all"
                     >
                         <Receipt className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                         Nueva venta

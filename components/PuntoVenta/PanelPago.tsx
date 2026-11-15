@@ -96,7 +96,7 @@ export default function PanelPago({
     }
 
     return (
-        <div className="px-[1.1rem] pt-3.5 pb-[1.1rem] border-t border-[#EDE8E1] dark:border-white/10 bg-[#FAF8F5] dark:bg-zinc-950/55">
+        <div className="px-[1.1rem] pt-3.5 pb-[1.1rem] border-t border-line dark:border-white/10 bg-canvas dark:bg-zinc-950/55">
             <div className="mb-3">
                 <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5">
                     <UserRound className="w-3.5 h-3.5" aria-hidden />
@@ -187,8 +187,8 @@ export default function PanelPago({
                                 type="button"
                                 onClick={() => elegirMetodo(metodo.id)}
                                 className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${activo
-                                    ? 'border-[#D97786] bg-[#FDF2F4] text-[#A04A5C] dark:border-[#E88B9A] dark:bg-[#2D1B22] dark:text-[#E88B9A]'
-                                    : 'border-[#EDE8E1] bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                                    ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400 dark:bg-primary-soft dark:text-pink-300'
+                                    : 'border-line bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                                 }`}
                             >
                                 <span className="block truncate">{metodo.label}</span>
@@ -199,8 +199,8 @@ export default function PanelPago({
                         type="button"
                         onClick={elegirMixto}
                         className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${pagoMixto
-                            ? 'border-[#D97786] bg-[#FDF2F4] text-[#A04A5C] dark:border-[#E88B9A] dark:bg-[#2D1B22] dark:text-[#E88B9A]'
-                            : 'border-[#EDE8E1] bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                            ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400 dark:bg-primary-soft dark:text-pink-300'
+                            : 'border-line bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                         }`}
                     >
                         Mixto
@@ -231,7 +231,7 @@ export default function PanelPago({
                 <strong className="text-[clamp(1.25rem,3vw,1.5rem)] leading-none font-extrabold tracking-tight tabular-nums whitespace-nowrap shrink-0 text-gray-950 dark:text-white">${total.toLocaleString()}</strong>
             </div>
 
-            <button type="button" onClick={onProcesar} disabled={disabled || cargando || !desgloseValido} className="w-full min-h-11 px-4 rounded-[14px] bg-gradient-to-br from-[#CF6B7F] to-[#B85064] text-white text-sm font-bold shadow-[0_8px_18px_-6px_rgba(184,93,111,0.45)] disabled:opacity-45 disabled:shadow-none">
+            <button type="button" onClick={onProcesar} disabled={disabled || cargando || !desgloseValido} className="w-full min-h-11 px-4 rounded-[14px] bg-primary hover:bg-primary-hover text-white text-sm font-bold shadow-[0_8px_18px_-6px_rgba(184,93,111,0.45)] disabled:opacity-45 disabled:shadow-none">
                 {cargando ? <Loader variant="dots" size="sm" inline /> : cobrarDespues ? 'Registrar por cobrar' : 'Cobrar ahora'}
             </button>
             <button
