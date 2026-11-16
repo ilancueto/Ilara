@@ -450,10 +450,10 @@ export default function Inventario() {
             </div>
 
             {/* Count + Eliminar productos */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pl-1">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 pl-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <span className="w-2 h-2 rounded-full bg-pink-400 dark:bg-pink-500"></span>
-                    <p className="text-sm text-muted font-medium">
+                    <p className="text-sm text-muted font-medium whitespace-nowrap">
                         Mostrando <span className="font-bold text-ink">{productosFiltrados.length}</span> producto{productosFiltrados.length !== 1 ? 's' : ''}
                     </p>
                     {productosAgotados > 0 && (
