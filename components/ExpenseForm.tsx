@@ -79,7 +79,7 @@ export default function ExpenseForm({
                         {/* Fecha y monto */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
-                                <label className="form-label">Fecha <span className="text-pink-500">*</span></label>
+                                <label className="form-label">Fecha <span className="text-accent">*</span></label>
                                 <input
                                     type="date"
                                     value={formData.date}
@@ -89,9 +89,9 @@ export default function ExpenseForm({
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="form-label">Monto <span className="text-pink-500">*</span></label>
+                                <label className="form-label">Monto <span className="text-accent">*</span></label>
                                 <div className="relative">
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-hint font-bold">$</span>
                                     <input
                                         type="number"
                                         value={formData.amount || ''}
@@ -108,7 +108,7 @@ export default function ExpenseForm({
 
                         {/* Descripción */}
                         <div className="flex flex-col gap-2">
-                            <label className="form-label">Descripción <span className="text-pink-500">*</span></label>
+                            <label className="form-label">Descripción <span className="text-accent">*</span></label>
                             <input
                                 type="text"
                                 value={formData.description}
@@ -121,7 +121,7 @@ export default function ExpenseForm({
 
                         {/* Categoría */}
                         <div className="flex flex-col gap-3">
-                            <label className="form-label">Categoría <span className="text-pink-500">*</span></label>
+                            <label className="form-label">Categoría <span className="text-accent">*</span></label>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                 {Object.entries(EXPENSE_CATEGORY_LABELS).map(([key, label]) => (
                                     <button
@@ -150,7 +150,7 @@ export default function ExpenseForm({
                         {/* Método de pago y comprobante */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
-                                <label className="form-label">Método de pago <span className="text-pink-500">*</span></label>
+                                <label className="form-label">Método de pago <span className="text-accent">*</span></label>
                                 <select
                                     value={formData.payment_method}
                                     onChange={(e) => setFormData({ ...formData, payment_method: e.target.value as PaymentMethod })}
@@ -179,7 +179,7 @@ export default function ExpenseForm({
                                             ) : storedReceiptPreviewUrl && !(expense?.receipt_url ?? '').toLowerCase().includes('pdf') ? (
                                                 <Image src={storedReceiptPreviewUrl} alt="Preview" width={48} height={48} className="w-full h-full object-cover" unoptimized />
                                             ) : (
-                                                <span className="text-pink-500 text-xs font-bold">PDF</span>
+                                                <span className="text-accent text-xs font-bold">PDF</span>
                                             )}
                                         </div>
                                         <span className="text-sm font-medium text-primary-ink truncate flex-1 min-w-0">Comprobante cargado</span>
@@ -190,7 +190,7 @@ export default function ExpenseForm({
                                                     setLocalReceiptDataUrl(null);
                                                     setFormData({ ...formData, receipt: undefined });
                                                 }}
-                                                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors flex-shrink-0"
+                                                className="p-2 rounded-lg hover:bg-danger-soft text-danger transition-colors flex-shrink-0"
                                                 aria-label="Quitar comprobante"
                                             >
                                                 <Trash2 size={18} />

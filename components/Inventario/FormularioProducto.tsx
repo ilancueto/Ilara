@@ -285,15 +285,15 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
 
                     {/* Nombre */}
                     <div className="form-section">
-                        <label className="form-label">Nombre del producto <span className="text-pink-500">*</span></label>
+                        <label className="form-label">Nombre del producto <span className="text-accent">*</span></label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ej: Labial Mate Ruby Woo"
-                            className={`form-input form-control-h w-full ${errores.name ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
+                            className={`form-input form-control-h w-full ${errores.name ? 'border-danger-line focus:border-red-500 focus:ring-red-200' : ''}`}
                         />
-                        {errores.name && <p className="text-xs text-red-500 mt-1">{errores.name}</p>}
+                        {errores.name && <p className="text-xs text-danger mt-1">{errores.name}</p>}
                     </div>
 
                     {/* Categoría y Marca */}
@@ -329,7 +329,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                             <div className="min-w-0">
                                 <label className="form-label">Precio compra</label>
                                 <div className="relative">
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-hint font-medium">$</span>
                                     <input
                                         type="number"
                                         step="0.01"
@@ -341,19 +341,19 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                 </div>
                             </div>
                             <div className="min-w-0">
-                                <label className="form-label">Precio venta <span className="text-pink-500">*</span></label>
+                                <label className="form-label">Precio venta <span className="text-accent">*</span></label>
                                 <div className="relative">
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-hint font-medium">$</span>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={formData.sale_price}
                                         onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
                                         placeholder="0.00"
-                                        className={`form-input form-control-h w-full pr-8 ${errores.sale_price ? 'border-red-300' : ''}`}
+                                        className={`form-input form-control-h w-full pr-8 ${errores.sale_price ? 'border-danger-line' : ''}`}
                                     />
                                 </div>
-                                {errores.sale_price && <p className="text-xs text-red-500 mt-1">{errores.sale_price}</p>}
+                                {errores.sale_price && <p className="text-xs text-danger mt-1">{errores.sale_price}</p>}
                             </div>
                         </div>
                     </div>
@@ -362,7 +362,7 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                     <div className="form-section">
                         <div className="form-section-fields grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="min-w-0">
-                                <label className="form-label">Stock actual <span className="text-pink-500">*</span></label>
+                                <label className="form-label">Stock actual <span className="text-accent">*</span></label>
                                 <input
                                     ref={stockInputRef}
                                     id="producto-stock"
@@ -371,9 +371,9 @@ export default function ProductForm({ isOpen, onClose, productToEdit, onSuccess,
                                     value={formData.stock}
                                     onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                                     placeholder="0"
-                                    className={`form-input form-control-h w-full ${errores.stock ? 'border-red-300' : ''}`}
+                                    className={`form-input form-control-h w-full ${errores.stock ? 'border-danger-line' : ''}`}
                                 />
-                                {errores.stock && <p className="text-xs text-red-500 mt-1">{errores.stock}</p>}
+                                {errores.stock && <p className="text-xs text-danger mt-1">{errores.stock}</p>}
                             </div>
                             <div className="min-w-0">
                                 <label className="form-label">Alerta stock bajo</label>

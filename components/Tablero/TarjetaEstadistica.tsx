@@ -35,20 +35,6 @@ export default function TarjetaEstadistica({
         <PastelCard
             noHover
             tone={destacada ? 'primary' : tone}
-            role={onActivate ? 'button' : undefined}
-            tabIndex={onActivate ? 0 : undefined}
-            aria-label={onActivate ? `Abrir ${etiqueta}` : undefined}
-            onClick={onActivate}
-            onKeyDown={
-                onActivate
-                    ? (event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault()
-                            onActivate()
-                        }
-                    }
-                    : undefined
-            }
             className={`
                 relative overflow-hidden h-full flex flex-col gap-3 p-4 sm:p-5 min-h-[128px]
                 ${destacada ? 'sm:p-6' : ''}
@@ -56,7 +42,16 @@ export default function TarjetaEstadistica({
                 ${alerta ? 'ring-2 ring-amber-400/80 dark:ring-amber-500/60' : ''}
             `}
         >
-            <div className="relative flex items-start justify-between gap-2 shrink-0">
+            {/* Botón que cubre la tarjeta: así el selector de período no queda anidado dentro de otro botón. */}
+            {onActivate ? (
+                <button
+                    type="button"
+                    onClick={onActivate}
+                    aria-label={`Abrir ${etiqueta}`}
+                    className="absolute inset-0 rounded-card focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+                />
+            ) : null}
+            <div className="relative flex items-start justify-between gap-2 shrink-0 pointer-events-none">
                 <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                         destacada ? 'bg-white/20 text-white' : 'bg-surface text-primary-ink'
@@ -64,22 +59,22 @@ export default function TarjetaEstadistica({
                 >
                     {icono}
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
                     {alerta && (
-                        <span className="px-2.5 py-1 rounded-full bg-surface text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="px-2.5 py-1 rounded-full bg-surface text-warning text-[10px] font-bold uppercase tracking-wider">
                             Acción
                         </span>
                     )}
                     {selectorPeriodo}
                     {trend && !selectorPeriodo && (
-                        <div className="w-7 h-7 rounded-full bg-surface flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <div className="w-7 h-7 rounded-full bg-surface flex items-center justify-center text-success">
                             <ArrowUpRight className="w-3.5 h-3.5" />
                         </div>
                     )}
                 </div>
             </div>
-            <div className="relative flex flex-col gap-0.5 min-w-0 mt-auto">
-                <div className={`text-[11px] uppercase tracking-[0.08em] font-bold ${destacada ? 'text-white/85' : 'text-muted'}`}>
+            <div className="relative flex flex-col gap-0.5 min-w-0 mt-auto pointer-events-none">
+                <div className={`text-[11px] uppercase tracking-[0.08em] font-bold ${destacada ? 'text-white' : 'text-muted'}`}>
                     {etiqueta}
                 </div>
                 <div
@@ -90,7 +85,7 @@ export default function TarjetaEstadistica({
                     {valor}
                 </div>
                 {subtitulo && (
-                    <div className={`text-xs font-semibold mt-1 line-clamp-2 ${destacada ? 'text-white/85' : 'text-muted'}`}>
+                    <div className={`text-xs font-semibold mt-1 line-clamp-2 ${destacada ? 'text-white' : 'text-muted'}`}>
                         {subtitulo}
                     </div>
                 )}

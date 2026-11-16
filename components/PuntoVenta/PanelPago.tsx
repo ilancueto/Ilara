@@ -108,13 +108,13 @@ export default function PanelPago({
                             <p className="text-sm font-bold text-ink truncate">
                                 {clienta.first_name} {clienta.last_name === '.' ? '' : clienta.last_name}
                             </p>
-                            <p className="text-[11px] text-gray-500 truncate">
+                            <p className="text-[11px] text-muted truncate">
                                 {[clienta.phone, clienta.email].filter(Boolean).join(' · ') || 'Sin teléfono'}
                             </p>
                         </div>
                         <button
                             type="button"
-                            className="text-[11px] font-bold text-pink-600 shrink-0"
+                            className="text-[11px] font-bold text-accent shrink-0"
                             onClick={() => {
                                 setClienteSeleccionado(null)
                                 setBusquedaClienta('')
@@ -149,7 +149,7 @@ export default function PanelPago({
                                             <span className="block font-bold truncate">
                                                 {c.first_name} {c.last_name === '.' ? '' : c.last_name}
                                             </span>
-                                            {c.phone ? <span className="text-gray-500">{c.phone}</span> : null}
+                                            {c.phone ? <span className="text-muted">{c.phone}</span> : null}
                                         </button>
                                     </li>
                                 ))}
@@ -216,12 +216,12 @@ export default function PanelPago({
                                 {METODOS.map((metodo) => <option key={metodo.id} value={metodo.id}>{metodo.label}</option>)}
                             </select>
                             <input type="number" min={0} value={pago.amount || ''} onChange={(event) => actualizarPago(index, 'amount', event.target.value)} className="h-9 min-w-0 rounded-lg border border-line bg-surface px-2 text-xs font-bold text-right tabular-nums" placeholder="0" />
-                            <button type="button" onClick={() => quitarPago(index)} className="w-7 h-7 grid place-items-center rounded-md text-gray-400 hover:text-red-500" aria-label="Quitar pago"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={() => quitarPago(index)} className="w-7 h-7 grid place-items-center rounded-md text-hint hover:text-danger" aria-label="Quitar pago"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                     ))}
                     <div className="flex items-center justify-between gap-2">
                         <button type="button" onClick={() => setPaymentBreakdown([...(paymentBreakdown || []), { method: 'efectivo', amount: 0 }])} className="inline-flex items-center gap-1 text-[11px] font-bold text-accent"><Plus className="w-3 h-3" /> Agregar pago</button>
-                        <span className={`text-[11px] font-bold whitespace-nowrap ${desgloseValido ? 'text-emerald-600' : 'text-amber-600'}`}>Suma ${sumaDesglose.toLocaleString()}</span>
+                        <span className={`text-[11px] font-bold whitespace-nowrap ${desgloseValido ? 'text-success' : 'text-warning'}`}>Suma ${sumaDesglose.toLocaleString()}</span>
                     </div>
                 </div>
             )}
@@ -243,7 +243,7 @@ export default function PanelPago({
                 }}
                 disabled={disabled || cargando}
                 className={`w-full min-h-10 mt-1.5 px-4 rounded-full border text-sm font-bold disabled:opacity-45 ${cobrarDespues
-                    ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+                    ? 'border-warning-line bg-warning-soft text-warning dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
                     : 'border-pink-100/80 bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                 }`}
             >

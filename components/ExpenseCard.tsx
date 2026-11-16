@@ -72,7 +72,7 @@ export default function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardPr
                         </button>
                         <button
                             onClick={() => onDelete(expense.id)}
-                            className="p-2 text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                            className="p-2 text-hint hover:text-danger hover:bg-danger-soft rounded-lg transition-colors"
                             title="Eliminar"
                         >
                             <Trash2 size={16} />

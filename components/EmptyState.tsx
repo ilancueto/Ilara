@@ -26,11 +26,11 @@ export default function EmptyState({
                 <IconComponent className="w-10 h-10 text-pink-400" strokeWidth={1.5} />
             </div>
 
-            <h3 className="text-xl font-bold text-gray-800 mb-3 tracking-tight">
+            <h3 className="text-xl font-bold text-ink mb-3 tracking-tight">
                 {title}
             </h3>
 
-            <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-xs mx-auto">
+            <p className="text-muted text-sm leading-relaxed mb-6 max-w-xs mx-auto">
                 {description}
             </p>
 
@@ -45,7 +45,7 @@ export default function EmptyState({
             )}
 
             <div className="mt-8 pt-6 border-t border-pink-100">
-                <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                <p className="text-xs text-hint uppercase tracking-wider font-semibold">
                     Próximamente
                 </p>
             </div>

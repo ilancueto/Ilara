@@ -10,7 +10,7 @@ import { useDialogA11y } from '@/hooks/useDialogA11y'
 import type { Cliente, ItemVenta, Venta } from '@/lib/supabase'
 
 const CustomerCrmPanel = dynamic(() => import('@/components/CustomerCrmPanel'), {
-    loading: () => <p className="text-sm text-gray-500 py-6">Cargando CRM...</p>,
+    loading: () => <p className="text-sm text-muted py-6">Cargando CRM...</p>,
 })
 
 export type ClienteStats = {
@@ -94,9 +94,9 @@ export default function ModalPerfilCliente({
                                         <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Compras</p>
                                         <p className="text-xl font-bold text-ink tabular-nums">{stats.totalVentas}</p>
                                     </div>
-                                    <div className="p-5 rounded-xl bg-emerald-50/60 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 text-center">
+                                    <div className="p-5 rounded-xl bg-success-soft border border-success-line text-center">
                                         <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Total gastado</p>
-                                        <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">${stats.totalGastado.toLocaleString()}</p>
+                                        <p className="text-xl font-bold text-success tabular-nums">${stats.totalGastado.toLocaleString()}</p>
                                     </div>
                                     <div className="p-5 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-line text-center">
                                         <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Última compra</p>
@@ -128,7 +128,7 @@ export default function ModalPerfilCliente({
                                                     <span className="text-sm text-muted">{format(new Date(v.sale_date || v.created_at), "d MMM yyyy, HH:mm", { locale: es })}</span>
                                                     <span className="flex items-center gap-2">
                                                         <span className="font-bold text-ink tabular-nums">${v.total.toLocaleString()}</span>
-                                                        {expandida ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                                        {expandida ? <ChevronUp className="w-4 h-4 text-hint" /> : <ChevronDown className="w-4 h-4 text-hint" />}
                                                     </span>
                                                 </button>
                                                 {expandida && (

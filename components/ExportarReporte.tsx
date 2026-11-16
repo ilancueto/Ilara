@@ -92,13 +92,13 @@ export default function ExportarReporte({ mostrar, cerrar }: Props) {
 
             <PastelCard className="w-full max-w-md !p-0 z-50 shadow-2xl animate-fade-in-scale" noHover>
                 <div className="bg-white px-8 py-5 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <FileSpreadsheet className="w-5 h-5 text-emerald-500" />
+                    <h3 className="text-xl font-bold text-ink flex items-center gap-2">
+                        <FileSpreadsheet className="w-5 h-5 text-success" />
                         Exportar Reporte
                     </h3>
                     <button
                         onClick={cerrar}
-                        className="w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors"
+                        className="w-8 h-8 rounded-full bg-gray-50 text-hint hover:text-muted hover:bg-gray-100 flex items-center justify-center transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -106,7 +106,7 @@ export default function ExportarReporte({ mostrar, cerrar }: Props) {
 
                 <div className="p-8 space-y-5">
                     <div>
-                        <label className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2 block">Fecha Inicio</label>
+                        <label className="text-xs text-hint uppercase tracking-wider font-bold mb-2 block">Fecha Inicio</label>
                         <input
                             type="date"
                             className="form-input w-full"
@@ -116,7 +116,7 @@ export default function ExportarReporte({ mostrar, cerrar }: Props) {
                     </div>
 
                     <div>
-                        <label className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2 block">Fecha Fin</label>
+                        <label className="text-xs text-hint uppercase tracking-wider font-bold mb-2 block">Fecha Fin</label>
                         <input
                             type="date"
                             className="form-input w-full"
@@ -128,7 +128,7 @@ export default function ExportarReporte({ mostrar, cerrar }: Props) {
                     <div className="pt-4 flex gap-3">
                         <button
                             onClick={cerrar}
-                            className="btn-ghost flex-1 justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 border-0"
+                            className="btn-ghost flex-1 justify-center bg-gray-50 text-muted hover:bg-gray-100 border-0"
                         >
                             Cancelar
                         </button>

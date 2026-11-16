@@ -3,7 +3,7 @@
 import { Eye, EyeOff } from 'lucide-react'
 import { CATALOG_BADGE_OPTIONS, type CatalogBadgeKey, etiquetaBadgeCatalogo } from '@/lib/catalogBadges'
 import { BulkActionDialog, BulkSelectList } from '@/components/ui/BulkActionDialog'
-import type { Producto } from '@/lib/supabase'
+import type { Categoria, Producto } from '@/lib/supabase'
 
 type BaseProps = {
     open: boolean
@@ -52,7 +52,7 @@ export function ModalEliminarProductos({
                             type="button"
                             onClick={() => onConfirm()}
                             disabled={loading || seleccionados.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800 disabled:opacity-50"
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-danger-soft text-danger hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 border border-danger-line disabled:opacity-50"
                             data-testid="bulk-delete-productos-confirm"
                         >
                             {loading
@@ -231,6 +231,86 @@ export function ModalVisibilidadProductos({
                         id: producto.id,
                         label: producto.name,
                         meta: producto.visible_in_catalog === false ? 'Oculto' : 'Visible',
+                        selected: seleccionados.has(producto.id),
+                        onToggle: () => onToggle(producto.id),
+                    }))}
+                />
+            </BulkActionDialog>
+    )
+}
+
+/** Cambia la categoría de varios productos a la vez (ordenar el catálogo sin editar uno por uno). */
+export function ModalCategoriaProductos({
+    open, onClose, loading, error, productos, seleccionados, onToggleAll, onToggle, onConfirm, categorias, categoriaId, onCategoriaChange,
+}: BaseProps & {
+    onConfirm: () => void
+    categorias: Categoria[]
+    categoriaId: string
+    onCategoriaChange: (id: string) => void
+}) {
+    const cerrar = crearCerrar(loading, onClose)
+    const destino = categorias.find((c) => String(c.id) === categoriaId)?.name ?? 'Sin categoría'
+    return (
+            <BulkActionDialog
+                open={open}
+                onClose={cerrar}
+                title="Categoría en lote"
+                description={`Elegí la categoría y los productos (${seleccionados.size} seleccionado(s)). Tip: filtrá por "Otros" para ordenar los que quedaron sin clasificar.`}
+                loading={loading}
+                error={error}
+                testId="bulk-categoria-productos"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={cerrar}
+                            disabled={loading}
+                            className="btn-ghost flex-1 sm:flex-none px-4 py-3"
+                            data-testid="bulk-categoria-productos-cancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onConfirm()}
+                            disabled={loading || seleccionados.size === 0}
+                            className="btn-primary flex-1 sm:flex-none px-4 py-3 text-sm disabled:opacity-50"
+                            data-testid="bulk-categoria-productos-confirm"
+                        >
+                            {loading ? 'Guardando…' : `Mover ${seleccionados.size} a ${destino}`}
+                        </button>
+                    </>
+                }
+            >
+                <div className="mb-4">
+                    <label htmlFor="bulk-categoria-select" className="block text-xs font-semibold text-muted mb-1.5">
+                        Categoría de destino
+                    </label>
+                    <select
+                        id="bulk-categoria-select"
+                        value={categoriaId}
+                        onChange={(e) => onCategoriaChange(e.target.value)}
+                        disabled={loading}
+                        className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm font-medium text-ink"
+                        data-dialog-initial-focus
+                    >
+                        <option value="">Sin categoría</option>
+                        {categorias.map((categoria) => (
+                            <option key={categoria.id} value={String(categoria.id)}>
+                                {categoria.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <BulkSelectList
+                    testId="bulk-categoria-productos-list"
+                    allSelected={productos.length > 0 && seleccionados.size === productos.length}
+                    onToggleAll={onToggleAll}
+                    emptyMessage="No hay productos con los filtros actuales."
+                    items={productos.map((producto) => ({
+                        id: producto.id,
+                        label: producto.name,
+                        meta: producto.categories?.name ?? 'Sin categoría',
                         selected: seleccionados.has(producto.id),
                         onToggle: () => onToggle(producto.id),
                     }))}

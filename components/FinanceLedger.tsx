@@ -157,13 +157,13 @@ export default function FinanceLedger() {
     <div className="space-y-8" data-testid="finance-ledger">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          ['Por cobrar', summary?.receivable_open ?? 0, 'text-amber-600'],
-          ['Por pagar', summary?.payable_open ?? 0, 'text-rose-600'],
-          ['Entradas del período', summary?.period_inflow ?? 0, 'text-emerald-600'],
-          ['Flujo neto', net, net >= 0 ? 'text-blue-600' : 'text-rose-600'],
+          ['Por cobrar', summary?.receivable_open ?? 0, 'text-warning'],
+          ['Por pagar', summary?.payable_open ?? 0, 'text-danger'],
+          ['Entradas del período', summary?.period_inflow ?? 0, 'text-success'],
+          ['Flujo neto', net, net >= 0 ? 'text-blue-600' : 'text-danger'],
         ].map(([label, value, tone]) => (
           <PastelCard key={String(label)} className="p-5" noHover>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">{label}</p>
             <p className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{money(Number(value))}</p>
           </PastelCard>
         ))}
@@ -176,51 +176,51 @@ export default function FinanceLedger() {
             <h2 className="text-xl font-bold text-ink mt-1">Entradas y salidas por medio</h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            <label className="text-xs font-semibold text-gray-500">Desde
+            <label className="text-xs font-semibold text-muted">Desde
               <input aria-label="Conciliación desde" type="date" value={period.from} onChange={(e) => setPeriod((old) => ({ ...old, from: e.target.value }))} className="form-input block mt-1 rounded-lg" />
             </label>
-            <label className="text-xs font-semibold text-gray-500">Hasta
+            <label className="text-xs font-semibold text-muted">Hasta
               <input aria-label="Conciliación hasta" type="date" value={period.to} onChange={(e) => setPeriod((old) => ({ ...old, to: e.target.value }))} className="form-input block mt-1 rounded-lg" />
             </label>
           </div>
         </div>
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-line"><th className="py-3">Medio</th><th>Entradas</th><th>Salidas</th><th>Neto</th></tr></thead>
+            <thead><tr className="text-left text-xs uppercase tracking-wider text-hint border-b border-line"><th className="py-3">Medio</th><th>Entradas</th><th>Salidas</th><th>Neto</th></tr></thead>
             <tbody>
               {(snapshot?.reconciliation ?? []).map((line) => (
                 <tr key={line.payment_method} className="border-b border-line last:border-0">
                   <td className="py-3 font-semibold">{PAYMENT_METHOD_LABELS[line.payment_method]}</td>
-                  <td className="text-emerald-600 font-bold">{money(line.inflow)}</td>
-                  <td className="text-rose-600 font-bold">{money(line.outflow)}</td>
+                  <td className="text-success font-bold">{money(line.inflow)}</td>
+                  <td className="text-danger font-bold">{money(line.outflow)}</td>
                   <td className="font-black">{money(line.net)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {snapshot?.reconciliation.length === 0 && <p className="py-8 text-center text-sm text-gray-500">Sin movimientos de caja en el período.</p>}
+          {snapshot?.reconciliation.length === 0 && <p className="py-8 text-center text-sm text-muted">Sin movimientos de caja en el período.</p>}
         </div>
       </PastelCard>
 
       {catalog && (
         <PastelCard className="p-5 sm:p-6" noHover data-testid="catalog-payment-slice">
-          <p className="text-xs font-bold text-pink-600 uppercase tracking-wider">Resumen combinado</p>
+          <p className="text-xs font-bold text-accent uppercase tracking-wider">Resumen combinado</p>
           <h2 className="text-xl font-bold text-ink mt-1">Mostrador, pedidos y total</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Los cobros online no se cargan como otro ingreso ni se mezclan con la caja del local.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
             <div className="rounded-xl border border-gray-100 px-3 py-3 dark:border-gray-800">
-              <p className="text-[10px] uppercase text-gray-400 font-bold">Mostrador</p>
+              <p className="text-[10px] uppercase text-hint font-bold">Mostrador</p>
               <p className="font-black mt-1">{money(catalog.pos.net)}</p>
             </div>
             <div className="rounded-xl border border-gray-100 px-3 py-3 dark:border-gray-800">
-              <p className="text-[10px] uppercase text-gray-400 font-bold">Pedidos</p>
+              <p className="text-[10px] uppercase text-hint font-bold">Pedidos</p>
               <p className="font-black mt-1">{money(catalog.catalog.net)}</p>
             </div>
             <div className="rounded-xl border border-pink-100 px-3 py-3 dark:border-pink-900">
-              <p className="text-[10px] uppercase text-gray-400 font-bold">Neto combinado</p>
-              <p className="font-black mt-1 text-pink-700">{money(catalog.combined.net)}</p>
+              <p className="text-[10px] uppercase text-hint font-bold">Neto combinado</p>
+              <p className="font-black mt-1 text-primary-ink">{money(catalog.combined.net)}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 text-sm">
@@ -230,8 +230,8 @@ export default function FinanceLedger() {
             <div>Reembolsos: <strong>{money(catalog.margin.refunds)}</strong></div>
           </div>
           <div className="flex flex-wrap gap-2 mt-4">
-            <a href={panelHref({ tab: 'orders' })} className="text-xs font-bold text-pink-600">Ver pedidos</a>
-            <a href={panelHref({ tab: 'margin_reports', channel: 'combined' })} className="text-xs font-bold text-pink-600">Ver margen</a>
+            <a href={panelHref({ tab: 'orders' })} className="text-xs font-bold text-accent">Ver pedidos</a>
+            <a href={panelHref({ tab: 'margin_reports', channel: 'combined' })} className="text-xs font-bold text-accent">Ver margen</a>
           </div>
           {catalog.methods.length > 0 && (
             <ul className="mt-4 text-sm space-y-1">
@@ -247,7 +247,7 @@ export default function FinanceLedger() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setKind('receivable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'receivable' ? 'bg-amber-500 text-white' : 'bg-surface border border-line'}`}><ArrowDownLeft className="inline w-4 h-4 mr-1" /> Cuentas por cobrar</button>
+          <button type="button" onClick={() => setKind('receivable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'receivable' ? 'bg-warning-soft text-warning' : 'bg-surface border border-line'}`}><ArrowDownLeft className="inline w-4 h-4 mr-1" /> Cuentas por cobrar</button>
           <button type="button" onClick={() => setKind('payable')} className={`px-4 py-2 rounded-xl font-bold text-sm ${kind === 'payable' ? 'bg-rose-500 text-white' : 'bg-surface border border-line'}`}><ArrowUpRight className="inline w-4 h-4 mr-1" /> Cuentas por pagar</button>
           <label className="inline-flex items-center gap-2 px-3 text-sm font-semibold text-muted"><input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} /> Sólo pendientes</label>
         </div>
@@ -262,19 +262,19 @@ export default function FinanceLedger() {
             <PastelCard key={account.id} className="p-5 sm:p-6" noHover>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{account.sale_id ? `Venta #${account.sale_id}` : account.counterparty}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-hint">{account.sale_id ? `Venta #${account.sale_id}` : account.counterparty}</p>
                   <h3 className="font-bold text-ink mt-1 truncate">{account.description}</h3>
-                  {account.due_date && <p className="text-xs text-gray-500 mt-2"><CalendarDays className="inline w-3.5 h-3.5 mr-1" /> Vence {new Date(`${account.due_date}T12:00:00`).toLocaleDateString('es-AR')}</p>}
+                  {account.due_date && <p className="text-xs text-muted mt-2"><CalendarDays className="inline w-3.5 h-3.5 mr-1" /> Vence {new Date(`${account.due_date}T12:00:00`).toLocaleDateString('es-AR')}</p>}
                 </div>
-                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${account.status === 'settled' ? 'bg-emerald-100 text-emerald-700' : account.status === 'partial' ? 'bg-blue-100 text-blue-700' : account.status === 'cancelled' ? 'bg-gray-200 text-gray-600' : 'bg-amber-100 text-amber-700'}`}>{account.status === 'settled' ? 'Saldada' : account.status === 'partial' ? 'Parcial' : account.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}</span>
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${account.status === 'settled' ? 'bg-emerald-100 text-success' : account.status === 'partial' ? 'bg-blue-100 text-blue-700' : account.status === 'cancelled' ? 'bg-gray-200 text-muted' : 'bg-amber-100 text-warning'}`}>{account.status === 'settled' ? 'Saldada' : account.status === 'partial' ? 'Parcial' : account.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}</span>
               </div>
               <div className="grid grid-cols-3 gap-3 mt-5 py-4 border-y border-line">
-                <div><p className="text-[10px] uppercase text-gray-400 font-bold">Total</p><p className="font-bold mt-1">{money(account.net_amount)}</p></div>
-                <div><p className="text-[10px] uppercase text-gray-400 font-bold">Registrado</p><p className="font-bold mt-1 text-emerald-600">{money(account.paid_amount)}</p></div>
-                <div><p className="text-[10px] uppercase text-gray-400 font-bold">Saldo</p><p className="font-black mt-1 text-amber-600">{money(account.balance)}</p></div>
+                <div><p className="text-[10px] uppercase text-hint font-bold">Total</p><p className="font-bold mt-1">{money(account.net_amount)}</p></div>
+                <div><p className="text-[10px] uppercase text-hint font-bold">Registrado</p><p className="font-bold mt-1 text-success">{money(account.paid_amount)}</p></div>
+                <div><p className="text-[10px] uppercase text-hint font-bold">Saldo</p><p className="font-black mt-1 text-warning">{money(account.balance)}</p></div>
               </div>
-              {account.movements.length > 0 && <div className="mt-4 space-y-2">{account.movements.slice(0, 3).map((movement) => <div key={movement.id} className="flex justify-between text-xs text-gray-500"><span>{new Date(movement.occurred_at).toLocaleDateString('es-AR')} · {PAYMENT_METHOD_LABELS[movement.payment_method]}</span><strong>{money(movement.amount)}</strong></div>)}</div>}
-              {account.balance > 0 && account.status !== 'cancelled' && <div className="flex flex-wrap justify-end gap-2 mt-5"><button type="button" onClick={() => openSettlement(account)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-sm"><CircleDollarSign className="w-4 h-4" /> {account.kind === 'receivable' ? 'Registrar cobro' : 'Registrar pago'}</button>{account.kind === 'payable' && account.paid_amount === 0 && <button type="button" onClick={() => void handleCancel(account)} className="px-3 py-2 rounded-xl text-sm font-bold text-rose-600 border border-rose-200">Cancelar</button>}</div>}
+              {account.movements.length > 0 && <div className="mt-4 space-y-2">{account.movements.slice(0, 3).map((movement) => <div key={movement.id} className="flex justify-between text-xs text-muted"><span>{new Date(movement.occurred_at).toLocaleDateString('es-AR')} · {PAYMENT_METHOD_LABELS[movement.payment_method]}</span><strong>{money(movement.amount)}</strong></div>)}</div>}
+              {account.balance > 0 && account.status !== 'cancelled' && <div className="flex flex-wrap justify-end gap-2 mt-5"><button type="button" onClick={() => openSettlement(account)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-sm"><CircleDollarSign className="w-4 h-4" /> {account.kind === 'receivable' ? 'Registrar cobro' : 'Registrar pago'}</button>{account.kind === 'payable' && account.paid_amount === 0 && <button type="button" onClick={() => void handleCancel(account)} className="px-3 py-2 rounded-xl text-sm font-bold text-danger border border-danger-line">Cancelar</button>}</div>}
             </PastelCard>
           ))}
         </div>
@@ -284,7 +284,7 @@ export default function FinanceLedger() {
         <PastelCard className="w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8" noHover>
           <div className="flex justify-between gap-4"><div><p className="text-xs uppercase tracking-wider font-bold text-indigo-500">Stage 6.6</p><h3 className="text-xl font-black mt-1">{settling ? (settling.kind === 'receivable' ? 'Registrar cobro' : 'Registrar pago') : 'Nueva cuenta por pagar'}</h3></div><button type="button" aria-label="Cerrar" onClick={() => { setPayableOpen(false); setSettling(null) }}><X /></button></div>
           {settling ? <form onSubmit={submitSettlement} className="mt-6 space-y-4">
-            <p className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-sm">Saldo disponible: <strong>{money(settling.balance)}</strong></p>
+            <p className="p-3 rounded-xl bg-warning-soft text-sm">Saldo disponible: <strong>{money(settling.balance)}</strong></p>
             <label className="block text-sm font-semibold">Monto<input type="number" min="0.01" max={settling.balance} step="0.01" required value={settlement.amount || ''} onChange={(e) => setSettlement((old) => ({ ...old, amount: Number(e.target.value) }))} className="form-input w-full mt-1 rounded-xl" /></label>
             <label className="block text-sm font-semibold">Medio<select value={settlement.paymentMethod} onChange={(e) => setSettlement((old) => ({ ...old, paymentMethod: e.target.value as PaymentMethod }))} className="form-input w-full mt-1 rounded-xl">{METHODS.map((method) => <option key={method} value={method}>{PAYMENT_METHOD_LABELS[method]}</option>)}</select></label>
             <label className="block text-sm font-semibold">Fecha y hora<input type="datetime-local" required value={settlement.occurredAt} onChange={(e) => setSettlement((old) => ({ ...old, occurredAt: e.target.value }))} className="form-input w-full mt-1 rounded-xl" /></label>

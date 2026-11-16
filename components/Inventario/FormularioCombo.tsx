@@ -177,23 +177,23 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-bold text-ink mb-2">
                                         <Tag className="w-4 h-4 text-accent" />
-                                        Nombre del combo <span className="text-pink-500">*</span>
+                                        Nombre del combo <span className="text-accent">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                                         className={`w-full px-4 py-3 rounded-xl border-2 bg-surface placeholder-gray-400 dark:placeholder-gray-500 outline-none text-base text-ink ${
-                                            errores.name ? 'border-red-300 dark:border-red-700' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
+                                            errores.name ? 'border-danger-line' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
                                         }`}
                                         placeholder="Ej: Kit Verano"
                                     />
-                                    {errores.name && <p className="text-red-500 dark:text-red-400 text-sm font-medium mt-1.5">{errores.name}</p>}
+                                    {errores.name && <p className="text-danger text-sm font-medium mt-1.5">{errores.name}</p>}
                                 </div>
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-bold text-ink mb-2">
                                         <DollarSign className="w-4 h-4 text-accent" />
-                                        Precio de venta <span className="text-pink-500">*</span>
+                                        Precio de venta <span className="text-accent">*</span>
                                     </label>
                                     <input
                                         type="number"
@@ -202,11 +202,11 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                         value={formData.sale_price}
                                         onChange={e => setFormData(p => ({ ...p, sale_price: e.target.value }))}
                                         className={`w-full h-11 px-4 py-2.5 rounded-xl border-2 bg-surface placeholder-gray-400 dark:placeholder-gray-500 outline-none text-base text-ink ${
-                                            errores.sale_price ? 'border-red-300 dark:border-red-700' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
+                                            errores.sale_price ? 'border-danger-line' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
                                         }`}
                                         placeholder="0"
                                     />
-                                    {errores.sale_price && <p className="text-red-500 dark:text-red-400 text-sm font-medium mt-1.5">{errores.sale_price}</p>}
+                                    {errores.sale_price && <p className="text-danger text-sm font-medium mt-1.5">{errores.sale_price}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-ink mb-2">Descripción</label>
@@ -226,7 +226,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                     type="checkbox"
                                     checked={formData.is_active}
                                     onChange={e => setFormData(p => ({ ...p, is_active: e.target.checked }))}
-                                    className="w-4 h-4 rounded border-2 border-pink-300 text-pink-500"
+                                    className="w-4 h-4 rounded border-2 border-pink-300 text-accent"
                                 />
                                 <span className="text-sm font-medium text-ink">Activo (visible en catálogo)</span>
                             </label>
@@ -235,8 +235,8 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                             <div className="flex flex-col gap-3">
                                 <div className="flex items-center justify-between gap-3">
                                     <label className="flex items-center gap-2 text-sm font-bold text-ink">
-                                        <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                                        Productos del combo <span className="text-pink-500">*</span>
+                                        <Sparkles className="w-4 h-4 text-warning" />
+                                        Productos del combo <span className="text-accent">*</span>
                                     </label>
                                     <button
                                         type="button"
@@ -246,7 +246,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                         <Plus className="w-4 h-4" /> Agregar
                                     </button>
                                 </div>
-                                {errores.items && <p className="text-red-500 dark:text-red-400 text-sm font-medium">{errores.items}</p>}
+                                {errores.items && <p className="text-danger text-sm font-medium">{errores.items}</p>}
 
                                 {items.length === 0 ? (
                                     <button
@@ -303,7 +303,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                                         <button
                                                             type="button"
                                                             onClick={() => quitarItem(idx)}
-                                                            className="p-2 rounded-lg text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                                            className="p-2 rounded-lg text-hint hover:text-danger hover:bg-danger-soft transition-colors"
                                                             aria-label="Quitar"
                                                         >
                                                             <Trash2 className="w-4 h-4" />

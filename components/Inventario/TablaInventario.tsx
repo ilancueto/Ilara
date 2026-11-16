@@ -94,7 +94,7 @@ export default function TablaInventario({ productos, loading, onEdit, onView, on
                                             Crítico
                                         </span>
                                     ) : estadoStock === 'bajo' ? (
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-amber-400 text-white text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-warning-soft text-warning text-[10px] font-bold uppercase tracking-wider">
                                             Bajo
                                         </span>
                                     ) : (

@@ -166,7 +166,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                         <span className="text-xs text-muted flex items-center gap-2 shrink-0">
                                             <Award className="w-3.5 h-3.5 text-hint" /> Margen
                                         </span>
-                                        <span className={`font-medium text-xs tabular-nums ${margen != null && margen > 30 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                        <span className={`font-medium text-xs tabular-nums ${margen != null && margen > 30 ? 'text-success' : 'text-warning'}`}>
                                             {margen != null ? `${margen}%` : '—'}
                                         </span>
                                     </div>
@@ -181,7 +181,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                             {producto.visible_in_catalog !== false ? <Eye className="w-3.5 h-3.5 text-hint" /> : <EyeOff className="w-3.5 h-3.5 text-hint" />}
                                             Visible en catálogo
                                         </span>
-                                        <span className={`font-medium text-xs ${producto.visible_in_catalog !== false ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                        <span className={`font-medium text-xs ${producto.visible_in_catalog !== false ? 'text-success' : 'text-warning'}`}>
                                             {producto.visible_in_catalog !== false ? 'Sí' : 'No'}
                                         </span>
                                     </div>
@@ -259,9 +259,9 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                                     className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-line text-sm"
                                                 >
                                                     <div className="flex items-center gap-3 min-w-0">
-                                                        {m.type === 'sale' && <TrendingDown className="w-4 h-4 text-rose-500 dark:text-rose-400 flex-shrink-0" />}
-                                                        {m.type === 'purchase' && <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />}
-                                                        {m.type === 'adjustment' && <Minus className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0" />}
+                                                        {m.type === 'sale' && <TrendingDown className="w-4 h-4 text-danger flex-shrink-0" />}
+                                                        {m.type === 'purchase' && <TrendingUp className="w-4 h-4 text-success flex-shrink-0" />}
+                                                        {m.type === 'adjustment' && <Minus className="w-4 h-4 text-warning flex-shrink-0" />}
                                                         <div className="min-w-0">
                                                             <span className="font-medium text-ink">{label}</span>
                                                             {refText && <span className="text-hint text-xs ml-1">{refText}</span>}
@@ -270,7 +270,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <span className={`font-bold tabular-nums flex-shrink-0 ${esSalida ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                                    <span className={`font-bold tabular-nums flex-shrink-0 ${esSalida ? 'text-danger' : 'text-success'}`}>
                                                         {esSalida ? '' : '+'}{m.quantity} u.
                                                     </span>
                                                 </li>

@@ -132,14 +132,14 @@ export default function ReportesMargen() {
 
       {loading && !report && (
         <div className="min-h-56 grid place-items-center rounded-card border border-line bg-surface">
-          <RefreshCw className="w-6 h-6 text-pink-500 animate-spin" aria-label="Cargando reporte" />
+          <RefreshCw className="w-6 h-6 text-accent animate-spin" aria-label="Cargando reporte" />
         </div>
       )}
 
       {error && !loading && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3" role="alert">
-          <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
-          <button type="button" onClick={() => setReloadTick((tick) => tick + 1)} className="text-sm font-extrabold text-red-700 dark:text-red-300">
+        <div className="rounded-2xl border border-danger-line bg-danger-soft dark:border-red-900/60 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3" role="alert">
+          <p className="text-sm font-semibold text-danger">{error}</p>
+          <button type="button" onClick={() => setReloadTick((tick) => tick + 1)} className="text-sm font-extrabold text-danger">
             Reintentar
           </button>
         </div>
@@ -150,27 +150,27 @@ export default function ReportesMargen() {
           {report.pos && report.catalog && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <article className="rounded-card bg-tint-0 p-4 sm:p-5">
-                <p className="text-xs font-bold uppercase text-gray-500">Margen mostrador</p>
+                <p className="text-xs font-bold uppercase text-muted">Margen mostrador</p>
                 <p className="mt-1 text-xl font-black">{formatMarginMoney(report.pos.gross_margin)}</p>
               </article>
               <article className="rounded-card bg-tint-3 p-4 sm:p-5">
-                <p className="text-xs font-bold uppercase text-gray-500">Margen catálogo</p>
+                <p className="text-xs font-bold uppercase text-muted">Margen catálogo</p>
                 <p className="mt-1 text-xl font-black">{formatMarginMoney(report.catalog.gross_margin)}</p>
               </article>
               <article className="rounded-card bg-primary-soft p-4 sm:p-5">
-                <p className="text-xs font-bold uppercase text-gray-500">Margen total</p>
+                <p className="text-xs font-bold uppercase text-muted">Margen total</p>
                 <p className="mt-1 text-xl font-black">{formatMarginMoney(report.combined?.gross_margin ?? report.summary.gross_margin)}</p>
               </article>
             </div>
           )}
 
           {!!report.pending_cost_orders?.length && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30 p-4" data-testid="margin-pending-cost">
+            <div className="rounded-2xl border border-warning-line bg-warning-soft dark:border-amber-900/60 dark:bg-amber-950/30 p-4" data-testid="margin-pending-cost">
               <p className="text-sm font-extrabold">Pedidos con costo pendiente de revisar</p>
               <ul className="mt-2 space-y-1 text-sm">
                 {report.pending_cost_orders.map((order) => (
                   <li key={order.id}>
-                    <a href={panelHref({ tab: 'orders', orderId: order.id })} className="font-bold text-amber-800 dark:text-amber-200 underline-offset-2 hover:underline">
+                    <a href={panelHref({ tab: 'orders', orderId: order.id })} className="font-bold text-warning underline-offset-2 hover:underline">
                       {order.order_number}
                     </a>
                   </li>
@@ -193,10 +193,10 @@ export default function ReportesMargen() {
             ))}
           </div>
 
-          <div className={`rounded-2xl border p-4 flex gap-3 ${report.summary.margin_complete ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/30' : 'border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30'}`}>
+          <div className={`rounded-2xl border p-4 flex gap-3 ${report.summary.margin_complete ? 'border-success-line bg-success-soft dark:border-emerald-900/60 dark:bg-emerald-950/30' : 'border-warning-line bg-warning-soft dark:border-amber-900/60 dark:bg-amber-950/30'}`}>
             {report.summary.margin_complete
-              ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
-              : <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />}
+              ? <CheckCircle2 className="w-5 h-5 shrink-0 text-success" aria-hidden />
+              : <AlertTriangle className="w-5 h-5 shrink-0 text-warning" aria-hidden />}
             <div className="min-w-0">
               <p className="text-sm font-extrabold text-ink">
                 Cobertura de costos: {report.summary.cost_coverage_percent.toLocaleString('es-AR')}%
@@ -209,23 +209,23 @@ export default function ReportesMargen() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-gray-500">Ventas</p><p className="font-black">{number.format(report.summary.sale_count)}</p></div>
-            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-gray-500">Unidades netas</p><p className="font-black">{number.format(report.summary.units_sold - report.summary.units_returned)}</p></div>
-            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-gray-500">Descuentos</p><p className="font-black">{formatMarginMoney(report.summary.discount_total)}</p></div>
-            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-gray-500">Reintegros</p><p className="font-black">{formatMarginMoney(report.summary.refund_total)}</p></div>
+            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-muted">Ventas</p><p className="font-black">{number.format(report.summary.sale_count)}</p></div>
+            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-muted">Unidades netas</p><p className="font-black">{number.format(report.summary.units_sold - report.summary.units_returned)}</p></div>
+            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-muted">Descuentos</p><p className="font-black">{formatMarginMoney(report.summary.discount_total)}</p></div>
+            <div className="rounded-xl bg-canvas p-3"><p className="text-xs text-muted">Reintegros</p><p className="font-black">{formatMarginMoney(report.summary.refund_total)}</p></div>
           </div>
 
           <article className="rounded-card border border-line bg-surface p-4 sm:p-5">
-            <div className="flex items-center gap-2 mb-4"><BarChart3 className="w-5 h-5 text-pink-600" aria-hidden /><h3 className="font-extrabold">Ventas netas por día</h3></div>
+            <div className="flex items-center gap-2 mb-4"><BarChart3 className="w-5 h-5 text-accent" aria-hidden /><h3 className="font-extrabold">Ventas netas por día</h3></div>
             {report.daily.length === 0 ? (
-              <p className="text-sm text-gray-500 py-8 text-center">No hay ventas en este período.</p>
+              <p className="text-sm text-muted py-8 text-center">No hay ventas en este período.</p>
             ) : (
               <div className="flex items-end gap-1.5 h-40 overflow-x-auto" aria-label="Gráfico de ventas netas por día">
                 {report.daily.map((row) => (
                   <div key={row.date} className="group flex flex-col items-center justify-end gap-1 min-w-7 h-full" title={`${row.date}: ${formatMarginMoney(row.net_revenue)}`}>
                     <span className="sr-only">{row.date}: {formatMarginMoney(row.net_revenue)}</span>
                     <div className="w-full rounded-t-md bg-primary min-h-1" style={{ height: `${Math.max(3, row.net_revenue / maxDaily * 100)}%` }} />
-                    <span className="text-[9px] text-gray-400 whitespace-nowrap">{date.format(parseLocalDate(row.date))}</span>
+                    <span className="text-[9px] text-hint whitespace-nowrap">{date.format(parseLocalDate(row.date))}</span>
                   </div>
                 ))}
               </div>
@@ -233,20 +233,20 @@ export default function ReportesMargen() {
           </article>
 
           <article className="rounded-card border border-line bg-surface overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-line"><h3 className="font-extrabold">Productos y combos</h3><p className="text-xs text-gray-500 mt-1">Ordenados por venta neta.</p></div>
+            <div className="p-4 sm:p-5 border-b border-line"><h3 className="font-extrabold">Productos y combos</h3><p className="text-xs text-muted mt-1">Ordenados por venta neta.</p></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-wide text-gray-500 bg-gray-50 dark:bg-zinc-950/60"><tr><th className="px-4 py-3">Artículo</th><th className="px-4 py-3 text-right">Unidades</th><th className="px-4 py-3 text-right">Venta neta</th><th className="px-4 py-3 text-right">Margen</th></tr></thead>
+                <thead className="text-left text-xs uppercase tracking-wide text-muted bg-gray-50 dark:bg-zinc-950/60"><tr><th className="px-4 py-3">Artículo</th><th className="px-4 py-3 text-right">Unidades</th><th className="px-4 py-3 text-right">Venta neta</th><th className="px-4 py-3 text-right">Margen</th></tr></thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-white/10">
                   {report.items.map((item, index) => (
                     <tr key={`${item.product_id ?? `c${item.combo_id}`}-${index}`} data-testid={`margin-item-${index}`}>
-                      <td className="px-4 py-3"><p className="font-bold text-ink">{item.name}</p><p className={`text-[11px] font-semibold mt-0.5 ${!item.margin_complete ? 'text-amber-600' : item.has_estimated_cost ? 'text-sky-600' : 'text-emerald-600'}`}>{item.channel === 'catalog' ? 'Pedido online · ' : item.channel === 'pos' ? 'Venta en local · ' : ''}{!item.margin_complete ? 'Costo no disponible' : item.has_estimated_cost ? 'Costo estimado' : 'Costo histórico'}</p></td>
+                      <td className="px-4 py-3"><p className="font-bold text-ink">{item.name}</p><p className={`text-[11px] font-semibold mt-0.5 ${!item.margin_complete ? 'text-warning' : item.has_estimated_cost ? 'text-sky-600' : 'text-success'}`}>{item.channel === 'catalog' ? 'Pedido online · ' : item.channel === 'pos' ? 'Venta en local · ' : ''}{!item.margin_complete ? 'Costo no disponible' : item.has_estimated_cost ? 'Costo estimado' : 'Costo histórico'}</p></td>
                       <td className="px-4 py-3 text-right font-semibold">{number.format(item.net_units)}</td>
                       <td className="px-4 py-3 text-right font-semibold">{formatMarginMoney(item.net_revenue)}</td>
-                      <td className="px-4 py-3 text-right"><p className="font-extrabold">{formatMarginMoney(item.gross_margin)}</p><p className="text-xs text-gray-500">{marginLabel(item.margin_percent)}</p></td>
+                      <td className="px-4 py-3 text-right"><p className="font-extrabold">{formatMarginMoney(item.gross_margin)}</p><p className="text-xs text-muted">{marginLabel(item.margin_percent)}</p></td>
                     </tr>
                   ))}
-                  {report.items.length === 0 && <tr><td colSpan={4} className="px-4 py-10 text-center text-gray-500">No hay artículos para mostrar.</td></tr>}
+                  {report.items.length === 0 && <tr><td colSpan={4} className="px-4 py-10 text-center text-muted">No hay artículos para mostrar.</td></tr>}
                 </tbody>
               </table>
             </div>

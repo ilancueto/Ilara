@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
-      <p className="text-sm font-semibold tracking-widest uppercase text-pink-500 mb-2">
+      <p className="text-sm font-semibold tracking-widest uppercase text-accent mb-2">
         Error 404
       </p>
       <h1 className="text-2xl sm:text-3xl font-extrabold text-ink mb-3">
@@ -31,7 +31,7 @@ export default function NotFound() {
         </Link>
         <Link
           href="/login"
-          className="px-6 py-3 rounded-2xl border border-line text-ink font-semibold hover:bg-canvas"
+          className="px-6 py-3 rounded-full border border-line bg-surface text-ink font-bold hover:border-primary"
         >
           Iniciar sesión
         </Link>

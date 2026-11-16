@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CATALOG_VIEW_DEFAULT } from '../domain/catalog/catalogView'
+import { CATALOG_PAGE_SIZE, CATALOG_VIEW_DEFAULT } from '../domain/catalog/catalogView'
 import { deriveCatalogListing } from '../domain/catalog/deriveCatalogListing'
 import type { PublicCatalogProduct } from '../domain/catalog/publicDto'
 
@@ -19,7 +19,7 @@ function product(id: number, name = `Producto ${id}`): PublicCatalogProduct {
 }
 
 describe('listado derivado del catálogo', () => {
-  const productos = Array.from({ length: 20 }, (_, i) => product(20 - i))
+  const productos = Array.from({ length: CATALOG_PAGE_SIZE + 5 }, (_, i) => product(CATALOG_PAGE_SIZE + 5 - i))
 
   it('pagina 1 y 2 entregan ítems distintos', () => {
     const page1 = deriveCatalogListing({
@@ -34,7 +34,7 @@ describe('listado derivado del catálogo', () => {
       ventasPorProducto: new Map(),
       view: { ...CATALOG_VIEW_DEFAULT, page: 2 },
     })
-    expect(page1.itemsPagina).toHaveLength(15)
+    expect(page1.itemsPagina).toHaveLength(CATALOG_PAGE_SIZE)
     expect(page2.itemsPagina.length).toBeGreaterThan(0)
     const ids1 = page1.itemsPagina.map((item) => item.id)
     const ids2 = page2.itemsPagina.map((item) => item.id)

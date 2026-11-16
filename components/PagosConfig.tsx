@@ -177,12 +177,12 @@ export default function PagosConfig() {
       </div>
 
       {error && (
-        <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+        <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
           {error}
         </p>
       )}
 
-      {loading && <p className="text-sm text-gray-500">Cargando configuración…</p>}
+      {loading && <p className="text-sm text-muted">Cargando configuración…</p>}
 
       {preview && (
         <>
@@ -196,7 +196,7 @@ export default function PagosConfig() {
                 inputMode="decimal"
                 aria-describedby="transfer-discount-help"
               />
-              <span id="transfer-discount-help" className="text-xs text-gray-500">
+              <span id="transfer-discount-help" className="text-xs text-muted">
                 El precio de lista es el de Mercado Pago. Este % se descuenta de productos y combos, no del envío.
               </span>
             </label>
@@ -265,7 +265,7 @@ export default function PagosConfig() {
               />
             </label>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted">
             Dejá vacío lo que todavía no tengas. No se guardan datos de ejemplo.
           </p>
 
@@ -275,7 +275,7 @@ export default function PagosConfig() {
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  className="rounded border-gray-300 text-accent focus:ring-pink-500 h-4 w-4"
                   checked={paymentsEnabled}
                   onChange={(e) => {
                     setPaymentsEnabled(e.target.checked)
@@ -291,7 +291,7 @@ export default function PagosConfig() {
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  className="rounded border-gray-300 text-accent focus:ring-pink-500 h-4 w-4"
                   checked={mpEnabled}
                   disabled={!paymentsEnabled}
                   onChange={(e) => setMpEnabled(e.target.checked)}
@@ -302,7 +302,7 @@ export default function PagosConfig() {
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  className="rounded border-gray-300 text-accent focus:ring-pink-500 h-4 w-4"
                   checked={transferEnabled}
                   disabled={!paymentsEnabled}
                   onChange={(e) => setTransferEnabled(e.target.checked)}
@@ -313,14 +313,14 @@ export default function PagosConfig() {
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-pink-600 focus:ring-pink-500 h-4 w-4"
+                  className="rounded border-gray-300 text-accent focus:ring-pink-500 h-4 w-4"
                   checked={dualPriceVisible}
                   onChange={(e) => setDualPriceVisible(e.target.checked)}
                 />
                 <span className="font-semibold">Mostrar doble precio en catálogo</span>
               </label>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted">
               Guardá los cambios para revisarlos. Cuando publiques esta configuración, las clientas verán las opciones elegidas al hacer su pedido.
             </p>
           </div>
@@ -365,7 +365,7 @@ export default function PagosConfig() {
       {board && (
         <div className="rounded-2xl border border-gray-200 p-4 dark:border-zinc-800" data-testid="payments-ops-board">
           <h3 className="text-lg font-bold">Estado operativo</h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Cobros {board.flags.payments_enabled ? 'habilitados' : 'apagados'} ·
             Mercado Pago {board.flags.mercado_pago_enabled ? 'habilitado' : 'apagado'} ·
             Transferencia {board.flags.bank_transfer_enabled ? 'habilitada' : 'apagada'}
@@ -378,14 +378,14 @@ export default function PagosConfig() {
           {board.findings.length > 0 && (
             <ul className="mt-3 space-y-1 text-sm">
               {board.findings.map((finding, index) => (
-                <li key={`${finding.code}-${index}`} className={finding.severity === 'critical' ? 'text-rose-700' : ''}>
+                <li key={`${finding.code}-${index}`} className={finding.severity === 'critical' ? 'text-danger' : ''}>
                   {finding.detail}{finding.order_number ? ` · ${finding.order_number}` : ''}
                 </li>
               ))}
             </ul>
           )}
           {board.findings.length === 0 && (
-            <p className="mt-3 text-sm text-gray-500">No hay alertas de conciliación.</p>
+            <p className="mt-3 text-sm text-muted">No hay alertas de conciliación.</p>
           )}
           {board.recent.length > 0 && (
             <ul className="mt-4 divide-y divide-gray-100 text-sm dark:divide-zinc-800">

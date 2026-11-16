@@ -59,7 +59,7 @@ export function ConfirmDialog({
             className={[
               'flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold transition-colors',
               danger
-                ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50'
+                ? 'bg-danger-soft text-danger hover:bg-danger-soft'
                 : 'bg-pink-500 text-white hover:bg-pink-600',
             ].join(' ')}
             data-testid={`${testId}-confirm`}

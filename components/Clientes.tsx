@@ -383,7 +383,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                     </div>
                 </PastelCard>
                 <PastelCard tone={2} className="p-5 sm:p-6 flex items-center gap-4 cursor-default">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-500 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-success-soft text-success flex items-center justify-center flex-shrink-0">
                         <TrendingUp className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
@@ -415,7 +415,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                             setClientesSeleccionados(new Set())
                             setBulkDeleteError(null)
                         }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shrink-0"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-danger hover:bg-danger-soft transition-colors shrink-0"
                     >
                         <Trash2 className="w-4 h-4" />
                         Eliminar clientes
@@ -439,7 +439,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                                 <button type="button" onClick={() => handleEditar(cliente)} className="p-2 text-hint hover:text-accent hover:bg-primary-soft rounded-lg transition-colors" title="Editar" aria-label="Editar cliente">
                                     <SquarePen size={16} aria-hidden />
                                 </button>
-                                <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
+                                <button type="button" onClick={() => handleEliminar(cliente.id)} className="p-2 text-hint hover:text-danger hover:bg-danger-soft rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar cliente">
                                     <Trash2 size={16} aria-hidden />
                                 </button>
                             </div>
@@ -480,7 +480,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                                 </div>
                                 <div className="text-center min-w-0 border-x border-line px-1">
                                     <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">Total</p>
-                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums text-sm sm:text-base break-all">${stats.totalGastado.toLocaleString()}</p>
+                                    <p className="text-success font-bold tabular-nums text-sm sm:text-base break-all">${stats.totalGastado.toLocaleString()}</p>
                                 </div>
                                 <div className="text-center min-w-0">
                                     <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">Última</p>
@@ -547,7 +547,7 @@ export default function Clientes({ isAdmin = false }: { isAdmin?: boolean }) {
                             type="button"
                             onClick={() => void handleEliminarClientesSeleccionados()}
                             disabled={eliminandoClientes || clientesSeleccionados.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-danger-soft text-danger hover:bg-danger-soft border border-danger-line disabled:opacity-50 disabled:cursor-not-allowed"
                             data-testid="bulk-delete-clientes-confirm"
                         >
                             {eliminandoClientes

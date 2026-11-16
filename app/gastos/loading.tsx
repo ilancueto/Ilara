@@ -6,7 +6,7 @@ export default function GastosLoading() {
           className="w-12 h-12 rounded-full border-4 border-primary-200 border-t-primary-500 animate-spin"
           aria-hidden
         />
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <p className="text-sm text-muted">Cargando...</p>
       </div>
     </div>
   )

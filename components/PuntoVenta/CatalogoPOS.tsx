@@ -59,7 +59,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
     return (
         <div className="min-w-0 flex flex-col gap-3 h-full">
             <div className="relative w-full">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-hint pointer-events-none" />
                 <input
                     type="search"
                     placeholder="Buscar producto, marca o combo…"
@@ -112,7 +112,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                 : 'bg-surface border-line text-muted hover:border-primary'
                         }`}
                     >
-                        {name} <span className="opacity-70">{count}</span>
+                        {name} <span>{count}</span>
                     </button>
                 ))}
             </div>
@@ -144,7 +144,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                         <strong className="text-[13px] font-semibold leading-snug text-ink line-clamp-2">{combo.name}</strong>
                                         <span className="flex items-center justify-between gap-2 mt-1">
                                             <strong className="text-sm font-bold text-primary-ink tabular-nums">${combo.sale_price.toLocaleString()}</strong>
-                                            <small className="text-[11px] text-gray-400">{disponible ? 'Listo' : 'Sin stock'}</small>
+                                            <small className="text-[11px] text-hint">{disponible ? 'Listo' : 'Sin stock'}</small>
                                         </span>
                                     </span>
                                 </button>
@@ -171,7 +171,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                             <span className="absolute inset-0 grid place-items-center text-2xl" aria-hidden>✨</span>
                                         )}
                                         {stockBajo && (
-                                            <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                            <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-bold text-warning">
                                                 <AlertTriangle className="w-3 h-3" /> Bajo
                                             </span>
                                         )}
@@ -188,7 +188,7 @@ export default function CatalogoPOS({ productos, combos = [], onAddToCart, onAdd
                                         ) : null}
                                         <span className="flex items-center justify-between gap-2 mt-1">
                                             <strong className="text-sm font-bold text-primary-ink tabular-nums">${precio.toLocaleString()}</strong>
-                                            <small className={`text-[11px] ${stockBajo ? 'text-amber-600 font-semibold' : 'text-gray-400'}`}>
+                                            <small className={`text-[11px] ${stockBajo ? 'text-warning font-semibold' : 'text-hint'}`}>
                                                 Stock {producto.stock}
                                             </small>
                                         </span>

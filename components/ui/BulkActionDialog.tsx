@@ -50,7 +50,7 @@ export function BulkActionDialog({
       {error ? (
         <p
           role="alert"
-          className="mb-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl px-3 py-2"
+          className="mb-3 text-sm text-danger bg-danger-soft border border-danger-line rounded-xl px-3 py-2"
           data-testid={`${testId}-error`}
         >
           {error}
@@ -89,7 +89,7 @@ const accentSelected = {
 }
 
 const accentCheck = {
-  pink: 'border-pink-300 text-pink-600 focus:ring-pink-500',
+  pink: 'border-pink-300 text-accent focus:ring-pink-500',
   violet: 'border-violet-300 text-violet-600 focus:ring-violet-500',
 }
 

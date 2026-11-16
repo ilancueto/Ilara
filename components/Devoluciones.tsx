@@ -346,13 +346,13 @@ export default function Devoluciones() {
       </div>
 
       {loading ? (
-        <div className="py-20 flex items-center justify-center gap-2 text-pink-500">
+        <div className="py-20 flex items-center justify-center gap-2 text-accent">
           <Loader2 className="animate-spin" /> Cargando…
         </div>
       ) : view === 'history' && channel === 'catalog' ? (
         <div className="rounded-2xl border border-line bg-surface overflow-hidden">
           {orderReturns.length === 0 ? (
-            <div className="py-16 text-center text-gray-500">
+            <div className="py-16 text-center text-muted">
               <History className="mx-auto mb-2 opacity-50" /> Todavía no hay devoluciones de pedidos.
             </div>
           ) : (
@@ -364,24 +364,24 @@ export default function Devoluciones() {
                       <p className="font-extrabold text-ink">
                         {catalogReturnLabel(item.return_number)} · Pedido {item.order_number || ''}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted">
                         {item.customer_name || 'Clienta'} · {dateTime(item.created_at)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-black text-rose-600 dark:text-rose-400">-{money(item.refund_total)}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-black text-danger">-{money(item.refund_total)}</p>
+                      <p className="text-xs text-muted">
                         {catalogRefundActionLabel(item.refund_action)} · {item.restock ? 'stock reintegrado' : 'sin reintegro'}
                       </p>
                     </div>
                   </div>
                   <p className="mt-3 text-sm text-ink">{item.reason}</p>
-                  <ul className="mt-2 text-xs text-gray-500 space-y-1">
+                  <ul className="mt-2 text-xs text-muted space-y-1">
                     {item.items.map((line) => (
                       <li key={line.id}>{line.product_name} ×{line.quantity} · {money(line.refund_amount)}</li>
                     ))}
                   </ul>
-                  <a href={panelHref({ tab: 'orders', orderId: item.order_id })} className="inline-block mt-3 text-xs font-bold text-pink-600">
+                  <a href={panelHref({ tab: 'orders', orderId: item.order_id })} className="inline-block mt-3 text-xs font-bold text-accent">
                     Abrir pedido original
                   </a>
                 </li>
@@ -392,7 +392,7 @@ export default function Devoluciones() {
       ) : view === 'history' ? (
         <div className="rounded-2xl border border-line bg-surface overflow-hidden">
           {returns.length === 0 ? (
-            <div className="py-16 text-center text-gray-500">
+            <div className="py-16 text-center text-muted">
               <History className="mx-auto mb-2 opacity-50" /> Todavía no hay notas de crédito.
             </div>
           ) : (
@@ -404,19 +404,19 @@ export default function Devoluciones() {
                       <p className="font-extrabold text-ink">
                         {creditNoteLabel(item.credit_note_number)} · Venta #{item.sale_id}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted">
                         {item.customer_name || 'Consumidor final'} · {dateTime(item.created_at)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-black text-rose-600 dark:text-rose-400">-{money(item.refund_total)}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-black text-danger">-{money(item.refund_total)}</p>
+                      <p className="text-xs text-muted">
                         {refundMethodLabel(item.refund_method)} · {item.restock ? 'stock reintegrado' : 'sin reintegro'}
                       </p>
                     </div>
                   </div>
                   <p className="mt-3 text-sm text-ink">{item.reason}</p>
-                  <ul className="mt-2 text-xs text-gray-500 space-y-1">
+                  <ul className="mt-2 text-xs text-muted space-y-1">
                     {item.items.map((line) => (
                       <li key={line.id}>{line.product_name} ×{line.quantity} · {money(line.refund_amount)}</li>
                     ))}
@@ -431,14 +431,14 @@ export default function Devoluciones() {
           <div className="lg:col-span-2 rounded-2xl border border-line bg-surface overflow-hidden">
             <label className="relative block m-3">
               <span className="sr-only">Buscar pedido</span>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-hint" size={16} />
               <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
                 placeholder="Pedido, clienta o producto"
                 className="w-full rounded-xl border border-line bg-transparent pl-9 pr-3 py-2.5 text-sm"
                 data-testid="returns-order-search" />
             </label>
             {filteredOrders.length === 0 ? (
-              <div className="py-14 px-5 text-center text-gray-500">
+              <div className="py-14 px-5 text-center text-muted">
                 <CheckCircle2 className="mx-auto mb-2 opacity-50" /> No hay pedidos con unidades disponibles.
               </div>
             ) : (
@@ -452,11 +452,11 @@ export default function Devoluciones() {
                         <p className="font-bold text-ink">
                           {order.order_number} · {order.customer_name || 'Clienta'}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted mt-1">
                           Pedido online · {dateTime(order.created_at)} · {order.items.length} línea(s)
                         </p>
                       </div>
-                      <ChevronRight size={18} className="text-gray-400" />
+                      <ChevronRight size={18} className="text-hint" />
                     </button>
                   </li>
                 ))}
@@ -465,18 +465,18 @@ export default function Devoluciones() {
           </div>
           <div className="lg:col-span-3 rounded-2xl border border-line bg-surface p-4 sm:p-5">
             {!selectedOrder ? (
-              <div className="py-16 text-center text-gray-500">
+              <div className="py-16 text-center text-muted">
                 <ArrowLeftRight className="mx-auto mb-2 opacity-50" /> Seleccioná un pedido online.
               </div>
             ) : (
               <div className="space-y-5" data-testid="order-return-form">
                 <div>
                   <h3 className="text-lg font-extrabold">{selectedOrder.order_number}</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     Pedido online · {selectedOrder.customer_name || 'Clienta'} · total {money(selectedOrder.total)}
                   </p>
                   {selectedOrder.customer_id && (
-                    <a href={panelHref({ tab: 'customers', customerId: selectedOrder.customer_id })} className="text-xs font-bold text-pink-600">
+                    <a href={panelHref({ tab: 'customers', customerId: selectedOrder.customer_id })} className="text-xs font-bold text-accent">
                       Ver ficha de la clienta
                     </a>
                   )}
@@ -487,7 +487,7 @@ export default function Devoluciones() {
                     <div key={item.id} className="grid grid-cols-[1fr_auto] gap-3 items-center rounded-xl border border-line p-3">
                       <div className="min-w-0">
                         <p className="font-semibold truncate">{item.product_name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted">
                           Disponible {item.available_quantity}/{item.quantity} · {money(item.subtotal)} original
                         </p>
                       </div>
@@ -535,9 +535,9 @@ export default function Devoluciones() {
                 </label>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-line pt-4">
                   <div>
-                    <p className="text-xs text-gray-500">Importe estimado</p>
-                    <p className="text-2xl font-black text-rose-600 dark:text-rose-400">{money(previewOrderTotal)}</p>
-                    <p className="text-[11px] text-gray-400">El reembolso de dinero no se ejecuta solo.</p>
+                    <p className="text-xs text-muted">Importe estimado</p>
+                    <p className="text-2xl font-black text-danger">{money(previewOrderTotal)}</p>
+                    <p className="text-[11px] text-hint">El reembolso de dinero no se ejecuta solo.</p>
                   </div>
                   <button type="button" onClick={() => void submitOrder()}
                     disabled={submitting || selectedOrderLines.length === 0}
@@ -556,14 +556,14 @@ export default function Devoluciones() {
           <div className="lg:col-span-2 rounded-2xl border border-line bg-surface overflow-hidden">
             <label className="relative block m-3">
               <span className="sr-only">Buscar venta</span>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-hint" size={16} />
               <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
                 placeholder="Venta, cliente o producto"
                 className="w-full rounded-xl border border-line bg-transparent pl-9 pr-3 py-2.5 text-sm"
                 data-testid="returns-search" />
             </label>
             {filteredSales.length === 0 ? (
-              <div className="py-14 px-5 text-center text-gray-500">
+              <div className="py-14 px-5 text-center text-muted">
                 <CheckCircle2 className="mx-auto mb-2 opacity-50" /> No hay ventas con unidades disponibles.
               </div>
             ) : (
@@ -577,11 +577,11 @@ export default function Devoluciones() {
                         <p className="font-bold text-ink">
                           Venta #{sale.id} · {sale.customer_name || 'Consumidor final'}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted mt-1">
                           {dateTime(sale.created_at)} · {sale.items.length} línea(s) disponibles
                         </p>
                       </div>
-                      <ChevronRight size={18} className="text-gray-400" />
+                      <ChevronRight size={18} className="text-hint" />
                     </button>
                   </li>
                 ))}
@@ -591,14 +591,14 @@ export default function Devoluciones() {
 
           <div className="lg:col-span-3 rounded-2xl border border-line bg-surface p-4 sm:p-5">
             {!selected ? (
-              <div className="py-16 text-center text-gray-500">
+              <div className="py-16 text-center text-muted">
                 <ArrowLeftRight className="mx-auto mb-2 opacity-50" /> Seleccioná una venta.
               </div>
             ) : (
               <div className="space-y-5" data-testid="return-form">
                 <div>
                   <h3 className="text-lg font-extrabold">Venta #{selected.id}</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     {selected.customer_name || 'Consumidor final'} · total original {money(selected.total)}
                   </p>
                 </div>
@@ -608,7 +608,7 @@ export default function Devoluciones() {
                     <div key={item.id} className="grid grid-cols-[1fr_auto] gap-3 items-center rounded-xl border border-line p-3">
                       <div className="min-w-0">
                         <p className="font-semibold truncate">{item.product_name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted">
                           Disponible {item.available_quantity}/{item.quantity} · {money(item.subtotal)} original
                         </p>
                       </div>
@@ -653,9 +653,9 @@ export default function Devoluciones() {
                 </label>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-line pt-4">
                   <div>
-                    <p className="text-xs text-gray-500">Crédito estimado</p>
-                    <p className="text-2xl font-black text-rose-600 dark:text-rose-400">{money(previewTotal)}</p>
-                    <p className="text-[11px] text-gray-400">La base recalcula el monto exacto.</p>
+                    <p className="text-xs text-muted">Crédito estimado</p>
+                    <p className="text-2xl font-black text-danger">{money(previewTotal)}</p>
+                    <p className="text-[11px] text-hint">La base recalcula el monto exacto.</p>
                   </div>
                   <button type="button" onClick={() => void submit()}
                     disabled={submitting || selectedLines.length === 0}

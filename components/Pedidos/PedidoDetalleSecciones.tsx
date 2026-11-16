@@ -23,7 +23,7 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
   return (
       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
         <div>
-          <dt className="text-gray-400 text-xs">Clienta</dt>
+          <dt className="text-hint text-xs">Clienta</dt>
           <dd className="font-semibold">
             {detail.customer_id ? (
               <a
@@ -67,7 +67,7 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
           </dd>
         </div>
         <div>
-          <dt className="text-gray-400 text-xs">Teléfono</dt>
+          <dt className="text-hint text-xs">Teléfono</dt>
           <dd className="font-semibold flex flex-wrap items-center gap-2">
             <span>{detail.customer_phone}</span>
             {(() => {
@@ -85,7 +85,7 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300"
+                  className="inline-flex items-center gap-1 rounded-lg bg-success-soft px-2 py-1 text-xs font-bold text-success hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300"
                   data-testid="pedido-whatsapp"
                 >
                   <MessageCircle size={14} aria-hidden />
@@ -97,21 +97,21 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
         </div>
         {detail.customer_email && (
           <div>
-            <dt className="text-gray-400 text-xs">Email</dt>
+            <dt className="text-hint text-xs">Email</dt>
             <dd className="font-semibold break-all">{detail.customer_email}</dd>
           </div>
         )}
         <div>
-          <dt className="text-gray-400 text-xs">Creado</dt>
+          <dt className="text-hint text-xs">Creado</dt>
           <dd>{new Date(detail.created_at).toLocaleString('es-AR')}</dd>
         </div>
         <div>
-          <dt className="text-gray-400 text-xs">Actualizado</dt>
+          <dt className="text-hint text-xs">Actualizado</dt>
           <dd>{new Date(detail.updated_at).toLocaleString('es-AR')}</dd>
         </div>
         {detail.coupon_code && (
           <div>
-            <dt className="text-gray-400 text-xs">Cupón</dt>
+            <dt className="text-hint text-xs">Cupón</dt>
             <dd>
               {detail.coupon_code} (−{detail.coupon_discount_percentage ?? 0}%)
             </dd>
@@ -125,7 +125,7 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
 export function PedidoEnvio({ detail }: { detail: OrderDetail }) {
   return (
         <div className="rounded-xl bg-pink-50 dark:bg-pink-950/20 px-3 py-2 text-sm">
-          <p className="text-xs text-gray-400 mb-1">
+          <p className="text-xs text-hint mb-1">
             {detail.fulfillment_mode === 'retiro'
               ? 'Retiro en el local'
               : detail.fulfillment_mode === 'coordinar'
@@ -139,9 +139,9 @@ export function PedidoEnvio({ detail }: { detail: OrderDetail }) {
               </p>
               {detail.shipping_destination_street && detail.shipping_destination_number ? (
                 <div className="space-y-0.5">
-                  <p><span className="text-gray-500">Dirección:</span> {detail.shipping_destination_street} {detail.shipping_destination_number}</p>
-                  <p><span className="text-gray-500">Localidad:</span> {detail.shipping_destination_city}, {detail.shipping_destination_state}</p>
-                  <p><span className="text-gray-500">Código postal:</span> {detail.shipping_destination_postal_code}</p>
+                  <p><span className="text-muted">Dirección:</span> {detail.shipping_destination_street} {detail.shipping_destination_number}</p>
+                  <p><span className="text-muted">Localidad:</span> {detail.shipping_destination_city}, {detail.shipping_destination_state}</p>
+                  <p><span className="text-muted">Código postal:</span> {detail.shipping_destination_postal_code}</p>
                 </div>
               ) : (
                 <p>
@@ -182,7 +182,7 @@ export function PedidoDevoluciones({ items }: { items: OrderDetail['returns'] })
                 <p className="font-semibold">
                   {catalogReturnLabel(item.return_number)} · ${formatPesoAR(item.refund_total)}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted">
                   {catalogRefundActionLabel(item.refund_action)}
                   {item.restock ? ' · stock reintegrado' : ' · sin reintegro de stock'}
                 </p>
@@ -205,13 +205,13 @@ export function PedidoLineas({ detail }: { detail: OrderDetail }) {
               <div className="min-w-0">
                 <p className="font-semibold truncate">
                   {it.name_snapshot}{' '}
-                  <span className="text-gray-400 font-normal">×{it.quantity}</span>
+                  <span className="text-hint font-normal">×{it.quantity}</span>
                 </p>
                 {it.variant_snapshot && (
-                  <p className="text-xs text-gray-400">{it.variant_snapshot}</p>
+                  <p className="text-xs text-hint">{it.variant_snapshot}</p>
                 )}
                 {it.line_type === 'combo' && it.combo_components_snapshot.length > 0 && (
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-hint mt-0.5">
                     {it.combo_components_snapshot
                       .map((c) => `${c.product_name}×${c.quantity}`)
                       .join(', ')}
@@ -220,7 +220,7 @@ export function PedidoLineas({ detail }: { detail: OrderDetail }) {
               </div>
               <div className="text-right shrink-0">
                 <p className="font-semibold">${formatPesoAR(it.line_subtotal)}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-hint">
                   ${formatPesoAR(it.unit_price)} c/u
                   {it.discount_percentage > 0 ? ` (−${it.discount_percentage}%)` : ''}
                 </p>
@@ -261,7 +261,7 @@ export function PedidoHistorial({ events }: { events: OrderDetail['events'] }) {
               key={ev.id}
               className="text-xs sm:text-sm flex gap-2 text-muted"
             >
-              <span className="text-gray-400 shrink-0">
+              <span className="text-hint shrink-0">
                 {new Date(ev.created_at).toLocaleString('es-AR')}
               </span>
               <span>
@@ -269,7 +269,7 @@ export function PedidoHistorial({ events }: { events: OrderDetail['events'] }) {
                   ? `${orderStatusLabel(ev.from_status)} → ${orderStatusLabel(ev.to_status)}`
                   : orderStatusLabel(ev.to_status)}
                 {ev.reason ? ` · ${ev.reason}` : ''}
-                <span className="text-gray-400"> · {actorLabel(ev.actor_kind)}</span>
+                <span className="text-hint"> · {actorLabel(ev.actor_kind)}</span>
               </span>
             </li>
           ))}
@@ -291,12 +291,12 @@ type CancelFormProps = {
 export function PedidoCancelarForm({ reason, onReasonChange, error, loading, onConfirm, onBack }: CancelFormProps) {
   return (
         <div
-          className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 p-3 space-y-2"
+          className="rounded-xl border border-danger-line bg-danger-soft p-3 space-y-2"
           data-testid="pedido-cancel-form"
         >
           <label
             htmlFor="pedido-cancel-reason"
-            className="block text-xs font-bold text-rose-800 dark:text-rose-200"
+            className="block text-xs font-bold text-danger"
           >
             Motivo de cancelación *
           </label>
@@ -306,12 +306,12 @@ export function PedidoCancelarForm({ reason, onReasonChange, error, loading, onC
             onChange={(e) => onReasonChange(e.target.value)}
             maxLength={300}
             rows={2}
-            className="w-full rounded-lg border border-rose-200 dark:border-rose-800 bg-surface px-2 py-1.5 text-sm"
+            className="w-full rounded-lg border border-danger-line bg-surface px-2 py-1.5 text-sm"
             data-testid="pedido-cancel-reason"
             disabled={loading}
           />
           {error && (
-            <p className="text-xs text-rose-600" role="alert">
+            <p className="text-xs text-danger" role="alert">
               {error}
             </p>
           )}

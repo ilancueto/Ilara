@@ -21,7 +21,7 @@
   --color-primary-200: #FAC6D5;
   --color-primary-300: #F09BB6;
   --color-primary-400: #E57A9C;
-  --color-primary-500: #C9507D;
+  --color-primary-500: #B8446F;
   --color-primary-600: #B8446F;
   --color-primary-700: #9C3560;
   --color-primary-800: #7A3552;
@@ -39,7 +39,7 @@
   --color-pink-200: #FAC6D5;
   --color-pink-300: #F09BB6;
   --color-pink-400: #E57A9C;
-  --color-pink-500: #C9507D;
+  --color-pink-500: #B8446F;
   --color-pink-600: #B8446F;
   --color-pink-700: #9C3560;
   --color-pink-800: #7A3552;
@@ -51,9 +51,9 @@
   --color-gray-100: #F7EDEB;
   --color-gray-200: #EEDFDF;
   --color-gray-300: #DCC8CC;
-  --color-gray-400: #9A8590;
-  --color-gray-500: #7A6470;
-  --color-gray-600: #6B5562;
+  --color-gray-400: #765F6C;
+  --color-gray-500: #6B5562;
+  --color-gray-600: #5E4A55;
   --color-gray-700: #574350;
   --color-gray-800: #4A3542;
   --color-gray-900: #33242D;
@@ -96,6 +96,15 @@
   --color-tint-3: var(--ui-tint-3);
   --color-tint-4: var(--ui-tint-4);
   --color-tint-5: var(--ui-tint-5);
+  --color-success: var(--ui-success);
+  --color-success-soft: var(--ui-success-soft);
+  --color-success-line: var(--ui-success-line);
+  --color-warning: var(--ui-warning);
+  --color-warning-soft: var(--ui-warning-soft);
+  --color-warning-line: var(--ui-warning-line);
+  --color-danger: var(--ui-danger);
+  --color-danger-soft: var(--ui-danger-soft);
+  --color-danger-line: var(--ui-danger-line);
 }
 
 :root {
@@ -104,8 +113,8 @@
   --ui-surface-soft: #FDEAE6;
   --ui-ink: #4A3542;
   --ui-muted: #6B5562;
-  --ui-hint: #9A8590;
-  --ui-accent: #B8446F;
+  --ui-hint: #765F6C;
+  --ui-accent: #A63D64;
   --ui-line: #F3DFE0;
   --ui-border: #EED3D8;
   --ui-primary: #B8446F;
@@ -119,6 +128,15 @@
   --ui-tint-4: #EAF3FC;
   --ui-tint-5: #FDEEE8;
   --ui-shadow: 0 10px 30px -14px rgba(122, 53, 82, 0.22);
+  --ui-success: #1F7A4D;
+  --ui-success-soft: #E6F6EE;
+  --ui-success-line: #B7E4CB;
+  --ui-warning: #8A5A12;
+  --ui-warning-soft: #FFF1DC;
+  --ui-warning-line: #F3D9A6;
+  --ui-danger: #B42335;
+  --ui-danger-soft: #FDECEE;
+  --ui-danger-line: #F5C2C9;
 }
 
 /* ─── Dark theme (variables + base overrides) ─── */
@@ -131,12 +149,12 @@
   --ui-surface-soft: #33262D;
   --ui-ink: #F6E9EF;
   --ui-muted: #CDB5C2;
-  --ui-hint: #A08A96;
+  --ui-hint: #B39DA9;
   --ui-accent: #F093B1;
   --ui-line: #3A2C33;
   --ui-border: #4A3740;
-  --ui-primary: #C9507D;
-  --ui-primary-hover: #D4628C;
+  --ui-primary: #B8446F;
+  --ui-primary-hover: #C9507D;
   --ui-primary-soft: #3D2731;
   --ui-primary-ink: #FFB3CB;
   --ui-tint-0: #3A2530;
@@ -145,6 +163,15 @@
   --ui-tint-3: #2D2840;
   --ui-tint-4: #22303D;
   --ui-tint-5: #3A2924;
+  --ui-success: #7FD8AE;
+  --ui-success-soft: #1F3A2D;
+  --ui-success-line: #2E5A44;
+  --ui-warning: #F2C27B;
+  --ui-warning-soft: #3A2E22;
+  --ui-warning-line: #5A4528;
+  --ui-danger: #F59AA6;
+  --ui-danger-soft: #3D1F25;
+  --ui-danger-line: #6B2F3A;
   --ui-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.6);
 }
 
@@ -420,6 +447,111 @@ body {
   }
 }
 
+/* ─── Escritorio ancho: la barra inferior pasa a ser barra lateral ─── */
+@media (min-width: 1100px) {
+  .app-shell {
+    --app-side-w: 240px;
+    --app-dock-h: 0px;
+  }
+
+  .app-topbar {
+    left: var(--app-side-w);
+  }
+
+  .app-main {
+    padding-left: var(--app-side-w);
+    padding-bottom: 2rem;
+  }
+
+  .app-dock {
+    top: 0;
+    right: auto;
+    width: var(--app-side-w);
+    padding: 0 14px 20px;
+    background: var(--ui-canvas);
+    border-right: 1px solid var(--ui-line);
+    justify-content: flex-start;
+    flex-direction: column;
+  }
+
+  .app-dock::before {
+    content: "ilara";
+    display: flex;
+    align-items: center;
+    height: var(--app-top-h);
+    padding: 0 14px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ui-primary);
+  }
+
+  .app-dock-inner {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 12px 0 0;
+    background: transparent;
+    backdrop-filter: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .app-dock-item {
+    flex: 0 0 auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    border-radius: 999px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .app-dock-item:hover {
+    background: var(--ui-surface-soft);
+  }
+
+  .app-dock-ico,
+  .app-dock-item--pos .app-dock-ico {
+    width: 24px;
+    height: 24px;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
+  }
+
+  .app-dock-item--pos {
+    margin-top: 4px;
+    border: 2px dashed var(--ui-border);
+  }
+
+  .app-dock-item--pos .app-dock-lbl {
+    color: inherit;
+  }
+
+  .app-dock-item.is-active,
+  .app-dock-item.is-active:hover {
+    background: var(--ui-primary);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .app-dock-item.is-active .app-dock-ico {
+    background: transparent;
+    color: #fff;
+  }
+
+  .app-dock-badge {
+    top: -6px;
+    right: -8px;
+  }
+}
+
 /* ─── Typography ─── */
 /* En @layer base para que las clases de Tailwind de cada componente (text-*, font-*) tengan prioridad. */
 @layer base {
@@ -530,72 +662,75 @@ body {
 }
 
 /* 2. Inputs & Forms */
-input[type="text"],
-input[type="number"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-textarea,
-select,
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 14px 18px;
-  background: var(--ui-surface);
-  border: 1px solid var(--ui-border);
-  border-radius: 16px;
-  box-shadow: none;
-  color: var(--ui-ink);
-  font-family: inherit;
-  font-size: 0.95rem;
-  transition: all 0.2s;
-  outline: none;
-}
+/* En @layer base: las clases de cada componente (padding, bordes, redondeo) tienen prioridad. */
+@layer base {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  textarea,
+  select,
+  .form-input,
+  .form-select {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: 16px;
+    box-shadow: none;
+    color: var(--ui-ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    outline: none;
+  }
 
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--ui-primary);
-  box-shadow: 0 0 0 4px rgba(184, 68, 111, 0.15);
-}
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--ui-primary);
+    box-shadow: 0 0 0 4px rgba(184, 68, 111, 0.15);
+  }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--color-gray-400);
-}
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
 
-input:disabled,
-textarea:disabled,
-select:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 
-.dark input[type="text"],
-.dark input[type="number"],
-.dark input[type="email"],
-.dark input[type="password"],
-.dark input[type="date"],
-.dark input[type="search"],
-.dark textarea,
-.dark select,
-.dark .form-input,
-.dark .form-select {
-  background: var(--ui-surface-soft);
-  border-color: var(--ui-border);
-  color: var(--ui-ink);
-}
+  .dark input[type="text"],
+  .dark input[type="number"],
+  .dark input[type="email"],
+  .dark input[type="password"],
+  .dark input[type="date"],
+  .dark input[type="search"],
+  .dark textarea,
+  .dark select,
+  .dark .form-input,
+  .dark .form-select {
+    background: var(--ui-surface-soft);
+    border-color: var(--ui-border);
+    color: var(--ui-ink);
+  }
 
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
-  border-color: var(--ui-primary);
-  box-shadow: 0 0 0 4px rgba(229, 122, 156, 0.2);
-}
+  .dark input:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    border-color: var(--ui-primary);
+    box-shadow: 0 0 0 4px rgba(229, 122, 156, 0.2);
+  }
 
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--color-zinc-500);
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: var(--color-zinc-500);
+  }
 }
 
 .form-label {
@@ -672,25 +807,6 @@ select:disabled {
 
 .dark .form-label {
   color: #9ca3af;
-}
-
-/* Login context - texto blanco en la tarjeta */
-.login-card .form-label {
-  color: white;
-}
-
-/* Login: botón y inputs en armonía con la tarjeta oscura (evitar rosa saturado) */
-.login-card .btn-primary {
-  background: linear-gradient(135deg, #c084a3 0%, #9d7ab0 50%, #8b6b9e 100%);
-  box-shadow: 0 4px 20px rgba(139, 107, 158, 0.35);
-}
-.login-card .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 8px 28px rgba(139, 107, 158, 0.45);
-}
-.login-card input:focus,
-.login-card textarea:focus {
-  border-color: rgba(192, 132, 163, 0.8);
-  box-shadow: 0 0 0 3px rgba(192, 132, 163, 0.2);
 }
 
 /* 3. Navigation Tabs */
@@ -1126,6 +1242,36 @@ select:disabled {
 /* Public storefront: light tokens even when html has .dark (panel theme). */
 .storefront {
   /* Pastel bento: paleta del catálogo público (contraste AA verificado). */
+  /* El sitio público es siempre claro: fija los colores por función aunque el panel esté en oscuro. */
+  --ui-canvas: #FFF6F2;
+  --ui-surface: #FFFFFF;
+  --ui-surface-soft: #FDEAE6;
+  --ui-ink: #4A3542;
+  --ui-muted: #6B5562;
+  --ui-hint: #765F6C;
+  --ui-accent: #A63D64;
+  --ui-line: #F3DFE0;
+  --ui-border: #EED3D8;
+  --ui-primary: #B8446F;
+  --ui-primary-hover: #9C3560;
+  --ui-primary-soft: #FFE1EA;
+  --ui-primary-ink: #7A3552;
+  --ui-tint-0: #FFEEF3;
+  --ui-tint-1: #FFF1DC;
+  --ui-tint-2: #E6F6EE;
+  --ui-tint-3: #EFEAFB;
+  --ui-tint-4: #EAF3FC;
+  --ui-tint-5: #FDEEE8;
+  --ui-shadow: 0 10px 30px -14px rgba(122, 53, 82, 0.22);
+  --ui-success: #1F7A4D;
+  --ui-success-soft: #E6F6EE;
+  --ui-success-line: #B7E4CB;
+  --ui-warning: #8A5A12;
+  --ui-warning-soft: #FFF1DC;
+  --ui-warning-line: #F3D9A6;
+  --ui-danger: #B42335;
+  --ui-danger-soft: #FDECEE;
+  --ui-danger-line: #F5C2C9;
   --sf-bg: #FFF6F2;
   --sf-surface: #FFFFFF;
   --sf-muted-bg: #FDEAE6;

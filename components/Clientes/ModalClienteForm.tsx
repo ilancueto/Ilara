@@ -51,11 +51,11 @@ export default function ModalClienteForm({ editando, formData, onChange, guardan
                         <div className="flex-1 overflow-y-auto px-6 sm:px-8 pb-6 flex flex-col gap-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
-                                    <label className="form-label text-sm">Nombre <span className="text-pink-500">*</span></label>
+                                    <label className="form-label text-sm">Nombre <span className="text-accent">*</span></label>
                                     <input type="text" value={formData.first_name} onChange={(e) => onChange({ ...formData, first_name: e.target.value })} placeholder="Ej: María" required className="form-input rounded-xl h-11 px-4" />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="form-label text-sm">Apellido <span className="text-pink-500">*</span></label>
+                                    <label className="form-label text-sm">Apellido <span className="text-accent">*</span></label>
                                     <input type="text" value={formData.last_name} onChange={(e) => onChange({ ...formData, last_name: e.target.value })} placeholder="Ej: González" required className="form-input rounded-xl h-11 px-4" />
                                 </div>
                             </div>

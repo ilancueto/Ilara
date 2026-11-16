@@ -20,7 +20,7 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
       <ErrorState
         title="Algo salió mal"
         message="Ocurrió un error inesperado. Podés intentar de nuevo."

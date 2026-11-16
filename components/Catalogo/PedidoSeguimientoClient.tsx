@@ -47,16 +47,16 @@ function hasBankDetails(bank: PublicFollowView['bank']): boolean {
 
 function orderStatusBadgeInfo(orderStatus: string, paymentStatus: string | null): { label: string; colorClass: string; stepIndex: number } {
   if (orderStatus === 'cancelled') {
-    return { label: 'Pedido Cancelado', colorClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/40', stepIndex: 0 }
+    return { label: 'Pedido Cancelado', colorClass: 'bg-danger-soft text-danger border-danger-line dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/40', stepIndex: 0 }
   }
   if (orderStatus === 'completed') {
-    return { label: 'Entregado con Éxito ✨', colorClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/40', stepIndex: 5 }
+    return { label: 'Entregado con Éxito ✨', colorClass: 'bg-success-soft text-success border-success-line dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/40', stepIndex: 5 }
   }
   if (orderStatus === 'ready') {
     return { label: 'En Camino / Listo para entrega 🚚', colorClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/40', stepIndex: 4 }
   }
   if (orderStatus === 'preparing') {
-    return { label: 'En Preparación 📦', colorClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/40', stepIndex: 3 }
+    return { label: 'En Preparación 📦', colorClass: 'bg-warning-soft text-warning border-warning-line dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/40', stepIndex: 3 }
   }
   if (orderStatus === 'confirmed' || paymentStatus === 'approved') {
     return { label: 'Pago Aprobado · Confirmado', colorClass: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-900/40', stepIndex: 2 }
@@ -175,14 +175,15 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
     <main className={`${styles.center} ${styles.wrap}`}>
       <div className={styles.box}>
         <div>
-          <span className={styles.status}>{badgeInfo.label}</span>
-          <h1 className="mt-3">
+          {/* Sin datos y con error, "Cargando..." confunde: el mensaje de error ya explica qué pasó. */}
+          {view || !error ? <span className={styles.status}>{badgeInfo.label}</span> : null}
+          <h1 className={view || !error ? 'mt-3' : undefined}>
             {view?.order_number || orderNumber}
           </h1>
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-semibold text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+          <p className="mt-4 rounded-xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
             {error}
           </p>
         )}
@@ -193,11 +194,11 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
             <div className="relative flex justify-between">
               
               {/* Background Line */}
-              <div className="absolute top-4.5 left-4 right-4 h-1 rounded-full bg-gray-100 dark:bg-zinc-800" />
+              <div className="absolute top-4.5 left-4 right-4 h-1 rounded-full bg-surface-soft" />
               
               {/* Active Progress Line */}
               <div
-                className="absolute top-4.5 left-4 h-1 rounded-full bg-gradient-to-r from-[#D97786] to-[#C5A880] transition-all duration-500"
+                className="absolute top-4.5 left-4 h-1 rounded-full bg-primary transition-all duration-500"
                 style={{ width: progressPercent }}
               />
 
@@ -218,10 +219,10 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                     <div
                       className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-bold transition-all ${
                         isDone
-                          ? 'border-[#D97786] bg-[#D97786] text-white'
+                          ? 'border-primary bg-[#D97786] text-white'
                           : isCurrent
-                            ? 'border-[#D97786] bg-white text-[#D97786] ring-4 ring-[#FDF2F4] dark:bg-[#1C1924] dark:ring-pink-950/40'
-                            : 'border-gray-200 bg-white text-gray-400 dark:border-zinc-700 dark:bg-zinc-800'
+                            ? 'border-primary bg-white text-pink-400 ring-4 ring-[#FDF2F4] dark:bg-[#1C1924] dark:ring-pink-950/40'
+                            : 'border-gray-200 bg-white text-hint dark:border-zinc-700 dark:bg-zinc-800'
                       }`}
                     >
                       {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
@@ -229,7 +230,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                     <span
                       className={`mt-2 text-[11px] font-bold ${
                         isCurrent || isDone
-                          ? 'text-[#1A181E] dark:text-[#F6EEF3]'
+                          ? 'text-ink dark:text-[#F6EEF3]'
                           : 'text-gray-400 dark:text-zinc-500'
                       }`}
                     >
@@ -256,7 +257,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                 <MapPin className="h-3.5 w-3.5" />
                 <span>Forma de Entrega</span>
               </div>
-              <p className="font-bold text-sm text-[#1A181E] dark:text-[#F6EEF3]">
+              <p className="font-bold text-sm text-ink dark:text-[#F6EEF3]">
                 {fulfillmentPublicLine({
                   mode: view.fulfillment_mode,
                   carrier: view.shipping_carrier,
@@ -282,7 +283,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                 <CreditCard className="h-3.5 w-3.5" />
                 <span>Estado del Pago</span>
               </div>
-              <p className="font-bold text-sm text-[#1A181E] dark:text-[#F6EEF3]">
+              <p className="font-bold text-sm text-ink dark:text-[#F6EEF3]">
                 {statusLabel(view.payment_status)}
               </p>
               {view.method && (
@@ -297,7 +298,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
           {/* Pending Payment Choices (if unpaid) */}
           {showMethodChoice && (
             <div className="rounded-3xl border-2 border-pink-200 bg-white p-6 shadow-sm dark:border-pink-900/40 dark:bg-[#1C1924]">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-[#C25B6C] dark:text-[#F472B6]">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-primary dark:text-[#F472B6]">
                 Completá tu pago para confirmar la preparación
               </p>
               
@@ -307,7 +308,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                     type="button"
                     disabled={paying}
                     onClick={startMercadoPago}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#009EE3] to-[#007EB5] py-3.5 font-bold text-white shadow-md shadow-[#009EE3]/20 hover:brightness-105 disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] hover:bg-[#007EB5] py-3.5 font-bold text-white hover:brightness-105 disabled:opacity-60"
                     data-testid="pay-mercadopago"
                   >
                     <span>{PUBLIC_PAYMENT_COPY.mercadoPago} · ${formatPesoARExact(view.quoted_public_amount)}</span>
@@ -321,12 +322,12 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                       type="button"
                       disabled={pending}
                       onClick={startTransfer}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#D97786] bg-[#FDF2F4] py-3 font-bold text-[#C25B6C] hover:bg-[#D97786] hover:text-white disabled:opacity-60 dark:bg-[#2D1823] dark:text-[#F472B6]"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary bg-primary-soft py-3 font-bold text-primary hover:bg-[#D97786] hover:text-white disabled:opacity-60 dark:bg-[#2D1823] dark:text-[#F472B6]"
                     >
                       <span>{PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)} (10% OFF)</span>
                     </button>
                   ) : (
-                    <div className="rounded-xl border border-pink-100 bg-[#FAF8F5] p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+                    <div className="rounded-xl border border-pink-100 bg-canvas p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
                       <p className="text-gray-600 dark:text-zinc-300">
                         Escribinos por WhatsApp y te pasamos el Alias al instante para transferir con 10% off.
                       </p>
@@ -358,14 +359,14 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                 Pago Pendiente en Mercado Pago
               </p>
               {view.amount_due != null && (
-                <p className="mt-1 font-mono text-3xl font-extrabold text-gray-900 dark:text-white">
+                <p className="mt-1 font-mono text-3xl font-extrabold text-ink">
                   ${formatPesoARExact(view.amount_due)}
                 </p>
               )}
               {view.checkout_url ? (
                 <a
                   href={view.checkout_url}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#009EE3] py-3.5 font-bold text-white shadow-md transition-all hover:bg-[#007EB5]"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] py-3.5 font-bold text-white shadow-md transition-all hover:bg-[#007EB5]"
                 >
                   <span>Continuar el pago en Mercado Pago</span>
                   <ExternalLink className="h-4 w-4" />
@@ -375,7 +376,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                   type="button"
                   disabled={paying}
                   onClick={startMercadoPago}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#009EE3] py-3.5 font-bold text-white"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] py-3.5 font-bold text-white"
                 >
                   {PUBLIC_PAYMENT_COPY.mercadoPago}
                 </button>
@@ -392,7 +393,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                   {PUBLIC_PAYMENT_COPY.transferInstructions}
                 </p>
                 {transferAmount != null && (
-                  <span className="font-mono text-lg font-bold text-[#C25B6C] dark:text-[#F472B6]">
+                  <span className="font-mono text-lg font-bold text-primary dark:text-[#F472B6]">
                     ${formatPesoARExact(transferAmount)}
                   </span>
                 )}
@@ -401,26 +402,26 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
               {hasBankDetails(view.bank) ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 text-xs">
                   {view.bank?.bank_name && (
-                    <div className="rounded-xl bg-[#FAF8F5] p-3 dark:bg-[#15131C]">
-                      <span className="text-[10px] font-bold uppercase text-gray-400">Banco</span>
-                      <p className="mt-0.5 font-semibold text-gray-800 dark:text-gray-100">{view.bank.bank_name}</p>
+                    <div className="rounded-xl bg-canvas p-3 dark:bg-[#15131C]">
+                      <span className="text-[10px] font-bold uppercase text-hint">Banco</span>
+                      <p className="mt-0.5 font-semibold text-ink">{view.bank.bank_name}</p>
                     </div>
                   )}
                   {view.bank?.account_holder && (
-                    <div className="rounded-xl bg-[#FAF8F5] p-3 dark:bg-[#15131C]">
-                      <span className="text-[10px] font-bold uppercase text-gray-400">Titular</span>
-                      <p className="mt-0.5 font-semibold text-gray-800 dark:text-gray-100">{view.bank.account_holder}</p>
+                    <div className="rounded-xl bg-canvas p-3 dark:bg-[#15131C]">
+                      <span className="text-[10px] font-bold uppercase text-hint">Titular</span>
+                      <p className="mt-0.5 font-semibold text-ink">{view.bank.account_holder}</p>
                     </div>
                   )}
                   {view.bank?.alias && (
-                    <div className="rounded-xl bg-[#FAF8F5] p-3 sm:col-span-2 dark:bg-[#15131C]">
-                      <span className="text-[10px] font-bold uppercase text-gray-400">Alias de Transferencia</span>
+                    <div className="rounded-xl bg-canvas p-3 sm:col-span-2 dark:bg-[#15131C]">
+                      <span className="text-[10px] font-bold uppercase text-hint">Alias de Transferencia</span>
                       <div className="mt-1 flex items-center justify-between gap-2">
-                        <p className="font-mono text-sm font-extrabold text-[#C25B6C] dark:text-[#F472B6]">{view.bank.alias}</p>
+                        <p className="font-mono text-sm font-extrabold text-primary dark:text-[#F472B6]">{view.bank.alias}</p>
                         <button
                           type="button"
                           onClick={() => copyValue('alias', view.bank!.alias!)}
-                          className="flex items-center gap-1 rounded-lg border border-pink-200 bg-white px-2.5 py-1 text-xs font-bold text-[#C25B6C] shadow-2xs hover:bg-pink-50 dark:border-pink-900/50 dark:bg-zinc-800 dark:text-[#F472B6]"
+                          className="flex items-center gap-1 rounded-lg border border-pink-200 bg-white px-2.5 py-1 text-xs font-bold text-primary shadow-2xs hover:bg-pink-50 dark:border-pink-900/50 dark:bg-zinc-800 dark:text-[#F472B6]"
                         >
                           {copiedKey === 'alias' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                           <span>{copiedKey === 'alias' ? '¡Copiado!' : 'Copiar'}</span>
@@ -429,10 +430,10 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                     </div>
                   )}
                   {view.bank?.cbu && (
-                    <div className="rounded-xl bg-[#FAF8F5] p-3 sm:col-span-2 dark:bg-[#15131C]">
-                      <span className="text-[10px] font-bold uppercase text-gray-400">CBU / CVU</span>
+                    <div className="rounded-xl bg-canvas p-3 sm:col-span-2 dark:bg-[#15131C]">
+                      <span className="text-[10px] font-bold uppercase text-hint">CBU / CVU</span>
                       <div className="mt-1 flex items-center justify-between gap-2">
-                        <p className="break-all font-mono text-xs font-bold text-gray-700 dark:text-gray-300">{view.bank.cbu}</p>
+                        <p className="break-all font-mono text-xs font-bold text-ink">{view.bank.cbu}</p>
                         <button
                           type="button"
                           onClick={() => copyValue('cbu', view.bank!.cbu!)}
@@ -457,10 +458,10 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                   className="mt-4 flex flex-col gap-2.5 border-t border-[#EBE4DA] pt-4 dark:border-white/10"
                   onSubmit={onFile}
                 >
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300" htmlFor="comprobante">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted" htmlFor="comprobante">
                     Adjuntar Comprobante de Pago
                   </label>
-                  <div className="relative flex items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-[#FAF8F5] p-4 text-center dark:border-zinc-700 dark:bg-[#15131C]">
+                  <div className="relative flex items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-canvas p-4 text-center dark:border-zinc-700 dark:bg-[#15131C]">
                     <input
                       id="comprobante"
                       name="file"
@@ -469,17 +470,17 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                       required
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
-                    <div className="flex flex-col items-center gap-1 text-xs text-gray-500">
-                      <Upload className="h-5 w-5 text-[#D97786]" />
-                      <span className="font-semibold text-gray-700 dark:text-gray-200">Hacé clic para seleccionar archivo</span>
+                    <div className="flex flex-col items-center gap-1 text-xs text-muted">
+                      <Upload className="h-5 w-5 text-pink-400" />
+                      <span className="font-semibold text-ink">Hacé clic para seleccionar archivo</span>
                       <span>(JPG, PNG o PDF)</span>
                     </div>
                   </div>
-                  {fileError && <p className="text-xs text-rose-700 dark:text-rose-300">{fileError}</p>}
+                  {fileError && <p className="text-xs text-danger">{fileError}</p>}
                   <button
                     type="submit"
                     disabled={pending}
-                    className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#CF6B7F] to-[#B85064] py-3 text-sm font-bold text-white shadow-sm disabled:opacity-60"
+                    className="mt-1 flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-hover py-3 text-sm font-bold text-white shadow-sm disabled:opacity-60"
                   >
                     {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                     <span>{view.has_receipt ? 'Reemplazar comprobante' : 'Enviar comprobante'}</span>
@@ -497,7 +498,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                   type="button"
                   disabled={paying}
                   onClick={startMercadoPago}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009EE3] py-3 text-sm font-bold text-white shadow-sm"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] py-3 text-sm font-bold text-white shadow-sm"
                 >
                   Intentar de nuevo con Mercado Pago
                 </button>
@@ -507,7 +508,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                   type="button"
                   disabled={paying}
                   onClick={startTransfer}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-pink-200 py-3 text-sm font-bold text-[#C25B6C]"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-pink-200 py-3 text-sm font-bold text-primary"
                 >
                   Intentar de nuevo por transferencia
                 </button>
@@ -529,7 +530,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
 
             <Link
               href="/catalogo"
-              className="flex items-center justify-center rounded-2xl border border-[#EBE4DA] bg-white px-6 py-3.5 text-sm font-bold text-[#1A181E] shadow-2xs hover:bg-[#FAF8F5] dark:border-white/10 dark:bg-[#1C1924] dark:text-[#F6EEF3] dark:hover:bg-[#26222E]"
+              className="flex items-center justify-center rounded-2xl border border-[#EBE4DA] bg-white px-6 py-3.5 text-sm font-bold text-ink shadow-2xs hover:bg-canvas dark:border-white/10 dark:bg-[#1C1924] dark:text-[#F6EEF3] dark:hover:bg-[#26222E]"
             >
               Volver al catálogo
             </Link>

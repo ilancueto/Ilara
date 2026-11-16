@@ -382,7 +382,7 @@ function HomeContent() {
                   onError={() => setLogoError(true)}
                 />
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-primary-soft flex items-center justify-center text-pink-500">
+                <div className="w-10 h-10 rounded-xl bg-primary-soft flex items-center justify-center text-accent">
                   <Sparkles className="w-5 h-5" />
                 </div>
               )}
@@ -432,7 +432,7 @@ function HomeContent() {
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-danger bg-danger-soft hover:bg-danger-soft transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Cerrar sesión

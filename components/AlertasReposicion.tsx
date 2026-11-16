@@ -57,7 +57,7 @@ function statusBadgeClass(status: StockAlertStatus): string {
     case 'dismissed':
       return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
     default:
-      return 'bg-gray-100 text-gray-700'
+      return 'bg-gray-100 text-ink'
   }
 }
 
@@ -266,7 +266,7 @@ export default function AlertasReposicion() {
         </div>
         <div className="flex items-center gap-2">
           <span
-            className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 px-3 py-1 text-sm font-bold"
+            className="inline-flex items-center gap-1.5 rounded-full bg-warning-soft text-amber-900 dark:text-amber-100 px-3 py-1 text-sm font-bold"
             data-testid="alertas-open-count"
           >
             <AlertTriangle size={14} aria-hidden />
@@ -289,7 +289,7 @@ export default function AlertasReposicion() {
           <span className="sr-only">Buscar alertas</span>
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-hint"
             aria-hidden
           />
           <input
@@ -323,12 +323,12 @@ export default function AlertasReposicion() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2 rounded-2xl border border-line bg-surface overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center gap-2 py-16 text-pink-500">
+            <div className="flex items-center justify-center gap-2 py-16 text-accent">
               <Loader2 className="animate-spin" size={20} />
               Cargando…
             </div>
           ) : alerts.length === 0 ? (
-            <div className="py-16 px-6 text-center text-gray-500">
+            <div className="py-16 px-6 text-center text-muted">
               <Package className="mx-auto mb-2 opacity-50" />
               No hay alertas con estos filtros.
             </div>
@@ -340,8 +340,8 @@ export default function AlertasReposicion() {
                     type="button"
                     onClick={() => void openDetail(a.id)}
                     className={[
-                      'min-w-0 flex-1 text-left px-4 py-3 flex items-center gap-3 hover:bg-amber-50/60 dark:hover:bg-amber-950/20 transition-colors',
-                      selectedId === a.id ? 'bg-amber-50 dark:bg-amber-950/30' : '',
+                      'min-w-0 flex-1 text-left px-4 py-3 flex items-center gap-3 hover:bg-warning-soft transition-colors',
+                      selectedId === a.id ? 'bg-warning-soft' : '',
                     ].join(' ')}
                     data-testid={`alerta-row-${a.product_id}`}
                   >
@@ -360,14 +360,14 @@ export default function AlertasReposicion() {
                         Stock {a.stock_current} · mín {a.min_stock_current} · sugerido{' '}
                         {a.suggested_qty}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                      <p className="text-xs text-hint mt-0.5 flex items-center gap-1">
                         <Clock size={12} aria-hidden />
                         {ageLabel(a.opened_at)}
                         {a.product_brand ? ` · ${a.product_brand}` : ''}
                         {a.category_name ? ` · ${a.category_name}` : ''}
                       </p>
                     </div>
-                    <ChevronRight size={18} className="text-gray-400 shrink-0" aria-hidden />
+                    <ChevronRight size={18} className="text-hint shrink-0" aria-hidden />
                   </button>
                   <button
                     type="button"
@@ -385,12 +385,12 @@ export default function AlertasReposicion() {
 
         <div className="lg:col-span-3 rounded-2xl border border-line bg-surface p-4 sm:p-5 min-h-[320px]">
           {!selectedId && (
-            <p className="text-sm text-gray-500 py-12 text-center">
+            <p className="text-sm text-muted py-12 text-center">
               Seleccioná una alerta para ver el detalle.
             </p>
           )}
           {selectedId && detailLoading && (
-            <div className="flex items-center justify-center gap-2 py-16 text-pink-500">
+            <div className="flex items-center justify-center gap-2 py-16 text-accent">
               <Loader2 className="animate-spin" size={20} />
               Cargando detalle…
             </div>
@@ -408,7 +408,7 @@ export default function AlertasReposicion() {
                     {stockAlertStatusLabel(detail.status)}
                   </span>
                   {detail.resolution_kind && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted mt-1">
                       {resolutionKindLabel(detail.resolution_kind)}
                     </p>
                   )}
@@ -428,34 +428,34 @@ export default function AlertasReposicion() {
 
               <dl className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
                 <div>
-                  <dt className="text-gray-400 text-xs">Stock actual</dt>
+                  <dt className="text-hint text-xs">Stock actual</dt>
                   <dd className="font-extrabold text-lg tabular-nums">{detail.stock_current}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 text-xs">Mínimo</dt>
+                  <dt className="text-hint text-xs">Mínimo</dt>
                   <dd className="font-semibold tabular-nums">{detail.min_stock_current}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 text-xs">Sugerido</dt>
+                  <dt className="text-hint text-xs">Sugerido</dt>
                   <dd className="font-semibold tabular-nums text-accent">
                     +{detail.suggested_qty}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 text-xs">Déficit</dt>
+                  <dt className="text-hint text-xs">Déficit</dt>
                   <dd className="font-semibold tabular-nums">{detail.deficit}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 text-xs">Antigüedad</dt>
+                  <dt className="text-hint text-xs">Antigüedad</dt>
                   <dd>{ageLabel(detail.opened_at)}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 text-xs">ID producto</dt>
+                  <dt className="text-hint text-xs">ID producto</dt>
                   <dd className="font-mono text-xs">#{detail.product_id}</dd>
                 </div>
               </dl>
 
-              <p className="text-xs text-gray-500 rounded-xl bg-canvas px-3 py-2">
+              <p className="text-xs text-muted rounded-xl bg-canvas px-3 py-2">
                 Sugerencia = reponer hasta{' '}
                 <strong>max(mín×2, mín+1)</strong> (si mín=0 → 1). No es una orden de
                 compra automática.
@@ -493,7 +493,7 @@ export default function AlertasReposicion() {
                     disabled={actionLoading}
                   />
                   {noteError && (
-                    <p className="text-xs text-rose-600" role="alert">
+                    <p className="text-xs text-danger" role="alert">
                       {noteError}
                     </p>
                   )}
@@ -569,7 +569,7 @@ export default function AlertasReposicion() {
                       key={ev.id}
                       className="text-xs sm:text-sm flex gap-2 text-muted"
                     >
-                      <span className="text-gray-400 shrink-0">
+                      <span className="text-hint shrink-0">
                         {new Date(ev.created_at).toLocaleString('es-AR')}
                       </span>
                       <span>
@@ -577,7 +577,7 @@ export default function AlertasReposicion() {
                           ? `${stockAlertStatusLabel(ev.from_status)} → ${stockAlertStatusLabel(ev.to_status)}`
                           : stockAlertStatusLabel(ev.to_status)}
                         {ev.reason ? ` · ${ev.reason}` : ''}
-                        <span className="text-gray-400"> · {ev.actor_kind}</span>
+                        <span className="text-hint"> · {ev.actor_kind}</span>
                       </span>
                     </li>
                   ))}

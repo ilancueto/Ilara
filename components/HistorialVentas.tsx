@@ -137,12 +137,12 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
 
     const obtenerIconoPago = (metodo: string | null) => {
         switch (metodo) {
-            case 'efectivo': return <Banknote className="w-4 h-4 text-emerald-500" />
+            case 'efectivo': return <Banknote className="w-4 h-4 text-success" />
             case 'tarjeta': return <CreditCard className="w-4 h-4 text-blue-500" />
             case 'transferencia': return <FileText className="w-4 h-4 text-purple-500" />
-            case 'credito': return <Clock className="w-4 h-4 text-amber-500" />
+            case 'credito': return <Clock className="w-4 h-4 text-warning" />
             case 'mixto': return <Receipt className="w-4 h-4 text-indigo-500" />
-            default: return <Receipt className="w-4 h-4 text-gray-400" />
+            default: return <Receipt className="w-4 h-4 text-hint" />
         }
     }
 
@@ -266,13 +266,13 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-historial-block">
                 <PastelCard tone={2} className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
                     <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-surface flex items-center justify-center overflow-hidden">
-                        <DollarSign size={26} className="text-emerald-500 dark:text-emerald-400" aria-hidden />
+                        <DollarSign size={26} className="text-success" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
                         <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">
                             Total Recaudado
                         </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all tabular-nums break-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-success transition-all tabular-nums break-all">
                             ${totalRecaudado.toLocaleString()}
                         </p>
                     </div>
@@ -280,13 +280,13 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
 
                 <PastelCard tone={1} className="p-5 sm:p-6 flex items-center gap-4 group min-w-0">
                     <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-surface flex items-center justify-center overflow-hidden">
-                        <Clock size={26} className="text-amber-500 dark:text-amber-400" aria-hidden />
+                        <Clock size={26} className="text-warning" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
                         <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">
                             Total por Cobrar
                         </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-all tabular-nums break-all">
+                        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-ink tracking-tight group-hover:text-warning transition-all tabular-nums break-all">
                             ${totalPorCobrar.toLocaleString()}
                         </p>
                     </div>
@@ -310,17 +310,17 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
             <PastelCard className="p-5 sm:p-6 mb-historial-block" noHover data-testid="catalog-sales-strip">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                        <p className="text-[10px] uppercase tracking-wider text-pink-500 font-bold">Pedidos web cobrados</p>
+                        <p className="text-[10px] uppercase tracking-wider text-accent font-bold">Pedidos web cobrados</p>
                         <p className="text-2xl font-black text-ink tabular-nums">
                             ${formatPesoAR(catalogInflow)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted mt-1">
                             Mercado Pago y transferencias. No se mezclan con la caja del mostrador.
                         </p>
                     </div>
                     <a
                         href={panelHref({ tab: 'orders' })}
-                        className="text-sm font-bold text-pink-600 hover:underline"
+                        className="text-sm font-bold text-accent hover:underline"
                     >
                         Ver pedidos
                     </a>
@@ -331,9 +331,9 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                             <li key={`${row.order_number}-${row.approved_at || row.amount_due}`} className="py-2.5 flex items-center justify-between gap-3 text-sm">
                                 <span className="font-bold">
                                     {row.customer_name?.trim() || row.order_number}
-                                    <span className="ml-2 font-medium text-gray-400">{row.order_number}</span>
+                                    <span className="ml-2 font-medium text-hint">{row.order_number}</span>
                                 </span>
-                                <span className="text-gray-500">
+                                <span className="text-muted">
                                     {paymentMethodLabel((row.method || 'mercado_pago') as PaymentMethodCode)}
                                 </span>
                                 <span className="font-black tabular-nums">${formatPesoAR(row.amount_due)}</span>
@@ -381,7 +381,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
 
                     <button
                         onClick={() => setMostrarExportar(true)}
-                        className="btn-ghost flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all text-muted border-line"
+                        className="btn-ghost flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2 hover:bg-success-soft hover:text-success hover:border-success-line transition-all text-muted border-line"
                         title="Exportar reporte a CSV"
                     >
                         <FileSpreadsheet className="w-4 h-4" />
@@ -404,14 +404,16 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                     ventasFiltradas.map(venta => (
                         <PastelCard key={venta.id} className="!p-0 group overflow-hidden border-line" noHover>
                             {/* Header de la venta */}
-                            <div
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => alternarExpansion(venta.id)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternarExpansion(venta.id); } }}
-                                className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left p-6 sm:p-7 hover:bg-pink-50/30 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
-                            >
-                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                            <div className="relative w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left p-6 sm:p-7 hover:bg-canvas transition-colors">
+                                {/* Botón que cubre la fila: expande el detalle sin anidar los botones de acciones. */}
+                                <button
+                                    type="button"
+                                    onClick={() => alternarExpansion(venta.id)}
+                                    aria-expanded={ventaExpandida === venta.id}
+                                    aria-label={`Ver detalle de la venta #${venta.id}`}
+                                    className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+                                />
+                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pointer-events-none">
                                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white dark:bg-gray-700 border border-line flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300 shadow-sm text-accent font-bold text-xs">
                                         #{venta.id}
                                     </div>
@@ -419,7 +421,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                     <div className="flex-1 min-w-0 overflow-hidden">
                                         <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                                             {venta.status === 'pending_payment' && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 text-[10px] font-bold uppercase tracking-wider">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning-soft text-warning text-[10px] font-bold uppercase tracking-wider">
                                                     <Clock className="w-3 h-3" />
                                                     Por cobrar
                                                 </span>
@@ -427,7 +429,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                             {venta.customer_name ? (
                                                 <span className="font-bold text-ink text-sm group-hover:text-accent transition-colors truncate">{venta.customer_name}</span>
                                             ) : (
-                                                <span className="font-bold text-gray-400 dark:text-gray-300 text-sm italic">Cliente Esporádico</span>
+                                                <span className="font-bold text-muted text-sm italic">Cliente Esporádico</span>
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
@@ -443,13 +445,13 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 border-t border-line pt-4 sm:border-0 sm:pt-0">
+                                <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 border-t border-line pt-4 sm:border-0 sm:pt-0 pointer-events-none">
                                     <div className="text-left sm:text-right min-w-0">
                                         <p className="text-[10px] uppercase tracking-wider text-hint font-bold mb-1">Total</p>
-                                        <p className="font-black text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400 tabular-nums">${venta.total.toLocaleString()}</p>
+                                        <p className="font-black text-xl sm:text-2xl text-success tabular-nums">${venta.total.toLocaleString()}</p>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-4">
-                                        <div className={`w-8 h-8 rounded-full bg-canvas flex items-center justify-center transition-transform duration-300 border border-line flex-shrink-0 ${ventaExpandida === venta.id ? 'rotate-180 bg-primary-soft text-accent border-pink-200 dark:border-pink-700' : 'text-hint'}`}>
+                                    <div className="relative flex items-center gap-2 sm:gap-4">
+                                        <div aria-hidden className={`pointer-events-none w-8 h-8 rounded-full bg-canvas flex items-center justify-center transition-transform duration-300 border border-line flex-shrink-0 ${ventaExpandida === venta.id ? 'rotate-180 bg-primary-soft text-accent border-pink-200 dark:border-pink-700' : 'text-hint'}`}>
                                             <ChevronDown className="w-4 h-4" />
                                         </div>
                                         <div className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center sm:border-l border-line sm:pl-1">
@@ -460,8 +462,9 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                         e.stopPropagation()
                                                         void abrirComprobanteVenta(venta)
                                                     }}
-                                                    className="p-1.5 sm:p-2 rounded-xl text-accent hover:text-accent hover:bg-primary-soft border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors shadow-sm"
+                                                    className="pointer-events-auto p-1.5 sm:p-2 rounded-xl text-accent hover:text-accent hover:bg-primary-soft border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors shadow-sm"
                                                     title="Ver comprobante"
+                                                    aria-label={`Ver comprobante de la venta #${venta.id}`}
                                                 >
                                                     <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
                                                 </button>
@@ -470,8 +473,9 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                         <button
                                             type="button"
                                             onClick={(e) => { e.stopPropagation(); setVentaEditando(venta); }}
-                                            className="p-1.5 sm:p-2 rounded-xl text-hint hover:text-accent hover:bg-primary-soft border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors flex-shrink-0"
+                                            className="pointer-events-auto p-1.5 sm:p-2 rounded-xl text-hint hover:text-accent hover:bg-primary-soft border border-transparent hover:border-pink-100 dark:hover:border-pink-800 transition-colors flex-shrink-0"
                                             title="Editar venta"
+                                            aria-label={`Editar venta #${venta.id}`}
                                         >
                                             <Pencil className="w-4 h-4" />
                                         </button>
@@ -518,7 +522,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                                     type="button"
                                                     onClick={onOpenFinance}
                                                     disabled={!onOpenFinance}
-                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700 font-bold text-sm transition-colors"
+                                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success-soft text-success hover:bg-success-soft border border-success-line font-bold text-sm transition-colors"
                                                 >
                                                     <Scale className="w-4 h-4" />
                                                     Gestionar cobro
@@ -556,10 +560,10 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                                         </div>
 
                                         {venta.notes && (
-                                            <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 flex gap-3">
-                                                <FileText className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                                            <div className="p-4 rounded-xl bg-warning-soft border border-warning-line flex gap-3">
+                                                <FileText className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
                                                 <div>
-                                                    <p className="text-[10px] text-amber-600 dark:text-amber-400 uppercase tracking-wider font-bold mb-1">Notas adicionales</p>
+                                                    <p className="text-[10px] text-warning uppercase tracking-wider font-bold mb-1">Notas adicionales</p>
                                                     <p className="text-sm text-amber-800 dark:text-amber-200/90 italic">{venta.notes}</p>
                                                 </div>
                                             </div>
@@ -580,7 +584,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                         setVentasSeleccionadas(new Set())
                         setBulkDeleteError(null)
                     }}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 font-bold text-sm transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-danger hover:text-danger hover:bg-danger-soft border border-danger-line hover:border-danger-line font-bold text-sm transition-colors"
                 >
                     <Trash2 className="w-4 h-4" />
                     Eliminar ventas
@@ -638,7 +642,7 @@ export default function HistorialVentas({ onOpenFinance }: { onOpenFinance?: () 
                             type="button"
                             onClick={() => void handleEliminarSeleccionadas()}
                             disabled={eliminando || ventasSeleccionadas.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-danger-soft text-danger hover:bg-danger-soft border border-danger-line disabled:opacity-50 disabled:cursor-not-allowed"
                             data-testid="bulk-delete-ventas-confirm"
                         >
                             {eliminando
