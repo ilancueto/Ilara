@@ -6,7 +6,7 @@ import { Check, Copy, CreditCard, ExternalLink, FileText, Loader2, MessageCircle
 import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/states'
-import { loadOrderAccess, paymentStartKey, storedFollow } from '@/lib/domain/payments/publicSession'
+import { clearOrderAccess, loadOrderAccess, paymentStartKey, storedFollow } from '@/lib/domain/payments/publicSession'
 import { buildOrderFollowPath } from '@/lib/domain/orders/followLink'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
@@ -71,6 +71,8 @@ export function PedidoPagoClient() {
       setAccess(stored.access)
       const result = await getPublicPaymentAction(stored.access)
       if (!result.ok) {
+        // Acceso vencido: se olvida para que la próxima visita muestre la ayuda en vez de este error.
+        clearOrderAccess(stored.orderNumber)
         setError(result.error)
         setView(null)
         return

@@ -29,6 +29,14 @@ export function saveOrderAccess(
   })
 }
 
+/** Olvida el pedido guardado (por ejemplo, si su link venció) para no redirigir a un enlace muerto. */
+export function clearOrderAccess(orderNumber?: string): void {
+  if (typeof window === 'undefined') return
+  const stored = loadOrderAccess()
+  if (orderNumber && stored && stored.orderNumber !== orderNumber) return
+  window.localStorage.removeItem(STORAGE_KEY)
+}
+
 export function storedFollow(stored: StoredOrderAccess): string | undefined {
   return stored.followToken
 }
