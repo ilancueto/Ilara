@@ -34,6 +34,7 @@ import {
 } from '@/app/actions/payments'
 import type { PublicFollowView } from '@/lib/domain/payments/types'
 import { uploadPaymentReceiptDirect } from '@/lib/domain/payments/browserReceiptUpload'
+import { clearOrderAccess } from '@/lib/domain/payments/publicSession'
 
 function statusLabel(status: string | null): string {
   if (!status) return 'Pendiente de pago'
@@ -93,7 +94,19 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
 
   useEffect(() => {
     if (initialError) return
-    refresh()
+    startTransition(async () => {
+      const result = await getFollowOrderAction(orderNumber)
+      if (!result.ok) {
+        // El pedido ya no está disponible: si estaba guardado en este navegador, lo olvidamos
+        // para que "Seguir mi pedido" no vuelva a traer acá.
+        clearOrderAccess(orderNumber)
+        setError(result.error)
+        setView(null)
+        return
+      }
+      setError(null)
+      setView(result.data)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderNumber, initialError])
 

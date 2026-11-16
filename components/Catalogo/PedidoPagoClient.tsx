@@ -7,13 +7,14 @@ import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/states'
 import { clearOrderAccess, loadOrderAccess, paymentStartKey, storedFollow } from '@/lib/domain/payments/publicSession'
-import { buildOrderFollowPath } from '@/lib/domain/orders/followLink'
+import { buildOrderFollowCleanPath } from '@/lib/domain/orders/followLink'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
 import { StorefrontShell } from '@/components/storefront/StorefrontShell'
 import { StorefrontHeader } from '@/components/storefront/StorefrontHeader'
 import styles from '@/components/storefront/storefront.module.css'
 import {
+  claimFollowSessionAction,
   getPublicPaymentAction,
   completeTransferReceiptUploadAction,
   prepareTransferReceiptUploadAction,
@@ -65,7 +66,15 @@ export function PedidoPagoClient() {
       }
       const follow = storedFollow(stored)
       if (follow && stored.orderNumber) {
-        window.location.replace(buildOrderFollowPath(stored.orderNumber, follow))
+        // Canjeamos el link guardado sin abrir su URL: si el pedido sigue
+        // disponible vamos al seguimiento limpio; si no, lo olvidamos y mostramos la ayuda.
+        const claimed = await claimFollowSessionAction(stored.orderNumber, follow)
+        if (claimed.ok) {
+          window.location.replace(buildOrderFollowCleanPath(stored.orderNumber))
+          return
+        }
+        clearOrderAccess(stored.orderNumber)
+        setNoOrder(true)
         return
       }
       setAccess(stored.access)
