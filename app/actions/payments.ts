@@ -14,7 +14,10 @@ import type { PublicFollowView, PublicPaymentView } from '@/lib/domain/payments/
 import type { PaymentReceiptFileMetadata } from '@/lib/domain/payments/receiptFile'
 import type { PreparedReceiptUpload } from '@/lib/domain/payments/browserReceiptUpload'
 import { isAppError, toUserMessage } from '@/lib/domain/errors'
-import { isOrderNumber } from '@/lib/domain/orders/followLink'
+import { createHmac } from 'node:crypto'
+import { headers } from 'next/headers'
+import { isOrderNumber, normalizeOrderNumber } from '@/lib/domain/orders/followLink'
+import { getOrderAccessDerivationSecret } from '@/lib/domain/payments/orderAccess'
 import { readOrderFollowCookie, setOrderFollowCookie } from '@/lib/domain/orders/followSession'
 import { createSupabaseServiceClient } from '@/lib/supabase/service'
 import { createOrderNotificationUrl } from '@/lib/domain/orders/sendOrderEmail'
@@ -101,6 +104,50 @@ export async function claimNotificationSessionAction(
     return { ok: true, data }
   } catch {
     return { ok: false, error: 'Este enlace venció o ya fue usado.' }
+  }
+}
+
+/** Identificador anónimo del cliente para el límite de intentos (no guarda la IP). */
+async function lookupClientHash(): Promise<string> {
+  const list = await headers()
+  const ip = (list.get('x-forwarded-for') || list.get('x-real-ip') || 'sin-ip').split(',')[0].trim()
+  const agent = (list.get('user-agent') || '').slice(0, 200)
+  return createHmac('sha256', getOrderAccessDerivationSecret()).update(`order-lookup:v1:${ip}:${agent}`).digest('hex')
+}
+
+/**
+ * "Seguir mi pedido": número de pedido + teléfono. Si coinciden, abre una sesión de seguimiento
+ * en este navegador (misma cookie que el link del pedido). Mismo mensaje si no existe o no coincide.
+ */
+export async function lookupOrderAction(
+  orderNumberInput: string,
+  phoneInput: string
+): Promise<ActionResult<{ orderNumber: string }>> {
+  const notFound = 'No encontramos un pedido con esos datos. Revisá el código y el teléfono.'
+  try {
+    const orderNumber = normalizeOrderNumber(orderNumberInput || '')
+    const phone = String(phoneInput || '').replace(/[^0-9]/g, '')
+    if (!isOrderNumber(orderNumber) || phone.length < 8) return { ok: false, error: notFound }
+    const service = createSupabaseServiceClient()
+    const verified = await service.rpc('verify_order_lookup', {
+      p_order_number: orderNumber,
+      p_phone: phone,
+      p_client_hash: await lookupClientHash(),
+    })
+    const result = (verified.data ?? {}) as { ok?: boolean; reason?: string }
+    if (verified.error) return { ok: false, error: 'No pudimos buscar el pedido. Probá de nuevo en unos minutos.' }
+    if (result.reason === 'rate_limited') {
+      return { ok: false, error: 'Hiciste muchos intentos. Esperá unos minutos y probá de nuevo.' }
+    }
+    if (!result.ok) return { ok: false, error: notFound }
+    const issued = await service.rpc('create_order_notification_link', { p_order_number: orderNumber, p_kind: 'lookup' })
+    const token = String((issued.data as { token?: string } | null)?.token || '')
+    if (issued.error || token.length < 32) return { ok: false, error: 'No pudimos abrir el pedido. Probá de nuevo.' }
+    const claimed = await claimNotificationSessionAction(orderNumber, token)
+    if (!claimed.ok) return { ok: false, error: 'No pudimos abrir el pedido. Probá de nuevo.' }
+    return { ok: true, data: { orderNumber } }
+  } catch {
+    return { ok: false, error: 'No pudimos buscar el pedido. Probá de nuevo en unos minutos.' }
   }
 }
 

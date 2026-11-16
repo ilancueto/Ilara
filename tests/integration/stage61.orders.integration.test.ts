@@ -309,7 +309,7 @@ describe.skipIf(!canRun)('Stage 6.1 pedidos integración', () => {
     expect(Number(okData.discount_total)).toBe(180)
     expect(Number(okData.shipping_amount)).toBe(500)
     expect(Number(okData.total)).toBe(2120)
-    expect(okData.order_number).toMatch(/^IL-\d{6}$/)
+    expect(okData.order_number).toMatch(/^ILARA-[2-9A-HJKMNP-Z]{6}$/)
     createdOrderIds.push(okData.order_id)
 
     // pending no descuenta

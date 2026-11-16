@@ -768,6 +768,30 @@ export type Database = {
           },
         ]
       }
+      order_lookup_attempts: {
+        Row: {
+          client_hash: string
+          created_at: string
+          id: number
+          order_number: string | null
+          succeeded: boolean
+        }
+        Insert: {
+          client_hash: string
+          created_at?: string
+          id?: never
+          order_number?: string | null
+          succeeded?: boolean
+        }
+        Update: {
+          client_hash?: string
+          created_at?: string
+          id?: never
+          order_number?: string | null
+          succeeded?: boolean
+        }
+        Relationships: []
+      }
       order_notification_links: {
         Row: {
           created_at: string
@@ -2867,6 +2891,10 @@ export type Database = {
       }
       transition_stock_alert: {
         Args: { p_alert_id: string; p_note?: string; p_to_status: string }
+        Returns: Json
+      }
+      verify_order_lookup: {
+        Args: { p_client_hash: string; p_order_number: string; p_phone: string }
         Returns: Json
       }
     }
