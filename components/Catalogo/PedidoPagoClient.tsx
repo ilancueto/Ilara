@@ -6,7 +6,7 @@ import { Check, Copy, CreditCard, ExternalLink, FileText, Loader2, MessageCircle
 import { formatPesoARExact } from '@/lib/formatPesoAR'
 import { PUBLIC_PAYMENT_COPY } from '@/lib/domain/payments/labels'
 import { paymentStatusLabel, type PaymentStatus } from '@/lib/domain/payments/states'
-import { clearOrderAccess, loadOrderAccess, paymentStartKey, storedFollow } from '@/lib/domain/payments/publicSession'
+import { clearOrderAccess, loadOrderAccess, paymentStartKey, storedFollow, type StoredOrderAccess } from '@/lib/domain/payments/publicSession'
 import { buildOrderFollowCleanPath } from '@/lib/domain/orders/followLink'
 import { buildTransferWhatsAppMessage } from '@/lib/domain/orders/whatsappMessage'
 import { openWhatsApp } from '@/lib/whatsappLink'
@@ -16,6 +16,7 @@ import styles from '@/components/storefront/storefront.module.css'
 import {
   claimFollowSessionAction,
   getPublicPaymentAction,
+  lookupOrderAction,
   completeTransferReceiptUploadAction,
   prepareTransferReceiptUploadAction,
   startBankTransferAction,
@@ -41,8 +42,62 @@ export function PedidoPagoClient() {
   const [pending, startTransition] = useTransition()
   const [fileError, setFileError] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  /** Sin pedido guardado en este navegador: se muestra una guía en vez del paso de pago vacío. */
+  /** "Seguir mi pedido": formulario de código + teléfono (en vez de abrir solo un pedido guardado). */
   const [noOrder, setNoOrder] = useState(false)
+  const [recent, setRecent] = useState<StoredOrderAccess | null>(null)
+  const [lookupCode, setLookupCode] = useState('')
+  const [lookupPhone, setLookupPhone] = useState('')
+  const [lookupError, setLookupError] = useState<string | null>(null)
+  const [lookupPending, startLookup] = useTransition()
+
+  /** Abre un pedido guardado en este navegador: seguimiento si tiene link, si no el paso de pago. */
+  async function openStored(stored: StoredOrderAccess): Promise<boolean> {
+    const follow = storedFollow(stored)
+    if (follow && stored.orderNumber) {
+      // Se canjea sin abrir la URL del link: si el pedido sigue disponible vamos al seguimiento limpio.
+      const claimed = await claimFollowSessionAction(stored.orderNumber, follow)
+      if (claimed.ok) {
+        window.location.replace(buildOrderFollowCleanPath(stored.orderNumber))
+        return true
+      }
+      clearOrderAccess(stored.orderNumber)
+      return false
+    }
+    const result = await getPublicPaymentAction(stored.access)
+    if (!result.ok) {
+      clearOrderAccess(stored.orderNumber)
+      return false
+    }
+    setAccess(stored.access)
+    setError(null)
+    setView(result.data)
+    setNoOrder(false)
+    return true
+  }
+
+  function openRecent() {
+    if (!recent) return
+    startLookup(async () => {
+      const opened = await openStored(recent)
+      if (!opened) {
+        setRecent(null)
+        setLookupError('Ese pedido ya no está disponible. Si necesitás ayuda, escribinos por WhatsApp.')
+      }
+    })
+  }
+
+  function submitLookup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setLookupError(null)
+    startLookup(async () => {
+      const result = await lookupOrderAction(lookupCode, lookupPhone)
+      if (!result.ok) {
+        setLookupError(result.error)
+        return
+      }
+      window.location.assign(buildOrderFollowCleanPath(result.data.orderNumber))
+    })
+  }
 
   function refresh(capability: string) {
     startTransition(async () => {
@@ -59,35 +114,12 @@ export function PedidoPagoClient() {
 
   useEffect(() => {
     const stored = loadOrderAccess()
+    // Desde el checkout (?reciente=1) se abre el pedido recién hecho; desde "Seguir mi pedido" se pregunta.
+    const fromCheckout = new URLSearchParams(window.location.search).has('reciente')
     startTransition(async () => {
-      if (!stored) {
-        setNoOrder(true)
-        return
-      }
-      const follow = storedFollow(stored)
-      if (follow && stored.orderNumber) {
-        // Canjeamos el link guardado sin abrir su URL: si el pedido sigue
-        // disponible vamos al seguimiento limpio; si no, lo olvidamos y mostramos la ayuda.
-        const claimed = await claimFollowSessionAction(stored.orderNumber, follow)
-        if (claimed.ok) {
-          window.location.replace(buildOrderFollowCleanPath(stored.orderNumber))
-          return
-        }
-        clearOrderAccess(stored.orderNumber)
-        setNoOrder(true)
-        return
-      }
-      setAccess(stored.access)
-      const result = await getPublicPaymentAction(stored.access)
-      if (!result.ok) {
-        // Acceso vencido: se olvida para que la próxima visita muestre la ayuda en vez de este error.
-        clearOrderAccess(stored.orderNumber)
-        setError(result.error)
-        setView(null)
-        return
-      }
-      setError(null)
-      setView(result.data)
+      if (stored && fromCheckout && (await openStored(stored))) return
+      setRecent(stored && !fromCheckout ? stored : null)
+      setNoOrder(true)
     })
   }, [])
 
@@ -163,16 +195,65 @@ export function PedidoPagoClient() {
         <main className={`${styles.center} ${styles.wrap}`}>
           <section className={styles.box} aria-labelledby="seguir-pedido-titulo">
             <p className={styles.eyebrow}>Seguir mi pedido</p>
-            <h1 id="seguir-pedido-titulo" className="mt-2 text-3xl">¿Dónde está mi pedido?</h1>
+            <h1 id="seguir-pedido-titulo" className="mt-2 text-3xl">¿Cómo va tu pedido?</h1>
             <p className="mt-3 text-muted leading-relaxed">
-              Cuando confirmás un pedido te damos un enlace para seguirlo. Abrilo desde el mensaje de WhatsApp o el
-              correo que recibiste. Si lo hiciste en este navegador, lo vas a ver acá automáticamente.
+              Ingresá el código de tu pedido y el teléfono con el que lo hiciste. El código está en el mensaje de
+              confirmación (por ejemplo, ILARA-7K3QPX).
             </p>
-            <p className="mt-2 text-muted leading-relaxed">¿No lo encontrás? Escribinos con tu nombre y te ayudamos.</p>
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+
+            {recent ? (
               <button
                 type="button"
-                className={styles.primaryBtn}
+                className={`${styles.secondaryBtn} ${styles.wide} mt-5`}
+                onClick={openRecent}
+                disabled={lookupPending}
+              >
+                Ver mi pedido reciente {recent.orderNumber}
+              </button>
+            ) : null}
+
+            <form className="mt-5" onSubmit={submitLookup} noValidate>
+              <label className={styles.field}>
+                Código de pedido
+                <input
+                  name="codigo"
+                  value={lookupCode}
+                  onChange={(event) => setLookupCode(event.target.value)}
+                  placeholder="ILARA-7K3QPX"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  required
+                />
+              </label>
+              <label className={styles.field}>
+                Teléfono
+                <input
+                  name="telefono"
+                  type="tel"
+                  inputMode="tel"
+                  value={lookupPhone}
+                  onChange={(event) => setLookupPhone(event.target.value)}
+                  placeholder="299 555 1234"
+                  autoComplete="tel"
+                  required
+                />
+              </label>
+              {lookupError ? (
+                <p className="mb-4 rounded-2xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-danger" role="alert">
+                  {lookupError}
+                </p>
+              ) : null}
+              <button type="submit" className={`${styles.primaryBtn} ${styles.wide}`} disabled={lookupPending}>
+                {lookupPending ? 'Buscando…' : 'Ver mi pedido'}
+              </button>
+            </form>
+
+            <p className="mt-6 text-muted leading-relaxed">¿No tenés el código? Escribinos con tu nombre y te ayudamos.</p>
+            <div className="mt-3 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                className={styles.secondaryBtn}
                 onClick={() => openWhatsApp('¡Hola! Quiero consultar por mi pedido.', true)}
               >
                 <MessageCircle className="h-4 w-4" aria-hidden /> Consultar por WhatsApp

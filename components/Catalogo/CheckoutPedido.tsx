@@ -344,7 +344,7 @@ export function CheckoutPedido({
         showToast('error', result.error)
         return
       }
-      router.push('/pedido')
+      router.push('/pedido?reciente=1')
     })
   }
 

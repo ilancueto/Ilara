@@ -237,7 +237,7 @@ test.describe('Stage 6.1 pedidos catálogo', () => {
 
     await expect(page.getByTestId('checkout-success')).toBeVisible({ timeout: 25_000 })
     const orderNumber = (await page.getByTestId('order-number').textContent())?.trim() || ''
-    expect(orderNumber).toMatch(/^IL-\d{6}$/)
+    expect(orderNumber).toMatch(/^ILARA-[2-9A-HJKMNP-Z]{6}$/)
     await expect(page.getByTestId('checkout-submit')).toHaveCount(0)
 
     // Axe acotado al drawer de checkout (contraste residual del catálogo legacy está fuera de 6.1).
