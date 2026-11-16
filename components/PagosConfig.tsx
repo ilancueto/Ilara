@@ -177,7 +177,7 @@ export default function PagosConfig() {
       </div>
 
       {error && (
-        <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+        <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-rose-800 dark:text-rose-200" role="alert">
           {error}
         </p>
       )}

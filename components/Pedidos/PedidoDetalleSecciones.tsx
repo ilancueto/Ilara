@@ -85,7 +85,7 @@ export function PedidoDatosContacto({ detail }: { detail: OrderDetail }) {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-lg bg-success-soft px-2 py-1 text-xs font-bold text-success hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300"
+                  className="inline-flex items-center gap-1 rounded-lg bg-success-soft px-2 py-1 text-xs font-bold text-success hover:bg-emerald-100"
                   data-testid="pedido-whatsapp"
                 >
                   <MessageCircle size={14} aria-hidden />

@@ -187,8 +187,8 @@ export default function PanelPago({
                                 type="button"
                                 onClick={() => elegirMetodo(metodo.id)}
                                 className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${activo
-                                    ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400 dark:bg-primary-soft dark:text-pink-300'
-                                    : 'border-line bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                                    ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400'
+                                    : 'border-line bg-white text-gray-700 dark:bg-zinc-900 dark:text-gray-300'
                                 }`}
                             >
                                 <span className="block truncate">{metodo.label}</span>
@@ -199,8 +199,8 @@ export default function PanelPago({
                         type="button"
                         onClick={elegirMixto}
                         className={`min-w-0 px-1 py-2 rounded-[10px] border text-[11px] font-bold transition-colors ${pagoMixto
-                            ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400 dark:bg-primary-soft dark:text-pink-300'
-                            : 'border-line bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
+                            ? 'border-primary bg-primary-soft text-primary-ink dark:border-pink-400'
+                            : 'border-line bg-white text-gray-700 dark:bg-zinc-900 dark:text-gray-300'
                         }`}
                     >
                         Mixto
@@ -243,7 +243,7 @@ export default function PanelPago({
                 }}
                 disabled={disabled || cargando}
                 className={`w-full min-h-10 mt-1.5 px-4 rounded-full border text-sm font-bold disabled:opacity-45 ${cobrarDespues
-                    ? 'border-warning-line bg-warning-soft text-warning dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+                    ? 'border-warning-line bg-warning-soft text-warning'
                     : 'border-pink-100/80 bg-white text-gray-700 dark:border-white/10 dark:bg-zinc-900 dark:text-gray-300'
                 }`}
             >

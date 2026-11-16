@@ -214,34 +214,6 @@ body {
   overflow-x: clip;
 }
 
-/* ─── Layout ─── */
-.app-wrapper {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  min-height: 100vh;
-}
-
-@media (max-width: 768px) {
-  .app-wrapper {
-    flex-direction: column;
-  }
-}
-
-.app-content {
-  flex: 1;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 28px;
-}
-
-@media (min-width: 768px) {
-  .app-content {
-    padding: 36px 44px;
-  }
-}
-
 /* ─── Shell overhaul: top + dock (sin sidebar) ─── */
 .app-shell {
   --app-top-h: 64px;
@@ -290,27 +262,9 @@ body {
   padding: clamp(1rem, 2.5vw, 1.75rem) var(--app-pad-x);
 }
 
-.catalog-product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 158px), 1fr));
-  gap: clamp(0.65rem, 1.5vw, 1rem);
-}
-
-.catalog-shell-width {
-  width: 100%;
-  max-width: 1200px;
-  margin-inline: auto;
-}
-
 .pos-cart-head h3,
 .pos-cart-head p {
   color: inherit;
-}
-
-@media (min-width: 640px) {
-  .catalog-product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  }
 }
 
 .app-dock {
@@ -567,11 +521,6 @@ body {
   }
 }
 
-/* Excepción: total a pagar (card rosa) debe mantener texto blanco (p global pisa si no) */
-.panel-total p {
-  color: inherit !important;
-}
-
 /* Login: párrafos en blanco (el p global pisa text-white) */
 /* Login: colores de texto por elemento (no forzar blanco en todos los p) */
 
@@ -790,14 +739,7 @@ body {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-/* Fixed 3-column grid for exactly 3 payment method buttons (e.g. Confirm Sale panel) */
-.form-payment-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  width: 100%;
-  min-width: 0;
-}
+
 .form-payment-btn {
   min-height: 48px;
   display: flex;
@@ -809,33 +751,6 @@ body {
   color: #9ca3af;
 }
 
-/* 3. Navigation Tabs */
-.nav-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-  transition: all 0.2s;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.nav-tab.active {
-  background: var(--ui-primary);
-  color: #fff;
-  box-shadow: none;
-}
-
-.nav-tab:not(.active):hover {
-  background: var(--ui-surface-soft);
-  color: var(--ui-ink);
-}
-
 /* 4. Card variants */
 .card {
   background: var(--ui-surface);
@@ -844,81 +759,14 @@ body {
   box-shadow: none;
 }
 
-.card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--ui-shadow);
-}
-
-/* Dark theme card (Login, EmptyState en contextos oscuros) */
-.card-dark {
-  background: rgba(26, 8, 32, 0.6);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-}
-
-/* Login: tarjeta más clara, texto blanco */
-.login-card-bg {
-  background: rgba(160, 115, 140, 0.92);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
-}
-
-/* 5. Utilities ( !important para que no las pise Tailwind/otros ) */
-.mb-10px {
-  margin-bottom: 10px !important;
-}
-
-/* Paginación catálogo: padding en el contenedor (no colapsa como el margin) */
-.paginacion-catalogo-wrapper {
-  padding-top: 30px !important;
-  padding-bottom: 30px !important;
-}
-
-.mt-20px {
-  margin-top: 20px !important;
-}
-
-/* Separación botón Cerrar sesión (sidebar) */
-.mt-btn-logout {
-  margin-top: 16px !important;
-}
-
-/* Dashboard: métricas — padding interno consistente */
-.dashboard-metric-card {
-  padding: 1.5rem;
-}
-
 /* Historial de ventas: espaciado entre bloques y tarjetas */
 .mb-historial-block {
   margin-bottom: 2rem !important;  /* 32px entre secciones */
 }
 
-.mb-historial-card {
-  margin-bottom: 1.5rem !important;  /* 24px entre cada venta */
-}
-
-.historial-list .mb-historial-card:last-child {
-  margin-bottom: 0 !important;
-}
-
 /* Marca Ilara — script vía next/font (variable --font-ilara-script en layout) */
 .font-ilara {
   font-family: var(--font-ilara-script), ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-accent-500));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* 6. Scrollbar */
@@ -1017,7 +865,6 @@ body {
   to { opacity: 1; }
 }
 
-
 .animate-fade-in {
   animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -1048,28 +895,6 @@ body {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
-.animate-drawer-in {
-  animation: drawer-slide-in 0.25s ease-out forwards;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Stagger delays para listas */
-.stagger-1 { animation-delay: 50ms; }
-.stagger-2 { animation-delay: 100ms; }
-.stagger-3 { animation-delay: 150ms; }
-.stagger-4 { animation-delay: 200ms; }
-
-.animate-slide-up.stagger-1,
-.animate-fade-in.stagger-1 { animation-delay: 50ms; }
-.animate-slide-up.stagger-2,
-.animate-fade-in.stagger-2 { animation-delay: 100ms; }
-.animate-slide-up.stagger-3,
-.animate-fade-in.stagger-3 { animation-delay: 150ms; }
-.animate-slide-up.stagger-4,
-.animate-fade-in.stagger-4 { animation-delay: 200ms; }
 
 /* 8. Modal — z-index alto para que cubra toda la pantalla cuando se usa con portal en body */
 .modal-backdrop {
@@ -1102,59 +927,10 @@ body {
   text-overflow: ellipsis;
 }
 
-/* 9. Login - Glow Orbs (suaves sobre fondo rosa pastel) */
-.glow-orb-1,
-.glow-orb-2,
-.glow-orb-3 {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.glow-orb-1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(251, 207, 232, 0.6) 0%, transparent 70%);
-  top: -10%;
-  left: -10%;
-  animation: float 8s ease-in-out infinite;
-}
-
-.glow-orb-2 {
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(233, 213, 255, 0.5) 0%, transparent 70%);
-  bottom: -5%;
-  right: -5%;
-  animation: float 10s ease-in-out infinite reverse;
-  animation-delay: 1s;
-}
-
-.glow-orb-3 {
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(253, 242, 248, 0.7) 0%, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: float 6s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-
 /* Forzar texto blanco en login (máxima especificidad, al final para que no lo pise nada) */
 #login-form-card .login-card-paragraph,
-#login-form-card p.login-card-paragraph,
-.login-card-bg .login-card-paragraph {
+#login-form-card p.login-card-paragraph {
   color: #ffffff !important;
-}
-
-/* Catálogo: render perezoso de tarjetas fuera de viewport (E / performance) */
-.content-visibility-auto {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 420px;
 }
 
 /* PDP pública: ancho y centrado explícitos (evita bloque “pegado” a la izquierda si utilidades compiten). */

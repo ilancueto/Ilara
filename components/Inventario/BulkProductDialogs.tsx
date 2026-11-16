@@ -52,7 +52,7 @@ export function ModalEliminarProductos({
                             type="button"
                             onClick={() => onConfirm()}
                             disabled={loading || seleccionados.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-danger-soft text-danger hover:bg-red-100 dark:bg-red-900/40 dark:text-red-300 border border-danger-line disabled:opacity-50"
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-danger-soft text-danger hover:bg-red-100 border border-danger-line disabled:opacity-50"
                             data-testid="bulk-delete-productos-confirm"
                         >
                             {loading

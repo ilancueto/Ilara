@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, Categoria } from '@/lib/supabase'
 import { X, Plus, SquarePen, Trash2, FolderOpen } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 
 interface Props {
     mostrar: boolean
@@ -21,6 +22,8 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null)
     const [nombre, setNombre] = useState('')
     const [cargando, setCargando] = useState(false)
+    const panelRef = useRef<HTMLDivElement>(null)
+    useDialogA11y(mostrar, cerrar, panelRef)
 
     const obtenerCategorias = useCallback(async () => {
         const { data, error } = await supabase
@@ -129,9 +132,9 @@ export default function GestionCategorias({ mostrar, cerrar, onActualizado }: Pr
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={cerrar} aria-hidden />
 
-            <PastelCard className="relative w-full max-w-md !p-0 z-50 shadow-2xl rounded-3xl border border-line animate-fade-in-scale overflow-hidden" noHover>
+            <PastelCard ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="gestion-categorias-titulo" className="relative w-full max-w-md !p-0 z-50 shadow-2xl rounded-3xl border border-line animate-fade-in-scale overflow-hidden" noHover>
                 <div className="px-5 sm:px-6 py-4 border-b border-line flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-ink flex items-center gap-2">
+                    <h3 id="gestion-categorias-titulo" className="text-xl font-bold text-ink flex items-center gap-2">
                         <FolderOpen className="w-6 h-6 text-accent" />
                         Categorías
                     </h3>

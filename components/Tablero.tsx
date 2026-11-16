@@ -277,7 +277,7 @@ export default function Tablero({ onNavigate }: TableroProps) {
         hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches'
 
     if (dashboardError) return (
-        <div role="alert" className="rounded-2xl border border-warning-line bg-warning-soft p-6 text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+        <div role="alert" className="rounded-2xl border border-warning-line bg-warning-soft p-6 text-amber-950 dark:text-amber-100">
             <h2 className="text-xl font-bold">Resumen sin actualizar</h2>
             <p className="mt-2">{dashboardError} Los importes no están disponibles hasta completar la actualización.</p>
             <button type="button" onClick={() => void cargarDatos()} className="mt-4 rounded-xl border px-4 py-2 font-semibold">Reintentar</button>

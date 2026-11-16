@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { supabase, getProductImages, type Producto } from '@/lib/supabase'
 import { Loader, X, Plus, Trash2, Package, Tag, DollarSign, Sparkles, ShoppingBag } from 'lucide-react'
@@ -37,7 +37,11 @@ interface FormularioComboProps {
     productos: ProductoForm[]
 }
 
+import { useDialogA11y } from '@/hooks/useDialogA11y'
+
 export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSuccess, productos }: FormularioComboProps) {
+    const panelRef = useRef<HTMLDivElement>(null)
+    useDialogA11y(isOpen, onClose, panelRef)
     const { showSuccess, showError } = useToast()
     const [guardando, setGuardando] = useState(false)
     const [formData, setFormData] = useState({
@@ -143,7 +147,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
-            <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-surface rounded-3xl shadow-2xl overflow-hidden animate-fade-in-scale border border-line">
+            <div ref={panelRef} role="dialog" aria-modal="true" aria-label={comboToEdit ? 'Editar combo' : 'Nuevo combo'} className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-surface rounded-3xl shadow-2xl overflow-hidden animate-fade-in-scale border border-line">
                 {/* Header */}
                 <div className="flex-shrink-0 px-6 sm:px-8 py-5 bg-primary-soft border-b border-line">
                     <div className="flex items-start justify-between gap-4">

@@ -159,7 +159,7 @@ export default function Ingresos() {
   return (
     <div className="flex flex-col gap-10 sm:gap-12 animate-fade-in pb-14 px-4 sm:px-6 lg:px-8">
       {/* Header + sub-nav fijos al hacer scroll */}
-      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-6 -mt-2 bg-canvas/90 dark:bg-zinc-950/95 backdrop-blur-md border-b border-pink-100/60 dark:border-white/10">
+      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-6 -mt-2 bg-canvas/90 backdrop-blur-md border-b border-pink-100/60 dark:border-white/10">
         <div className="flex flex-col gap-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>

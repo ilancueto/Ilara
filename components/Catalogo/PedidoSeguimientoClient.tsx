@@ -47,16 +47,16 @@ function hasBankDetails(bank: PublicFollowView['bank']): boolean {
 
 function orderStatusBadgeInfo(orderStatus: string, paymentStatus: string | null): { label: string; colorClass: string; stepIndex: number } {
   if (orderStatus === 'cancelled') {
-    return { label: 'Pedido Cancelado', colorClass: 'bg-danger-soft text-danger border-danger-line dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/40', stepIndex: 0 }
+    return { label: 'Pedido Cancelado', colorClass: 'bg-danger-soft text-danger border-danger-line', stepIndex: 0 }
   }
   if (orderStatus === 'completed') {
-    return { label: 'Entregado con Éxito ✨', colorClass: 'bg-success-soft text-success border-success-line dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/40', stepIndex: 5 }
+    return { label: 'Entregado con Éxito ✨', colorClass: 'bg-success-soft text-success border-success-line', stepIndex: 5 }
   }
   if (orderStatus === 'ready') {
     return { label: 'En Camino / Listo para entrega 🚚', colorClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/40', stepIndex: 4 }
   }
   if (orderStatus === 'preparing') {
-    return { label: 'En Preparación 📦', colorClass: 'bg-warning-soft text-warning border-warning-line dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/40', stepIndex: 3 }
+    return { label: 'En Preparación 📦', colorClass: 'bg-warning-soft text-warning border-warning-line', stepIndex: 3 }
   }
   if (orderStatus === 'confirmed' || paymentStatus === 'approved') {
     return { label: 'Pago Aprobado · Confirmado', colorClass: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-900/40', stepIndex: 2 }
@@ -183,7 +183,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+          <p className="mt-4 rounded-xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-rose-800 dark:text-rose-200" role="alert">
             {error}
           </p>
         )}
@@ -327,7 +327,7 @@ export function PedidoSeguimientoClient({ orderNumber, initialError = null }: Pr
                       <span>{PUBLIC_PAYMENT_COPY.bankTransfer} · ${formatPesoARExact(transferAmount)} (10% OFF)</span>
                     </button>
                   ) : (
-                    <div className="rounded-xl border border-pink-100 bg-canvas p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+                    <div className="rounded-xl border border-pink-100 bg-canvas p-3 text-xs dark:border-zinc-800">
                       <p className="text-gray-600 dark:text-zinc-300">
                         Escribinos por WhatsApp y te pasamos el Alias al instante para transferir con 10% off.
                       </p>

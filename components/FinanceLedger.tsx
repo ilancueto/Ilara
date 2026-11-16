@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, CheckCircle2, CircleDollarSign, Plus, Scale, X } from 'lucide-react'
 import { PastelCard } from '@/components/ui/PastelCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -42,6 +43,8 @@ export default function FinanceLedger() {
   const [onlyOpen, setOnlyOpen] = useState(true)
   const [payableOpen, setPayableOpen] = useState(false)
   const [settling, setSettling] = useState<FinancialAccount | null>(null)
+  const ledgerDialogRef = useRef<HTMLDivElement>(null)
+  useDialogA11y(payableOpen || settling !== null, () => { setPayableOpen(false); setSettling(null) }, ledgerDialogRef)
   const [saving, setSaving] = useState(false)
   const [payable, setPayable] = useState({ counterparty: '', description: '', amount: 0, dueDate: '' })
   const [settlement, setSettlement] = useState({
@@ -281,8 +284,8 @@ export default function FinanceLedger() {
       )}
 
       {(payableOpen || settling) && <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm">
-        <PastelCard className="w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8" noHover>
-          <div className="flex justify-between gap-4"><div><p className="text-xs uppercase tracking-wider font-bold text-indigo-500">Stage 6.6</p><h3 className="text-xl font-black mt-1">{settling ? (settling.kind === 'receivable' ? 'Registrar cobro' : 'Registrar pago') : 'Nueva cuenta por pagar'}</h3></div><button type="button" aria-label="Cerrar" onClick={() => { setPayableOpen(false); setSettling(null) }}><X /></button></div>
+        <PastelCard ref={ledgerDialogRef} role="dialog" aria-modal="true" aria-labelledby="ledger-dialog-title" className="w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8" noHover>
+          <div className="flex justify-between gap-4"><div><p className="text-xs uppercase tracking-wider font-bold text-accent">Cuentas</p><h3 id="ledger-dialog-title" className="text-xl font-black mt-1">{settling ? (settling.kind === 'receivable' ? 'Registrar cobro' : 'Registrar pago') : 'Nueva cuenta por pagar'}</h3></div><button type="button" aria-label="Cerrar" onClick={() => { setPayableOpen(false); setSettling(null) }}><X /></button></div>
           {settling ? <form onSubmit={submitSettlement} className="mt-6 space-y-4">
             <p className="p-3 rounded-xl bg-warning-soft text-sm">Saldo disponible: <strong>{money(settling.balance)}</strong></p>
             <label className="block text-sm font-semibold">Monto<input type="number" min="0.01" max={settling.balance} step="0.01" required value={settlement.amount || ''} onChange={(e) => setSettlement((old) => ({ ...old, amount: Number(e.target.value) }))} className="form-input w-full mt-1 rounded-xl" /></label>

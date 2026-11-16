@@ -40,6 +40,8 @@ export function PedidoPagoClient() {
   const [pending, startTransition] = useTransition()
   const [fileError, setFileError] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  /** Sin pedido guardado en este navegador: se muestra una guía en vez del paso de pago vacío. */
+  const [noOrder, setNoOrder] = useState(false)
 
   function refresh(capability: string) {
     startTransition(async () => {
@@ -58,7 +60,7 @@ export function PedidoPagoClient() {
     const stored = loadOrderAccess()
     startTransition(async () => {
       if (!stored) {
-        setError('No encontramos un pedido abierto en este navegador.')
+        setNoOrder(true)
         return
       }
       const follow = storedFollow(stored)
@@ -144,6 +146,34 @@ export function PedidoPagoClient() {
   const showRetryTransfer = Boolean(view?.can_retry && view.transfer_available)
   const showRetryMp = Boolean(view?.can_retry && view.mp_available)
 
+  if (noOrder) {
+    return (
+      <StorefrontShell header={<StorefrontHeader simple />}>
+        <main className={`${styles.center} ${styles.wrap}`}>
+          <section className={styles.box} aria-labelledby="seguir-pedido-titulo">
+            <p className={styles.eyebrow}>Seguir mi pedido</p>
+            <h1 id="seguir-pedido-titulo" className="mt-2 text-3xl">¿Dónde está mi pedido?</h1>
+            <p className="mt-3 text-muted leading-relaxed">
+              Cuando confirmás un pedido te damos un enlace para seguirlo. Abrilo desde el mensaje de WhatsApp o el
+              correo que recibiste. Si lo hiciste en este navegador, lo vas a ver acá automáticamente.
+            </p>
+            <p className="mt-2 text-muted leading-relaxed">¿No lo encontrás? Escribinos con tu nombre y te ayudamos.</p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                className={styles.primaryBtn}
+                onClick={() => openWhatsApp('¡Hola! Quiero consultar por mi pedido.', true)}
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden /> Consultar por WhatsApp
+              </button>
+              <Link href="/catalogo" className={styles.secondaryBtn}>Volver al catálogo</Link>
+            </div>
+          </section>
+        </main>
+      </StorefrontShell>
+    )
+  }
+
   return (
     <StorefrontShell header={<StorefrontHeader simple />}>
     <main className={`${styles.center} ${styles.wrap}`}>
@@ -159,13 +189,17 @@ export function PedidoPagoClient() {
               {view?.order_number || 'Pedido'}
             </h1>
           </div>
-          <span className={styles.status}>
-            {statusLabel(view?.payment_status ?? null)}
-          </span>
+          {view ? (
+            <span className={styles.status}>
+              {statusLabel(view.payment_status ?? null)}
+            </span>
+          ) : !error ? (
+            <span className={styles.status}>Buscando tu pedido…</span>
+          ) : null}
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+          <p className="mt-4 rounded-xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-rose-800 dark:text-rose-200" role="alert">
             {error}
           </p>
         )}
@@ -263,7 +297,7 @@ export function PedidoPagoClient() {
                         <span>Ver datos bancarios y transferir</span>
                       </button>
                     ) : (
-                      <div className="mt-4 rounded-xl border border-pink-100 bg-canvas p-3.5 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+                      <div className="mt-4 rounded-xl border border-pink-100 bg-canvas p-3.5 text-xs dark:border-zinc-800">
                         <p className="text-gray-600 dark:text-zinc-300">
                           Escribinos por WhatsApp y te pasamos el Alias al instante para transferir.
                         </p>

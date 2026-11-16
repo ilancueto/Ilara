@@ -310,7 +310,7 @@ export default function Pedidos() {
             type="button"
             onClick={() => void handleDeleteCancelled()}
             disabled={actionLoading}
-            className="inline-flex items-center gap-2 self-start rounded-xl border border-danger-line px-3 py-2 text-sm font-semibold text-danger hover:bg-danger-soft dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30 disabled:opacity-60"
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-danger-line px-3 py-2 text-sm font-semibold text-danger hover:bg-danger-soft dark:hover:bg-rose-950/30 disabled:opacity-60"
             data-testid="pedidos-delete-cancelled"
           >
             <Trash2 size={16} />
@@ -534,7 +534,7 @@ export default function Pedidos() {
                   type="button"
                   disabled={actionLoading}
                   onClick={() => void handleDeleteOne()}
-                  className="inline-flex items-center gap-1.5 self-start rounded-xl border border-danger-line px-3 py-2 text-sm font-bold text-danger hover:bg-danger-soft dark:border-rose-900 dark:text-rose-300 disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 self-start rounded-xl border border-danger-line px-3 py-2 text-sm font-bold text-danger hover:bg-danger-soft disabled:opacity-60"
                   data-testid="pedido-delete"
                 >
                   <Trash2 size={16} />

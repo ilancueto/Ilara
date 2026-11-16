@@ -137,7 +137,7 @@ export default function ReportesMargen() {
       )}
 
       {error && !loading && (
-        <div className="rounded-2xl border border-danger-line bg-danger-soft dark:border-red-900/60 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3" role="alert">
+        <div className="rounded-2xl border border-danger-line bg-danger-soft p-4 flex items-center justify-between gap-3" role="alert">
           <p className="text-sm font-semibold text-danger">{error}</p>
           <button type="button" onClick={() => setReloadTick((tick) => tick + 1)} className="text-sm font-extrabold text-danger">
             Reintentar
@@ -165,7 +165,7 @@ export default function ReportesMargen() {
           )}
 
           {!!report.pending_cost_orders?.length && (
-            <div className="rounded-2xl border border-warning-line bg-warning-soft dark:border-amber-900/60 dark:bg-amber-950/30 p-4" data-testid="margin-pending-cost">
+            <div className="rounded-2xl border border-warning-line bg-warning-soft p-4" data-testid="margin-pending-cost">
               <p className="text-sm font-extrabold">Pedidos con costo pendiente de revisar</p>
               <ul className="mt-2 space-y-1 text-sm">
                 {report.pending_cost_orders.map((order) => (
@@ -193,7 +193,7 @@ export default function ReportesMargen() {
             ))}
           </div>
 
-          <div className={`rounded-2xl border p-4 flex gap-3 ${report.summary.margin_complete ? 'border-success-line bg-success-soft dark:border-emerald-900/60 dark:bg-emerald-950/30' : 'border-warning-line bg-warning-soft dark:border-amber-900/60 dark:bg-amber-950/30'}`}>
+          <div className={`rounded-2xl border p-4 flex gap-3 ${report.summary.margin_complete ? 'border-success-line bg-success-soft' : 'border-warning-line bg-warning-soft'}`}>
             {report.summary.margin_complete
               ? <CheckCircle2 className="w-5 h-5 shrink-0 text-success" aria-hidden />
               : <AlertTriangle className="w-5 h-5 shrink-0 text-warning" aria-hidden />}

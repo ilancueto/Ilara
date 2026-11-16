@@ -314,7 +314,7 @@ function HomeContent() {
 
   if (authError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-canvas dark:bg-gray-900 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-canvas p-6">
         <div className="text-center max-w-sm">
           <p className="text-muted font-medium mb-4">{authError}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
