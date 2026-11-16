@@ -77,28 +77,28 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
   }
 
   if (loading && !profile) {
-    return <div className="py-10 grid place-items-center" data-testid="customer-crm-loading"><RefreshCw className="w-5 h-5 text-pink-500 animate-spin" /></div>
+    return <div className="py-10 grid place-items-center" data-testid="customer-crm-loading"><RefreshCw className="w-5 h-5 text-accent animate-spin" /></div>
   }
   if (error || !profile) {
-    return <div className="rounded-xl bg-red-50 dark:bg-red-950/30 p-4" role="alert"><p className="text-sm text-red-700 dark:text-red-300">{error || 'No se pudo cargar el CRM.'}</p><button type="button" onClick={() => void load()} className="mt-2 text-sm font-bold text-red-700 dark:text-red-300">Reintentar</button></div>
+    return <div className="rounded-xl bg-danger-soft p-4" role="alert"><p className="text-sm text-danger">{error || 'No se pudo cargar el CRM.'}</p><button type="button" onClick={() => void load()} className="mt-2 text-sm font-bold text-danger">Reintentar</button></div>
   }
 
   return (
     <div className="flex flex-col gap-6" data-testid="customer-crm-panel">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <div className="rounded-xl bg-primary-soft p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Compras</p><p className="font-black text-lg">{profile.metrics.sale_count}</p></div>
-        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Neto comprado</p><p className="font-black text-lg">{money.format(profile.metrics.net_spent)}</p></div>
-        <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Devuelto</p><p className="font-black text-lg">{money.format(profile.metrics.refund_total)}</p></div>
-        <div className="rounded-xl bg-sky-50 dark:bg-sky-950/30 p-3"><p className="text-[10px] uppercase font-bold text-gray-500">Ticket medio</p><p className="font-black text-lg">{money.format(profile.metrics.average_ticket)}</p></div>
+        <div className="rounded-xl bg-primary-soft p-3"><p className="text-[10px] uppercase font-bold text-muted">Compras</p><p className="font-black text-lg">{profile.metrics.sale_count}</p></div>
+        <div className="rounded-xl bg-success-soft p-3"><p className="text-[10px] uppercase font-bold text-muted">Neto comprado</p><p className="font-black text-lg">{money.format(profile.metrics.net_spent)}</p></div>
+        <div className="rounded-xl bg-warning-soft p-3"><p className="text-[10px] uppercase font-bold text-muted">Devuelto</p><p className="font-black text-lg">{money.format(profile.metrics.refund_total)}</p></div>
+        <div className="rounded-xl bg-sky-50 dark:bg-sky-950/30 p-3"><p className="text-[10px] uppercase font-bold text-muted">Ticket medio</p><p className="font-black text-lg">{money.format(profile.metrics.average_ticket)}</p></div>
       </div>
 
       <section aria-labelledby="crm-orders-title" className="rounded-xl border border-line p-4" data-testid="crm-catalog-orders">
         <h4 id="crm-orders-title" className="font-extrabold">Pedidos online</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">Pedidos</p><p className="font-black">{profile.catalog_orders.order_count}</p></div>
-          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">Histórico</p><p className="font-black">{money.format(profile.catalog_orders.order_total)}</p></div>
-          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">En curso</p><p className="font-black">{profile.catalog_orders.open_count}</p></div>
-          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-gray-500">Último</p><p className="font-black text-sm">{profile.catalog_orders.last_order_at ? dateTime.format(new Date(profile.catalog_orders.last_order_at)) : '—'}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-muted">Pedidos</p><p className="font-black">{profile.catalog_orders.order_count}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-muted">Histórico</p><p className="font-black">{money.format(profile.catalog_orders.order_total)}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-muted">En curso</p><p className="font-black">{profile.catalog_orders.open_count}</p></div>
+          <div className="rounded-lg bg-canvas p-2"><p className="text-[10px] uppercase text-muted">Último</p><p className="font-black text-sm">{profile.catalog_orders.last_order_at ? dateTime.format(new Date(profile.catalog_orders.last_order_at)) : '—'}</p></div>
         </div>
         <ul className="mt-3 space-y-2">
           {profile.catalog_orders.recent.map((order) => (
@@ -110,7 +110,7 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
               >
                 <span>
                   <span className="font-bold">{order.order_number}</span>
-                  <span className="text-xs text-gray-500 block">
+                  <span className="text-xs text-muted block">
                     {isOrderStatus(order.status) ? orderStatusLabel(order.status) : order.status}
                   </span>
                 </span>
@@ -119,19 +119,19 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
             </li>
           ))}
           {profile.catalog_orders.recent.length === 0 && (
-            <li className="text-xs text-gray-500">Todavía no hay pedidos del catálogo.</li>
+            <li className="text-xs text-muted">Todavía no hay pedidos del catálogo.</li>
           )}
         </ul>
       </section>
 
       <section aria-labelledby="crm-tags-title">
-        <h4 id="crm-tags-title" className="font-extrabold flex items-center gap-2"><Tags className="w-4 h-4 text-pink-500" /> Etiquetas</h4>
+        <h4 id="crm-tags-title" className="font-extrabold flex items-center gap-2"><Tags className="w-4 h-4 text-accent" /> Etiquetas</h4>
         <div className="flex flex-wrap gap-2 mt-3">
           {allTags.map((tag) => {
             const selected = selectedTags.has(tag.id)
             return <button key={tag.id} type="button" aria-pressed={selected} data-testid={`crm-tag-${tag.id}`} onClick={() => setSelectedTags((current) => { const next = new Set(current); if (next.has(tag.id)) next.delete(tag.id); else next.add(tag.id); return next })} className={`rounded-full border px-3 py-1.5 text-xs font-bold ${selected ? 'text-white' : 'bg-surface text-muted'}`} style={selected ? { backgroundColor: tag.color, borderColor: tag.color } : { borderColor: tag.color }}>{tag.name}</button>
           })}
-          {allTags.length === 0 && <span className="text-xs text-gray-500">Todavía no hay etiquetas.</span>}
+          {allTags.length === 0 && <span className="text-xs text-muted">Todavía no hay etiquetas.</span>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2 mt-3">
           <input value={tagName} onChange={(event) => setTagName(event.target.value)} maxLength={30} placeholder="Nueva etiqueta" className="form-input rounded-xl px-3 py-2 text-sm flex-1" data-testid="crm-new-tag" />
@@ -143,12 +143,12 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
       <section aria-labelledby="crm-consent-title" className="rounded-xl border border-line p-4">
         <div className="flex items-center justify-between gap-3">
           <h4 id="crm-consent-title" className="font-extrabold">Campañas de marketing</h4>
-          <span className={`inline-flex items-center gap-1 text-xs font-bold ${profile.consent.granted ? 'text-emerald-600' : 'text-gray-500'}`} data-testid="crm-consent-status">
+          <span className={`inline-flex items-center gap-1 text-xs font-bold ${profile.consent.granted ? 'text-success' : 'text-muted'}`} data-testid="crm-consent-status">
             {profile.consent.granted ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
             {profile.consent.granted ? 'Autorizado' : 'No autorizado'}
           </span>
         </div>
-        {profile.consent.created_at && <p className="text-xs text-gray-500 mt-1">Último registro: {dateTime.format(new Date(profile.consent.created_at))} · {profile.consent.source}</p>}
+        {profile.consent.created_at && <p className="text-xs text-muted mt-1">Último registro: {dateTime.format(new Date(profile.consent.created_at))} · {profile.consent.source}</p>}
         <div className="grid sm:grid-cols-2 gap-2 mt-3">
           <select value={consentSource} onChange={(event) => setConsentSource(event.target.value)} className="form-input rounded-xl px-3 py-2 text-sm" aria-label="Origen del consentimiento">
             <option value="presencial">Presencial</option><option value="whatsapp">WhatsApp</option><option value="web">Web</option><option value="telefono">Teléfono</option><option value="otro">Otro</option>
@@ -162,17 +162,17 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
       </section>
 
       <section aria-labelledby="crm-notes-title">
-        <h4 id="crm-notes-title" className="font-extrabold flex items-center gap-2"><StickyNote className="w-4 h-4 text-pink-500" /> Notas internas</h4>
+        <h4 id="crm-notes-title" className="font-extrabold flex items-center gap-2"><StickyNote className="w-4 h-4 text-accent" /> Notas internas</h4>
         <textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={1000} rows={3} placeholder="Información útil para próximas atenciones…" className="form-input rounded-xl p-3 text-sm w-full mt-3" data-testid="crm-note-input" />
         <div className="flex justify-end mt-2"><button type="button" disabled={saving || !note.trim()} onClick={() => void run(async () => { await addCustomerCrmNote(customerId, note.trim()); setNote('') }, 'Nota agregada.')} className="btn-primary rounded-full px-4 py-2 text-sm disabled:opacity-50" data-testid="crm-add-note">Agregar nota</button></div>
         <ul className="space-y-2 mt-3">
-          {profile.notes.map((item) => <li key={item.id} data-testid={`crm-note-${item.id}`} className="rounded-xl bg-gray-50 dark:bg-gray-700/50 p-3 flex gap-3 justify-between"><div><p className="text-sm whitespace-pre-wrap break-words">{item.body}</p><p className="text-[11px] text-gray-500 mt-1">{dateTime.format(new Date(item.created_at))}</p></div><button type="button" disabled={saving} onClick={() => void run(() => archiveCustomerCrmNote(item.id), 'Nota archivada.')} className="p-2 self-start text-gray-400 hover:text-red-500" aria-label="Archivar nota"><Archive className="w-4 h-4" /></button></li>)}
-          {profile.notes.length === 0 && <li className="text-xs text-gray-500">Sin notas internas.</li>}
+          {profile.notes.map((item) => <li key={item.id} data-testid={`crm-note-${item.id}`} className="rounded-xl bg-gray-50 dark:bg-gray-700/50 p-3 flex gap-3 justify-between"><div><p className="text-sm whitespace-pre-wrap break-words">{item.body}</p><p className="text-[11px] text-muted mt-1">{dateTime.format(new Date(item.created_at))}</p></div><button type="button" disabled={saving} onClick={() => void run(() => archiveCustomerCrmNote(item.id), 'Nota archivada.')} className="p-2 self-start text-hint hover:text-danger" aria-label="Archivar nota"><Archive className="w-4 h-4" /></button></li>)}
+          {profile.notes.length === 0 && <li className="text-xs text-muted">Sin notas internas.</li>}
         </ul>
       </section>
 
       <section aria-labelledby="crm-history-title">
-        <h4 id="crm-history-title" className="font-extrabold flex items-center gap-2"><History className="w-4 h-4 text-pink-500" /> Historial unificado</h4>
+        <h4 id="crm-history-title" className="font-extrabold flex items-center gap-2"><History className="w-4 h-4 text-accent" /> Historial unificado</h4>
         <ul className="space-y-2 mt-3" data-testid="crm-activity">
           {profile.activity.map((event) => {
             const title = event.type === 'order'
@@ -189,16 +189,16 @@ export default function CustomerCrmPanel({ customerId }: { customerId: number })
               <>
                 <div>
                   <p className="font-bold">{title}</p>
-                  <p className="text-xs text-gray-500">{dateTime.format(new Date(event.event_at))}{event.reason ? ` · ${event.reason}` : ''}</p>
+                  <p className="text-xs text-muted">{dateTime.format(new Date(event.event_at))}{event.reason ? ` · ${event.reason}` : ''}</p>
                 </div>
-                <span className={`font-black shrink-0 ${event.amount < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{money.format(event.amount)}</span>
+                <span className={`font-black shrink-0 ${event.amount < 0 ? 'text-danger' : 'text-success'}`}>{money.format(event.amount)}</span>
               </>
             )
             return href
               ? <li key={event.id}><a href={href} className="rounded-xl border border-line px-3 py-2 flex justify-between gap-3 text-sm hover:bg-pink-50/50 dark:hover:bg-pink-950/20">{body}</a></li>
               : <li key={event.id} className="rounded-xl border border-line px-3 py-2 flex justify-between gap-3 text-sm">{body}</li>
           })}
-          {profile.activity.length === 0 && <li className="text-xs text-gray-500">Sin actividad registrada.</li>}
+          {profile.activity.length === 0 && <li className="text-xs text-muted">Sin actividad registrada.</li>}
         </ul>
       </section>
     </div>

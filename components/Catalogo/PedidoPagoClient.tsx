@@ -40,6 +40,8 @@ export function PedidoPagoClient() {
   const [pending, startTransition] = useTransition()
   const [fileError, setFileError] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  /** Sin pedido guardado en este navegador: se muestra una guía en vez del paso de pago vacío. */
+  const [noOrder, setNoOrder] = useState(false)
 
   function refresh(capability: string) {
     startTransition(async () => {
@@ -58,7 +60,7 @@ export function PedidoPagoClient() {
     const stored = loadOrderAccess()
     startTransition(async () => {
       if (!stored) {
-        setError('No encontramos un pedido abierto en este navegador.')
+        setNoOrder(true)
         return
       }
       const follow = storedFollow(stored)
@@ -144,6 +146,34 @@ export function PedidoPagoClient() {
   const showRetryTransfer = Boolean(view?.can_retry && view.transfer_available)
   const showRetryMp = Boolean(view?.can_retry && view.mp_available)
 
+  if (noOrder) {
+    return (
+      <StorefrontShell header={<StorefrontHeader simple />}>
+        <main className={`${styles.center} ${styles.wrap}`}>
+          <section className={styles.box} aria-labelledby="seguir-pedido-titulo">
+            <p className={styles.eyebrow}>Seguir mi pedido</p>
+            <h1 id="seguir-pedido-titulo" className="mt-2 text-3xl">¿Dónde está mi pedido?</h1>
+            <p className="mt-3 text-muted leading-relaxed">
+              Cuando confirmás un pedido te damos un enlace para seguirlo. Abrilo desde el mensaje de WhatsApp o el
+              correo que recibiste. Si lo hiciste en este navegador, lo vas a ver acá automáticamente.
+            </p>
+            <p className="mt-2 text-muted leading-relaxed">¿No lo encontrás? Escribinos con tu nombre y te ayudamos.</p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                className={styles.primaryBtn}
+                onClick={() => openWhatsApp('¡Hola! Quiero consultar por mi pedido.', true)}
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden /> Consultar por WhatsApp
+              </button>
+              <Link href="/catalogo" className={styles.secondaryBtn}>Volver al catálogo</Link>
+            </div>
+          </section>
+        </main>
+      </StorefrontShell>
+    )
+  }
+
   return (
     <StorefrontShell header={<StorefrontHeader simple />}>
     <main className={`${styles.center} ${styles.wrap}`}>
@@ -159,13 +189,17 @@ export function PedidoPagoClient() {
               {view?.order_number || 'Pedido'}
             </h1>
           </div>
-          <span className={styles.status}>
-            {statusLabel(view?.payment_status ?? null)}
-          </span>
+          {view ? (
+            <span className={styles.status}>
+              {statusLabel(view.payment_status ?? null)}
+            </span>
+          ) : !error ? (
+            <span className={styles.status}>Buscando tu pedido…</span>
+          ) : null}
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-semibold text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200" role="alert">
+          <p className="mt-4 rounded-xl border border-danger-line bg-danger-soft p-3.5 text-sm font-semibold text-rose-800 dark:text-rose-200" role="alert">
             {error}
           </p>
         )}
@@ -182,14 +216,14 @@ export function PedidoPagoClient() {
 
                 {/* Option 1: Mercado Pago */}
                 {view.mp_available && publicAmount != null && (
-                  <div className="group rounded-2xl border-2 border-[#009EE3]/30 bg-gradient-to-b from-[#E6F7FF]/50 to-white p-5 shadow-sm transition-all hover:border-[#009EE3] hover:shadow-md dark:from-[#00364F]/30 dark:to-[#1C1924]">
+                  <div className="group rounded-2xl border-2 border-[#009EE3]/30 bg-[#F2FAFF] p-5 shadow-sm transition-all hover:border-[#009EE3] hover:shadow-md dark:from-[#00364F]/30 dark:to-[#1C1924]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#009EE3] text-white">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#009EE3] text-white">
                           <Zap className="h-5 w-5" />
                         </div>
                         <div>
-                          <strong className="block text-base font-bold text-gray-900 dark:text-white">
+                          <strong className="block text-base font-bold text-ink">
                             Mercado Pago
                           </strong>
                           <span className="text-xs text-gray-500 dark:text-zinc-400">
@@ -215,7 +249,7 @@ export function PedidoPagoClient() {
                       type="button"
                       disabled={pending}
                       onClick={() => startMercadoPago(Boolean(error))}
-                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#009EE3] to-[#007EB5] py-3.5 font-bold text-white shadow-md shadow-[#009EE3]/25 transition-all hover:brightness-105 disabled:opacity-60"
+                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] hover:bg-[#007EB5] py-3.5 font-bold text-white transition-all hover:brightness-105 disabled:opacity-60"
                       data-testid="pay-mercadopago"
                     >
                       {pending ? (
@@ -232,14 +266,14 @@ export function PedidoPagoClient() {
 
                 {/* Option 2: Bank Transfer */}
                 {transferAmount != null && (
-                  <div className="rounded-2xl border-2 border-pink-200/80 bg-gradient-to-b from-[#FDF2F4]/40 to-white p-5 shadow-sm transition-all hover:border-[#D97786] hover:shadow-md dark:border-pink-900/40 dark:from-[#2D1823]/30 dark:to-[#1C1924]">
+                  <div className="rounded-2xl border-2 border-pink-200/80 bg-tint-0 p-5 shadow-sm transition-all hover:border-primary hover:shadow-md dark:border-pink-900/40 dark:from-[#2D1823]/30 dark:to-[#1C1924]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D97786] text-white">
                           <FileText className="h-5 w-5" />
                         </div>
                         <div>
-                          <strong className="block text-base font-bold text-gray-900 dark:text-white">
+                          <strong className="block text-base font-bold text-ink">
                             Transferencia Bancaria
                           </strong>
                           <span className="text-xs font-semibold text-[#1E9E68] dark:text-[#34D399]">
@@ -247,7 +281,7 @@ export function PedidoPagoClient() {
                           </span>
                         </div>
                       </div>
-                      <span className="rounded-full bg-[#FDF2F4] px-2.5 py-0.5 text-xs font-extrabold text-[#C25B6C] dark:bg-[#2D1823] dark:text-[#F472B6]">
+                      <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-extrabold text-primary dark:bg-[#2D1823] dark:text-[#F472B6]">
                         ${formatPesoARExact(transferAmount)}
                       </span>
                     </div>
@@ -257,13 +291,13 @@ export function PedidoPagoClient() {
                         type="button"
                         disabled={pending}
                         onClick={() => startTransfer(Boolean(error))}
-                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#D97786] bg-white py-3 font-bold text-[#C25B6C] transition-all hover:bg-[#D97786] hover:text-white disabled:opacity-60 dark:bg-transparent dark:text-[#F472B6]"
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary bg-white py-3 font-bold text-primary transition-all hover:bg-[#D97786] hover:text-white disabled:opacity-60 dark:bg-transparent dark:text-[#F472B6]"
                         data-testid="pay-transfer"
                       >
                         <span>Ver datos bancarios y transferir</span>
                       </button>
                     ) : (
-                      <div className="mt-4 rounded-xl border border-pink-100 bg-[#FAF8F5] p-3.5 text-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+                      <div className="mt-4 rounded-xl border border-pink-100 bg-canvas p-3.5 text-xs dark:border-zinc-800">
                         <p className="text-gray-600 dark:text-zinc-300">
                           Escribinos por WhatsApp y te pasamos el Alias al instante para transferir.
                         </p>
@@ -296,14 +330,14 @@ export function PedidoPagoClient() {
                   Total a pagar en Mercado Pago
                 </p>
                 {view.amount_due != null && (
-                  <p className="mt-1 font-mono text-3xl font-extrabold text-gray-900 dark:text-white">
+                  <p className="mt-1 font-mono text-3xl font-extrabold text-ink">
                     ${formatPesoARExact(view.amount_due)}
                   </p>
                 )}
                 {view.checkout_url ? (
                   <a
                     href={view.checkout_url}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#009EE3] py-3.5 font-bold text-white shadow-md transition-all hover:bg-[#007EB5]"
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] py-3.5 font-bold text-white shadow-md transition-all hover:bg-[#007EB5]"
                   >
                     <span>Continuar el pago en Mercado Pago</span>
                     <ExternalLink className="h-4 w-4" />
@@ -313,7 +347,7 @@ export function PedidoPagoClient() {
                     type="button"
                     disabled={pending}
                     onClick={() => startMercadoPago(true)}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#009EE3] py-3.5 font-bold text-white"
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] py-3.5 font-bold text-white"
                   >
                     Reintentar pago
                   </button>
@@ -330,7 +364,7 @@ export function PedidoPagoClient() {
                     {PUBLIC_PAYMENT_COPY.transferInstructions}
                   </p>
                   {transferAmount != null && (
-                    <span className="font-mono text-lg font-bold text-[#C25B6C] dark:text-[#F472B6]">
+                    <span className="font-mono text-lg font-bold text-primary dark:text-[#F472B6]">
                       ${formatPesoARExact(transferAmount)}
                     </span>
                   )}
@@ -339,26 +373,26 @@ export function PedidoPagoClient() {
                 {hasBankDetails(view.bank) ? (
                   <div className="mt-4 grid gap-3 sm:grid-cols-2 text-xs">
                     {view.bank?.bank_name && (
-                      <div className="rounded-xl bg-[#FAF8F5] p-3 dark:bg-[#15131C]">
-                        <span className="text-[10px] font-bold uppercase text-gray-400">Banco</span>
-                        <p className="mt-0.5 font-semibold text-gray-800 dark:text-gray-100">{view.bank.bank_name}</p>
+                      <div className="rounded-xl bg-canvas p-3 dark:bg-[#15131C]">
+                        <span className="text-[10px] font-bold uppercase text-hint">Banco</span>
+                        <p className="mt-0.5 font-semibold text-ink">{view.bank.bank_name}</p>
                       </div>
                     )}
                     {view.bank?.account_holder && (
-                      <div className="rounded-xl bg-[#FAF8F5] p-3 dark:bg-[#15131C]">
-                        <span className="text-[10px] font-bold uppercase text-gray-400">Titular</span>
-                        <p className="mt-0.5 font-semibold text-gray-800 dark:text-gray-100">{view.bank.account_holder}</p>
+                      <div className="rounded-xl bg-canvas p-3 dark:bg-[#15131C]">
+                        <span className="text-[10px] font-bold uppercase text-hint">Titular</span>
+                        <p className="mt-0.5 font-semibold text-ink">{view.bank.account_holder}</p>
                       </div>
                     )}
                     {view.bank?.alias && (
-                      <div className="rounded-xl bg-[#FAF8F5] p-3 sm:col-span-2 dark:bg-[#15131C]">
-                        <span className="text-[10px] font-bold uppercase text-gray-400">Alias de Transferencia</span>
+                      <div className="rounded-xl bg-canvas p-3 sm:col-span-2 dark:bg-[#15131C]">
+                        <span className="text-[10px] font-bold uppercase text-hint">Alias de Transferencia</span>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <p className="font-mono text-sm font-extrabold text-[#C25B6C] dark:text-[#F472B6]">{view.bank.alias}</p>
+                          <p className="font-mono text-sm font-extrabold text-primary dark:text-[#F472B6]">{view.bank.alias}</p>
                           <button
                             type="button"
                             onClick={() => copyValue('alias', view.bank!.alias!)}
-                            className="flex items-center gap-1 rounded-lg border border-pink-200 bg-white px-2.5 py-1 text-xs font-bold text-[#C25B6C] shadow-2xs hover:bg-pink-50 dark:border-pink-900/50 dark:bg-zinc-800 dark:text-[#F472B6]"
+                            className="flex items-center gap-1 rounded-lg border border-pink-200 bg-white px-2.5 py-1 text-xs font-bold text-primary shadow-2xs hover:bg-pink-50 dark:border-pink-900/50 dark:bg-zinc-800 dark:text-[#F472B6]"
                           >
                             {copiedKey === 'alias' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                             <span>{copiedKey === 'alias' ? '¡Copiado!' : 'Copiar'}</span>
@@ -367,10 +401,10 @@ export function PedidoPagoClient() {
                       </div>
                     )}
                     {view.bank?.cbu && (
-                      <div className="rounded-xl bg-[#FAF8F5] p-3 sm:col-span-2 dark:bg-[#15131C]">
-                        <span className="text-[10px] font-bold uppercase text-gray-400">CBU / CVU</span>
+                      <div className="rounded-xl bg-canvas p-3 sm:col-span-2 dark:bg-[#15131C]">
+                        <span className="text-[10px] font-bold uppercase text-hint">CBU / CVU</span>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <p className="break-all font-mono text-xs font-bold text-gray-700 dark:text-gray-300">{view.bank.cbu}</p>
+                          <p className="break-all font-mono text-xs font-bold text-ink">{view.bank.cbu}</p>
                           <button
                             type="button"
                             onClick={() => copyValue('cbu', view.bank!.cbu!)}
@@ -395,10 +429,10 @@ export function PedidoPagoClient() {
                     className="mt-4 flex flex-col gap-2.5 border-t border-[#EBE4DA] pt-4 dark:border-white/10"
                     onSubmit={onFile}
                   >
-                    <label className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300" htmlFor="comprobante">
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted" htmlFor="comprobante">
                       Adjuntar Comprobante de Pago
                     </label>
-                    <div className="relative flex items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-[#FAF8F5] p-4 text-center dark:border-zinc-700 dark:bg-[#15131C]">
+                    <div className="relative flex items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-canvas p-4 text-center dark:border-zinc-700 dark:bg-[#15131C]">
                       <input
                         id="comprobante"
                         name="file"
@@ -407,17 +441,17 @@ export function PedidoPagoClient() {
                         required
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       />
-                      <div className="flex flex-col items-center gap-1 text-xs text-gray-500">
-                        <Upload className="h-5 w-5 text-[#D97786]" />
-                        <span className="font-semibold text-gray-700 dark:text-gray-200">Hacé clic para seleccionar archivo</span>
+                      <div className="flex flex-col items-center gap-1 text-xs text-muted">
+                        <Upload className="h-5 w-5 text-pink-400" />
+                        <span className="font-semibold text-ink">Hacé clic para seleccionar archivo</span>
                         <span>(JPG, PNG o PDF)</span>
                       </div>
                     </div>
-                    {fileError && <p className="text-xs text-rose-700 dark:text-rose-300">{fileError}</p>}
+                    {fileError && <p className="text-xs text-danger">{fileError}</p>}
                     <button
                       type="submit"
                       disabled={pending}
-                      className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#CF6B7F] to-[#B85064] py-3 text-sm font-bold text-white shadow-sm disabled:opacity-60"
+                      className="mt-1 flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-hover py-3 text-sm font-bold text-white shadow-sm disabled:opacity-60"
                     >
                       {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                       <span>{view.has_receipt ? 'Reemplazar comprobante' : 'Subir comprobante'}</span>
@@ -435,7 +469,7 @@ export function PedidoPagoClient() {
                     type="button"
                     disabled={pending}
                     onClick={() => startMercadoPago(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009EE3] py-3 text-sm font-bold text-white shadow-sm"
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-[#009EE3] py-3 text-sm font-bold text-white shadow-sm"
                   >
                     Intentar de nuevo con Mercado Pago
                   </button>
@@ -445,7 +479,7 @@ export function PedidoPagoClient() {
                     type="button"
                     disabled={pending}
                     onClick={() => startTransfer(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-pink-200 py-3 text-sm font-bold text-[#C25B6C]"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-pink-200 py-3 text-sm font-bold text-primary"
                   >
                     Intentar de nuevo por transferencia
                   </button>

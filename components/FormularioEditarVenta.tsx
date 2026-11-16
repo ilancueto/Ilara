@@ -324,7 +324,7 @@ export default function FormularioEditarVenta({
                   <button
                     type="button"
                     onClick={handleQuitarComprobante}
-                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded-xl transition-colors"
+                    className="p-2 hover:bg-danger-soft text-danger rounded-xl transition-colors"
                     title="Quitar comprobante"
                   >
                     <Trash2 size={16} />

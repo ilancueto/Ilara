@@ -267,6 +267,10 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
   ].filter(Boolean).length
 
   const hero = buildCatalogHero(productos, categorias)
+  // Solo categorías con productos visibles (más la elegida, para no romper un link compartido).
+  const categoriasVisibles = categorias.filter(
+    (c) => String(c.id) === categoriaFiltro || productos.some((p) => p.category_id === c.id)
+  )
   const showFeatured = !searching
     && categoriaFiltro === 'all'
     && paginaActual === 1
@@ -294,7 +298,7 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
             searchRef={searchRef}
           />
           <CategoryNav
-            categorias={categorias}
+            categorias={categoriasVisibles}
             value={categoriaFiltro}
             onChange={setCategoriaFiltro}
             showCombos={combos.length > 0}

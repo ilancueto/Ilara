@@ -17,7 +17,7 @@ import FormularioCombo from './FormularioCombo'
 import DetalleProducto from './DetalleProducto'
 import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { ModalEliminarProductos, ModalBadgeProductos, ModalVisibilidadProductos } from './BulkProductDialogs'
+import { ModalEliminarProductos, ModalBadgeProductos, ModalVisibilidadProductos, ModalCategoriaProductos } from './BulkProductDialogs'
 import {
     ADMIN_COMBO_WITH_ITEMS_SELECT,
     ADMIN_INVENTORY_PRODUCT_SELECT,
@@ -80,6 +80,10 @@ export default function Inventario() {
     const [mostrarBadgeModal, setMostrarBadgeModal] = useState(false)
     const [actualizandoBadge, setActualizandoBadge] = useState(false)
     const [badgeLoteElegido, setBadgeLoteElegido] = useState<CatalogBadgeKey | 'auto'>('auto')
+    const [mostrarCategoriaModal, setMostrarCategoriaModal] = useState(false)
+    const [actualizandoCategoria, setActualizandoCategoria] = useState(false)
+    const [categoriaLoteElegida, setCategoriaLoteElegida] = useState('')
+    const [bulkCategoriaError, setBulkCategoriaError] = useState<string | null>(null)
 
     useEffect(() => {
         const raw = searchParams.get('productId')
@@ -295,6 +299,43 @@ export default function Inventario() {
         }
     }
 
+    const aplicarCategoriaSeleccionados = async () => {
+        if (productosSeleccionados.size === 0) {
+            setBulkCategoriaError('Seleccioná al menos un producto.')
+            return
+        }
+        if (actualizandoCategoria) return
+        setBulkCategoriaError(null)
+        setActualizandoCategoria(true)
+        const categoryId = categoriaLoteElegida ? Number(categoriaLoteElegida) : null
+        const categoria = categorias.find((c) => c.id === categoryId)
+        try {
+            const ids = Array.from(productosSeleccionados)
+            const { error } = await supabase
+                .from('products')
+                .update({ category_id: categoryId })
+                .in('id', ids)
+            if (error) throw error
+            setProductos(prev =>
+                prev.map(p => (ids.includes(p.id)
+                    ? { ...p, category_id: categoryId, categories: categoria ? { name: categoria.name } : undefined }
+                    : p))
+            )
+            setProductosSeleccionados(new Set())
+            setMostrarCategoriaModal(false)
+            showSuccess(`${ids.length} producto(s) movidos a ${categoria?.name ?? 'Sin categoría'}.`)
+        } catch (err: unknown) {
+            const msg =
+                err && typeof err === 'object' && 'message' in err
+                    ? String((err as { message: string }).message)
+                    : 'Error al actualizar'
+            setBulkCategoriaError(msg)
+            showError(msg)
+        } finally {
+            setActualizandoCategoria(false)
+        }
+    }
+
     // Filtrado
     const productosFiltrados = productos.filter(producto => {
         const coincideBusqueda =
@@ -320,7 +361,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('productos')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors ${
-                        tabActiva === 'productos' ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' : 'text-muted hover:text-ink'
+                        tabActiva === 'productos' ? 'bg-surface text-accent' : 'text-muted hover:text-ink'
                     }`}
                 >
                     Productos
@@ -329,7 +370,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('combos')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
-                        tabActiva === 'combos' ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' : 'text-muted hover:text-ink'
+                        tabActiva === 'combos' ? 'bg-surface text-accent' : 'text-muted hover:text-ink'
                     }`}
                 >
                     <Package className="w-4 h-4" /> Combos
@@ -338,7 +379,7 @@ export default function Inventario() {
                     type="button"
                     onClick={() => setTabActiva('reposicion')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${
-                        tabActiva === 'reposicion' ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' : 'text-muted hover:text-ink'
+                        tabActiva === 'reposicion' ? 'bg-surface text-accent' : 'text-muted hover:text-ink'
                     }`}
                 >
                     <AlertTriangle className="w-4 h-4" /> Lista para reposición
@@ -363,6 +404,7 @@ export default function Inventario() {
                     </div>
                     <div className="w-full lg:w-[340px] min-h-[3rem] flex items-stretch">
                         <select
+                            aria-label="Filtrar por categoría"
                             value={categoriaSeleccionada}
                             onChange={(e) => setCategoriaSeleccionada(e.target.value)}
                             className="h-12 min-h-[3rem] w-full bg-white dark:bg-gray-700 border border-line rounded-xl py-3 px-4 text-sm font-medium leading-[1.5] text-ink transition-all outline-none cursor-pointer hover:border-pink-200 dark:hover:border-pink-600 focus:border-pink-300 focus:ring-2 focus:ring-pink-200/50"
@@ -455,11 +497,24 @@ export default function Inventario() {
                         <button
                             type="button"
                             onClick={() => {
+                                setMostrarCategoriaModal(true)
+                                setProductosSeleccionados(new Set())
+                                setCategoriaLoteElegida(categorias[0] ? String(categorias[0].id) : '')
+                                setBulkCategoriaError(null)
+                            }}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-accent hover:bg-primary-soft border border-line hover:border-primary font-bold text-sm transition-colors"
+                        >
+                            <Tag className="w-4 h-4" />
+                            Categoría en lote
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
                                 setMostrarEliminarProductosModal(true)
                                 setProductosSeleccionados(new Set())
                                 setBulkDeleteError(null)
                             }}
-                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 font-bold text-sm transition-colors"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-danger hover:text-danger hover:bg-danger-soft border border-danger-line hover:border-danger-line font-bold text-sm transition-colors"
                         >
                             <Trash2 className="w-4 h-4" />
                             Eliminar productos
@@ -517,7 +572,7 @@ export default function Inventario() {
                 <div className="flex flex-col gap-1 mb-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <h3 className="text-lg font-bold text-ink flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                            <AlertTriangle className="w-5 h-5 text-warning" />
                             Lista para reposición
                         </h3>
                         <div className="relative flex items-center">
@@ -582,10 +637,10 @@ export default function Inventario() {
                         {productosParaReposicion.map(prod => (
                             <div
                                 key={prod.id}
-                                className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100/80 dark:border-amber-800/40"
+                                className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-warning-soft border border-warning-line"
                             >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                    <div className="w-9 h-9 rounded-lg bg-white dark:bg-gray-700 flex-shrink-0 overflow-hidden flex items-center justify-center border border-amber-100/80 dark:border-amber-800/40">
+                                    <div className="w-9 h-9 rounded-lg bg-white dark:bg-gray-700 flex-shrink-0 overflow-hidden flex items-center justify-center border border-warning-line">
                                         {getProductImages(prod)[0] ? (
                                             <Image src={getProductImages(prod)[0]} alt={prod.name} width={36} height={36} className="w-full h-full object-cover" />
                                         ) : (
@@ -594,12 +649,12 @@ export default function Inventario() {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="font-semibold text-ink text-sm leading-tight truncate">{prod.name}</p>
-                                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">Mín: {prod.min_stock}</p>
+                                        <p className="text-[11px] text-warning font-medium mt-0.5">Mín: {prod.min_stock}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-center justify-center min-w-[56px] py-1.5 px-3 rounded-lg bg-white dark:bg-gray-700 border border-amber-100/80 dark:border-gray-600 flex-shrink-0">
-                                    <span className="text-[9px] uppercase font-semibold tracking-wider text-amber-500 dark:text-amber-400">Stock</span>
-                                    <span className={`font-extrabold text-base tabular-nums leading-none mt-0.5 ${prod.stock === 0 ? 'text-red-500 dark:text-red-400' : 'text-ink'}`}>{prod.stock}</span>
+                                    <span className="text-[9px] uppercase font-semibold tracking-wider text-warning">Stock</span>
+                                    <span className={`font-extrabold text-base tabular-nums leading-none mt-0.5 ${prod.stock === 0 ? 'text-danger' : 'text-ink'}`}>{prod.stock}</span>
                                 </div>
                             </div>
                         ))}
@@ -685,6 +740,24 @@ export default function Inventario() {
                 onConfirm={() => void aplicarBadgeSeleccionados()}
                 badge={badgeLoteElegido}
                 onBadgeChange={setBadgeLoteElegido}
+            />
+
+            <ModalCategoriaProductos
+                open={mostrarCategoriaModal}
+                onClose={() => {
+                    setMostrarCategoriaModal(false)
+                    setBulkCategoriaError(null)
+                }}
+                loading={actualizandoCategoria}
+                error={bulkCategoriaError}
+                productos={productosFiltrados}
+                seleccionados={productosSeleccionados}
+                onToggleAll={seleccionarTodosProductos}
+                onToggle={toggleSeleccionProducto}
+                onConfirm={() => void aplicarCategoriaSeleccionados()}
+                categorias={categorias}
+                categoriaId={categoriaLoteElegida}
+                onCategoriaChange={setCategoriaLoteElegida}
             />
 
             <ModalVisibilidadProductos

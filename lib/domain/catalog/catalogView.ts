@@ -14,7 +14,8 @@ export const CATALOG_PRICE_MAX_UNSET = 999999
 export const COMBOS_FILTER = 'combos'
 /** Tope de página para no crear URLs de paginación ilimitadas. */
 export const CATALOG_PAGE_MAX = 100
-export const CATALOG_PAGE_SIZE = 15
+/** 21 = la primera página (con la tarjeta destacada 2×2) completa filas en 4, 3 y 2 columnas. */
+export const CATALOG_PAGE_SIZE = 21
 const KNOWN_QUERY_KEYS = ['q', 'cat', 'sort', 'page', 'min', 'max'] as const
 
 export type CatalogViewState = {

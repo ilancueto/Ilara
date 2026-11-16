@@ -53,7 +53,7 @@ export default function CarritoVenta({ carrito, onUpdateQuantity, onUpdateQuanti
                                     </div>
                                     <div className="flex items-start gap-1.5 shrink-0">
                                         <strong className="font-extrabold text-ink tabular-nums whitespace-nowrap">${(precio * item.cantidad).toLocaleString()}</strong>
-                                        <button type="button" onClick={() => esProducto ? onRemove(item.producto!.id) : onRemoveCombo?.(item.combo!.id)} className="w-6 h-6 grid place-items-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label={`Quitar ${nombre}`}><Trash2 className="w-3.5 h-3.5" /></button>
+                                        <button type="button" onClick={() => esProducto ? onRemove(item.producto!.id) : onRemoveCombo?.(item.combo!.id)} className="w-6 h-6 grid place-items-center rounded-md text-hint hover:text-danger hover:bg-danger-soft" aria-label={`Quitar ${nombre}`}><Trash2 className="w-3.5 h-3.5" /></button>
                                     </div>
                                 </div>
                             )

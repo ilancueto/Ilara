@@ -62,7 +62,7 @@ export function PedidoPagosPanel({ orderId, payments, onChange }: Props) {
 
   if (payments.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-100 px-3 py-2 text-sm text-gray-500 dark:border-gray-800">
+      <div className="rounded-xl border border-gray-100 px-3 py-2 text-sm text-muted dark:border-gray-800">
         Todavía no hay pagos asociados a este pedido.
       </div>
     )
@@ -71,7 +71,7 @@ export function PedidoPagosPanel({ orderId, payments, onChange }: Props) {
   return (
     <div className="space-y-3" data-testid="pedido-pagos">
       {error && (
-        <p className="text-sm text-rose-700" role="alert">{error}</p>
+        <p className="text-sm text-danger" role="alert">{error}</p>
       )}
       {payments.map((payment) => {
         const reviewable =
@@ -92,23 +92,23 @@ export function PedidoPagosPanel({ orderId, payments, onChange }: Props) {
               Importe: ${formatPesoARExact(payment.amount_due ?? payment.base_amount ?? 0)}
             </p>
             {payment.estimated_fee != null && (
-              <p className="text-xs text-gray-500">Comisión estimada: ${formatPesoARExact(payment.estimated_fee)}</p>
+              <p className="text-xs text-muted">Comisión estimada: ${formatPesoARExact(payment.estimated_fee)}</p>
             )}
             {payment.actual_fee != null && (
-              <p className="text-xs text-gray-500">Comisión real: ${formatPesoARExact(payment.actual_fee)}</p>
+              <p className="text-xs text-muted">Comisión real: ${formatPesoARExact(payment.actual_fee)}</p>
             )}
             {payment.expected_available_at && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted">
                 Acreditación estimada: {new Date(payment.expected_available_at).toLocaleDateString('es-AR')}
               </p>
             )}
             {payment.reject_reason && (
-              <p className="mt-1 text-rose-700">Motivo: {payment.reject_reason}</p>
+              <p className="mt-1 text-danger">Motivo: {payment.reject_reason}</p>
             )}
             {payment.has_receipt && (
               <button
                 type="button"
-                className="mt-2 text-pink-700 underline"
+                className="mt-2 text-primary-ink underline"
                 disabled={pending}
                 onClick={() => openReceipt(payment.id)}
               >

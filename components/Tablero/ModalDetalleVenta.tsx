@@ -11,10 +11,10 @@ import type { ItemVenta, Venta } from '@/lib/supabase'
 
 function IconoMetodoPago({ metodo }: { metodo: string | null }) {
     switch (metodo) {
-        case 'efectivo': return <Banknote className="w-4 h-4 text-green-500" />
+        case 'efectivo': return <Banknote className="w-4 h-4 text-success" />
         case 'tarjeta': return <CreditCard className="w-4 h-4 text-blue-500" />
         case 'transferencia': return <FileText className="w-4 h-4 text-purple-500" />
-        default: return <Receipt className="w-4 h-4 text-gray-400" />
+        default: return <Receipt className="w-4 h-4 text-hint" />
     }
 }
 
@@ -105,7 +105,7 @@ export default function ModalDetalleVenta({ venta: detalleVenta, items: itemsDet
                     <div className="flex-shrink-0 pt-6 pb-6 px-6 border-t-2 border-line bg-pink-50/50 dark:bg-gray-800/50 rounded-b-3xl">
                         <div className="flex justify-between items-center gap-4">
                             <span className="text-sm font-bold text-ink uppercase tracking-wider">Total</span>
-                            <span className="font-bold text-emerald-600 dark:text-emerald-400 text-2xl tabular-nums">${detalleVenta.total.toLocaleString()}</span>
+                            <span className="font-bold text-success text-2xl tabular-nums">${detalleVenta.total.toLocaleString()}</span>
                         </div>
                     </div>
                 </PastelCard>

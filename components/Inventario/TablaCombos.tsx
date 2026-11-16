@@ -39,7 +39,7 @@ export default function TablaCombos({ combos, loading, onEdit, onDelete }: Tabla
                             <h4 className="font-bold text-ink text-base leading-tight">{combo.name}</h4>
                             <p className="text-xl font-extrabold text-accent mt-1.5">${combo.sale_price.toLocaleString()}</p>
                         </div>
-                        <span className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide ${combo.is_active ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300' : 'bg-surface-soft text-muted'}`}>
+                        <span className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide ${combo.is_active ? 'bg-success-soft text-success' : 'bg-surface-soft text-muted'}`}>
                             {combo.is_active ? 'Activo' : 'Inactivo'}
                         </span>
                     </div>
@@ -58,7 +58,7 @@ export default function TablaCombos({ combos, loading, onEdit, onDelete }: Tabla
                         </button>
                         <button
                             onClick={() => onDelete(combo.id)}
-                            className="flex items-center justify-center p-3 rounded-xl text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shrink-0"
+                            className="flex items-center justify-center p-3 rounded-xl text-hint hover:text-danger hover:bg-danger-soft transition-colors shrink-0"
                             aria-label="Eliminar combo"
                         >
                             <Trash2 className="w-4 h-4" />

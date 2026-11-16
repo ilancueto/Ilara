@@ -46,7 +46,7 @@ export default function ExpenseStatsComponent({ stats, isLoading }: ExpenseStats
                     </p>
                     <div className="flex items-center justify-between mt-3">
                         <span className="text-[11px] text-muted">vs mes anterior</span>
-                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${stats.percentageChange > 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400' : stats.percentageChange < 0 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400' : 'bg-canvas text-gray-500 dark:text-gray-300'}`}>
+                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${stats.percentageChange > 0 ? 'bg-danger-soft text-danger' : stats.percentageChange < 0 ? 'bg-success-soft text-success' : 'bg-canvas text-gray-500 dark:text-gray-300'}`}>
                             {getTrendIcon()}
                             <span>{Math.abs(stats.percentageChange).toFixed(0)}%</span>
                         </div>

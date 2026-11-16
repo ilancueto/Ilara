@@ -30,15 +30,15 @@ export default function GlobalError({
           justifyContent: 'center',
           padding: 24,
           fontFamily: 'system-ui, sans-serif',
-          background: 'linear-gradient(180deg, #fdf2f8 0%, #fff 50%, #fdf2f8 100%)',
-          color: '#1f2937',
+          background: '#FFF6F2',
+          color: '#4A3542',
         }}
       >
         <div style={{ maxWidth: 400, textAlign: 'center' }} role="alert">
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 8 }}>
             Algo salió mal
           </h1>
-          <p style={{ color: '#6b7280', marginBottom: 24 }}>
+          <p style={{ color: '#6B5562', marginBottom: 24 }}>
             Ocurrió un error grave. Podés intentar recargar la página.
           </p>
           <button
@@ -46,13 +46,12 @@ export default function GlobalError({
             onClick={() => reset()}
             style={{
               padding: '12px 24px',
-              borderRadius: 16,
-              background: 'linear-gradient(90deg, #ec4899, #f43f5e)',
+              borderRadius: 999,
+              background: '#B8446F',
               color: '#fff',
               fontWeight: 700,
               border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(236, 72, 153, 0.4)',
             }}
           >
             Reintentar

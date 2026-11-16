@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Producto, StockMovement, supabase, getProductImages } from '@/lib/supabase'
 import Image from 'next/image'
 import { X, SquarePen, Package, Tag, Award, History, TrendingDown, TrendingUp, Minus, DollarSign, Eye, EyeOff } from 'lucide-react'
@@ -16,10 +16,17 @@ interface DetalleProductoProps {
     onEdit: (producto: Producto) => void
 }
 
+import { useDialogA11y } from '@/hooks/useDialogA11y'
+
 export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: DetalleProductoProps) {
     const [movimientos, setMovimientos] = useState<StockMovement[]>([])
     const [cargandoMov, setCargandoMov] = useState(false)
     const [mostrarModalMovimientos, setMostrarModalMovimientos] = useState(false)
+    const panelRef = useRef<HTMLDivElement>(null)
+    const movimientosRef = useRef<HTMLDivElement>(null)
+    // Escape cierra de a un modal: el principal solo responde si el de movimientos está cerrado.
+    useDialogA11y(isOpen && !mostrarModalMovimientos, onClose, panelRef)
+    useDialogA11y(mostrarModalMovimientos, () => setMostrarModalMovimientos(false), movimientosRef)
 
     useEffect(() => {
         if (!isOpen || !producto?.id) return
@@ -53,7 +60,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
             <div className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
-            <PastelCard className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-line" noHover>
+            <PastelCard ref={panelRef} role="dialog" aria-modal="true" aria-label="Detalle del producto" className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-line" noHover>
                 <div className="flex flex-col md:flex-row flex-1 min-h-0">
                     {/* Imagen */}
                     <div className="relative w-full md:w-72 flex-shrink-0 h-52 md:h-auto md:min-h-[380px] bg-gradient-to-br from-pink-50 to-gray-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none overflow-hidden">
@@ -166,7 +173,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                         <span className="text-xs text-muted flex items-center gap-2 shrink-0">
                                             <Award className="w-3.5 h-3.5 text-hint" /> Margen
                                         </span>
-                                        <span className={`font-medium text-xs tabular-nums ${margen != null && margen > 30 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                        <span className={`font-medium text-xs tabular-nums ${margen != null && margen > 30 ? 'text-success' : 'text-warning'}`}>
                                             {margen != null ? `${margen}%` : '—'}
                                         </span>
                                     </div>
@@ -181,7 +188,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                             {producto.visible_in_catalog !== false ? <Eye className="w-3.5 h-3.5 text-hint" /> : <EyeOff className="w-3.5 h-3.5 text-hint" />}
                                             Visible en catálogo
                                         </span>
-                                        <span className={`font-medium text-xs ${producto.visible_in_catalog !== false ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                        <span className={`font-medium text-xs ${producto.visible_in_catalog !== false ? 'text-success' : 'text-warning'}`}>
                                             {producto.visible_in_catalog !== false ? 'Sí' : 'No'}
                                         </span>
                                     </div>
@@ -229,7 +236,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                 <>
                     <div className="fixed inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm z-[60]" onClick={() => setMostrarModalMovimientos(false)} aria-hidden />
                     <div className="fixed inset-0 z-[61] flex items-center justify-center p-4">
-                        <PastelCard className="relative w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-line" noHover>
+                        <PastelCard ref={movimientosRef} role="dialog" aria-modal="true" aria-label="Movimientos de stock" className="relative w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-line" noHover>
                             <div className="px-6 py-5 border-b border-line flex items-center justify-between flex-shrink-0">
                                 <h3 className="text-lg font-bold text-ink flex items-center gap-2">
                                     <History className="w-5 h-5 text-accent" />
@@ -259,9 +266,9 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                                     className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-line text-sm"
                                                 >
                                                     <div className="flex items-center gap-3 min-w-0">
-                                                        {m.type === 'sale' && <TrendingDown className="w-4 h-4 text-rose-500 dark:text-rose-400 flex-shrink-0" />}
-                                                        {m.type === 'purchase' && <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />}
-                                                        {m.type === 'adjustment' && <Minus className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0" />}
+                                                        {m.type === 'sale' && <TrendingDown className="w-4 h-4 text-danger flex-shrink-0" />}
+                                                        {m.type === 'purchase' && <TrendingUp className="w-4 h-4 text-success flex-shrink-0" />}
+                                                        {m.type === 'adjustment' && <Minus className="w-4 h-4 text-warning flex-shrink-0" />}
                                                         <div className="min-w-0">
                                                             <span className="font-medium text-ink">{label}</span>
                                                             {refText && <span className="text-hint text-xs ml-1">{refText}</span>}
@@ -270,7 +277,7 @@ export default function DetalleProducto({ producto, isOpen, onClose, onEdit }: D
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <span className={`font-bold tabular-nums flex-shrink-0 ${esSalida ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                                    <span className={`font-bold tabular-nums flex-shrink-0 ${esSalida ? 'text-danger' : 'text-success'}`}>
                                                         {esSalida ? '' : '+'}{m.quantity} u.
                                                     </span>
                                                 </li>

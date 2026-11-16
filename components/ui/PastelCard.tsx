@@ -19,6 +19,7 @@ interface PastelCardProps extends React.HTMLAttributes<HTMLDivElement> {
     className?: string;
     noHover?: boolean;
     tone?: PastelTone;
+    ref?: React.Ref<HTMLDivElement>;
 }
 
 export function PastelCard({ children, className = '', noHover = false, tone = 'surface', ...props }: PastelCardProps) {

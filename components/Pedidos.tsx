@@ -310,7 +310,7 @@ export default function Pedidos() {
             type="button"
             onClick={() => void handleDeleteCancelled()}
             disabled={actionLoading}
-            className="inline-flex items-center gap-2 self-start rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30 disabled:opacity-60"
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-danger-line px-3 py-2 text-sm font-semibold text-danger hover:bg-danger-soft dark:hover:bg-rose-950/30 disabled:opacity-60"
             data-testid="pedidos-delete-cancelled"
           >
             <Trash2 size={16} />
@@ -333,7 +333,7 @@ export default function Pedidos() {
           <span className="sr-only">Buscar pedidos</span>
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-hint"
             aria-hidden
           />
           <input
@@ -365,17 +365,17 @@ export default function Pedidos() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2 rounded-2xl border border-line bg-surface overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center gap-2 py-16 text-pink-500">
+            <div className="flex items-center justify-center gap-2 py-16 text-accent">
               <Loader2 className="animate-spin" size={20} />
               Cargando…
             </div>
           ) : listError ? (
-            <div role="alert" className="p-6 text-center text-rose-700 dark:text-rose-300">
+            <div role="alert" className="p-6 text-center text-danger">
               {listError}
               <button type="button" onClick={() => void loadList()} className="block mx-auto mt-3 underline">Reintentar</button>
             </div>
           ) : orders.length === 0 ? (
-            <div className="py-16 px-6 text-center text-gray-500">
+            <div className="py-16 px-6 text-center text-muted">
               <Package className="mx-auto mb-2 opacity-50" />
               No hay pedidos con estos filtros.
             </div>
@@ -407,12 +407,12 @@ export default function Pedidos() {
                       <p className="text-sm text-muted truncate">
                         {o.customer_name} · {o.customer_phone}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-hint mt-0.5">
                         {new Date(o.created_at).toLocaleString('es-AR')} · $
                         {formatPesoARExact(o.total)}
                       </p>
                     </div>
-                    <ChevronRight size={18} className="text-gray-400 shrink-0" aria-hidden />
+                    <ChevronRight size={18} className="text-hint shrink-0" aria-hidden />
                   </button>
                 </li>
               ))}
@@ -429,12 +429,12 @@ export default function Pedidos() {
 
         <div className="lg:col-span-3 rounded-2xl border border-line bg-surface p-4 sm:p-5 min-h-[320px]">
           {!selectedId && (
-            <p className="text-sm text-gray-500 py-12 text-center">
+            <p className="text-sm text-muted py-12 text-center">
               Seleccioná un pedido para ver el detalle.
             </p>
           )}
           {selectedId && detailLoading && (
-            <div className="flex items-center justify-center gap-2 py-16 text-pink-500">
+            <div className="flex items-center justify-center gap-2 py-16 text-accent">
               <Loader2 className="animate-spin" size={20} />
               Cargando detalle…
             </div>
@@ -469,7 +469,7 @@ export default function Pedidos() {
 
               {detail.notes && (
                 <div className="rounded-xl bg-canvas px-3 py-2 text-sm">
-                  <p className="text-xs text-gray-400 mb-0.5">Notas del cliente</p>
+                  <p className="text-xs text-hint mb-0.5">Notas del cliente</p>
                   <p>{detail.notes}</p>
                 </div>
               )}
@@ -534,7 +534,7 @@ export default function Pedidos() {
                   type="button"
                   disabled={actionLoading}
                   onClick={() => void handleDeleteOne()}
-                  className="inline-flex items-center gap-1.5 self-start rounded-xl border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 self-start rounded-xl border border-danger-line px-3 py-2 text-sm font-bold text-danger hover:bg-danger-soft disabled:opacity-60"
                   data-testid="pedido-delete"
                 >
                   <Trash2 size={16} />

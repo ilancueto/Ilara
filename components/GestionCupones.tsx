@@ -166,7 +166,7 @@ export default function GestionCupones({ mostrar, cerrar }: Props) {
                                             type="button"
                                             onClick={() => handleToggleActivo(c)}
                                             disabled={cargando}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold ${c.is_active ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/60' : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'}`}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold ${c.is_active ? 'bg-warning-soft text-warning hover:bg-warning-soft' : 'bg-success-soft text-success hover:bg-success-soft'}`}
                                         >
                                             {c.is_active ? 'Desactivar' : 'Activar'}
                                         </button>
@@ -174,7 +174,7 @@ export default function GestionCupones({ mostrar, cerrar }: Props) {
                                             type="button"
                                             onClick={() => handleEliminar(c.id)}
                                             disabled={cargando}
-                                            className="p-2 text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
+                                            className="p-2 text-hint hover:text-danger hover:bg-danger-soft rounded-lg"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>

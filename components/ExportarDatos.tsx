@@ -129,14 +129,14 @@ export default function ExportarDatos({ mostrar, cerrar }: Props) {
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={cerrar} aria-hidden />
       <PastelCard className="w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl z-50" noHover>
         <div className="flex items-center justify-between p-5 border-b border-pink-100 flex-shrink-0">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Database className="w-5 h-5 text-pink-500" />
+          <h3 className="text-xl font-bold text-ink flex items-center gap-2">
+            <Database className="w-5 h-5 text-accent" />
             Exportar datos
           </h3>
           <button
             type="button"
             onClick={cerrar}
-            className="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 text-muted hover:text-ink flex items-center justify-center transition-colors"
             aria-label="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -144,63 +144,63 @@ export default function ExportarDatos({ mostrar, cerrar }: Props) {
         </div>
 
         <div className="p-5 overflow-y-auto space-y-5 flex-1 min-h-0">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Descargá productos, ventas, clientes y gastos en CSV o JSON. Los gastos se exportan solo con tus datos.
           </p>
 
           <div>
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-3">Datos a exportar</span>
+            <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-3">Datos a exportar</span>
             <div className="flex flex-wrap gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={productos} onChange={(e) => setProductos(e.target.checked)} className="rounded border-pink-200" />
-                <span className="text-sm font-medium text-gray-700">Productos</span>
+                <span className="text-sm font-medium text-ink">Productos</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={ventas} onChange={(e) => setVentas(e.target.checked)} className="rounded border-pink-200" />
-                <span className="text-sm font-medium text-gray-700">Ventas</span>
+                <span className="text-sm font-medium text-ink">Ventas</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={clientes} onChange={(e) => setClientes(e.target.checked)} className="rounded border-pink-200" />
-                <span className="text-sm font-medium text-gray-700">Clientes</span>
+                <span className="text-sm font-medium text-ink">Clientes</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={gastos} onChange={(e) => setGastos(e.target.checked)} className="rounded border-pink-200" />
-                <span className="text-sm font-medium text-gray-700">Gastos</span>
+                <span className="text-sm font-medium text-ink">Gastos</span>
               </label>
             </div>
           </div>
 
           {tieneFiltro && (
             <div className="space-y-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Período (ventas y gastos)</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-wider block">Período (ventas y gastos)</span>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="ventasPeriodo" checked={ventasTodo} onChange={() => setVentasTodo(true)} className="border-pink-200" />
-                  <span className="text-sm text-gray-700">Ventas: todo</span>
+                  <span className="text-sm text-ink">Ventas: todo</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="ventasPeriodo" checked={!ventasTodo} onChange={() => setVentasTodo(false)} className="border-pink-200" />
-                  <span className="text-sm text-gray-700">Por período</span>
+                  <span className="text-sm text-ink">Por período</span>
                 </label>
               </div>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="gastosPeriodo" checked={gastosTodo} onChange={() => setGastosTodo(true)} className="border-pink-200" />
-                  <span className="text-sm text-gray-700">Gastos: todo</span>
+                  <span className="text-sm text-ink">Gastos: todo</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="gastosPeriodo" checked={!gastosTodo} onChange={() => setGastosTodo(false)} className="border-pink-200" />
-                  <span className="text-sm text-gray-700">Por período</span>
+                  <span className="text-sm text-ink">Por período</span>
                 </label>
               </div>
               {usaPeriodo && (
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Desde</label>
+                    <label className="text-xs text-hint block mb-1">Desde</label>
                     <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="form-input w-full text-sm" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Hasta</label>
+                    <label className="text-xs text-hint block mb-1">Hasta</label>
                     <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="form-input w-full text-sm" />
                   </div>
                 </div>

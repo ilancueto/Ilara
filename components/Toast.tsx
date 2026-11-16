@@ -26,30 +26,30 @@ const toastConfig = {
     success: {
         icon: CheckCircle2,
         bgColor: 'bg-white/95 backdrop-blur-xl',
-        borderColor: 'border-emerald-200',
-        iconColor: 'text-emerald-500',
-        textColor: 'text-gray-800'
+        borderColor: 'border-success-line',
+        iconColor: 'text-success',
+        textColor: 'text-ink'
     },
     error: {
         icon: XCircle,
         bgColor: 'bg-white/95 backdrop-blur-xl',
-        borderColor: 'border-red-200',
-        iconColor: 'text-red-500',
-        textColor: 'text-gray-800'
+        borderColor: 'border-danger-line',
+        iconColor: 'text-danger',
+        textColor: 'text-ink'
     },
     warning: {
         icon: AlertCircle,
         bgColor: 'bg-white/95 backdrop-blur-xl',
-        borderColor: 'border-amber-200',
-        iconColor: 'text-amber-500',
-        textColor: 'text-gray-800'
+        borderColor: 'border-warning-line',
+        iconColor: 'text-warning',
+        textColor: 'text-ink'
     },
     info: {
         icon: Info,
         bgColor: 'bg-white/95 backdrop-blur-xl',
         borderColor: 'border-blue-200',
         iconColor: 'text-blue-500',
-        textColor: 'text-gray-800'
+        textColor: 'text-ink'
     }
 }
 

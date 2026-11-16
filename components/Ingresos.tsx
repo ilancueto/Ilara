@@ -159,7 +159,7 @@ export default function Ingresos() {
   return (
     <div className="flex flex-col gap-10 sm:gap-12 animate-fade-in pb-14 px-4 sm:px-6 lg:px-8">
       {/* Header + sub-nav fijos al hacer scroll */}
-      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-6 -mt-2 bg-canvas/90 dark:bg-zinc-950/95 backdrop-blur-md border-b border-pink-100/60 dark:border-white/10">
+      <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-6 -mt-2 bg-canvas/90 backdrop-blur-md border-b border-pink-100/60 dark:border-white/10">
         <div className="flex flex-col gap-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
@@ -229,7 +229,7 @@ export default function Ingresos() {
           <PastelCard className="p-4 sm:p-5 rounded-xl border border-line" noHover>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
               <div className="flex items-center gap-2 shrink-0">
-                <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+                <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-success-soft text-success">
                   <Filter size={14} />
                 </span>
                 <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Filtros</span>
@@ -274,12 +274,12 @@ export default function Ingresos() {
 
           {/* Total en el período: más compacto y elegante */}
           {incomes.length > 0 && (
-            <div className="flex items-center gap-5 p-5 sm:p-6 rounded-2xl bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100/80 dark:border-emerald-800/40">
-              <div className="w-12 h-12 rounded-xl bg-emerald-100/80 dark:bg-emerald-800/40 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-center gap-5 p-5 sm:p-6 rounded-2xl bg-success-soft border border-success-line">
+              <div className="w-12 h-12 rounded-xl bg-success-soft flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-6 h-6 text-success" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Total en el período</p>
+                <p className="text-[11px] font-semibold text-success uppercase tracking-wider">Total en el período</p>
                 <p className="text-xl sm:text-2xl font-bold text-emerald-800 dark:text-emerald-100 tabular-nums mt-0.5">{formatCurrency(total)}</p>
               </div>
             </div>
@@ -299,10 +299,10 @@ export default function Ingresos() {
               </div>
             ) : incomes.length === 0 ? (
               <PastelCard className="p-12 sm:p-14 text-center rounded-2xl" noHover>
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-2xl mb-4">💰</div>
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-success-soft flex items-center justify-center text-2xl mb-4">💰</div>
                 <p className="font-semibold text-ink text-base">No hay ingresos registrados</p>
                 <p className="text-muted text-sm mt-2 max-w-sm mx-auto">Agregá regalos, donaciones, ventas anteriores al sistema o cualquier otro ingreso extra.</p>
-                <button type="button" onClick={openNew} className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-emerald-600 dark:text-emerald-400 font-semibold rounded-xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-800/50 transition-colors">
+                <button type="button" onClick={openNew} className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-success font-semibold rounded-xl border border-success-line bg-success-soft hover:bg-success-soft transition-colors">
                   <Plus size={18} />
                   Nuevo ingreso
                 </button>
@@ -311,9 +311,9 @@ export default function Ingresos() {
               <ul className="space-y-4">
                 {incomes.map((income) => (
                   <li key={income.id}>
-                    <PastelCard className="p-5 sm:p-6 rounded-2xl border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-5 group hover:border-emerald-200/80 dark:hover:border-emerald-700/50 transition-colors overflow-hidden">
+                    <PastelCard className="p-5 sm:p-6 rounded-2xl border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-5 group hover:border-success-line transition-colors overflow-hidden">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100/80 dark:border-emerald-800/40 flex items-center justify-center text-xl flex-shrink-0">
+                        <div className="w-11 h-11 rounded-xl bg-success-soft border border-success-line flex items-center justify-center text-xl flex-shrink-0">
                           {TYPE_ICONS[income.type]}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -324,12 +324,12 @@ export default function Ingresos() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end gap-4 pl-14 sm:pl-0">
-                        <span className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{formatCurrency(income.amount)}</span>
+                        <span className="text-lg sm:text-xl font-bold text-success tabular-nums">{formatCurrency(income.amount)}</span>
                         <div className="flex items-center gap-1">
-                          <button type="button" onClick={() => openEdit(income)} className="p-2 rounded-lg text-hint hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors" aria-label="Editar">
+                          <button type="button" onClick={() => openEdit(income)} className="p-2 rounded-lg text-hint hover:text-success hover:bg-success-soft transition-colors" aria-label="Editar">
                             <Pencil size={16} />
                           </button>
-                          <button type="button" onClick={() => handleDelete(income.id)} className="p-2 rounded-lg text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors" aria-label="Eliminar">
+                          <button type="button" onClick={() => handleDelete(income.id)} className="p-2 rounded-lg text-hint hover:text-danger hover:bg-danger-soft transition-colors" aria-label="Eliminar">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -379,7 +379,7 @@ export default function Ingresos() {
                         className="form-input w-full pr-10 rounded-xl"
                         placeholder="0"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold pointer-events-none">$</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-hint font-semibold pointer-events-none">$</span>
                     </div>
                   </div>
                 </div>

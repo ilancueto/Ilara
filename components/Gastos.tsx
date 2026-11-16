@@ -245,7 +245,7 @@ export default function Gastos() {
                                         setGastosSeleccionados(new Set());
                                         setBulkDeleteError(null);
                                     }}
-                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 font-semibold text-sm transition-colors"
+                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-danger hover:bg-danger-soft font-semibold text-sm transition-colors"
                                 >
                                     <Trash2 size={16} />
                                     Eliminar gastos
@@ -361,7 +361,7 @@ export default function Gastos() {
                             type="button"
                             onClick={() => void handleEliminarGastosSeleccionados()}
                             disabled={eliminandoGastos || gastosSeleccionados.size === 0}
-                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-sm bg-danger-soft text-danger hover:bg-danger-soft border border-danger-line disabled:opacity-50 disabled:cursor-not-allowed"
                             data-testid="bulk-delete-gastos-confirm"
                         >
                             {eliminandoGastos

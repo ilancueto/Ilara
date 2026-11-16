@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { supabase, getProductImages, type Producto } from '@/lib/supabase'
 import { Loader, X, Plus, Trash2, Package, Tag, DollarSign, Sparkles, ShoppingBag } from 'lucide-react'
@@ -37,7 +37,11 @@ interface FormularioComboProps {
     productos: ProductoForm[]
 }
 
+import { useDialogA11y } from '@/hooks/useDialogA11y'
+
 export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSuccess, productos }: FormularioComboProps) {
+    const panelRef = useRef<HTMLDivElement>(null)
+    useDialogA11y(isOpen, onClose, panelRef)
     const { showSuccess, showError } = useToast()
     const [guardando, setGuardando] = useState(false)
     const [formData, setFormData] = useState({
@@ -143,7 +147,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
-            <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-surface rounded-3xl shadow-2xl overflow-hidden animate-fade-in-scale border border-line">
+            <div ref={panelRef} role="dialog" aria-modal="true" aria-label={comboToEdit ? 'Editar combo' : 'Nuevo combo'} className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-surface rounded-3xl shadow-2xl overflow-hidden animate-fade-in-scale border border-line">
                 {/* Header */}
                 <div className="flex-shrink-0 px-6 sm:px-8 py-5 bg-primary-soft border-b border-line">
                     <div className="flex items-start justify-between gap-4">
@@ -177,23 +181,23 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-bold text-ink mb-2">
                                         <Tag className="w-4 h-4 text-accent" />
-                                        Nombre del combo <span className="text-pink-500">*</span>
+                                        Nombre del combo <span className="text-accent">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                                         className={`w-full px-4 py-3 rounded-xl border-2 bg-surface placeholder-gray-400 dark:placeholder-gray-500 outline-none text-base text-ink ${
-                                            errores.name ? 'border-red-300 dark:border-red-700' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
+                                            errores.name ? 'border-danger-line' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
                                         }`}
                                         placeholder="Ej: Kit Verano"
                                     />
-                                    {errores.name && <p className="text-red-500 dark:text-red-400 text-sm font-medium mt-1.5">{errores.name}</p>}
+                                    {errores.name && <p className="text-danger text-sm font-medium mt-1.5">{errores.name}</p>}
                                 </div>
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-bold text-ink mb-2">
                                         <DollarSign className="w-4 h-4 text-accent" />
-                                        Precio de venta <span className="text-pink-500">*</span>
+                                        Precio de venta <span className="text-accent">*</span>
                                     </label>
                                     <input
                                         type="number"
@@ -202,11 +206,11 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                         value={formData.sale_price}
                                         onChange={e => setFormData(p => ({ ...p, sale_price: e.target.value }))}
                                         className={`w-full h-11 px-4 py-2.5 rounded-xl border-2 bg-surface placeholder-gray-400 dark:placeholder-gray-500 outline-none text-base text-ink ${
-                                            errores.sale_price ? 'border-red-300 dark:border-red-700' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
+                                            errores.sale_price ? 'border-danger-line' : 'border-line focus:border-pink-300 dark:focus:border-pink-500'
                                         }`}
                                         placeholder="0"
                                     />
-                                    {errores.sale_price && <p className="text-red-500 dark:text-red-400 text-sm font-medium mt-1.5">{errores.sale_price}</p>}
+                                    {errores.sale_price && <p className="text-danger text-sm font-medium mt-1.5">{errores.sale_price}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-ink mb-2">Descripción</label>
@@ -226,7 +230,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                     type="checkbox"
                                     checked={formData.is_active}
                                     onChange={e => setFormData(p => ({ ...p, is_active: e.target.checked }))}
-                                    className="w-4 h-4 rounded border-2 border-pink-300 text-pink-500"
+                                    className="w-4 h-4 rounded border-2 border-pink-300 text-accent"
                                 />
                                 <span className="text-sm font-medium text-ink">Activo (visible en catálogo)</span>
                             </label>
@@ -235,8 +239,8 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                             <div className="flex flex-col gap-3">
                                 <div className="flex items-center justify-between gap-3">
                                     <label className="flex items-center gap-2 text-sm font-bold text-ink">
-                                        <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                                        Productos del combo <span className="text-pink-500">*</span>
+                                        <Sparkles className="w-4 h-4 text-warning" />
+                                        Productos del combo <span className="text-accent">*</span>
                                     </label>
                                     <button
                                         type="button"
@@ -246,7 +250,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                         <Plus className="w-4 h-4" /> Agregar
                                     </button>
                                 </div>
-                                {errores.items && <p className="text-red-500 dark:text-red-400 text-sm font-medium">{errores.items}</p>}
+                                {errores.items && <p className="text-danger text-sm font-medium">{errores.items}</p>}
 
                                 {items.length === 0 ? (
                                     <button
@@ -303,7 +307,7 @@ export default function FormularioCombo({ isOpen, onClose, comboToEdit, onSucces
                                                         <button
                                                             type="button"
                                                             onClick={() => quitarItem(idx)}
-                                                            className="p-2 rounded-lg text-hint hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                                            className="p-2 rounded-lg text-hint hover:text-danger hover:bg-danger-soft transition-colors"
                                                             aria-label="Quitar"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
