@@ -35,6 +35,25 @@ const quicksand = localFont({
   display: "swap",
 });
 
+/** Títulos, nombres de producto y precios del catálogo público. */
+const instrumentSerif = localFont({
+  src: [
+    { path: "./fonts/instrument-serif-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/instrument-serif-latin-400-italic.woff2", weight: "400", style: "italic" },
+  ],
+  variable: "--font-instrument",
+  display: "swap",
+});
+
+/** Texto e interfaz del catálogo público. */
+const figtree = localFont({
+  src: "./fonts/figtree-latin-wght-normal.woff2",
+  weight: "300 900",
+  style: "normal",
+  variable: "--font-figtree",
+  display: "swap",
+});
+
 const ilaraScript = localFont({
   src: "./fonts/great-vibes-latin-400-normal.woff2",
   weight: "400",
@@ -137,7 +156,7 @@ export default function RootLayout({
     <html
       lang="es"
       // Las variables de fuente van en <html> para que --font-sans (definida en :root) las resuelva.
-      className={`${outfit.variable} ${fraunces.variable} ${quicksand.variable} ${ilaraScript.variable}`}
+      className={`${outfit.variable} ${fraunces.variable} ${quicksand.variable} ${instrumentSerif.variable} ${figtree.variable} ${ilaraScript.variable}`}
       suppressHydrationWarning
     >
       <head>
