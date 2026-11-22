@@ -9,7 +9,8 @@
 }
 
 .transfer {
-  font-size: 0.78em;
+  font-family: var(--sf-font, sans-serif);
+  font-size: 0.56em;
   font-weight: 500;
   color: var(--sf-text-2, var(--ilara-muted, #68615C));
 }

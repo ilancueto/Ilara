@@ -3,7 +3,7 @@
 import { startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Heart, RefreshCw } from 'lucide-react'
 import { getProductImages } from '@/lib/supabase'
 import type { PublicCatalogCombo, PublicCatalogProduct } from '@/lib/domain/catalog/publicDto'
 import { openWhatsApp } from '@/lib/whatsappLink'
@@ -15,6 +15,7 @@ import { useToast } from '@/context/ToastContext'
 import { ORDEN_DEFAULT, ORDEN_OPTIONS, PRODUCTOS_POR_PAGINA } from '@/components/Catalogo/catalogConstants'
 import { useCarrito } from '@/hooks/useCarrito'
 import { useCatalogCoupon } from '@/hooks/useCatalogCoupon'
+import { useFavoritos } from '@/hooks/useFavoritos'
 import { useCatalogData, type CatalogInitialSnapshot } from '@/hooks/useCatalogData'
 import { useCatalogDerivedLists } from '@/hooks/useCatalogDerivedLists'
 import { validarCuponCatalogo } from '@/app/actions/coupons'
@@ -31,7 +32,10 @@ import { ProductCard } from '@/components/storefront/ProductCard'
 import { FilterSheet } from '@/components/storefront/FilterSheet'
 import { EmptyState } from '@/components/storefront/EmptyState'
 import { CatalogHero } from '@/components/storefront/CatalogHero'
-import { buildCatalogHero } from '@/lib/domain/catalog/catalogHero'
+import { CatalogRail } from '@/components/storefront/CatalogRail'
+import { buildCatalogSwatches } from '@/lib/domain/catalog/catalogSwatches'
+import { buildCatalogRail, lowStockLeft } from '@/lib/domain/catalog/catalogRail'
+import { BUDGET_NO_LIMIT, BUDGET_PRESETS, activeBudgetPreset } from '@/lib/domain/catalog/catalogBudget'
 import styles from '@/components/storefront/storefront.module.css'
 
 /** Etiqueta de la tarjeta destacada según el orden activo. */
@@ -118,6 +122,8 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
   const [cuponInput, setCuponInput] = useState('')
   const { appliedCoupon, setAppliedCoupon } = useCatalogCoupon()
   const searchRef = useRef<HTMLInputElement>(null)
+  const favoritos = useFavoritos()
+  const [mostrarLista, setMostrarLista] = useState(false)
 
   const {
     totalItems,
@@ -257,16 +263,28 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
   const categoryName = categoriaFiltro === COMBOS_FILTER
     ? 'Combos'
     : categorias.find(c => String(c.id) === categoriaFiltro)?.name
-  const toolbarTitle = searching
-    ? 'Resultados de búsqueda'
-    : categoryName ?? 'Productos'
+  const toolbarTitle = mostrarLista
+    ? 'Mi lista'
+    : searching
+      ? 'Resultados de búsqueda'
+      : categoryName ?? 'Productos'
   const activeFilterCount = [
     categoriaFiltro !== 'all',
     precioMin > 0,
     precioMax < 999999,
   ].filter(Boolean).length
 
-  const hero = buildCatalogHero(productos, categorias)
+  const swatches = buildCatalogSwatches(productos, categorias)
+  const rail = buildCatalogRail(productos)
+  const presetActivo = activeBudgetPreset(precioMin, precioMax)
+  const listaProductos = productos.filter((p) => favoritos.has(p.id))
+  const enviarListaWhatsApp = () => {
+    if (listaProductos.length === 0) return
+    openWhatsApp(
+      ['¡Hola! Me gustaría consultar por estos productos:', '', ...listaProductos.map((p) => `• ${p.name}`)].join('\n'),
+      false
+    )
+  }
   // Solo categorías con productos visibles (más la elegida, para no romper un link compartido).
   const categoriasVisibles = categorias.filter(
     (c) => String(c.id) === categoriaFiltro || productos.some((p) => p.category_id === c.id)
@@ -285,6 +303,42 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
     }
     return null
   }
+
+  const renderProducto = (
+    producto: PublicCatalogProduct,
+    opts: { key: string; slot?: number; featured?: boolean; priority?: boolean }
+  ) => {
+    const badge = getCatalogBadgesForProduct(producto)[0]?.texto ?? null
+    const featured = opts.featured === true
+    return (
+      <ProductCard
+        key={opts.key}
+        name={producto.name}
+        href={`/catalogo/p/${producto.id}`}
+        brand={producto.brand}
+        image={getProductImages(producto)[0] ?? null}
+        badge={badge ?? (featured ? featuredLabel : null)}
+        amount={getPrecioConDescuento(producto)}
+        listAmount={producto.sale_price}
+        dual={producto.dual_price_visible === true}
+        publicAmount={producto.public_price}
+        transferAmount={producto.transfer_price ?? getPrecioConDescuento(producto)}
+        available={producto.stock > 0}
+        lowStock={lowStockLeft(producto)}
+        cartReady={cartReady}
+        onAdd={() => { if (producto.stock > 0) startTransition(() => agregarAlCarrito(producto)) }}
+        priority={opts.priority === true}
+        featured={featured}
+        favorite={favoritos.has(producto.id)}
+        onToggleFavorite={() => favoritos.toggle(producto.id)}
+      />
+    )
+  }
+  const showRail = !searching
+    && categoriaFiltro === 'all'
+    && paginaActual === 1
+    && activeFilterCount === 0
+    && !mostrarLista
 
   return (
     <StorefrontShell
@@ -309,18 +363,24 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
       <main className={styles.wrap}>
         <CatalogHero
           hidden={searching}
-          photo={hero.photo}
-          tiles={hero.tiles}
+          swatches={swatches}
           onSelectCategory={(id) => {
+            setMostrarLista(false)
             setCategoriaFiltro(id)
             document.querySelector('#productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }}
         />
 
+        <CatalogRail
+          hidden={!showRail}
+          fresh={rail.fresh.map((p) => renderProducto(p, { key: `nuevo-${p.id}` }))}
+          low={rail.low.map((p) => renderProducto(p, { key: `poco-${p.id}` }))}
+        />
+
         <div className={styles.toolbar} id="productos">
           <h2>
             {toolbarTitle}
-            <span className={styles.toolbarMeta}> · {totalItems}</span>
+            <span className={styles.toolbarMeta}> · {mostrarLista ? listaProductos.length : totalItems}</span>
           </h2>
           <button
             className={styles.filterBtn}
@@ -339,6 +399,35 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
+          <div className={styles.budget} role="group" aria-label="Presupuesto">
+            {BUDGET_PRESETS.map((preset) => {
+              const active = presetActivo?.id === preset.id
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={`${styles.bchip} ${active ? styles.bchipActive : ''}`}
+                  aria-pressed={active}
+                  onClick={() => {
+                    setMostrarLista(false)
+                    setPrecioMin(active ? 0 : preset.min)
+                    setPrecioMax(active ? BUDGET_NO_LIMIT : preset.max)
+                  }}
+                >
+                  {preset.label}
+                </button>
+              )
+            })}
+            <button
+              type="button"
+              className={`${styles.bchip} ${mostrarLista ? styles.bchipActive : ''}`}
+              aria-pressed={mostrarLista}
+              onClick={() => setMostrarLista((value) => !value)}
+            >
+              <Heart size={16} aria-hidden fill={favoritos.ids.length > 0 ? 'currentColor' : 'none'} />
+              Mi lista · {favoritos.ids.length}
+            </button>
+          </div>
           {activeFilterCount > 0 ? (
             <div className={styles.chips}>
               {categoriaFiltro !== 'all' ? (
@@ -360,7 +449,27 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
           ) : null}
         </div>
 
-        {cargando ? (
+        {mostrarLista ? (
+          listaProductos.length > 0 ? (
+            <>
+              <div className={styles.grid}>
+                {listaProductos.map((p, index) => renderProducto(p, { key: `lista-${p.id}`, slot: index, priority: index < 4 }))}
+              </div>
+              <div className={styles.heroActions} style={{ marginTop: 32 }}>
+                <button className={styles.primaryBtn} type="button" onClick={enviarListaWhatsApp}>
+                  Enviar mi lista por WhatsApp
+                </button>
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              title="Tu lista está vacía"
+              body="Tocá el corazón de un producto para guardarlo acá."
+              actionLabel="Ver el catálogo"
+              onAction={() => setMostrarLista(false)}
+            />
+          )
+        ) : cargando ? (
           <div className={styles.grid} aria-busy="true" role="status">
             <span className="sr-only">Cargando catálogo</span>
             {Array.from({ length: 8 }, (_, index) => (
@@ -385,7 +494,6 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
             <div className={styles.grid}>
               {itemsPagina.map((item, slotIndex) => {
                 const featured = showFeatured && slotIndex === 0
-                const tone = showFeatured ? slotIndex - 1 : slotIndex
                 const esCombo = 'combo_items' in item
                 if (esCombo) {
                   const combo = item as PublicCatalogCombo
@@ -408,34 +516,16 @@ export default function Catalogo({ initialCatalog = null, initialView }: Catalog
                       comboIncludes={() => startTransition(() => setComboSeleccionado(combo))}
                       priority={slotIndex < 4}
                       featured={featured}
-                      tone={tone}
                     />
                   )
                 }
 
-                const producto = item as PublicCatalogProduct
-                const badge = getCatalogBadgesForProduct(producto)[0]?.texto ?? null
-                return (
-                  <ProductCard
-                    key={`producto-${producto.id}`}
-                    name={producto.name}
-                    href={`/catalogo/p/${producto.id}`}
-                    brand={producto.brand}
-                    image={getProductImages(producto)[0] ?? null}
-                    badge={badge ?? (featured ? featuredLabel : null)}
-                    amount={getPrecioConDescuento(producto)}
-                    listAmount={producto.sale_price}
-                    dual={producto.dual_price_visible === true}
-                    publicAmount={producto.public_price}
-                    transferAmount={producto.transfer_price ?? getPrecioConDescuento(producto)}
-                    available={producto.stock > 0}
-                    cartReady={cartReady}
-                    onAdd={() => { if (producto.stock > 0) startTransition(() => agregarAlCarrito(producto)) }}
-                    priority={slotIndex < 4}
-                    featured={featured}
-                    tone={tone}
-                  />
-                )
+                return renderProducto(item as PublicCatalogProduct, {
+                  key: `producto-${(item as PublicCatalogProduct).id}`,
+                  slot: slotIndex,
+                  featured,
+                  priority: slotIndex < 4,
+                })
               })}
             </div>
 

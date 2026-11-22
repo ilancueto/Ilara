@@ -1019,18 +1019,18 @@ body {
 .storefront {
   /* Pastel bento: paleta del catálogo público (contraste AA verificado). */
   /* El sitio público es siempre claro: fija los colores por función aunque el panel esté en oscuro. */
-  --ui-canvas: #FFF6F2;
+  --ui-canvas: #FFF7F9;
   --ui-surface: #FFFFFF;
-  --ui-surface-soft: #FDEAE6;
-  --ui-ink: #4A3542;
-  --ui-muted: #6B5562;
+  --ui-surface-soft: #FBE8EE;
+  --ui-ink: #3A2030;
+  --ui-muted: #7A5A6B;
   --ui-hint: #765F6C;
   --ui-accent: #A63D64;
   --ui-line: #F3DFE0;
   --ui-border: #EED3D8;
-  --ui-primary: #B8446F;
-  --ui-primary-hover: #9C3560;
-  --ui-primary-soft: #FFE1EA;
+  --ui-primary: #BF4472;
+  --ui-primary-hover: #A6365F;
+  --ui-primary-soft: #FDE3EB;
   --ui-primary-ink: #7A3552;
   --ui-tint-0: #FFEEF3;
   --ui-tint-1: #FFF1DC;
@@ -1048,21 +1048,22 @@ body {
   --ui-danger: #B42335;
   --ui-danger-soft: #FDECEE;
   --ui-danger-line: #F5C2C9;
-  --sf-bg: #FFF6F2;
+  --sf-bg: #FFF7F9;
   --sf-surface: #FFFFFF;
-  --sf-muted-bg: #FDEAE6;
-  --sf-text: #4A3542;
-  --sf-text-2: #6B5562;
+  --sf-muted-bg: #FBE8EE;
+  --sf-text: #3A2030;
+  --sf-text-2: #7A5A6B;
   --sf-deep: #7A3552;
-  --sf-action: #B8446F;
-  --sf-action-hover: #9C3560;
-  --sf-accent: #FFE1EA;
+  --sf-action: #BF4472;
+  --sf-action-hover: #A6365F;
+  --sf-accent: #FDE3EB;
+  --sf-blush: #FDEBF1;
   --sf-border: #EED3D8;
   --sf-line: #F3DFE0;
   --sf-error: #A51D27;
   --sf-success: #236044;
   --sf-warning: #8A5A12;
-  --sf-focus: #9C3560;
+  --sf-focus: #A6365F;
   --sf-radius-sm: 12px;
   --sf-radius: 20px;
   --sf-radius-lg: 28px;
@@ -1072,7 +1073,8 @@ body {
   --sf-tint-3: #EFEAFB;
   --sf-tint-4: #EAF3FC;
   --sf-tint-5: #FDEEE8;
-  --sf-font: var(--font-quicksand), var(--font-outfit), Outfit, Arial, sans-serif;
+  --sf-font: var(--font-figtree), var(--font-quicksand), Arial, sans-serif;
+  --sf-serif: var(--font-instrument), Georgia, "Times New Roman", serif;
   --color-bg-main: var(--sf-bg);
   --color-text-main: var(--sf-text);
   --color-text-muted: var(--sf-text-2);

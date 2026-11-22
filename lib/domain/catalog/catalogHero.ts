@@ -14,7 +14,7 @@ export type CatalogHero = {
 }
 
 /** Categorías genéricas que no sirven como acceso destacado. */
-const GENERIC_CATEGORY = /^(otros?|varios|sin categor[ií]a)$/i
+export const GENERIC_CATEGORY = /^(otros?|varios|sin categor[ií]a)$/i
 
 /**
  * Elige qué mostrar en la portada: las categorías con más productos (sin las genéricas)
